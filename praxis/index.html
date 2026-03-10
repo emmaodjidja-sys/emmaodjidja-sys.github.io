@@ -314,6 +314,30 @@
     .demo-frame iframe {
       width: 100%; height: 100%; border: none;
     }
+    .demo-placeholder {
+      width: 100%; height: 100%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; cursor: pointer;
+      transition: all .3s; border-radius: 16px;
+    }
+    .demo-placeholder:hover { background: rgba(82,183,136,0.06); }
+    .demo-placeholder-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(82,183,136,0.12); border: 2px solid rgba(82,183,136,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: var(--gl); margin-bottom: 20px;
+      transition: all .3s;
+    }
+    .demo-placeholder:hover .demo-placeholder-icon {
+      background: rgba(82,183,136,0.2); border-color: var(--gl);
+      transform: scale(1.08);
+    }
+    .demo-placeholder-title {
+      font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600;
+      color: white; margin-bottom: 8px;
+    }
+    .demo-placeholder-desc {
+      font-size: 14px; color: var(--text3);
+    }
 
     /* ── CTA ── */
     .cta-section {
@@ -490,7 +514,7 @@
 <section class="features" id="features">
   <div class="si">
     <div class="section-label">Capabilities</div>
-    <h2 class="section-title">Everything you need for rigorous evaluation</h2>
+    <h2 class="section-title">From Burundi to the Sahel and Sri Lanka</h2>
     <p class="section-desc">Built on 12+ years of field experience across six countries, from rural Burundi to the Sahel.</p>
     <div class="features-grid">
       <div class="feature-card">
@@ -558,45 +582,6 @@
   </div>
 </section>
 
-<!-- WHAT'S INCLUDED -->
-<section class="included" id="included">
-  <div class="si">
-    <div class="section-label">Inside the Box</div>
-    <h2 class="section-title">What's included</h2>
-    <p class="section-desc">Every reference file is field-tested and peer-informed — not scraped from textbooks.</p>
-    <div class="included-grid">
-      <div class="inc-card">
-        <div class="inc-num">20+</div>
-        <div>
-          <h4>Evaluation Approaches</h4>
-          <p>RCTs, DiD, PSM, ITS, realist evaluation, contribution analysis, process tracing, QCA, MSC, outcome harvesting, developmental evaluation, and more</p>
-        </div>
-      </div>
-      <div class="inc-card">
-        <div class="inc-num">16+</div>
-        <div>
-          <h4>Validated Scales</h4>
-          <p>FCS, rCSI, HFIAS, PHQ-9, GAD-7, WHODAS 2.0, WEAI, GEM, WHO-5, PCL-5, HTQ, SDQ, AUDIT, and more — with scoring guidance</p>
-        </div>
-      </div>
-      <div class="inc-card">
-        <div class="inc-num">6</div>
-        <div>
-          <h4>Reference Modules</h4>
-          <p>Frameworks, evaluation designs, data collection, analysis and reporting, evaluability assessment, and case-based evaluation</p>
-        </div>
-      </div>
-      <div class="inc-card">
-        <div class="inc-num">5</div>
-        <div>
-          <h4>OECD-DAC Criteria</h4>
-          <p>Relevance, coherence, effectiveness, efficiency, impact, and sustainability — fully integrated into evaluation question generation</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- WHO IT'S FOR -->
 <section class="audience" id="audience">
   <div class="si">
@@ -616,8 +601,8 @@
       </div>
       <div class="audience-card">
         <div class="audience-icon">&#127758;</div>
-        <h4>Development Organisations</h4>
-        <p>Strengthen evaluation quality across your portfolio. Give every programme team access to methodological expertise on demand.</p>
+        <h4>Organisations, Banks &amp; Foundations</h4>
+        <p>Strengthen evaluation quality across your portfolio. Give every programme team — from development banks to private foundations — methodological expertise on demand.</p>
       </div>
     </div>
   </div>
@@ -629,8 +614,12 @@
     <div class="section-label">Interactive</div>
     <h2 class="section-title">Try the Evaluation Approach Finder</h2>
     <p class="section-desc">Explore which evaluation design fits your context — powered by PRAXIS logic.</p>
-    <div class="demo-frame">
-      <iframe src="/tool/" title="PRAXIS Evaluation Approach Finder" allow="fullscreen"></iframe>
+    <div class="demo-frame" id="demoFrame">
+      <div class="demo-placeholder" id="demoPlaceholder">
+        <div class="demo-placeholder-icon">&#9654;</div>
+        <div class="demo-placeholder-title">Evaluation Approach Finder</div>
+        <div class="demo-placeholder-desc">Click to launch the interactive tool</div>
+      </div>
     </div>
   </div>
 </section>
@@ -679,6 +668,14 @@ for (var j = 0; j < aa.length; j++) {
       var t = document.querySelector(href);
       if (t) t.scrollIntoView({ behavior: 'smooth' });
     }
+  });
+}
+// Demo click-to-load
+var placeholder = document.getElementById('demoPlaceholder');
+if (placeholder) {
+  placeholder.addEventListener('click', function() {
+    var frame = document.getElementById('demoFrame');
+    frame.innerHTML = '<iframe src="/tool/" title="PRAXIS Evaluation Approach Finder" allow="fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>';
   });
 }
 </script>
