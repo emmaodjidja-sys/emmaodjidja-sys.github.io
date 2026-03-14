@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample Size Calculator — PRAXIS Evaluation Toolkit</title>
+<meta name="description" content="Free sample size calculator for 8 evaluation designs. Coverage surveys, cluster RCTs, stepped-wedge, LQAS, DiD and more. Built on PRAXIS methodology.">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>body{margin:0;background:#FAFBFC;}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useCallback } = React;
+
+// ── Inverse normal CDF ──────────────────────────────────────────────
+function zScore(p) {
+  if (p <= 0 || p >= 1) return 0;
+  const a1 = -39.69683028665376, a2 = 220.9460984245205;
+  const a3 = -275.9285104469687, a4 = 138.357751867269;
+  const a5 = -30.66479806614716, a6 = 2.506628277459239;
+  const b1 = -54.47609879822406, b2 = 161.5858368580409;
+  const b3 = -155.6989798598866, b4 = 66.80131188771972;
+  const b5 = -13.28068155288572;
+  const c1 = -0.007784894002430293, c2 = -0.3223964580411365;
+  const c3 = -2.400758277161838, c4 = -2.549732539343734;
+  const c5 = 4.374664141464968, c6 = 2.938163982698783;
+  const d1 = 0.007784695709041462, d2 = 0.3224671290700398;
+  const d3 = 2.445134137142996, d4 = 3.754408661907416;
+  const pLow = 0.02425, pHigh = 1 - pLow;
+  let q, r;
+  if (p < pLow) {
+    q = Math.sqrt(-2 * Math.log(p));
+    return (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+  } else if (p <= pHigh) {
+    q = p - 0.5; r = q * q;
+    return (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q / (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    const num = (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6);
+    const den = ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+    return -(num / den);
+  }
+}
+function getZ(a) { return zScore(1 - a / 2); }
+function getZB(p) { return zScore(p / 100); }
+function binP(n, k, p) { let c = 1; for (let i = 0; i < k; i++) c *= (n - i) / (i + 1); return c * Math.pow(p, k) * Math.pow(1 - p, n - k); }
+
+// ── Calculators ─────────────────────────────────────────────────────
+const calc = {
+  singleProportion: (p) => { const z = getZ(p.alpha), pr = p.proportion / 100, d = p.precision / 100; const n = Math.ceil(z * z * pr * (1 - pr) / (d * d)); const nD = Math.ceil(n * p.deff); const nF = Math.ceil(nD / (1 - p.nonResponse / 100)); return { base: n, withDeff: nD, final: nF }; },
+  twoProportions: (p) => { const za = getZ(p.alpha), zb = getZB(p.power), r1 = p.p1 / 100, r2 = p.p2 / 100; const n1 = Math.ceil(Math.pow(za + zb, 2) * (r1 * (1 - r1) + r2 * (1 - r2) / p.ratio) / Math.pow(r1 - r2, 2)); const n2 = Math.ceil(n1 * p.ratio); const f1 = Math.ceil(n1 / (1 - p.nonResponse / 100)), f2 = Math.ceil(n2 / (1 - p.nonResponse / 100)); return { n1, n2, final1: f1, final2: f2, finalTotal: f1 + f2 }; },
+  twoMeans: (p) => { const za = getZ(p.alpha), zb = getZB(p.power); const n1 = Math.ceil(Math.pow(za + zb, 2) * p.sd * p.sd * (1 + 1 / p.ratio) / (p.delta * p.delta)); const n2 = Math.ceil(n1 * p.ratio); const f1 = Math.ceil(n1 / (1 - p.nonResponse / 100)), f2 = Math.ceil(n2 / (1 - p.nonResponse / 100)); return { n1, n2, final1: f1, final2: f2, finalTotal: f1 + f2 }; },
+  clusterRCT: (p) => { const za = getZ(p.alpha), zb = getZB(p.power), r1 = p.p1 / 100, r2 = p.p2 / 100; const nI = Math.ceil(Math.pow(za + zb, 2) * (r1 * (1 - r1) + r2 * (1 - r2)) / Math.pow(r1 - r2, 2)); const deff = 1 + (p.clusterSize - 1) * p.icc; const nC = Math.ceil(nI * deff); const cpa = Math.ceil(nC / p.clusterSize); const tpa = cpa * p.clusterSize; const fpa = Math.ceil(tpa / (1 - p.nonResponse / 100)); return { nIndiv: nI, deff: deff.toFixed(2), clustersPerArm: cpa, totalClusters: cpa * 2, finalTotal: fpa * 2 }; },
+  clusterSurvey: (p) => { const z = getZ(p.alpha), pr = p.proportion / 100, d = p.precision / 100; const nB = Math.ceil(z * z * pr * (1 - pr) / (d * d)); const nD = Math.ceil(nB * p.deff); const cl = Math.ceil(nD / p.clusterSize); const tot = cl * p.clusterSize; const fin = Math.ceil(tot / (1 - p.nonResponse / 100)); return { base: nB, withDeff: nD, clusters: cl, final: fin }; },
+  steppedWedge: (p) => { const za = getZ(p.alpha), zb = getZB(p.power), r1 = p.p1 / 100, r2 = p.p2 / 100; const poolVar = r1 * (1 - r1) + r2 * (1 - r2); const eff = Math.abs(r1 - r2); const T = p.steps + 1, K = p.steps; const num = 3 * (1 - p.icc) * (1 + T * p.icc * p.clusterSize); const den = T * (T - 1 / T) * p.icc * p.clusterSize + 1.5 * T * (1 - p.icc); const deSW = num / den; const nP = Math.ceil(Math.pow(za + zb, 2) * poolVar / (eff * eff)); const deff = 1 + (p.clusterSize - 1) * p.icc; const nPC = Math.ceil(nP * deff); const totC = Math.ceil(nPC * deSW / p.clusterSize); const cps = Math.max(1, Math.ceil(totC / K)); const ac = cps * K; const totN = ac * p.clusterSize * T; const fin = Math.ceil(totN / (1 - p.nonResponse / 100)); return { deff: deff.toFixed(2), deSwFactor: deSW.toFixed(3), totalClusters: ac, clustersPerStep: cps, periods: T, final: fin }; },
+  lqas: (p) => { const uT = p.upperThreshold / 100, lT = p.lowerThreshold / 100; let found = false, bN = 0, bD = 0, bA = 0, bB = 0; for (let n = 5; n <= Math.min(p.lotSize, 200); n++) { for (let d = 0; d < n; d++) { let cu = 0; for (let x = 0; x <= d; x++) cu += binP(n, x, uT); let cl = 0; for (let x = 0; x <= d; x++) cl += binP(n, x, lT); if (cu <= p.alpha / 100 && (1 - cl) <= p.beta / 100) { bN = n; bD = d; bA = cu; bB = 1 - cl; found = true; break; } } if (found) break; } if (!found) return { sampleSize: ">200", decisionRule: "-", alphaError: "-", betaError: "-", interpretation: "No valid solution found with n <= 200. Widen gap between thresholds or increase error rates." }; return { sampleSize: bN, decisionRule: bD, alphaError: (bA * 100).toFixed(1), betaError: (bB * 100).toFixed(1), interpretation: "Sample " + bN + " from each lot. If " + bD + " or fewer meet threshold, classify as inadequate coverage." }; },
+  did: (p) => { const za = getZ(p.alpha), zb = getZB(p.power); const nB = Math.ceil(Math.pow(za + zb, 2) * 2 * p.sd * p.sd / (p.delta * p.delta)); const nA = Math.ceil(nB * (1 - p.rSquared)); const pgp = Math.ceil(nA / p.periods); const tpg = pgp * p.periods; const tot = tpg * 2; const fin = Math.ceil(tot / (1 - p.nonResponse / 100)); return { nBase: nB, nAdjusted: nA, perGroupPerPeriod: pgp, total: tot, final: fin, periods: p.periods }; }
+};
+
+// ── Design definitions ──────────────────────────────────────────────
+const designs = [
+  { id: "singleProportion", label: "Single Proportion", desc: "Estimate prevalence or coverage", use: "Coverage surveys, KAP studies, baseline prevalence estimation" },
+  { id: "twoProportions", label: "Two Proportions", desc: "Compare proportions between groups", use: "RCTs, quasi-experimental designs with binary outcomes" },
+  { id: "twoMeans", label: "Two Means", desc: "Compare means between groups", use: "RCTs with continuous outcomes (scores, biomarkers, costs)" },
+  { id: "clusterRCT", label: "Cluster RCT", desc: "Cluster-randomised trial", use: "Facility- or community-randomised health interventions" },
+  { id: "clusterSurvey", label: "Cluster Survey", desc: "Multi-stage cluster sample", use: "DHS/MICS-style surveys, SMART nutrition surveys, EPI coverage" },
+  { id: "steppedWedge", label: "Stepped-Wedge", desc: "Stepped-wedge cluster design", use: "Phased rollout evaluations, health system interventions" },
+  { id: "lqas", label: "LQAS", desc: "Lot Quality Assurance Sampling", use: "Rapid coverage monitoring, supervision area classification" },
+  { id: "did", label: "Diff-in-Diff", desc: "DiD with repeated cross-sections", use: "Quasi-experimental impact evaluation, policy evaluation" }
+];
+
+// ── Parameter definitions with presets ───────────────────────────────
+const pDefs = {
+  proportion: { label: "Expected proportion (%)", min: 1, max: 99, step: 1, def: 50, hint: "Expected prevalence/coverage in the population", presets: [{ val: 50, label: "Unknown", rec: true, tip: "Maximally conservative when no prior data" }, { val: 80, label: "High coverage", tip: "Immunisation, ANC4+ in strong systems" }, { val: 30, label: "Low coverage", tip: "Exclusive breastfeeding, facility delivery in weak systems" }, { val: 10, label: "Rare outcome", tip: "GAM prevalence, HIV+ in general population" }] },
+  precision: { label: "Precision (%)", min: 1, max: 20, step: 0.5, def: 5, dec: true, hint: "Margin of error around the estimate", presets: [{ val: 5, label: "5%", rec: true, tip: "Standard for coverage surveys (DHS, MICS)" }, { val: 3, label: "3%", tip: "High precision, larger sample" }, { val: 7, label: "7%", tip: "Acceptable for rapid assessments" }, { val: 10, label: "10%", tip: "Low precision, pilot/screening only" }] },
+  alpha: { label: "Significance level", min: 0.01, max: 0.2, step: 0.005, def: 0.05, dec: true, hint: "Probability of false positive", presets: [{ val: 0.05, label: "0.05", rec: true, tip: "95% confidence, standard" }, { val: 0.01, label: "0.01", tip: "99% confidence, high-stakes" }, { val: 0.10, label: "0.10", tip: "90% confidence, exploratory" }] },
+  power: { label: "Power (%)", min: 50, max: 99, step: 1, def: 80, hint: "Probability of detecting a real effect", presets: [{ val: 80, label: "80%", rec: true, tip: "Standard for most evaluations" }, { val: 90, label: "90%", tip: "Well-funded RCTs" }, { val: 70, label: "70%", tip: "Budget-constrained pilots only" }] },
+  p1: { label: "Control proportion (%)", min: 1, max: 99, step: 1, def: 30, hint: "Expected outcome in control group", presets: [{ val: 30, label: "30%", rec: true, tip: "Moderate baseline" }, { val: 50, label: "50%", tip: "High baseline" }, { val: 15, label: "15%", tip: "Low baseline" }] },
+  p2: { label: "Intervention proportion (%)", min: 1, max: 99, step: 1, def: 45, hint: "Expected outcome with intervention", presets: [{ val: 45, label: "45%", rec: true, tip: "15pp increase, realistic" }, { val: 40, label: "40%", tip: "10pp increase, conservative" }, { val: 55, label: "55%", tip: "25pp increase, ambitious" }] },
+  ratio: { label: "Allocation ratio", min: 0.5, max: 3, step: 0.5, def: 1, dec: true, hint: "n(control) : n(intervention)", presets: [{ val: 1, label: "1:1", rec: true, tip: "Equal allocation, most efficient" }, { val: 2, label: "2:1", tip: "More controls when intervention is expensive" }] },
+  delta: { label: "Min. detectable effect", min: 0.1, max: 50, step: 0.1, def: 5, dec: true, hint: "Smallest meaningful difference (outcome units)", presets: [{ val: 5, label: "5 units", rec: true, tip: "Moderate effect" }, { val: 3, label: "3 units", tip: "Small effect, larger sample" }, { val: 10, label: "10 units", tip: "Large effect, smaller sample" }] },
+  sd: { label: "Standard deviation", min: 0.1, max: 100, step: 0.1, def: 10, dec: true, hint: "Pooled SD of the outcome variable", presets: [{ val: 10, label: "10", rec: true, tip: "Common for psychometric scales" }, { val: 5, label: "5", tip: "Low variability" }, { val: 20, label: "20", tip: "High variability" }, { val: 1, label: "1 (Cohen's d)", tip: "Set SD=1 for standardised effect" }] },
+  clusterSize: { label: "Average cluster size", min: 2, max: 500, step: 1, def: 30, hint: "Individuals per cluster", presets: [{ val: 30, label: "30", rec: true, tip: "Standard 30x30 cluster surveys" }, { val: 7, label: "7", tip: "WHO EPI cluster method" }, { val: 15, label: "15", tip: "Small facility/village" }, { val: 50, label: "50", tip: "Large facility/school" }] },
+  icc: { label: "ICC", min: 0.001, max: 0.5, step: 0.001, def: 0.05, dec: true, hint: "Similarity within clusters", presets: [{ val: 0.05, label: "0.05", rec: true, tip: "Conservative default for health outcomes" }, { val: 0.01, label: "0.01", tip: "Clinical outcomes, low clustering" }, { val: 0.03, label: "0.03", tip: "Health utilisation, moderate" }, { val: 0.10, label: "0.10", tip: "Knowledge/attitudes, high clustering" }] },
+  deff: { label: "Design effect (DEFF)", min: 1, max: 10, step: 0.1, def: 2, dec: true, hint: "DEFF = 1+(m-1)*ICC", presets: [{ val: 2.0, label: "2.0", rec: true, tip: "WHO/UNICEF default for 30-cluster surveys" }, { val: 1.0, label: "1.0 (SRS)", tip: "No clustering" }, { val: 1.5, label: "1.5", tip: "SMART surveys for SAM" }, { val: 2.5, label: "2.5", tip: "SMART for GAM" }] },
+  steps: { label: "Number of steps", min: 2, max: 12, step: 1, def: 4, hint: "Crossover sequences", presets: [{ val: 4, label: "4", rec: true, tip: "Common for district-level rollouts" }, { val: 3, label: "3", tip: "Minimum recommended" }, { val: 6, label: "6", tip: "Better power, longer study" }] },
+  nonResponse: { label: "Non-response (%)", min: 0, max: 50, step: 1, def: 10, hint: "Expected non-response / loss to follow-up", presets: [{ val: 10, label: "10%", rec: true, tip: "Standard for accessible areas" }, { val: 5, label: "5%", tip: "Well-planned, community mobilisation" }, { val: 20, label: "20%", tip: "Longitudinal / conflict-affected" }, { val: 30, label: "30%", tip: "High attrition, insecure areas" }] },
+  lotSize: { label: "Lot size", min: 50, max: 100000, step: 50, def: 5000, hint: "Population in supervision area", presets: [{ val: 5000, label: "5,000", rec: true, tip: "Typical health centre catchment" }, { val: 1000, label: "1,000", tip: "Small community" }, { val: 20000, label: "20,000", tip: "Sub-district" }] },
+  upperThreshold: { label: "Upper threshold (%)", min: 10, max: 99, step: 1, def: 80, hint: "Adequate coverage target", presets: [{ val: 80, label: "80%", rec: true, tip: "Standard for immunisation (WHO/UNICEF)" }, { val: 90, label: "90%", tip: "Measles/polio campaigns" }] },
+  lowerThreshold: { label: "Lower threshold (%)", min: 1, max: 98, step: 1, def: 50, hint: "Inadequate coverage level", presets: [{ val: 50, label: "50%", rec: true, tip: "Standard lower threshold" }, { val: 40, label: "40%", tip: "Wider gap, more discriminating" }] },
+  alphaLQAS: { label: "Producer risk (%)", min: 1, max: 20, step: 1, def: 10, hint: "Misclassify adequate as inadequate", presets: [{ val: 10, label: "10%", rec: true, tip: "Standard LQAS" }, { val: 5, label: "5%", tip: "Conservative" }] },
+  betaLQAS: { label: "Consumer risk (%)", min: 1, max: 20, step: 1, def: 10, hint: "Misclassify inadequate as adequate", presets: [{ val: 10, label: "10%", rec: true, tip: "Standard LQAS" }, { val: 5, label: "5%", tip: "Conservative" }] },
+  rSquared: { label: "R-squared from covariates", min: 0, max: 0.9, step: 0.05, def: 0.2, dec: true, hint: "Variance explained by covariates", presets: [{ val: 0.2, label: "0.20", rec: true, tip: "Conservative default" }, { val: 0.0, label: "0 (none)", tip: "Unadjusted DiD" }, { val: 0.4, label: "0.40", tip: "Good covariates" }] },
+  periods: { label: "Time periods", min: 2, max: 10, step: 1, def: 2, hint: "Pre + post periods", presets: [{ val: 2, label: "2 (pre/post)", rec: true, tip: "Standard DiD" }, { val: 3, label: "3", tip: "Short + medium-term effects" }] }
+};
+
+const dParams = {
+  singleProportion: ["proportion", "precision", "alpha", "deff", "nonResponse"],
+  twoProportions: ["p1", "p2", "alpha", "power", "ratio", "nonResponse"],
+  twoMeans: ["delta", "sd", "alpha", "power", "ratio", "nonResponse"],
+  clusterRCT: ["p1", "p2", "alpha", "power", "clusterSize", "icc", "nonResponse"],
+  clusterSurvey: ["proportion", "precision", "alpha", "clusterSize", "deff", "nonResponse"],
+  steppedWedge: ["p1", "p2", "alpha", "power", "clusterSize", "icc", "steps", "nonResponse"],
+  lqas: ["lotSize", "upperThreshold", "lowerThreshold", "alphaLQAS", "betaLQAS"],
+  did: ["delta", "sd", "alpha", "power", "rSquared", "periods", "nonResponse"]
+};
+
+const notesData = {
+  singleProportion: ["Normal approximation to binomial (Wald). Valid when np >= 5.", "DEFF = 1+(m-1)*ICC. Use 1 for simple random sampling.", "For finite populations apply FPC: n/(1+n/N). Not applied here."],
+  twoProportions: ["Two-sided test, unpooled variance (Fleiss, no continuity correction).", "Ratio k: n2 = k*n1. Unequal allocation increases total n.", "For cluster randomisation, use the Cluster RCT calculator."],
+  twoMeans: ["Two-sided t-test, equal variances (pooled SD).", "Delta = minimum detectable effect in original units.", "For Cohen's d: set SD=1 and delta=d."],
+  clusterRCT: ["Inflates n by DEFF = 1+(m-1)*ICC.", "ICC 0.01-0.05 for health outcomes; 0.05-0.15 for process indicators.", "With <20 clusters/arm: consider small-sample corrections."],
+  clusterSurvey: ["30x30 cluster survey: 30 clusters * 30 HH = 900, DEFF~2.", "SMART nutrition: DEFF 1.5-2.5 for GAM, ~1.5 for SAM.", "EPI cluster: 7/cluster * 30 clusters = 210 (WHO method)."],
+  steppedWedge: ["Hussey & Hughes (2007) design effect.", "Fewer clusters than parallel cRCT, more total observations.", "Assumes equal cluster sizes and complete crossover."],
+  lqas: ["Finds minimum n and decision rule d for alpha/beta constraints.", "Exact binomial probabilities, not normal approximation.", "Standard LQAS immunisation: n=19, threshold=80% (WHO/UNICEF)."],
+  did: ["R-squared adjustment reduces n by factor (1-R2).", "Repeated cross-sections, not panel.", "See Bertrand, Duflo & Mullainathan (2004) on clustering SEs."]
+};
+
+const formulaData = {
+  singleProportion: "n = Z^2 * p(1-p) / d^2 * DEFF", twoProportions: "n1 = (Za+Zb)^2 * [p1(1-p1)+p2(1-p2)/k] / (p1-p2)^2",
+  twoMeans: "n1 = (Za+Zb)^2 * s^2 * (1+1/k) / d^2", clusterRCT: "n = n_indiv * [1+(m-1)*rho] | clusters = n/m",
+  clusterSurvey: "n = Z^2 * p(1-p)/d^2 * DEFF | clusters = n/m", steppedWedge: "DE = 3(1-rho)(1+T*rho*m) / [T(T-1/T)*rho*m + 1.5T(1-rho)]",
+  lqas: "Exact binomial: P(X<=d | n, p)", did: "n = (Za+Zb)^2 * 2s^2/d^2 * (1-R^2)"
+};
+
+const COL = { navy: "#0B1A2E", navyM: "#1a3050", teal: "#2EC4B6", tealD: "#1a9e92", tealGlow: "rgba(46,196,182,0.12)", tealGlow2: "rgba(46,196,182,0.06)", slate: "#8899AA", slateL: "#A4B3C2", off: "#E8ECF0", warm: "#FAFBFC", surf: "#FFFFFF", amber: "#E8A317", amberBg: "rgba(232,163,23,0.08)", amberBorder: "rgba(232,163,23,0.25)" };
+
+// ── Word export ─────────────────────────────────────────────────────
+function exportToWord(designId, designObj, params, result, paramKeys) {
+  if (!result) return;
+  const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const dLabel = designObj ? designObj.label : designId;
+
+  let paramRows = paramKeys.map(k => {
+    const d = pDefs[k];
+    const v = params[k];
+    const display = d.dec ? Number(v).toFixed(d.step < 0.01 ? 3 : d.step < 0.1 ? 2 : 1) : v;
+    return "<tr><td>" + d.label + "</td><td><b>" + display + "</b></td><td>" + d.hint + "</td></tr>";
+  }).join("");
+
+  let resultRows = "";
+  if (designId === "singleProportion") {
+    resultRows = "<tr><td>Base sample (SRS)</td><td><b>" + result.base + "</b></td></tr><tr><td>With design effect</td><td><b>" + result.withDeff + "</b></td></tr><tr class='highlight'><td>Final sample size</td><td><b>" + result.final + "</b></td></tr>";
+  } else if (designId === "twoProportions" || designId === "twoMeans") {
+    resultRows = "<tr><td>Control group</td><td><b>" + result.final1 + "</b> (base: " + result.n1 + ")</td></tr><tr><td>Intervention group</td><td><b>" + result.final2 + "</b> (base: " + result.n2 + ")</td></tr><tr class='highlight'><td>Total sample size</td><td><b>" + result.finalTotal + "</b></td></tr>";
+  } else if (designId === "clusterRCT") {
+    resultRows = "<tr><td>Individual n (no clustering)</td><td><b>" + result.nIndiv + "</b></td></tr><tr><td>Design effect (DEFF)</td><td><b>" + result.deff + "</b></td></tr><tr><td>Clusters per arm</td><td><b>" + result.clustersPerArm + "</b></td></tr><tr><td>Total clusters</td><td><b>" + result.totalClusters + "</b></td></tr><tr class='highlight'><td>Total sample size</td><td><b>" + result.finalTotal + "</b></td></tr>";
+  } else if (designId === "clusterSurvey") {
+    resultRows = "<tr><td>Base sample (SRS)</td><td><b>" + result.base + "</b></td></tr><tr><td>With design effect</td><td><b>" + result.withDeff + "</b></td></tr><tr><td>Number of clusters</td><td><b>" + result.clusters + "</b></td></tr><tr class='highlight'><td>Final sample size</td><td><b>" + result.final + "</b></td></tr>";
+  } else if (designId === "steppedWedge") {
+    resultRows = "<tr><td>DEFF</td><td><b>" + result.deff + "</b></td></tr><tr><td>Stepped-wedge factor</td><td><b>" + result.deSwFactor + "</b></td></tr><tr><td>Total clusters</td><td><b>" + result.totalClusters + "</b> (" + result.clustersPerStep + " per step)</td></tr><tr><td>Measurement periods</td><td><b>" + result.periods + "</b></td></tr><tr class='highlight'><td>Total observations</td><td><b>" + result.final + "</b></td></tr>";
+  } else if (designId === "lqas") {
+    resultRows = "<tr class='highlight'><td>Sample per lot</td><td><b>" + result.sampleSize + "</b></td></tr><tr><td>Decision rule (d)</td><td><b>" + result.decisionRule + "</b></td></tr><tr><td>Alpha error</td><td>" + result.alphaError + "%</td></tr><tr><td>Beta error</td><td>" + result.betaError + "%</td></tr>";
+  } else if (designId === "did") {
+    resultRows = "<tr><td>Base n (unadjusted)</td><td><b>" + result.nBase + "</b></td></tr><tr><td>R-squared adjusted n</td><td><b>" + result.nAdjusted + "</b></td></tr><tr><td>Per group per period</td><td><b>" + result.perGroupPerPeriod + "</b></td></tr><tr class='highlight'><td>Total sample size</td><td><b>" + result.final + "</b></td></tr>";
+  }
+
+  const notes = (notesData[designId] || []).map(n => "<li>" + n + "</li>").join("");
+
+  const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Sample Size Calculation</title><style>@page{size:A4;margin:2.5cm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1a1a1a;line-height:1.6}h1{font-size:18pt;color:#0B1A2E;border-bottom:2pt solid #2EC4B6;padding-bottom:6pt;margin-bottom:12pt}h2{font-size:14pt;color:#0B1A2E;margin-top:18pt;margin-bottom:8pt}table{border-collapse:collapse;width:100%;margin:10pt 0}th{background:#0B1A2E;color:white;padding:8pt 10pt;text-align:left;font-size:10pt}td{border:1px solid #ddd;padding:6pt 10pt;font-size:10pt}tr:nth-child(even) td{background:#f8f9fa}.highlight td{background:#e8f9f7;font-weight:bold}.note{background:#f0f4f8;border-left:3pt solid #2EC4B6;padding:8pt 12pt;margin:10pt 0;font-size:10pt}.footer{margin-top:24pt;padding-top:8pt;border-top:1pt solid #ddd;font-size:9pt;color:#888}</style></head><body>' +
+    "<h1>Sample Size Calculation</h1>" +
+    "<p><b>Design:</b> " + dLabel + "<br><b>Date:</b> " + today + "<br><b>Common use:</b> " + (designObj ? designObj.use : "") + "</p>" +
+    "<h2>Parameters</h2>" +
+    "<table><tr><th>Parameter</th><th>Value</th><th>Justification</th></tr>" + paramRows + "</table>" +
+    "<h2>Results</h2>" +
+    "<table><tr><th>Metric</th><th>Value</th></tr>" + resultRows + "</table>" +
+    (designId === "lqas" && result.interpretation ? '<div class="note"><b>Interpretation:</b> ' + result.interpretation + "</div>" : "") +
+    "<h2>Formula</h2>" +
+    '<div class="note">' + (formulaData[designId] || "") + "</div>" +
+    "<h2>Assumptions and Limitations</h2><ul>" + notes + "</ul>" +
+    '<div class="footer">Generated by PRAXIS Evaluation Toolkit | emmanuelneneodjidja.org/praxis</div>' +
+    "</body></html>";
+
+  const blob = new Blob([html], { type: "application/msword" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "sample-size-" + designId + ".doc";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── UI Components ───────────────────────────────────────────────────
+function Slider({ paramKey, value, onChange }) {
+  const d = pDefs[paramKey]; if (!d) return null;
+  const isDec = d.dec || false;
+  const pct = ((value - d.min) / (d.max - d.min)) * 100;
+  const displayVal = isDec ? Number(value).toFixed(d.step < 0.01 ? 3 : d.step < 0.1 ? 2 : 1) : value;
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+        <label style={{ fontSize: 12.5, fontWeight: 600, color: COL.navy }}>{d.label}</label>
+        <span style={{ fontSize: 14, fontWeight: 700, color: COL.tealD, fontFamily: "monospace", background: COL.tealGlow, padding: "2px 8px", borderRadius: 4 }}>{displayVal}</span>
+      </div>
+      <input type="range" min={d.min} max={d.max} step={d.step} value={value} onChange={(e) => onChange(paramKey, parseFloat(e.target.value))}
+        style={{ width: "100%", height: 6, WebkitAppearance: "none", appearance: "none", background: "linear-gradient(to right, " + COL.teal + " 0%, " + COL.teal + " " + pct + "%, " + COL.off + " " + pct + "%, " + COL.off + " 100%)", borderRadius: 3, outline: "none", cursor: "pointer" }} />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+        {(d.presets || []).map((pr, i) => {
+          const isActive = Math.abs(value - pr.val) < d.step * 0.6;
+          return (<button key={i} onClick={() => onChange(paramKey, pr.val)} title={pr.tip}
+            style={{ fontSize: 10.5, fontWeight: isActive ? 700 : 500, padding: "3px 8px", borderRadius: 4, cursor: "pointer", transition: "all 0.12s",
+              border: isActive ? "1.5px solid " + COL.teal : pr.rec ? "1.5px solid " + COL.amberBorder : "1px solid " + COL.off,
+              background: isActive ? COL.tealGlow : pr.rec ? COL.amberBg : "transparent",
+              color: isActive ? COL.tealD : pr.rec ? COL.amber : COL.slate }}>
+            {pr.rec && !isActive ? "\u2605 " : ""}{pr.label}
+          </button>);
+        })}
+      </div>
+      <div style={{ fontSize: 10.5, color: COL.slate, marginTop: 4, lineHeight: 1.4 }}>
+        {d.hint}
+        {(d.presets || []).some(pr => Math.abs(value - pr.val) < d.step * 0.6) && (
+          <span style={{ color: COL.tealD, fontWeight: 500 }}>{" \u2014 " + ((d.presets || []).find(pr => Math.abs(value - pr.val) < d.step * 0.6) || {}).tip}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RCard({ label, value, sub, hl }) {
+  return (<div style={{ background: hl ? "linear-gradient(135deg, " + COL.navy + ", " + COL.navyM + ")" : COL.warm, borderRadius: 10, padding: "12px 14px", border: hl ? "none" : "1px solid " + COL.off, flex: "1 1 0", minWidth: 100 }}>
+    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: hl ? COL.teal : COL.slate, marginBottom: 3 }}>{label}</div>
+    <div style={{ fontSize: 24, fontWeight: 800, color: hl ? "#fff" : COL.navy, fontFamily: "monospace", lineHeight: 1.1 }}>{typeof value === "number" ? value.toLocaleString() : value}</div>
+    {sub && <div style={{ fontSize: 10.5, color: hl ? COL.slateL : COL.slate, marginTop: 2 }}>{sub}</div>}
+  </div>);
+}
+
+function Results({ id, r }) {
+  if (!r) return <div style={{ color: COL.slate, fontSize: 13 }}>Adjust parameters...</div>;
+  const W = ({ children }) => <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>{children}</div>;
+  if (id === "singleProportion") return <W><RCard label="Base" value={r.base} sub="Before adjustments" /><RCard label="With DEFF" value={r.withDeff} sub="Design effect" /><RCard label="Final" value={r.final} sub="+ non-response" hl /></W>;
+  if (id === "twoProportions" || id === "twoMeans") return <W><RCard label="Control" value={r.final1} sub={"Base: " + r.n1} /><RCard label="Intervention" value={r.final2} sub={"Base: " + r.n2} /><RCard label="Total" value={r.finalTotal} sub="+ non-response" hl /></W>;
+  if (id === "clusterRCT") return <W><RCard label="Indiv. n" value={r.nIndiv} sub={"DEFF=" + r.deff} /><RCard label="Clusters/arm" value={r.clustersPerArm} sub={r.totalClusters + " total"} /><RCard label="Total" value={r.finalTotal} sub="+ non-response" hl /></W>;
+  if (id === "clusterSurvey") return <W><RCard label="Base (SRS)" value={r.base} /><RCard label="Clusters" value={r.clusters} sub={"DEFF: " + r.withDeff} /><RCard label="Final" value={r.final} sub="+ non-response" hl /></W>;
+  if (id === "steppedWedge") return <W><RCard label="Clusters" value={r.totalClusters} sub={r.clustersPerStep + "/step"} /><RCard label="SW factor" value={r.deSwFactor} sub={"DEFF=" + r.deff} /><RCard label="Total obs." value={r.final} sub="+ non-response" hl /></W>;
+  if (id === "lqas") return (<div><W><RCard label="Sample/lot" value={r.sampleSize} hl /><RCard label="Decision (d)" value={r.decisionRule} sub={"<=" + r.decisionRule + " = inadequate"} /></W><div style={{ display: "flex", gap: 10, marginTop: 10 }}><RCard label="Alpha error" value={r.alphaError + "%"} sub="Misclass. adequate" /><RCard label="Beta error" value={r.betaError + "%"} sub="Misclass. inadequate" /></div><div style={{ marginTop: 10, padding: "10px 12px", background: COL.tealGlow2, borderRadius: 8, fontSize: 12.5, color: COL.navy, borderLeft: "3px solid " + COL.teal }}>{r.interpretation}</div></div>);
+  if (id === "did") return <W><RCard label="Base" value={r.nBase} sub={"R2-adj: " + r.nAdjusted} /><RCard label="Per grp/period" value={r.perGroupPerPeriod} sub={r.periods + " periods"} /><RCard label="Total" value={r.final} sub="+ non-response" hl /></W>;
+  return null;
+}
+
+// ── Main App ────────────────────────────────────────────────────────
+function App() {
+  const [active, setActive] = useState("singleProportion");
+  const [params, setParams] = useState(() => { const o = {}; Object.entries(pDefs).forEach(([k, v]) => { o[k] = v.def; }); return o; });
+  const set = useCallback((k, v) => setParams((prev) => ({ ...prev, [k]: v })), []);
+  const result = useMemo(() => { try { const p = {}; dParams[active].forEach((k) => { if (k === "alphaLQAS") p.alpha = params.alphaLQAS; else if (k === "betaLQAS") p.beta = params.betaLQAS; else p[k] = params[k]; }); return calc[active](p); } catch (e) { return null; } }, [active, params]);
+  const dObj = designs.find((d) => d.id === active);
+
+  return (
+    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", maxWidth: 960, margin: "0 auto", padding: "20px 16px 40px", minHeight: "100vh" }}>
+      <style>{"input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:" + COL.teal + ";cursor:pointer;border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2)}input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:" + COL.teal + ";cursor:pointer;border:3px solid white}*{box-sizing:border-box}"}</style>
+
+      <div style={{ marginBottom: 22 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+          <div style={{ background: "linear-gradient(135deg, " + COL.navy + ", " + COL.navyM + ")", color: COL.teal, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", padding: "4px 10px", borderRadius: 4, textTransform: "uppercase", fontFamily: "monospace" }}>PRAXIS</div>
+          <span style={{ fontSize: 11, color: COL.slate, fontWeight: 500 }}>EVALUATION TOOLKIT</span>
+        </div>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: COL.navy, margin: 0, lineHeight: 1.15 }}>Sample Size Calculator</h1>
+        <p style={{ fontSize: 13.5, color: COL.slate, margin: "5px 0 0", lineHeight: 1.5 }}>8 evaluation designs with guided parameter selection. Click the <span style={{ color: COL.amber, fontWeight: 600 }}>{"\u2605"} starred presets</span> if unsure which value to use.</p>
+      </div>
+
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: COL.slate, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Select design</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+          {designs.map((d) => { const on = d.id === active; return (
+            <button key={d.id} onClick={() => setActive(d.id)} style={{ display: "flex", alignItems: "flex-start", gap: 7, padding: "9px 10px", background: on ? COL.surf : "transparent", border: on ? "2px solid " + COL.teal : "1px solid " + COL.off, borderRadius: 8, cursor: "pointer", textAlign: "left", transition: "all 0.15s", boxShadow: on ? "0 2px 10px " + COL.tealGlow : "none" }}>
+              <div><div style={{ fontSize: 11.5, fontWeight: 700, color: on ? COL.navy : COL.navyM, lineHeight: 1.2 }}>{d.label}</div><div style={{ fontSize: 10, color: COL.slate, marginTop: 1, lineHeight: 1.3 }}>{d.desc}</div></div>
+            </button>); })}
+        </div>
+      </div>
+
+      <div style={{ background: COL.tealGlow2, borderLeft: "3px solid " + COL.teal, padding: "7px 12px", borderRadius: "0 6px 6px 0", marginBottom: 16, fontSize: 12, color: COL.navyM }}><strong>Common use: </strong>{dObj ? dObj.use : ""}</div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, alignItems: "start" }}>
+        <div style={{ background: COL.surf, borderRadius: 12, padding: "16px 18px", border: "1px solid " + COL.off }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: COL.teal, textTransform: "uppercase", letterSpacing: "0.1em" }}>Parameters</div>
+            <div style={{ fontSize: 10, color: COL.amber, fontWeight: 600 }}>{"\u2605"} = recommended if unsure</div>
+          </div>
+          {dParams[active].map((k) => <Slider key={k} paramKey={k} value={params[k]} onChange={set} />)}
+        </div>
+
+        <div>
+          <div style={{ background: COL.surf, borderRadius: 12, padding: "16px 18px", border: "1px solid " + COL.off, marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: COL.teal, textTransform: "uppercase", letterSpacing: "0.1em" }}>Required Sample Size</div>
+              {result && (
+                <button onClick={() => exportToWord(active, dObj, params, result, dParams[active])}
+                  style={{ fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 6, cursor: "pointer", border: "1.5px solid " + COL.teal, background: COL.tealGlow, color: COL.tealD, transition: "all 0.15s" }}
+                  onMouseOver={(e) => { e.target.style.background = COL.teal; e.target.style.color = "white"; }}
+                  onMouseOut={(e) => { e.target.style.background = COL.tealGlow; e.target.style.color = COL.tealD; }}>
+                  Export to Word
+                </button>
+              )}
+            </div>
+            <Results id={active} r={result} />
+          </div>
+
+          <div style={{ background: COL.surf, borderRadius: 12, padding: "12px 16px", border: "1px solid " + COL.off, fontSize: 11.5, color: COL.navyM, lineHeight: 1.65, marginBottom: 10 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: COL.slate, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Assumptions</div>
+            {(notesData[active] || []).map((n, i) => <p key={i} style={{ margin: "0 0 3px" }}>{"\u2022 " + n}</p>)}
+          </div>
+
+          <div style={{ padding: "10px 14px", background: "linear-gradient(135deg, " + COL.navy + ", " + COL.navyM + ")", borderRadius: 8, fontSize: 11, color: COL.slateL, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: COL.teal, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 3 }}>Formula</div>
+            <div style={{ fontFamily: "monospace", fontSize: 11 }}>{formulaData[active]}</div>
+            <div style={{ marginTop: 5, color: COL.slate, fontSize: 9.5 }}>{"Built on PRAXIS methodology \u00B7 "}<span style={{ color: COL.teal }}>emmanuelneneodjidja.org/praxis</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
