@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Evaluation Tools — PRAXIS</title>
+<meta name="description" content="Free, open-source evaluation tools built on PRAXIS methodology. Sample size calculator, evaluation design advisor, and more — for health evaluators and M&E professionals.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0B1A2E;
+  --navy-mid: #122240;
+  --navy-light: #1a3050;
+  --teal: #2EC4B6;
+  --teal-dark: #1a9e92;
+  --teal-glow: rgba(46,196,182,0.12);
+  --teal-glow2: rgba(46,196,182,0.06);
+  --slate: #8899AA;
+  --slate-light: #A4B3C2;
+  --off-white: #E8ECF0;
+  --warm: #FAFBFC;
+  --surface: #FFFFFF;
+  --amber: #E8A317;
+  --coral: #E85D5D;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--warm);
+  color: var(--navy);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Nav ──────────────────────────────────────────────── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(11,26,46,0.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(46,196,182,0.15);
+  padding: 0 24px;
+}
+.nav-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none;
+}
+.nav-brand-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+  color: var(--teal); text-transform: uppercase;
+}
+.nav-brand-sep { color: rgba(136,153,170,0.4); font-weight: 300; }
+.nav-brand-page { color: var(--slate-light); font-size: 14px; font-weight: 500; }
+.nav-links { display: flex; gap: 24px; align-items: center; }
+.nav-links a {
+  color: var(--slate-light); text-decoration: none; font-size: 13px; font-weight: 500;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--teal); }
+.nav-links .btn-gh {
+  background: var(--teal); color: var(--navy); padding: 7px 16px;
+  border-radius: 6px; font-weight: 700; font-size: 12px;
+  transition: background 0.15s;
+}
+.nav-links .btn-gh:hover { background: var(--teal-dark); color: white; }
+
+/* ── Hero ─────────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(170deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 80px 24px 72px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -50%; right: -20%; width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(46,196,182,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 760px; margin: 0 auto; text-align: center;
+  position: relative; z-index: 1;
+}
+.hero-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.2);
+  border-radius: 20px; padding: 5px 16px; margin-bottom: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  color: var(--teal); text-transform: uppercase;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 400; color: white;
+  line-height: 1.12; margin-bottom: 20px;
+}
+.hero h1 em {
+  font-style: italic; color: var(--teal);
+}
+.hero p {
+  font-size: 17px; color: var(--slate-light);
+  line-height: 1.65; max-width: 580px; margin: 0 auto;
+}
+.hero-stats {
+  display: flex; justify-content: center; gap: 48px; margin-top: 40px;
+}
+.hero-stat {
+  text-align: center;
+}
+.hero-stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px; font-weight: 800; color: var(--teal);
+  line-height: 1;
+}
+.hero-stat-label {
+  font-size: 12px; color: var(--slate); margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ── Tools grid ───────────────────────────────────────── */
+.tools-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 24px;
+}
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  color: var(--teal); text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 32px; color: var(--navy); margin-bottom: 8px;
+}
+.section-desc {
+  font-size: 15px; color: var(--slate); line-height: 1.6;
+  max-width: 600px; margin-bottom: 40px;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* ── Tool card ────────────────────────────────────────── */
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--off-white);
+  border-radius: 16px;
+  padding: 32px 28px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s ease;
+  display: flex; flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.tool-card:hover {
+  border-color: var(--teal);
+  box-shadow: 0 8px 32px rgba(46,196,182,0.12);
+  transform: translateY(-3px);
+}
+.tool-card.live::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-dark));
+}
+.tool-card.coming::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--off-white), var(--slate-light));
+}
+
+.tool-card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.tool-icon {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; font-size: 22px;
+}
+.tool-icon.calc { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); color: #1565C0; }
+.tool-icon.advisor { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #2E7D32; }
+.tool-icon.indicator { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); color: #E65100; }
+.tool-icon.evaluability { background: linear-gradient(135deg, #F3E5F5, #E1BEE7); color: #6A1B9A; }
+.tool-icon.toc { background: linear-gradient(135deg, #FCE4EC, #F8BBD0); color: #AD1457; }
+.tool-icon.matrix { background: linear-gradient(135deg, #E0F2F1, #B2DFDB); color: #00695C; }
+.tool-icon.dqa { background: linear-gradient(135deg, #FFF8E1, #FFECB3); color: #F57F17; }
+.tool-icon.vfm { background: linear-gradient(135deg, #ECEFF1, #CFD8DC); color: #37474F; }
+.tool-icon.reporting { background: linear-gradient(135deg, #EDE7F6, #D1C4E9); color: #4527A0; }
+
+.tool-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 4px;
+}
+.tool-status.live {
+  background: var(--teal-glow); color: var(--teal-dark);
+}
+.tool-status.soon {
+  background: rgba(136,153,170,0.1); color: var(--slate);
+}
+
+.tool-card h3 {
+  font-size: 20px; font-weight: 800; color: var(--navy);
+  margin-bottom: 8px; line-height: 1.2;
+}
+.tool-card .tool-desc {
+  font-size: 14px; color: var(--slate); line-height: 1.6;
+  margin-bottom: 16px; flex: 1;
+}
+
+.tool-features {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px;
+}
+.tool-feature {
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 4px;
+  background: var(--warm); color: var(--navy-light);
+  border: 1px solid var(--off-white);
+}
+
+.tool-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 700; color: var(--teal-dark);
+  transition: gap 0.2s;
+}
+.tool-card:hover .tool-cta { gap: 10px; }
+.tool-cta-arrow { font-size: 16px; transition: transform 0.2s; }
+.tool-card:hover .tool-cta-arrow { transform: translateX(2px); }
+.tool-card.coming .tool-cta { color: var(--slate); }
+
+/* ── Use cases ────────────────────────────────────────── */
+.use-cases {
+  background: linear-gradient(170deg, var(--navy) 0%, var(--navy-light) 100%);
+  padding: 72px 24px;
+}
+.use-cases-inner {
+  max-width: 1100px; margin: 0 auto;
+}
+.use-case-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 20px; margin-top: 40px;
+}
+.use-case-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(46,196,182,0.12);
+  border-radius: 12px; padding: 28px 24px;
+}
+.use-case-card h4 {
+  font-size: 16px; font-weight: 700; color: white; margin-bottom: 8px;
+}
+.use-case-card p {
+  font-size: 13px; color: var(--slate-light); line-height: 1.6;
+}
+.use-case-icon {
+  font-size: 28px; margin-bottom: 12px; display: block;
+}
+
+/* ── CTA ──────────────────────────────────────────────── */
+.cta-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 24px;
+  text-align: center;
+}
+.cta-box {
+  background: var(--surface);
+  border: 1px solid var(--off-white);
+  border-radius: 16px;
+  padding: 48px 40px;
+}
+.cta-box h2 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 28px; color: var(--navy); margin-bottom: 12px;
+}
+.cta-box p {
+  font-size: 15px; color: var(--slate); line-height: 1.6;
+  max-width: 500px; margin: 0 auto 28px;
+}
+.cta-buttons {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+}
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; text-decoration: none;
+  transition: all 0.2s;
+}
+.cta-btn.primary {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: white;
+}
+.cta-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--teal-glow); }
+.cta-btn.secondary {
+  background: transparent; color: var(--navy);
+  border: 2px solid var(--off-white);
+}
+.cta-btn.secondary:hover { border-color: var(--teal); color: var(--teal-dark); }
+
+/* ── Footer ───────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid var(--off-white);
+  padding: 32px 24px;
+  text-align: center;
+  font-size: 13px; color: var(--slate);
+}
+.footer a { color: var(--teal-dark); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .tools-grid { grid-template-columns: 1fr; }
+  .use-case-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 24px; }
+  .hero { padding: 56px 24px 48px; }
+  .nav-links a:not(.btn-gh) { display: none; }
+}
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+}
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="https://www.emmanuelneneodjidja.org/praxis/" class="nav-brand">
+      <span class="nav-brand-badge">PRAXIS</span>
+      <span class="nav-brand-sep">/</span>
+      <span class="nav-brand-page">Tools</span>
+    </a>
+    <div class="nav-links">
+      <a href="https://www.emmanuelneneodjidja.org/praxis/">About PRAXIS</a>
+      <a href="https://www.emmanuelneneodjidja.org/">Author</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" class="btn-gh">GitHub &rarr;</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-label animate-in">
+      <span>&#9670;</span> Free &amp; Open Source
+    </div>
+    <h1 class="animate-in delay-1">
+      Evaluation Tools<br>Built for <em>Practitioners</em>
+    </h1>
+    <p class="animate-in delay-2">
+      Free, rigorous tools for every stage of the evaluation lifecycle &mdash;
+      from sample size calculation to design selection. Built on 12+ years of
+      field experience and the PRAXIS methodology.
+    </p>
+    <div class="hero-stats animate-in delay-3">
+      <div class="hero-stat">
+        <div class="hero-stat-num">8</div>
+        <div class="hero-stat-label">Sample Size Designs</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">16</div>
+        <div class="hero-stat-label">Evaluation Approaches</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">100%</div>
+        <div class="hero-stat-label">Free to Use</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tools Grid -->
+<section class="tools-section">
+  <div class="section-label">Available Now</div>
+  <h2 class="section-title">Evaluation Toolkit</h2>
+  <p class="section-desc">
+    Each tool is designed for real-world field conditions &mdash; not just textbook scenarios. Guided parameter selection for evaluators at any experience level.
+  </p>
+
+  <div class="tools-grid">
+
+    <!-- Tool 1: Sample Size Calculator -->
+    <a href="./sample-size-calculator/" class="tool-card live animate-in delay-1">
+      <div class="tool-card-header">
+        <div class="tool-icon calc">&#931;</div>
+        <span class="tool-status live">Live</span>
+      </div>
+      <h3>Sample Size Calculator</h3>
+      <p class="tool-desc">
+        Rigorous sample size estimation for 8 evaluation designs. Real-time calculation
+        with guided parameter selection &mdash; click the recommended presets if you're
+        unsure which values to use.
+      </p>
+      <div class="tool-features">
+        <span class="tool-feature">Single Proportion</span>
+        <span class="tool-feature">Two Proportions</span>
+        <span class="tool-feature">Cluster RCT</span>
+        <span class="tool-feature">Cluster Survey</span>
+        <span class="tool-feature">Stepped-Wedge</span>
+        <span class="tool-feature">LQAS</span>
+        <span class="tool-feature">DiD</span>
+        <span class="tool-feature">Two Means</span>
+      </div>
+      <span class="tool-cta">
+        Open calculator <span class="tool-cta-arrow">&rarr;</span>
+      </span>
+    </a>
+
+    <!-- Tool 2: Evaluation Design Advisor -->
+    <a href="./evaluation-design-advisor/" class="tool-card live animate-in delay-2">
+      <div class="tool-card-header">
+        <div class="tool-icon advisor">&#9878;</div>
+        <span class="tool-status live">Live</span>
+      </div>
+      <h3>Evaluation Design Advisor</h3>
+      <p class="tool-desc">
+        Answer 10 context questions about your programme and get scored recommendations
+        across 16 evaluation designs &mdash; with trade-offs, validity threats, and
+        justification for each.
+      </p>
+      <div class="tool-features">
+        <span class="tool-feature">Experimental</span>
+        <span class="tool-feature">Quasi-Experimental</span>
+        <span class="tool-feature">Theory-Based</span>
+        <span class="tool-feature">Complexity-Responsive</span>
+        <span class="tool-feature">Participatory</span>
+        <span class="tool-feature">Non-Experimental</span>
+      </div>
+      <span class="tool-cta">
+        Get recommendations <span class="tool-cta-arrow">&rarr;</span>
+      </span>
+    </a>
+
+    <!-- Tool 3: Indicator Bank (Coming) -->
+    <div class="tool-card coming animate-in delay-3">
+      <div class="tool-card-header">
+        <div class="tool-icon indicator">&#9776;</div>
+        <span class="tool-status soon">Coming Soon</span>
+      </div>
+      <h3>Indicator Bank &amp; Selector</h3>
+      <p class="tool-desc">
+        Searchable, filterable indicator database organised by health area, donor
+        framework, data source, and disaggregation level. Covers PEPFAR MER,
+        Global Fund, Gavi, WHO, and DHS/MICS indicators.
+      </p>
+      <div class="tool-features">
+        <span class="tool-feature">PEPFAR MER</span>
+        <span class="tool-feature">Global Fund</span>
+        <span class="tool-feature">Gavi</span>
+        <span class="tool-feature">WHO 100 Core</span>
+        <span class="tool-feature">DHS/MICS</span>
+      </div>
+      <span class="tool-cta">
+        Notify me when available <span class="tool-cta-arrow">&rarr;</span>
+      </span>
+    </div>
+
+    <!-- Tool 4: Evaluability Scorecard (Coming) -->
+    <div class="tool-card coming animate-in delay-4">
+      <div class="tool-card-header">
+        <div class="tool-icon evaluability">&#10004;</div>
+        <span class="tool-status soon">Coming Soon</span>
+      </div>
+      <h3>Evaluability Assessment Scorecard</h3>
+      <p class="tool-desc">
+        Structured walk-through of programme logic clarity, data availability,
+        stakeholder readiness, and attribution feasibility. Outputs a scored
+        assessment with actionable recommendations before you commission.
+      </p>
+      <div class="tool-features">
+        <span class="tool-feature">Davies/DFID Framework</span>
+        <span class="tool-feature">Data Readiness</span>
+        <span class="tool-feature">Stakeholder Mapping</span>
+        <span class="tool-feature">Design Feasibility</span>
+      </div>
+      <span class="tool-cta">
+        Notify me when available <span class="tool-cta-arrow">&rarr;</span>
+      </span>
+    </div>
+
+    <!-- Tool 5: Theory of Change Builder (Coming) -->
+    <div class="tool-card coming animate-in delay-3">
+      <div class="tool-card-header">
+        <div class="tool-icon toc">&#8618;</div>
+        <span class="tool-status soon">Coming Soon</span>
+      </div>
+      <h3>Theory of Change Builder</h3>
+      <p class="tool-desc">
+        Interactive visual builder with proper causal pathway logic. Tag assumptions
+        as tested or untested, link them to evaluation questions, and export
+        publication-ready diagrams.
+      </p>
+      <div class="tool-features">
+        <span class="tool-feature">Visual Builder</span>
+        <span class="tool-feature">Assumption Tracking</span>
+        <span class="tool-feature">PNG/PDF Export</span>
+        <span class="tool-feature">EQ Linking</span>
+      </div>
+      <span class="tool-cta">
+        Notify me when available <span class="tool-cta-arrow">&rarr;</span>
+      </span>
+    </div>
+
+    <!-- Tool 6: Evaluation Matrix Builder (Coming) -->
+    <div class="tool-card coming animate-in delay-4">
+      <div class="tool-card-header">
+        <div class="tool-icon matrix">&#9638;</div>
+        <span class="tool-status soon">Coming Soon</span>
+      </div>
+      <h3>Evaluation Matrix Builder</h3>
+      <p class="tool-desc">
+        Structured form to define evaluation questions by OECD-DAC criteria,
+        map indicators, data sources, methods, and analysis approach.
+        Export as formatted Excel or Word.
+      </p>
+      <div class="tool-features">
+        <span class="tool-feature">OECD-DAC Criteria</span>
+        <span class="tool-feature">Indicator Mapping</span>
+        <span class="tool-feature">Excel Export</span>
+        <span class="tool-feature">Word Export</span>
+      </div>
+      <span class="tool-cta">
+        Notify me when available <span class="tool-cta-arrow">&rarr;</span>
+      </span>
+    </div>
+
+  </div>
+</section>
+
+<!-- Use cases -->
+<section class="use-cases">
+  <div class="use-cases-inner">
+    <div class="section-label" style="color: var(--teal);">Built for real work</div>
+    <h2 class="section-title" style="color: white;">How evaluators use these tools</h2>
+
+    <div class="use-case-grid">
+      <div class="use-case-card">
+        <span class="use-case-icon">&#128203;</span>
+        <h4>Writing a TOR</h4>
+        <p>Use the Design Advisor to justify your methodology choice. Run the Sample Size Calculator to include a defensible sample size in the TOR &mdash; not just &ldquo;approximately 400 households.&rdquo;</p>
+      </div>
+      <div class="use-case-card">
+        <span class="use-case-icon">&#128200;</span>
+        <h4>Designing a SMART Survey</h4>
+        <p>Calculate exact sample size for GAM/SAM with the right DEFF. Select between 30&times;30 cluster design or adapted EPI method based on your context and precision needs.</p>
+      </div>
+      <div class="use-case-card">
+        <span class="use-case-icon">&#9878;</span>
+        <h4>Choosing an evaluation approach</h4>
+        <p>Input your context &mdash; budget, timeline, comparison group feasibility, programme complexity &mdash; and get a ranked list of designs with trade-offs. Not just &ldquo;do an RCT.&rdquo;</p>
+      </div>
+      <div class="use-case-card">
+        <span class="use-case-icon">&#128202;</span>
+        <h4>Reviewing a consultant&rsquo;s proposal</h4>
+        <p>Cross-check their proposed sample size against your own calculation. Verify the evaluation design fits the stated purpose. Catch methodological gaps before they become problems.</p>
+      </div>
+      <div class="use-case-card">
+        <span class="use-case-icon">&#127758;</span>
+        <h4>Planning in FCV settings</h4>
+        <p>The Design Advisor specifically accounts for fragile and conflict-affected contexts &mdash; downranking designs that require stable access and upranking those adapted for insecurity.</p>
+      </div>
+      <div class="use-case-card">
+        <span class="use-case-icon">&#127891;</span>
+        <h4>Training junior M&amp;E staff</h4>
+        <p>Every parameter has guided presets with contextual explanations. Junior staff can produce a defensible sample size calculation without understanding the underlying statistics.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-box">
+    <h2>Built on PRAXIS Methodology</h2>
+    <p>
+      These tools are powered by the same methodological framework behind PRAXIS &mdash;
+      the open-source evaluation skill used by M&amp;E professionals worldwide.
+    </p>
+    <div class="cta-buttons">
+      <a href="https://github.com/emmaodjidja-sys/praxis" class="cta-btn primary">
+        Get PRAXIS on GitHub &rarr;
+      </a>
+      <a href="https://www.emmanuelneneodjidja.org/praxis/" class="cta-btn secondary">
+        Learn more about PRAXIS
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>
+    &copy; 2026 PRAXIS &middot; An open-source project by
+    <a href="https://www.emmanuelneneodjidja.org/">Emmanuel Nene Odjidja</a>
+    &middot;
+    <a href="https://github.com/emmaodjidja-sys/praxis">GitHub</a>
+    &middot;
+    <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en">Publications</a>
+  </p>
+</footer>
+
+</body>
+</html>
