@@ -306,9 +306,12 @@
 
     /* ── DEMO EMBED ── */
     .demo { background: var(--bg); }
+    .demo-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
     .demo-frame {
       background: var(--surface); border: 1px solid var(--border2);
-      border-radius: 16px; overflow: hidden; height: 560px;
+      border-radius: 16px; overflow: hidden;
       box-shadow: 0 24px 48px rgba(0,0,0,0.3);
     }
     .demo-frame iframe {
@@ -338,6 +341,50 @@
     .demo-placeholder-desc {
       font-size: 14px; color: var(--text3);
     }
+    .tools-card {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 16px; padding: 36px 32px;
+      display: flex; flex-direction: column; justify-content: center;
+      align-items: center; text-align: center;
+      transition: all 0.3s; cursor: pointer;
+      position: relative; overflow: hidden;
+    }
+    .tools-card:hover {
+      border-color: var(--gl); transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(82,183,136,0.15);
+    }
+    .tools-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--gl), var(--gx));
+    }
+    .tools-card-icon {
+      width: 64px; height: 64px; border-radius: 16px;
+      background: rgba(82,183,136,0.1); border: 1px solid rgba(82,183,136,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; margin-bottom: 20px;
+    }
+    .tools-card h3 {
+      font-size: 22px; color: white; margin-bottom: 10px;
+    }
+    .tools-card p {
+      font-size: 14px; color: var(--text2); line-height: 1.65;
+      margin-bottom: 20px; max-width: 320px;
+    }
+    .tools-card-tags {
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 20px;
+    }
+    .tools-card-tags span {
+      font-size: 10px; padding: 4px 10px; border-radius: 20px;
+      background: rgba(82,183,136,0.08); color: var(--gl);
+      border: 1px solid rgba(82,183,136,0.12);
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .tools-card-cta {
+      font-size: 14px; font-weight: 600; color: var(--gl);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .tools-card:hover .tools-card-cta { gap: 12px; }
 
     /* ── CTA ── */
     .cta-section {
@@ -403,7 +450,7 @@
       .hero-actions { justify-content: center; }
       .hero-label { justify-content: center; }
       .hero-visual { order: -1; }
-      .ps-grid, .features-grid, .steps, .audience-grid { grid-template-columns: 1fr; }
+      .ps-grid, .features-grid, .steps, .audience-grid, .demo-grid { grid-template-columns: 1fr; }
       .included-grid { grid-template-columns: 1fr; }
       .step-connector { display: none; }
       .nav-links { display: none; }
@@ -432,7 +479,7 @@
     </div>
     <div class="nav-links" id="navLinks">
       <a href="#features">Features</a>
-      <a href="./tools/">Tools</a>
+      <a href="./tools/hub.html">Tools</a>
       <a href="#how">How It Works</a>
       <a href="#demo">Try It</a>
       <a href="https://www.emmanuelneneodjidja.org/" class="back-link">&larr; emmanuelneneodjidja.org</a>
@@ -609,18 +656,38 @@
   </div>
 </section>
 
-<!-- DEMO -->
+<!-- DEMO + TOOLS -->
 <section class="demo" id="demo">
   <div class="si">
     <div class="section-label">Interactive</div>
-    <h2 class="section-title">Try the Evaluation Approach Finder</h2>
-    <p class="section-desc">Explore which evaluation design fits your context — powered by PRAXIS logic.</p>
-    <div class="demo-frame" id="demoFrame">
-      <div class="demo-placeholder" id="demoPlaceholder">
-        <div class="demo-placeholder-icon">&#9654;</div>
-        <div class="demo-placeholder-title">Evaluation Approach Finder</div>
-        <div class="demo-placeholder-desc">Click to launch the interactive tool</div>
+    <h2 class="section-title">Try PRAXIS</h2>
+    <p class="section-desc">Explore the evaluation approach finder or use our free practitioner tools — no login required.</p>
+    <div class="demo-grid">
+
+      <!-- Existing demo -->
+      <div class="demo-frame" id="demoFrame" style="height: 480px;">
+        <div class="demo-placeholder" id="demoPlaceholder">
+          <div class="demo-placeholder-icon">&#9654;</div>
+          <div class="demo-placeholder-title">Evaluation Approach Finder</div>
+          <div class="demo-placeholder-desc">Click to launch the interactive tool</div>
+        </div>
       </div>
+
+      <!-- Tools card -->
+      <a href="./tools/hub.html" class="tools-card">
+        <div class="tools-card-icon">&#9881;</div>
+        <h3>Free Evaluation Tools</h3>
+        <p>Sample size calculator, evaluation design advisor, and more — built for practitioners at every experience level.</p>
+        <div class="tools-card-tags">
+          <span>8 Sample Size Designs</span>
+          <span>16 Eval Approaches</span>
+          <span>Export to Word</span>
+        </div>
+        <div class="tools-card-cta">
+          Open Toolkit <span style="font-size: 18px;">&#8594;</span>
+        </div>
+      </a>
+
     </div>
   </div>
 </section>
