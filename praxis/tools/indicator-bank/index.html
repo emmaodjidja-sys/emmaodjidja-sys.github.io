@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Indicator Data Bank — PRAXIS Evaluation Toolkit</title>
-<meta name="description" content="Free searchable indicator database for evaluation practitioners. 120+ indicators across health, disease programmes, RMNCAH, immunisation, nutrition, food security, P/CVE, climate, education, and WASH. Every indicator linked to its validated data collection instrument.">
+<title>Indicator Bank &amp; Selector — PRAXIS Evaluation Toolkit</title>
+<meta name="description" content="Free searchable indicator bank and selector for evaluation practitioners. 160+ indicators across health, disease programmes, RMNCAH, immunisation, nutrition, food security, P/CVE, climate, education, and WASH. Every indicator linked to its validated data collection instrument.">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -340,10 +340,10 @@ const Topbar = ({onBack, sectorName, basket, onBasketClick}) => (
   <div style={{position:'sticky',top:0,zIndex:999,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 24px',background:'rgba(11,26,46,.97)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(46,196,182,.12)',fontSize:'14px',gap:12,flexWrap:'wrap'}}>
     <div style={{display:'flex',alignItems:'center',gap:12,minWidth:0}}>
       {sectorName && <a onClick={onBack} style={{cursor:'pointer',color:'#8899AA',fontSize:12,textDecoration:'none',whiteSpace:'nowrap'}}>← Sectors</a>}
-      <a href="../../" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:8}}>
+      <a href="../" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:8}}>
         <span style={{fontFamily:"'JetBrains Mono',monospace",fontWeight:700,letterSpacing:'.8px',color:'#2EC4B6',fontSize:12}}>PRAXIS</span>
         <span style={{color:'rgba(136,153,170,.4)',fontWeight:300}}>/</span>
-        <span style={{color:'#A4B3C2',fontSize:13,fontWeight:500}}>Indicator Bank</span>
+        <span style={{color:'#A4B3C2',fontSize:13,fontWeight:500}}>Indicator Bank & Selector</span>
       </a>
     </div>
     <div style={{display:'flex',alignItems:'center',gap:12}}>
@@ -352,7 +352,7 @@ const Topbar = ({onBack, sectorName, basket, onBasketClick}) => (
           <span>☰</span> {basket.length} selected
         </button>
       )}
-      <a href="../" style={{textDecoration:'none',fontSize:12,color:'#8899AA'}}>All Tools</a>
+      <a href="../tools/" style={{textDecoration:'none',fontSize:12,color:'#8899AA'}}>All Tools</a>
       <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" style={{textDecoration:'none',background:'#2EC4B6',color:'#0B1A2E',padding:'6px 14px',borderRadius:6,fontWeight:700,fontSize:11}}>GitHub →</a>
     </div>
   </div>
@@ -530,7 +530,7 @@ const App = () => {
             <span style={{width:6,height:6,borderRadius:'50%',background:'#2EC4B6',animation:'pulse 2s ease infinite'}} />
             <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:'#2EC4B6',letterSpacing:'.08em'}}>{DB.length} INDICATORS · {SECTORS.length} SECTORS · INSTRUMENT-LINKED</span>
           </div>
-          <h1 style={{fontSize:'clamp(26px,4vw,40px)',fontWeight:800,color:'#E8ECF0',lineHeight:1.15,marginBottom:14,letterSpacing:'-.02em',animation:'fadeSlide .4s ease .1s both'}}>Indicator Data Bank</h1>
+          <h1 style={{fontSize:'clamp(26px,4vw,40px)',fontWeight:800,color:'#E8ECF0',lineHeight:1.15,marginBottom:14,letterSpacing:'-.02em',animation:'fadeSlide .4s ease .1s both'}}>Indicator Bank & Selector</h1>
           <p style={{fontSize:15,color:'#8899AA',lineHeight:1.6,maxWidth:540,margin:'0 auto 24px',animation:'fadeSlide .4s ease .2s both'}}>Every indicator linked to its validated data collection instrument. Search across all sectors or browse by domain.</p>
 
           {/* Global search */}
