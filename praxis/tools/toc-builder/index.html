@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theory of Change Builder — PRAXIS Evaluation Toolkit</title>
+<meta name="description" content="Free, interactive Theory of Change builder. Create, annotate, and export publication-ready causal diagrams with evidence mapping and assumption tracking.">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAsRJREFUWEftl01IVFEUx3/3zYxOjmZqSmRWFJGLIIoWFQS1aBNBi1oEbYKIFkFt2kS0qx9oE0QEQbSIFtUiCKJViIugKIrKj0XZmDk6Ove9uO8xw8x7894ZGbXg8u495z///c/555wrqBo/UYX9VDkAJydB8aPq8EVp3GlX+P8UwKrz0LAdQkkPbMZfXIbM/O8CkA+Ar09oK7A6APUfUxPqPoE/tcvgE9H3MXWzXqJIBcnQLkMlVHsWINa4LVFXt0FRU5q1y8b8JaBrElpDJDgRGEqBAMFTHUf5VEfYJUbIDYJpuOPQfMY9M5AtARQN4LQI9Rx8DYZzA5pnIE8B0YQqiHKOkFMVjIdGwTgKp5QBcCW5DyNGN+BuMJMxaAFD2I8idSHMPiF5aLYE0JuFVAvYzANXC5GZ1xHOi/zBgAohm0MnbMaAKULqbTx8fYOFSYl4DyL0F6wdwG1Scp+nUa2xJAjP+AHUPTzfZ3AJoFqLsWPgLqFk15j2v5UAKk7RpjOVd+BbgGFjQVjgH2T8HCHcxJh8y3bnC+E/AfoPgM2R6AXaUq0Dw8p90CQDkL6LUM2QfUHTBjGcutCAAAAAElFTkSuQmCC">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B1A2E;--navy-mid:#122240;--navy-light:#1a3050;--teal:#2EC4B6;--teal-dark:#1a9e92;--teal-light:#d0f0ed;--teal-glow:rgba(46,196,182,0.15);--slate:#64748B;--slate-light:#94A3B8;--bg:#F1F5F9;--surface:#FFFFFF;--border:#E2E8F0;--text:#0F172A;--text-muted:#64748B;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;--red-light:#FEE2E2;--green:#10B981;--green-light:#D1FAE5;--blue:#3B82F6;--blue-light:#DBEAFE;--purple:#8B5CF6;--purple-light:#EDE9FE}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh}
+button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inherit}
+.app{display:flex;flex-direction:column;height:100vh}
+
+/* ── Top bar ──────────────── */
+.top-bar{height:48px;background:var(--navy);display:flex;align-items:center;padding:0 12px;gap:6px;flex-shrink:0;z-index:100}
+.brand{display:flex;align-items:center;gap:8px;margin-right:12px}
+.brand-badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--teal);text-transform:uppercase}
+.brand-sep{color:rgba(136,153,170,.4);font-weight:300;font-size:13px}
+.brand-page{color:#CBD5E1;font-size:12px;font-weight:500}
+.tb-div{width:1px;height:24px;background:rgba(255,255,255,.1);margin:0 6px}
+.tb-group{display:flex;align-items:center;gap:1px}
+.tb{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:5px;border:none;font-size:11px;font-weight:600;color:#CBD5E1;background:transparent;transition:all .15s;white-space:nowrap}
+.tb:hover{background:rgba(255,255,255,.08);color:#fff}
+.tb.active{background:var(--teal);color:var(--navy)}
+.tb svg{width:14px;height:14px;flex-shrink:0}
+.spacer{flex:1}
+.zoom-display{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate-light);min-width:36px;text-align:center}
+.stats{display:flex;gap:10px;align-items:center;margin-right:6px}
+.stat{font-size:10px;color:var(--slate-light);font-family:'JetBrains Mono',monospace}
+.undo-btn{opacity:.4;pointer-events:none}
+.undo-btn.can{opacity:1;pointer-events:auto}
+
+/* ── Main layout ──────────── */
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* ── Left sidebar ─────────── */
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:10}
+.sidebar-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-tab{flex:1;padding:10px 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:center;border:none;background:transparent;color:var(--slate);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.sidebar-tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+.sidebar-tab:hover:not(.active){color:var(--text)}
+.sidebar-body{flex:1;overflow-y:auto;padding:14px}
+.sb-section{margin-bottom:14px}
+.sb-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-bottom:6px}
+.sb-input{width:100%;padding:7px 9px;border-radius:5px;border:1.5px solid var(--border);font-size:12px;background:var(--surface);color:var(--text);transition:border-color .15s}
+.sb-input:focus{outline:none;border-color:var(--teal)}
+.sb-textarea{width:100%;padding:7px 9px;border-radius:5px;border:1.5px solid var(--border);font-size:11px;line-height:1.5;background:var(--surface);color:var(--text);resize:vertical;min-height:60px;transition:border-color .15s}
+.sb-textarea:focus{outline:none;border-color:var(--teal)}
+.palette-node{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:7px;border:1.5px dashed var(--border);cursor:pointer;transition:all .15s;background:var(--surface);margin-bottom:4px}
+.palette-node:hover{border-color:var(--teal);background:var(--teal-glow)}
+.palette-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.palette-node-name{font-size:12px;font-weight:600}
+.palette-node-hint{font-size:9px;color:var(--text-muted);margin-top:1px}
+.legend-row{display:flex;align-items:center;gap:7px;padding:2px 0;padding-left:4px}
+.legend-row span{font-size:10px;color:var(--text-muted)}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.shortcut-box{font-size:10px;color:var(--text-muted);line-height:1.6;padding:8px;background:var(--bg);border-radius:6px}
+.shortcut-box kbd{display:inline-block;padding:1px 4px;border-radius:3px;font-size:9px;font-family:'JetBrains Mono',monospace;background:var(--surface);border:1px solid var(--border);color:var(--text)}
+/* System assumption in sidebar */
+.sys-assumption{display:flex;gap:5px;align-items:flex-start;padding:6px;border-radius:5px;background:var(--bg);border:1px solid var(--border);margin-bottom:4px}
+.sys-assumption input{flex:1;border:none;background:transparent;font-size:11px;font-family:inherit;color:var(--text);outline:none}
+.sys-assumption-status{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;cursor:pointer;transition:transform .1s}
+.sys-assumption-status:hover{transform:scale(1.4)}
+.sys-remove{width:18px;height:18px;border:none;background:transparent;color:var(--slate-light);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0}
+.sys-remove:hover{background:var(--red-light);color:var(--red)}
+.add-btn{display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:5px;border:1.5px dashed var(--border);background:transparent;font-size:11px;font-weight:600;color:var(--text-muted);transition:all .15s;width:100%}
+.add-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-glow)}
+.back-link{font-size:10px;color:var(--teal);text-decoration:none;font-weight:600;padding:10px 14px;border-top:1px solid var(--border);display:block;flex-shrink:0}
+
+/* ── Canvas ───────────────── */
+.canvas-vp{flex:1;overflow:hidden;cursor:grab;position:relative;background:var(--bg);touch-action:none}
+.canvas-vp.grabbing{cursor:grabbing}
+.canvas-vp.connecting{cursor:crosshair}
+.canvas-inner{position:absolute;top:0;left:0;transform-origin:0 0;width:6000px;height:4000px}
+.canvas-grid{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,#CBD5E1 .6px,transparent .6px);background-size:24px 24px;opacity:.4}
+.level-lane{position:absolute;left:0;right:0;border-bottom:1px dashed rgba(0,0,0,.05)}
+.level-lane-label{position:absolute;left:14px;top:6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.3;pointer-events:none;user-select:none}
+
+/* ── Snap guides ──────────── */
+.snap-guide-h,.snap-guide-v{position:absolute;background:var(--teal);opacity:.5;z-index:8;pointer-events:none}
+.snap-guide-h{height:1px;left:0;right:0}
+.snap-guide-v{width:1px;top:0;bottom:0}
+
+/* ── Nodes ────────────────── */
+.toc-node{position:absolute;width:200px;min-height:56px;border-radius:9px;background:var(--surface);border:2px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.05);user-select:none;z-index:5;touch-action:none}
+.toc-node.animating{transition:left .3s ease,top .3s ease}
+.toc-node:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.toc-node.selected{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-glow),0 4px 12px rgba(0,0,0,.1)}
+.toc-node.in-selection{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.toc-node.connect-source{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.2)}
+.toc-node.connect-target:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.2)}
+.toc-node.dragging{z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.15);transition:none!important}
+.node-stripe{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:9px 0 0 9px}
+.node-body{padding:8px 10px 8px 14px}
+.node-level-tag{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.65}
+.node-title{font-size:12px;font-weight:600;line-height:1.3;word-break:break-word}
+.node-desc{font-size:10px;color:var(--text-muted);margin-top:2px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.node-meta{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;align-items:center}
+.node-time-badge{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600;background:var(--purple-light);color:#6D28D9}
+.node-ind-badge{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600;background:var(--bg);color:var(--slate)}
+.node-assumption-count{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:700;background:var(--amber-light);color:#92400E}
+.node-port{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--surface);border:2px solid var(--border);transition:all .15s;z-index:6;cursor:crosshair}
+.node-port:hover{background:var(--teal);border-color:var(--teal);transform:scale(1.3)}
+.node-port-top{top:-5px;left:50%;margin-left:-5px}
+.node-port-bottom{bottom:-5px;left:50%;margin-left:-5px}
+.node-port-left{left:-5px;top:50%;margin-top:-5px}
+.node-port-right{right:-5px;top:50%;margin-top:-5px}
+
+/* ── SVG connections ──────── */
+.conn-svg{position:absolute;inset:0;pointer-events:none;z-index:3}
+.conn-path{pointer-events:stroke;cursor:pointer}
+.conn-hit{stroke:transparent;stroke-width:18;pointer-events:stroke;cursor:pointer}
+.conn-selected{filter:drop-shadow(0 0 4px rgba(46,196,182,.5))}
+.evidence-dot,.assumption-count-badge{pointer-events:auto;cursor:pointer}
+
+/* ── Batch toolbar ────────── */
+.batch-bar{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--navy);border-radius:8px;padding:4px 8px;display:flex;gap:4px;align-items:center;z-index:30;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.batch-bar .tb{font-size:10px;padding:4px 8px}
+.batch-count{font-size:10px;color:var(--teal);font-weight:700;padding:0 6px;font-family:'JetBrains Mono',monospace}
+
+/* ── Detail panel ─────────── */
+.detail-panel{width:310px;background:var(--surface);border-left:1px solid var(--border);flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;z-index:10}
+.dp-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dp-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate)}
+.dp-close{width:24px;height:24px;border-radius:5px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--slate);font-size:14px;transition:all .15s}
+.dp-close:hover{background:var(--bg);color:var(--text)}
+.dp-body{padding:12px 14px;display:flex;flex-direction:column;gap:12px;flex:1}
+.dp-field{display:flex;flex-direction:column;gap:3px}
+.dp-label{font-size:10px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.05em}
+.dp-label-sub{font-weight:400;margin-left:5px;font-size:9px;color:var(--text-muted);text-transform:none;letter-spacing:0}
+.dp-input{padding:6px 8px;border-radius:5px;border:1.5px solid var(--border);font-size:12px;background:var(--surface);color:var(--text);transition:border-color .15s}
+.dp-input:focus{outline:none;border-color:var(--teal)}
+.dp-textarea{padding:6px 8px;border-radius:5px;border:1.5px solid var(--border);font-size:11px;background:var(--surface);color:var(--text);resize:vertical;min-height:48px;line-height:1.5;transition:border-color .15s}
+.dp-textarea:focus{outline:none;border-color:var(--teal)}
+.dp-select{padding:6px 8px;border-radius:5px;border:1.5px solid var(--border);font-size:12px;background:var(--surface);color:var(--text)}
+.dp-select:focus{outline:none;border-color:var(--teal)}
+.ev-row{display:flex;gap:3px}
+.ev-btn{flex:1;padding:5px 3px;border-radius:5px;border:1.5px solid var(--border);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;background:var(--surface);color:var(--text-muted);text-align:center;transition:all .15s}
+.ev-btn:hover{border-color:var(--slate-light)}
+.ev-btn.a-strong{background:var(--green-light);border-color:var(--green);color:#065F46}
+.ev-btn.a-moderate{background:var(--blue-light);border-color:var(--blue);color:#1E40AF}
+.ev-btn.a-weak{background:var(--amber-light);border-color:var(--amber);color:#92400E}
+.ev-btn.a-none{background:var(--red-light);border-color:var(--red);color:#991B1B}
+.assumption-item{display:flex;gap:5px;align-items:flex-start;padding:6px;border-radius:5px;background:var(--bg);border:1px solid var(--border);margin-bottom:3px}
+.assumption-item input{flex:1;border:none;background:transparent;font-size:11px;font-family:inherit;color:var(--text);outline:none}
+.dp-actions{padding:12px 14px;border-top:1px solid var(--border)}
+.delete-btn{width:100%;padding:7px;border-radius:5px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:11px;font-weight:700;transition:all .15s}
+.delete-btn:hover{background:var(--red);color:#fff}
+.pathway-summary{padding:8px 10px;border-radius:6px;background:var(--bg);font-size:11px;line-height:1.5}
+.pathway-summary strong{font-weight:700}
+.pathway-direction{display:flex;gap:3px;margin-top:6px}
+.dir-btn{flex:1;padding:4px;border-radius:4px;border:1.5px solid var(--border);font-size:9px;font-weight:700;text-align:center;background:var(--surface);color:var(--text-muted);transition:all .15s}
+.dir-btn.active{border-color:var(--teal);background:var(--teal-glow);color:var(--teal)}
+
+/* ── Welcome ──────────────── */
+.welcome-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;background:rgba(241,245,249,.92);backdrop-filter:blur(4px)}
+.welcome-card{background:var(--surface);border-radius:14px;padding:32px;box-shadow:0 16px 48px rgba(0,0,0,.1);max-width:640px;width:95%}
+.welcome-icon{font-size:40px;text-align:center;margin-bottom:12px}
+.welcome-title{font-size:20px;font-weight:800;text-align:center;margin-bottom:6px;color:var(--navy)}
+.welcome-sub{font-size:13px;color:var(--text-muted);line-height:1.6;text-align:center;margin-bottom:20px}
+.welcome-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-bottom:6px}
+.welcome-grid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.welcome-btn{padding:9px 14px;border-radius:7px;font-size:12px;font-weight:700;border:none;transition:all .15s;text-align:left}
+.welcome-btn-primary{background:var(--teal);color:var(--navy)}
+.welcome-btn-primary:hover{background:var(--teal-dark);color:#fff}
+.welcome-btn-secondary{background:var(--bg);color:var(--text);border:1.5px solid var(--border);flex:1 1 140px}
+.welcome-btn-secondary:hover{border-color:var(--teal);color:var(--teal)}
+.welcome-btn-info{font-size:9px;color:var(--text-muted);font-weight:500;margin-top:2px}
+.welcome-actions{display:flex;gap:6px;justify-content:center}
+
+/* ── Toast ─────────────────── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── Mode indicator ───────── */
+.mode-indicator{position:absolute;top:10px;left:50%;transform:translateX(-50%);padding:5px 14px;border-radius:7px;font-size:11px;font-weight:700;z-index:25;display:flex;align-items:center;gap:6px}
+.mode-indicator.connect-mode{background:#FEF3C7;border:1px solid #F59E0B;color:#92400E}
+.mode-indicator.connect-active{background:#DBEAFE;border:1px solid #3B82F6;color:#1E40AF}
+.mode-cancel{cursor:pointer;text-decoration:underline}
+
+/* ── Scrollbar ─────────────── */
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--slate-light)}
+
+/* ── Print ──────────────────── */
+@media print{.top-bar,.sidebar,.detail-panel,.welcome-overlay,.batch-bar,.mode-indicator,.toast{display:none!important}.canvas-vp{overflow:visible!important}.canvas-inner{transform:none!important;width:auto!important;height:auto!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useReducer,useCallback,useRef,useEffect,useMemo,memo}=React;
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ═══════════════════════════════════════════════════════════════
+const LEVELS=[
+  {id:'impact',label:'Impact',color:'#0B1A2E',bg:'rgba(11,26,46,0.04)',y:80,hint:'Long-term societal change'},
+  {id:'outcome',label:'Outcomes',color:'#1E40AF',bg:'rgba(30,64,175,0.03)',y:500,hint:'Changes in behaviour or systems'},
+  {id:'intermediate',label:'Intermediate Outcomes',color:'#0891B2',bg:'rgba(8,145,178,0.03)',y:920,hint:'Early changes enabling outcomes'},
+  {id:'output',label:'Outputs',color:'#059669',bg:'rgba(5,150,105,0.03)',y:1340,hint:'Direct deliverables of activities'},
+  {id:'activity',label:'Activities',color:'#64748B',bg:'rgba(100,116,139,0.03)',y:1760,hint:'What the programme does'},
+];
+const LANE_H=380,NODE_W=200,GRID=24;
+const EV_STRENGTH={strong:{color:'#10B981',w:3,dash:'',lbl:'Strong'},moderate:{color:'#3B82F6',w:2.5,dash:'',lbl:'Moderate'},weak:{color:'#F59E0B',w:2,dash:'8,4',lbl:'Weak'},none:{color:'#94A3B8',w:1.5,dash:'4,4',lbl:'None'}};
+const EV_TYPES=[{id:'systematic_review',lbl:'Systematic Review'},{id:'rct',lbl:'RCT / Experimental'},{id:'quasi_experimental',lbl:'Quasi-Experimental'},{id:'observational',lbl:'Observational'},{id:'mixed_methods',lbl:'Mixed Methods'},{id:'expert_opinion',lbl:'Expert Opinion'},{id:'theoretical',lbl:'Theoretical'},{id:'programme_data',lbl:'Programme Data'}];
+const EV_TRANSFER=[{id:'high',lbl:'High'},{id:'moderate',lbl:'Moderate'},{id:'low',lbl:'Low'},{id:'unknown',lbl:'Unknown'}];
+const ASSUMPTION_COLORS={untested:'#94A3B8',validated:'#10B981',critical:'#F59E0B',invalid:'#EF4444'};
+const STATUS_CYCLE={untested:'validated',validated:'critical',critical:'invalid',invalid:'untested'};
+let _id=100;const uid=(p='i')=>`${p}-${++_id}-${Math.random().toString(36).slice(2,6)}`;
+const snap=v=>Math.round(v/GRID)*GRID;
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATES (complex real-world programmes)
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATES={
+blank:{name:'Blank Canvas',icon:'📄',nodes:[],connections:[],narrative:{}},
+rssh:{
+  name:'Global Fund RSSH',icon:'🌍',
+  narrative:{description:'Resilient and Sustainable Systems for Health (RSSH) investment supporting HIV, TB, and malaria service delivery through six WHO building blocks.',context:'Low-income country with high disease burden, weak health systems, and donor-dependent financing. DHIS2 deployed but data quality uneven. Community health worker programme nascent.',theory:'Strengthening the six health system building blocks (HMIS, HRH, supply chain, laboratory, financial management, community systems) creates synergistic improvements in service delivery quality and coverage, which in turn reduce disease-specific mortality and progress toward UHC. The theory assumes these building blocks interact — e.g., data quality enables better programming, which increases demand for better data.',systemAssumptions:[{id:'sa1',text:'No major conflict, pandemic, or humanitarian crisis disrupts programme implementation',status:'critical'},{id:'sa2',text:'Government maintains political commitment to health sector despite electoral cycles',status:'critical'},{id:'sa3',text:'Global Fund continues current funding levels through grant period',status:'validated'},{id:'sa4',text:'International drug/commodity prices remain stable',status:'untested'}]},
+  nodes:[
+    {id:'r1',title:'Reduced HIV, TB & malaria mortality',level:'impact',x:500,y:130,timeframe:'10+ years',indicators:['HIV incidence/1000','TB case fatality rate','Malaria mortality rate U5'],assumptions:[]},
+    {id:'r2',title:'Progress toward UHC',level:'impact',x:1050,y:130,timeframe:'10+ years',indicators:['UHC service coverage index','Catastrophic health expenditure (%)'],assumptions:[]},
+    {id:'r3',title:'Increased equitable service coverage',level:'outcome',x:250,y:550,timeframe:'3-5 years',indicators:['ART coverage (%)','TB treatment success rate','ITN access (%)'],assumptions:[{id:'na1',text:'Coverage gains reach key and vulnerable populations, not just easy-to-reach',status:'critical'}]},
+    {id:'r4',title:'Improved quality of care',level:'outcome',x:700,y:550,timeframe:'3-5 years',indicators:['Facility quality score','Correct treatment rate (%)'],assumptions:[]},
+    {id:'r5',title:'Strengthened national ownership',level:'outcome',x:1150,y:550,timeframe:'3-7 years',indicators:['Domestic health expenditure (%)','Co-financing compliance'],assumptions:[{id:'na2',text:'Government fiscal space exists for progressive absorption',status:'untested'}]},
+    {id:'r6',title:'Community systems strengthened',level:'outcome',x:1600,y:550,timeframe:'3-5 years',indicators:['CLM sites (#)','CLM feedback loops functional (%)'],assumptions:[]},
+    {id:'r7',title:'Functional HMIS producing quality data',level:'intermediate',x:100,y:970,timeframe:'1-3 years',indicators:['Reporting completeness (%)','Data accuracy score'],assumptions:[]},
+    {id:'r8',title:'Health workforce deployed & supervised',level:'intermediate',x:450,y:970,timeframe:'1-3 years',indicators:['HW vacancy rate (%)','Supervision visits/qtr'],assumptions:[]},
+    {id:'r9',title:'Essential medicines available',level:'intermediate',x:800,y:970,timeframe:'1-2 years',indicators:['Stock-out rate (%)','Order fill rate (%)'],assumptions:[]},
+    {id:'r10',title:'Laboratory network functional',level:'intermediate',x:1150,y:970,timeframe:'1-3 years',indicators:['Sample rejection rate (%)','VL turnaround (days)'],assumptions:[]},
+    {id:'r11',title:'Financial management systems operational',level:'intermediate',x:1500,y:970,timeframe:'1-2 years',indicators:['Absorption rate (%)','Audit findings (#)'],assumptions:[]},
+    {id:'r12',title:'CHWs integrated into health system',level:'intermediate',x:1850,y:970,timeframe:'2-4 years',indicators:['CHW reporting rate (%)','CHW attrition (%)'],assumptions:[{id:'na3',text:'Government adopts CHW compensation policy',status:'critical'}]},
+    {id:'r13',title:'DHIS2 upgraded & staff trained',level:'output',x:100,y:1390,timeframe:'Year 1',indicators:['Districts with e-reporting (#)'],assumptions:[]},
+    {id:'r14',title:'Pre/in-service training delivered',level:'output',x:400,y:1390,timeframe:'Year 1-2',indicators:['HWs trained (#)'],assumptions:[]},
+    {id:'r15',title:'Supply chain systems established',level:'output',x:700,y:1390,timeframe:'Year 1',indicators:['eLMIS sites (#)'],assumptions:[]},
+    {id:'r16',title:'Lab equipment procured & installed',level:'output',x:1050,y:1390,timeframe:'Year 1',indicators:['GeneXpert installed (#)'],assumptions:[]},
+    {id:'r17',title:'PFM & grant management strengthened',level:'output',x:1400,y:1390,timeframe:'Year 1',indicators:['PFM staff trained (#)'],assumptions:[]},
+    {id:'r18',title:'CHW programme established',level:'output',x:1700,y:1390,timeframe:'Year 1-2',indicators:['CHWs deployed (#)'],assumptions:[]},
+    {id:'r19',title:'Community-led monitoring launched',level:'output',x:2000,y:1390,timeframe:'Year 1-2',indicators:['Community monitors trained (#)'],assumptions:[]},
+    {id:'r20',title:'HMIS strengthening & DQA',level:'activity',x:100,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'r21',title:'HRH capacity building',level:'activity',x:450,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'r22',title:'Supply chain & procurement TA',level:'activity',x:750,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'r23',title:'Laboratory systems TA',level:'activity',x:1100,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'r24',title:'Financial management TA',level:'activity',x:1450,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'r25',title:'Community systems strengthening',level:'activity',x:1800,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+  ],
+  connections:[
+    {id:'rc1',sourceId:'r20',targetId:'r13',evidence:{strength:'strong',type:'mixed_methods',transferability:'high',notes:'WHO DHIS2 implementation evidence'},assumptions:[{id:'a1',text:'MoH commits IT infrastructure and connectivity',status:'critical'}],bidirectional:false},
+    {id:'rc2',sourceId:'r21',targetId:'r14',evidence:{strength:'strong',type:'systematic_review',transferability:'moderate',notes:''},assumptions:[{id:'a2',text:'Trained staff retained in post',status:'critical'},{id:'a3',text:'Pre-service institutions update curricula',status:'untested'}],bidirectional:false},
+    {id:'rc3',sourceId:'r22',targetId:'r15',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[{id:'a4',text:'Procurement regulations allow timely purchasing',status:'untested'}],bidirectional:false},
+    {id:'rc4',sourceId:'r23',targetId:'r16',evidence:{strength:'strong',type:'rct',transferability:'high',notes:'GeneXpert evidence base well-established'},assumptions:[],bidirectional:false},
+    {id:'rc5',sourceId:'r24',targetId:'r17',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc6',sourceId:'r25',targetId:'r18',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[{id:'a5',text:'Community acceptance of CHW role',status:'validated'}],bidirectional:false},
+    {id:'rc7',sourceId:'r25',targetId:'r19',evidence:{strength:'weak',type:'observational',transferability:'low',notes:'CLM evidence still emerging globally'},assumptions:[{id:'a6',text:'Facilities respond constructively to community feedback',status:'untested'}],bidirectional:false},
+    {id:'rc8',sourceId:'r13',targetId:'r7',evidence:{strength:'strong',type:'programme_data',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc9',sourceId:'r14',targetId:'r8',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc10',sourceId:'r15',targetId:'r9',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[{id:'a7',text:'No major supply disruptions (global stockouts, port delays)',status:'critical'}],bidirectional:false},
+    {id:'rc11',sourceId:'r16',targetId:'r10',evidence:{strength:'strong',type:'rct',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc12',sourceId:'r17',targetId:'r11',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc13',sourceId:'r18',targetId:'r12',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc14',sourceId:'r14',targetId:'r7',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:'Data use training improves HMIS quality'},assumptions:[],bidirectional:false},
+    {id:'rc15',sourceId:'r19',targetId:'r12',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:''},assumptions:[],bidirectional:false},
+    // Feedback loop: data quality ↔ service delivery
+    {id:'rc_fb1',sourceId:'r7',targetId:'r3',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:'Data-driven programming improves coverage'},assumptions:[{id:'a8',text:'Data is actually used for decision-making',status:'untested'}],bidirectional:true},
+    {id:'rc17',sourceId:'r7',targetId:'r4',evidence:{strength:'moderate',type:'theoretical',transferability:'moderate',notes:'Quality monitoring requires functioning HMIS'},assumptions:[],bidirectional:false},
+    {id:'rc18',sourceId:'r8',targetId:'r3',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:'Strong global evidence linking HRH to coverage'},assumptions:[],bidirectional:false},
+    {id:'rc19',sourceId:'r8',targetId:'r4',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc20',sourceId:'r9',targetId:'r3',evidence:{strength:'strong',type:'observational',transferability:'high',notes:'Stock-outs directly reduce service uptake'},assumptions:[],bidirectional:false},
+    {id:'rc21',sourceId:'r9',targetId:'r4',evidence:{strength:'strong',type:'observational',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc22',sourceId:'r10',targetId:'r3',evidence:{strength:'strong',type:'rct',transferability:'high',notes:'VL monitoring essential for ART effectiveness'},assumptions:[],bidirectional:false},
+    {id:'rc24',sourceId:'r11',targetId:'r5',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:''},assumptions:[{id:'a9',text:'Fiscal space exists for health budget increases',status:'untested'}],bidirectional:false},
+    {id:'rc25',sourceId:'r12',targetId:'r3',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:'CHWs extend coverage to hard-to-reach'},assumptions:[],bidirectional:false},
+    {id:'rc26',sourceId:'r12',targetId:'r6',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc27',sourceId:'r7',targetId:'r5',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Data transparency supports accountability'},assumptions:[],bidirectional:false},
+    {id:'rc28',sourceId:'r3',targetId:'r1',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:'Lancet Commission evidence'},assumptions:[{id:'a10',text:'No emergence of drug-resistant strains',status:'untested'},{id:'a11',text:'No major conflict disrupting services',status:'critical'}],bidirectional:false},
+    {id:'rc29',sourceId:'r4',targetId:'r1',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc30',sourceId:'r3',targetId:'r2',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[{id:'a12',text:'Financial protection mechanisms in place',status:'untested'}],bidirectional:false},
+    {id:'rc31',sourceId:'r4',targetId:'r2',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'rc32',sourceId:'r5',targetId:'r2',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:'Sustainability requires domestic ownership'},assumptions:[{id:'a13',text:'Political commitment survives electoral cycles',status:'critical'}],bidirectional:false},
+    {id:'rc33',sourceId:'r6',targetId:'r2',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Community systems–UHC link still emerging'},assumptions:[],bidirectional:false},
+  ]
+},
+peacebuilding:{
+  name:'UN Peacebuilding',icon:'🕊️',
+  narrative:{description:'Multi-pillar peacebuilding programme addressing governance, justice, economic recovery, reconciliation, and gender equality in a post-conflict setting.',context:'Post-conflict fragile state, 3 years after ceasefire. Weak state institutions, displaced populations returning, inter-ethnic tensions. UN peacekeeping mission transitioning. Multiple armed groups partially integrated.',theory:'Sustainable peace requires simultaneous investment in legitimate governance, transitional justice, economic reintegration, inter-group reconciliation, and women\'s empowerment. These pillars are interdependent — economic reintegration without reconciliation risks renewed tensions; reconciliation without governance reform lacks institutional anchoring. The theory explicitly acknowledges that most causal pathways carry weak or contested evidence, reflecting the genuine uncertainty in peacebuilding practice.',systemAssumptions:[{id:'psa1',text:'No resumption of large-scale armed violence',status:'critical'},{id:'psa2',text:'Regional neighbours do not actively destabilise',status:'critical'},{id:'psa3',text:'International funding sustained through transition period',status:'untested'},{id:'psa4',text:'Elite power-sharing agreement holds',status:'critical'}]},
+  nodes:[
+    {id:'pb1',title:'Sustained peace & social cohesion',level:'impact',x:500,y:130,timeframe:'10+ years',indicators:['Battle-related deaths/yr','Social cohesion index'],assumptions:[]},
+    {id:'pb2',title:'Inclusive development & resilience',level:'impact',x:1150,y:130,timeframe:'10+ years',indicators:['Poverty headcount in conflict areas'],assumptions:[]},
+    {id:'pb3',title:'Legitimate & accountable governance',level:'outcome',x:150,y:550,timeframe:'5-8 years',indicators:['Citizen trust in government (%)'],assumptions:[{id:'pna1',text:'Governance reform is not captured by former conflict elites',status:'critical'}]},
+    {id:'pb4',title:'Rule of law & transitional justice',level:'outcome',x:550,y:550,timeframe:'5-10 years',indicators:['Access to justice index'],assumptions:[]},
+    {id:'pb5',title:'Economic recovery & livelihoods',level:'outcome',x:950,y:550,timeframe:'3-7 years',indicators:['Youth unemployment in conflict areas (%)'],assumptions:[]},
+    {id:'pb6',title:'Inter-group dialogue & reconciliation',level:'outcome',x:1350,y:550,timeframe:'5-15 years',indicators:['Cross-group contact frequency'],assumptions:[{id:'pna2',text:'No new triggering events reignite grievances',status:'critical'}]},
+    {id:'pb7',title:'Gender-responsive peace outcomes',level:'outcome',x:1750,y:550,timeframe:'5-10 years',indicators:['Women in peace negotiations (%)'],assumptions:[]},
+    {id:'pb8',title:'Local governance structures functional',level:'intermediate',x:150,y:970,timeframe:'2-4 years',indicators:['Peace committees active (#)'],assumptions:[]},
+    {id:'pb9',title:'Security sector reformed',level:'intermediate',x:500,y:970,timeframe:'3-6 years',indicators:['HR complaints against security forces'],assumptions:[]},
+    {id:'pb10',title:'Ex-combatants reintegrated',level:'intermediate',x:850,y:970,timeframe:'2-5 years',indicators:['DDR graduates employed (%)','Recidivism rate (%)'],assumptions:[{id:'pna3',text:'Psychosocial trauma addressed alongside economic reintegration',status:'critical'}]},
+    {id:'pb11',title:'Community reconciliation processes active',level:'intermediate',x:1200,y:970,timeframe:'2-5 years',indicators:['Dialogue sessions held (#)'],assumptions:[]},
+    {id:'pb12',title:'Women\'s organisations empowered',level:'intermediate',x:1600,y:970,timeframe:'2-4 years',indicators:['Women\'s CSOs funded (#)'],assumptions:[]},
+    {id:'pb13',title:'Peace infrastructure established',level:'output',x:150,y:1390,timeframe:'Year 1-2',indicators:['Peace committees (#)','Early warning coverage'],assumptions:[]},
+    {id:'pb14',title:'Security forces trained',level:'output',x:500,y:1390,timeframe:'Year 1-3',indicators:['Personnel trained (#)'],assumptions:[]},
+    {id:'pb15',title:'Livelihoods programmes delivered',level:'output',x:850,y:1390,timeframe:'Year 1-2',indicators:['Youth trained (#)'],assumptions:[]},
+    {id:'pb16',title:'Reconciliation platforms created',level:'output',x:1200,y:1390,timeframe:'Year 1-2',indicators:['Dialogue platforms (#)'],assumptions:[]},
+    {id:'pb17',title:'Gender & GBV services established',level:'output',x:1600,y:1390,timeframe:'Year 1-2',indicators:['SGBV one-stop centres (#)'],assumptions:[]},
+    {id:'pb18',title:'Governance & peace infrastructure',level:'activity',x:150,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'pb19',title:'Security sector reform programme',level:'activity',x:500,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'pb20',title:'Economic reintegration & DDR',level:'activity',x:850,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'pb21',title:'Dialogue & reconciliation',level:'activity',x:1200,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'pb22',title:'Gender equality & GBV response',level:'activity',x:1600,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+  ],
+  connections:[
+    {id:'pbc1',sourceId:'pb18',targetId:'pb13',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:''},assumptions:[{id:'pa1',text:'Local elites do not capture peace committees',status:'critical'}],bidirectional:false},
+    {id:'pbc2',sourceId:'pb19',targetId:'pb14',evidence:{strength:'weak',type:'observational',transferability:'low',notes:'SSR evidence base limited in fragile states'},assumptions:[{id:'pa2',text:'Security command supports reform',status:'critical'}],bidirectional:false},
+    {id:'pbc3',sourceId:'pb20',targetId:'pb15',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:''},assumptions:[{id:'pa3',text:'Markets accessible despite conflict legacy',status:'untested'}],bidirectional:false},
+    {id:'pbc4',sourceId:'pb21',targetId:'pb16',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:''},assumptions:[{id:'pa4',text:'Genuine cross-identity participation',status:'untested'}],bidirectional:false},
+    {id:'pbc5',sourceId:'pb22',targetId:'pb17',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[{id:'pa5',text:'Patriarchal norms do not block participation',status:'critical'}],bidirectional:false},
+    {id:'pbc6',sourceId:'pb13',targetId:'pb8',evidence:{strength:'moderate',type:'observational',transferability:'low',notes:''},assumptions:[],bidirectional:false},
+    {id:'pbc7',sourceId:'pb14',targetId:'pb9',evidence:{strength:'weak',type:'expert_opinion',transferability:'low',notes:''},assumptions:[{id:'pa6',text:'Training changes behaviour, not just knowledge',status:'untested'}],bidirectional:false},
+    {id:'pbc8',sourceId:'pb15',targetId:'pb10',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:'Livelihoods reduce economic drivers of recidivism'},assumptions:[],bidirectional:false},
+    {id:'pbc9',sourceId:'pb16',targetId:'pb11',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:''},assumptions:[],bidirectional:false},
+    {id:'pbc10',sourceId:'pb17',targetId:'pb12',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    // Cross-cutting — peacebuilding's interconnected nature
+    {id:'pbc11',sourceId:'pb15',targetId:'pb11',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Joint economic activity builds cross-group contact'},assumptions:[],bidirectional:false},
+    {id:'pbc12',sourceId:'pb8',targetId:'pb11',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Local structures facilitate dialogue'},assumptions:[],bidirectional:false},
+    // Feedback loop: reconciliation ↔ governance legitimacy
+    {id:'pbc_fb1',sourceId:'pb8',targetId:'pb3',evidence:{strength:'moderate',type:'observational',transferability:'low',notes:''},assumptions:[{id:'pa7',text:'National govt devolves real authority to local structures',status:'critical'}],bidirectional:true},
+    {id:'pbc14',sourceId:'pb9',targetId:'pb3',evidence:{strength:'moderate',type:'expert_opinion',transferability:'low',notes:''},assumptions:[],bidirectional:false},
+    {id:'pbc15',sourceId:'pb9',targetId:'pb4',evidence:{strength:'moderate',type:'expert_opinion',transferability:'low',notes:''},assumptions:[],bidirectional:false},
+    {id:'pbc16',sourceId:'pb10',targetId:'pb5',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:'Contested — livelihood impact on peace unclear'},assumptions:[{id:'pa8',text:'Economic reintegration outweighs grievances',status:'untested'}],bidirectional:false},
+    {id:'pbc17',sourceId:'pb11',targetId:'pb6',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:'Contact hypothesis evidence mixed in conflict settings'},assumptions:[],bidirectional:false},
+    {id:'pbc18',sourceId:'pb12',targetId:'pb7',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:'UNSCR 1325 evidence base'},assumptions:[],bidirectional:false},
+    {id:'pbc19',sourceId:'pb12',targetId:'pb3',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Women\'s participation in governance'},assumptions:[],bidirectional:false},
+    {id:'pbc20',sourceId:'pb3',targetId:'pb1',evidence:{strength:'moderate',type:'observational',transferability:'low',notes:'Governance legitimacy reduces conflict risk'},assumptions:[],bidirectional:false},
+    {id:'pbc21',sourceId:'pb4',targetId:'pb1',evidence:{strength:'moderate',type:'expert_opinion',transferability:'low',notes:''},assumptions:[],bidirectional:false},
+    {id:'pbc22',sourceId:'pb5',targetId:'pb2',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'pbc23',sourceId:'pb6',targetId:'pb1',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Social cohesion → peace causal link contested'},assumptions:[{id:'pa9',text:'Structural drivers (inequality, exclusion) addressed',status:'critical'}],bidirectional:false},
+    {id:'pbc24',sourceId:'pb7',targetId:'pb1',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Gender-peace link evidence still building'},assumptions:[],bidirectional:false},
+    {id:'pbc25',sourceId:'pb5',targetId:'pb1',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Economic recovery → peace is non-linear'},assumptions:[],bidirectional:false},
+    {id:'pbc26',sourceId:'pb3',targetId:'pb2',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+  ]
+},
+health_simple:{
+  name:'Health (Starter)',icon:'🏥',
+  narrative:{description:'Basic health service strengthening programme.',context:'',theory:'',systemAssumptions:[]},
+  nodes:[
+    {id:'hs1',title:'Reduced morbidity & mortality',level:'impact',x:800,y:130,timeframe:'5-10 years',indicators:[],assumptions:[]},
+    {id:'hs2',title:'Increased service utilisation',level:'outcome',x:600,y:550,timeframe:'2-4 years',indicators:[],assumptions:[]},
+    {id:'hs3',title:'Improved service quality',level:'outcome',x:1050,y:550,timeframe:'2-4 years',indicators:[],assumptions:[]},
+    {id:'hs4',title:'Improved health knowledge',level:'intermediate',x:500,y:970,timeframe:'1-2 years',indicators:[],assumptions:[]},
+    {id:'hs5',title:'Strengthened health workforce',level:'intermediate',x:900,y:970,timeframe:'1-3 years',indicators:[],assumptions:[]},
+    {id:'hs6',title:'CHWs trained',level:'output',x:500,y:1390,timeframe:'Year 1',indicators:[],assumptions:[]},
+    {id:'hs7',title:'Facilities upgraded',level:'output',x:900,y:1390,timeframe:'Year 1',indicators:[],assumptions:[]},
+    {id:'hs8',title:'Training programme',level:'activity',x:500,y:1810,indicators:[],assumptions:[]},
+    {id:'hs9',title:'Facility rehabilitation',level:'activity',x:900,y:1810,indicators:[],assumptions:[]},
+  ],
+  connections:[
+    {id:'hsc1',sourceId:'hs2',targetId:'hs1',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc2',sourceId:'hs3',targetId:'hs1',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc3',sourceId:'hs4',targetId:'hs2',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc4',sourceId:'hs5',targetId:'hs2',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc5',sourceId:'hs5',targetId:'hs3',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc6',sourceId:'hs6',targetId:'hs4',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc7',sourceId:'hs6',targetId:'hs5',evidence:{strength:'strong',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc8',sourceId:'hs7',targetId:'hs5',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc9',sourceId:'hs8',targetId:'hs6',evidence:{strength:'strong',type:'programme_data',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+    {id:'hsc10',sourceId:'hs9',targetId:'hs7',evidence:{strength:'strong',type:'programme_data',transferability:'high',notes:''},assumptions:[],bidirectional:false},
+  ]
+},
+};
+
+// ═══════════════════════════════════════════════════════════════
+// UNDO/REDO + REDUCER
+// ═══════════════════════════════════════════════════════════════
+const INIT={title:'',narrative:{description:'',context:'',theory:'',systemAssumptions:[]},nodes:[],connections:[],selectedIds:[],selectedType:null,mode:'select',connectSourceId:null,zoom:1,panX:0,panY:0,showAssumptions:true,showEvidence:true,showWelcome:true,toast:null,sidebarTab:'build',animating:false};
+const UNDOABLE=new Set(['ADD_NODE','UPDATE_NODE','MOVE_NODE_FINAL','DELETE_NODE','ADD_CONNECTION','UPDATE_CONNECTION','DELETE_CONNECTION','LOAD_TEMPLATE','IMPORT','UPDATE_NARRATIVE','BATCH_DELETE','BATCH_MOVE']);
+
+function coreReducer(s,a){
+  switch(a.type){
+  case 'LOAD_TEMPLATE':{const t=TEMPLATES[a.id];return{...s,title:t.name==='Blank Canvas'?'':t.name+' — Theory of Change',narrative:{description:t.narrative?.description||'',context:t.narrative?.context||'',theory:t.narrative?.theory||'',systemAssumptions:t.narrative?.systemAssumptions||[]},nodes:t.nodes.map(n=>({...n,id:n.id||uid('n'),description:n.description||'',indicators:n.indicators||[],assumptions:n.assumptions||[],timeframe:n.timeframe||''})),connections:t.connections.map(c=>({...c,id:c.id||uid('c'),evidence:c.evidence||{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:c.assumptions||[],bidirectional:c.bidirectional||false})),showWelcome:false,selectedIds:[],selectedType:null,sidebarTab:'build'};}
+  case 'ADD_NODE':{const lv=LEVELS.find(l=>l.id===a.level);const same=s.nodes.filter(n=>n.level===a.level);const x=300+same.length*240;const nd={id:uid('n'),title:'New '+lv.label.replace(/s$/,''),description:'',level:a.level,x:snap(x),y:snap(lv.y+40),indicators:[],assumptions:[],timeframe:''};return{...s,nodes:[...s.nodes,nd],selectedIds:[nd.id],selectedType:'node',showWelcome:false};}
+  case 'UPDATE_NODE':return{...s,nodes:s.nodes.map(n=>n.id===a.id?{...n,...a.u}:n)};
+  case 'MOVE_NODE':return{...s,nodes:s.nodes.map(n=>n.id===a.id?{...n,x:a.x,y:a.y}:n)};
+  case 'MOVE_NODE_FINAL':return{...s,nodes:s.nodes.map(n=>n.id===a.id?{...n,x:a.x,y:a.y}:n)};
+  case 'BATCH_MOVE':return{...s,nodes:s.nodes.map(n=>{const d=a.deltas[n.id];return d?{...n,x:n.x+d.dx,y:n.y+d.dy}:n;})};
+  case 'DELETE_NODE':return{...s,nodes:s.nodes.filter(n=>n.id!==a.id),connections:s.connections.filter(c=>c.sourceId!==a.id&&c.targetId!==a.id),selectedIds:[],selectedType:null};
+  case 'BATCH_DELETE':{const ids=new Set(a.ids);return{...s,nodes:s.nodes.filter(n=>!ids.has(n.id)),connections:s.connections.filter(c=>!ids.has(c.id)&&!ids.has(c.sourceId)&&!ids.has(c.targetId)),selectedIds:[],selectedType:null};}
+  case 'ADD_CONNECTION':{if(a.sourceId===a.targetId)return s;const ex=s.connections.find(c=>(c.sourceId===a.sourceId&&c.targetId===a.targetId)||(c.sourceId===a.targetId&&c.targetId===a.sourceId));if(ex)return{...s,connectSourceId:null,mode:'select',toast:'Connection already exists'};const cn={id:uid('c'),sourceId:a.sourceId,targetId:a.targetId,evidence:{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:[],bidirectional:false};return{...s,connections:[...s.connections,cn],connectSourceId:null,mode:'select',selectedIds:[cn.id],selectedType:'connection'};}
+  case 'UPDATE_CONNECTION':return{...s,connections:s.connections.map(c=>c.id===a.id?{...c,...a.u}:c)};
+  case 'DELETE_CONNECTION':return{...s,connections:s.connections.filter(c=>c.id!==a.id),selectedIds:[],selectedType:null};
+  case 'SELECT':return{...s,selectedIds:a.add?[...s.selectedIds.filter(x=>x!==a.id),a.id]:[a.id],selectedType:a.selType};
+  case 'TOGGLE_SELECT':{const has=s.selectedIds.includes(a.id);return{...s,selectedIds:has?s.selectedIds.filter(x=>x!==a.id):[...s.selectedIds,a.id],selectedType:a.selType};}
+  case 'DESELECT':return{...s,selectedIds:[],selectedType:null};
+  case 'SET_MODE':return{...s,mode:a.mode,connectSourceId:null};
+  case 'SET_CONNECT_SOURCE':return{...s,connectSourceId:a.id,mode:'connect'};
+  case 'SET_ZOOM':return{...s,zoom:Math.max(.15,Math.min(2.5,a.zoom))};
+  case 'SET_PAN':return{...s,panX:a.x,panY:a.y};
+  case 'TOGGLE_ASSUMPTIONS':return{...s,showAssumptions:!s.showAssumptions};
+  case 'TOGGLE_EVIDENCE':return{...s,showEvidence:!s.showEvidence};
+  case 'SET_TITLE':return{...s,title:a.title};
+  case 'UPDATE_NARRATIVE':return{...s,narrative:{...s.narrative,...a.u}};
+  case 'SET_TOAST':return{...s,toast:a.msg};
+  case 'SET_TAB':return{...s,sidebarTab:a.tab};
+  case 'SET_ANIMATING':return{...s,animating:a.v};
+  case 'NEW':return{...INIT};
+  case 'IMPORT':{try{const d=JSON.parse(a.json);return{...s,title:d.title||'',narrative:d.narrative||{description:'',context:'',theory:'',systemAssumptions:[]},nodes:(d.nodes||[]).map(n=>({...n,assumptions:n.assumptions||[],timeframe:n.timeframe||'',indicators:n.indicators||[]})),connections:(d.connections||[]).map(c=>({...c,evidence:c.evidence||{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:c.assumptions||[],bidirectional:c.bidirectional||false})),showWelcome:false,selectedIds:[],selectedType:null};}catch(e){return{...s,toast:'Invalid JSON file'};}}
+  default:return s;
+}}
+
+function useUndoReducer(){
+  const[history,setHistory]=useState({past:[],present:INIT,future:[]});
+  const dispatch=useCallback((action)=>{
+    setHistory(h=>{
+      const next=coreReducer(h.present,action);
+      if(UNDOABLE.has(action.type)){return{past:[...h.past.slice(-40),h.present],present:next,future:[]};}
+      return{...h,present:next};
+    });
+  },[]);
+  const undo=useCallback(()=>{
+    setHistory(h=>{if(!h.past.length)return h;const prev=h.past[h.past.length-1];return{past:h.past.slice(0,-1),present:prev,future:[h.present,...h.future.slice(0,40)]};});
+  },[]);
+  const redo=useCallback(()=>{
+    setHistory(h=>{if(!h.future.length)return h;const next=h.future[0];return{past:[...h.past,h.present],present:next,future:h.future.slice(1)};});
+  },[]);
+  return[history.present,dispatch,undo,redo,history.past.length>0,history.future.length>0];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════
+function bezier(sx,sy,tx,ty){const dy=ty-sy;const cp=Math.max(50,Math.abs(dy)*.4);return`M${sx},${sy} C${sx},${sy-cp} ${tx},${ty+cp} ${tx},${ty}`;}
+function bezierMid(sx,sy,tx,ty){const cp=Math.max(50,Math.abs(ty-sy)*.4);const t=.5,m=1-t;return{x:m*m*m*sx+3*m*m*t*sx+3*m*t*t*tx+t*t*t*tx,y:m*m*m*sy+3*m*m*t*(sy-cp)+3*m*t*t*(ty+cp)+t*t*t*ty};}
+
+function getConnEndpoints(source,target){
+  const sel=document.getElementById(source.id),tel=document.getElementById(target.id);
+  const sh=sel?sel.offsetHeight:60,th=tel?tel.offsetHeight:60;
+  if(source.y>target.y+th){return{sx:source.x+NODE_W/2,sy:source.y,tx:target.x+NODE_W/2,ty:target.y+th};}
+  if(source.y+sh<target.y){return{sx:source.x+NODE_W/2,sy:source.y+sh,tx:target.x+NODE_W/2,ty:target.y};}
+  const lr=source.x<target.x;return{sx:source.x+(lr?NODE_W:0),sy:source.y+sh/2,tx:target.x+(lr?0:NODE_W),ty:target.y+th/2};
+}
+
+function exportJSON(s){
+  const d={title:s.title,narrative:s.narrative,nodes:s.nodes,connections:s.connections,exportedAt:new Date().toISOString(),tool:'PRAXIS Theory of Change Builder v2'};
+  const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=(s.title||'theory-of-change').replace(/[^a-zA-Z0-9\-_ ]/g,'').replace(/\s+/g,'-').toLowerCase()+'.json';a.click();URL.revokeObjectURL(u);
+}
+
+function exportSVG(state){
+  const nodes=state.nodes;const conns=state.connections;
+  if(!nodes.length)return;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  nodes.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+NODE_W);maxY=Math.max(maxY,n.y+120);});
+  const pad=60;minX-=pad;minY-=pad;maxX+=pad;maxY+=pad;
+  const W=maxX-minX,H=maxY-minY;
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${W} ${H}" width="${W}" height="${H}" font-family="DM Sans,sans-serif">`;
+  svg+=`<rect x="${minX}" y="${minY}" width="${W}" height="${H}" fill="#F8FAFC"/>`;
+  // Connections
+  svg+=`<defs>${Object.entries(EV_STRENGTH).map(([k,v])=>`<marker id="a-${k}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="${v.color}"/></marker>`).join('')}</defs>`;
+  conns.forEach(c=>{
+    const src=nodes.find(n=>n.id===c.sourceId),tgt=nodes.find(n=>n.id===c.targetId);if(!src||!tgt)return;
+    const ep=getConnEndpoints(src,tgt);const st=EV_STRENGTH[c.evidence?.strength||'none'];
+    const p=bezier(ep.sx,ep.sy,ep.tx,ep.ty);
+    svg+=`<path d="${p}" fill="none" stroke="${st.color}" stroke-width="${st.w}" stroke-dasharray="${st.dash}" marker-end="url(#a-${c.evidence?.strength||'none'})"${c.bidirectional?` marker-start="url(#a-${c.evidence?.strength||'none'})"`:''} opacity="0.85"/>`;
+  });
+  // Nodes
+  nodes.forEach(n=>{
+    const lv=LEVELS.find(l=>l.id===n.level);const h=70;
+    svg+=`<g><rect x="${n.x}" y="${n.y}" width="${NODE_W}" height="${h}" rx="8" fill="white" stroke="${lv?.color||'#ccc'}" stroke-width="2"/>`;
+    svg+=`<rect x="${n.x}" y="${n.y}" width="4" height="${h}" rx="2" fill="${lv?.color}"/>`;
+    svg+=`<text x="${n.x+14}" y="${n.y+16}" font-size="8" font-weight="700" fill="${lv?.color}" text-transform="uppercase" letter-spacing="0.08em">${lv?.label||''}</text>`;
+    svg+=`<text x="${n.x+14}" y="${n.y+32}" font-size="12" font-weight="600" fill="#0F172A">${n.title.length>28?n.title.slice(0,28)+'…':n.title}</text>`;
+    if(n.timeframe)svg+=`<text x="${n.x+14}" y="${n.y+48}" font-size="8" fill="#8B5CF6" font-weight="600">${n.timeframe}</text>`;
+    svg+=`</g>`;
+  });
+  // Title
+  if(state.title)svg+=`<text x="${minX+20}" y="${minY+24}" font-size="16" font-weight="800" fill="#0B1A2E">${state.title}</text>`;
+  svg+=`</svg>`;
+  const b=new Blob([svg],{type:'image/svg+xml'});const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download=(state.title||'toc')+'.svg';a.click();URL.revokeObjectURL(u);
+}
+
+function exportPNG(state){
+  const nodes=state.nodes;if(!nodes.length)return;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  nodes.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+NODE_W);maxY=Math.max(maxY,n.y+120);});
+  const pad=60;minX-=pad;minY-=pad;maxX+=pad;maxY+=pad;const W=maxX-minX,H=maxY-minY;
+  // Reuse SVG export logic
+  const conns=state.connections;
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W*2}" height="${H*2}" viewBox="${minX} ${minY} ${W} ${H}">`;
+  svg+=`<rect x="${minX}" y="${minY}" width="${W}" height="${H}" fill="#F8FAFC"/>`;
+  svg+=`<defs>${Object.entries(EV_STRENGTH).map(([k,v])=>`<marker id="a-${k}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="${v.color}"/></marker>`).join('')}</defs>`;
+  conns.forEach(c=>{const src=nodes.find(n=>n.id===c.sourceId),tgt=nodes.find(n=>n.id===c.targetId);if(!src||!tgt)return;const ep=getConnEndpoints(src,tgt);const st=EV_STRENGTH[c.evidence?.strength||'none'];svg+=`<path d="${bezier(ep.sx,ep.sy,ep.tx,ep.ty)}" fill="none" stroke="${st.color}" stroke-width="${st.w}" stroke-dasharray="${st.dash}" marker-end="url(#a-${c.evidence?.strength||'none'})" opacity="0.85"/>`;});
+  nodes.forEach(n=>{const lv=LEVELS.find(l=>l.id===n.level);const h=70;svg+=`<rect x="${n.x}" y="${n.y}" width="${NODE_W}" height="${h}" rx="8" fill="white" stroke="${lv?.color||'#ccc'}" stroke-width="2"/><rect x="${n.x}" y="${n.y}" width="4" height="${h}" rx="2" fill="${lv?.color}"/><text x="${n.x+14}" y="${n.y+32}" font-size="12" font-weight="600" fill="#0F172A" font-family="sans-serif">${n.title.length>28?n.title.slice(0,28)+'…':n.title}</text>`;});
+  if(state.title)svg+=`<text x="${minX+20}" y="${minY+24}" font-size="16" font-weight="800" fill="#0B1A2E" font-family="sans-serif">${state.title}</text>`;
+  svg+=`</svg>`;
+  const img=new Image();
+  img.onload=()=>{const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);c.toBlob(blob=>{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=(state.title||'toc')+'.png';a.click();URL.revokeObjectURL(u);},'image/png');};
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ICONS (compact)
+// ═══════════════════════════════════════════════════════════════
+const I={
+  pointer:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>,
+  link:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>,
+  zoomIn:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>,
+  zoomOut:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>,
+  fit:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>,
+  dl:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  ul:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+  trash:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
+  eye:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  eyeOff:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+  plus:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  x:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  layout:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>,
+  undo:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>,
+  redo:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.13-9.36L23 10"/></svg>,
+  svg:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+  png:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+  align:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>,
+};
+
+// ═══════════════════════════════════════════════════════════════
+// COMPONENTS
+// ═══════════════════════════════════════════════════════════════
+
+// ── Connection (memo'd) ──────────────────────────────────────
+const ConnectionPath=memo(function ConnectionPath({conn,source,target,selected,showA,showE,onSelect}){
+  if(!source||!target)return null;
+  const ep=getConnEndpoints(source,target);
+  const st=EV_STRENGTH[conn.evidence?.strength||'none'];
+  const sameH=Math.abs(source.y-target.y)<10;
+  const path=sameH?`M${ep.sx},${ep.sy} C${ep.sx+(ep.tx-ep.sx)*.4},${ep.sy-50} ${ep.tx-(ep.tx-ep.sx)*.4},${ep.ty-50} ${ep.tx},${ep.ty}`:bezier(ep.sx,ep.sy,ep.tx,ep.ty);
+  const mid=bezierMid(ep.sx,ep.sy,ep.tx,ep.ty);
+  const aC=conn.assumptions?.length||0;
+  const evType=EV_TYPES.find(t=>t.id===conn.evidence?.type);
+  const sym=conn.evidence?.strength==='strong'?'✓':conn.evidence?.strength==='moderate'?'~':conn.evidence?.strength==='weak'?'!':'?';
+
+  return(
+    <g className={selected?'conn-selected':''}>
+      <path d={path} className="conn-hit" onClick={()=>onSelect(conn.id)}/>
+      <path d={path} fill="none" stroke={st.color} strokeWidth={st.w} strokeDasharray={st.dash} strokeLinecap="round" className="conn-path" onClick={()=>onSelect(conn.id)} markerEnd={`url(#arr-${conn.evidence?.strength||'none'})`} markerStart={conn.bidirectional?`url(#arr-${conn.evidence?.strength||'none'})`:undefined}/>
+      {selected&&<path d={path} fill="none" stroke={st.color} strokeWidth={st.w+2} strokeDasharray={st.dash} strokeLinecap="round" opacity=".3"/>}
+      {/* Feedback loop indicator */}
+      {conn.bidirectional&&<g><circle cx={mid.x-14} cy={mid.y} r={6} fill="none" stroke={st.color} strokeWidth="1.5"/><path d={`M${mid.x-17} ${mid.y-3} l3 3-3 3`} fill="none" stroke={st.color} strokeWidth="1.5"/></g>}
+      {/* Evidence dot */}
+      {showE&&<g className="evidence-dot" onClick={()=>onSelect(conn.id)}>
+        <circle cx={mid.x} cy={mid.y} r={9} fill={st.color} opacity=".9"/>
+        <text x={mid.x} y={mid.y+.5} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="8" fontWeight="800" fontFamily="DM Sans">{sym}</text>
+        {evType&&<text x={mid.x} y={mid.y+16} textAnchor="middle" fontSize="7" fontFamily="DM Sans" fontWeight="600" fill={st.color} opacity=".8">{evType.lbl}</text>}
+      </g>}
+      {/* Assumption count */}
+      {showA&&aC>0&&<g className="assumption-count-badge" onClick={()=>onSelect(conn.id)}>
+        <rect x={mid.x+14} y={mid.y-8} width={aC>9?22:18} height={16} rx={8} fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1"/>
+        <text x={mid.x+14+(aC>9?11:9)} y={mid.y+1} textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fontFamily="DM Sans" fill="#92400E">{aC}</text>
+      </g>}
+    </g>);
+});
+
+// ── Node Card (memo'd, pointer events, snap) ─────────────────
+const NodeCard=memo(function NodeCard({node,selected,inSelection,isSource,isConnecting,connectMode,connectSourceId,dispatch,zoom,animating}){
+  const level=LEVELS.find(l=>l.id===node.level);
+  const nodeRef=useRef(null);
+  const dragRef=useRef({active:false,sx:0,sy:0,nx:0,ny:0,moved:false,raf:0});
+
+  const onPointerDown=useCallback((e)=>{
+    if(e.target.closest('.node-port'))return;
+    e.stopPropagation();
+    if(connectMode||isConnecting)return;
+    nodeRef.current?.setPointerCapture?.(e.pointerId);
+    const r=dragRef.current;r.active=true;r.moved=false;r.sx=e.clientX;r.sy=e.clientY;r.nx=node.x;r.ny=node.y;
+  },[node,connectMode,isConnecting]);
+
+  const onPointerMove=useCallback((e)=>{
+    const r=dragRef.current;if(!r.active)return;
+    r.moved=true;
+    cancelAnimationFrame(r.raf);
+    r.raf=requestAnimationFrame(()=>{
+      const dx=(e.clientX-r.sx)/zoom,dy=(e.clientY-r.sy)/zoom;
+      const nx=snap(Math.max(0,r.nx+dx)),ny=snap(Math.max(0,r.ny+dy));
+      dispatch({type:'MOVE_NODE',id:node.id,x:nx,y:ny});
+    });
+  },[node,zoom,dispatch]);
+
+  const onPointerUp=useCallback((e)=>{
+    const r=dragRef.current;
+    if(r.active&&r.moved){
+      cancelAnimationFrame(r.raf);
+      // Get current node position from DOM for the final coalesced undo entry
+      const dx=(e.clientX-r.sx)/zoom,dy=(e.clientY-r.sy)/zoom;
+      const nx=snap(Math.max(0,r.nx+dx)),ny=snap(Math.max(0,r.ny+dy));
+      dispatch({type:'MOVE_NODE_FINAL',id:node.id,x:nx,y:ny});
+    }
+    r.active=false;
+  },[node,zoom,dispatch]);
+
+  const onClick=useCallback((e)=>{
+    e.stopPropagation();
+    if(dragRef.current.moved){dragRef.current.moved=false;return;}
+    if(isConnecting){
+      dispatch({type:'ADD_CONNECTION',sourceId:connectSourceId,targetId:node.id});
+    }else if(connectMode){
+      dispatch({type:'SET_CONNECT_SOURCE',id:node.id});
+    }else if(e.shiftKey){
+      dispatch({type:'TOGGLE_SELECT',id:node.id,selType:'node'});
+    }else{
+      dispatch({type:'SELECT',id:node.id,selType:'node'});
+    }
+  },[node,isConnecting,connectMode,connectSourceId,dispatch]);
+
+  const onPortClick=useCallback((e)=>{
+    e.stopPropagation();dispatch({type:'SET_CONNECT_SOURCE',id:node.id});
+  },[node,dispatch]);
+
+  const aC=(node.assumptions||[]).length;
+
+  return(
+    <div id={node.id} ref={nodeRef}
+      className={`toc-node ${selected?'selected':''} ${inSelection?'in-selection':''} ${isSource?'connect-source':''} ${isConnecting&&!isSource?'connect-target':''} ${dragRef.current.active?'dragging':''} ${animating?'animating':''}`}
+      style={{left:node.x,top:node.y}}
+      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onClick={onClick}>
+      <div className="node-stripe" style={{background:level?.color}}/>
+      <div className="node-body">
+        <div className="node-level-tag" style={{color:level?.color}}>{level?.label}</div>
+        <div className="node-title">{node.title}</div>
+        {node.description&&<div className="node-desc">{node.description}</div>}
+        <div className="node-meta">
+          {node.timeframe&&<span className="node-time-badge">{node.timeframe}</span>}
+          {aC>0&&<span className="node-assumption-count">{aC} assumption{aC>1?'s':''}</span>}
+          {(node.indicators||[]).slice(0,2).map((ind,i)=><span key={i} className="node-ind-badge">{ind.length>25?ind.slice(0,25)+'…':ind}</span>)}
+        </div>
+      </div>
+      <div className="node-port node-port-top" onClick={onPortClick}/>
+      <div className="node-port node-port-bottom" onClick={onPortClick}/>
+      <div className="node-port node-port-left" onClick={onPortClick}/>
+      <div className="node-port node-port-right" onClick={onPortClick}/>
+    </div>);
+});
+
+// ── Node Detail Panel ────────────────────────────────────────
+function NodeDetail({node,dispatch}){
+  const lv=LEVELS.find(l=>l.id===node.level);
+  const addA=()=>dispatch({type:'UPDATE_NODE',id:node.id,u:{assumptions:[...(node.assumptions||[]),{id:uid('a'),text:'',status:'untested'}]}});
+  const updA=(aId,u)=>dispatch({type:'UPDATE_NODE',id:node.id,u:{assumptions:node.assumptions.map(a=>a.id===aId?{...a,...u}:a)}});
+  const rmA=(aId)=>dispatch({type:'UPDATE_NODE',id:node.id,u:{assumptions:node.assumptions.filter(a=>a.id!==aId)}});
+  return(
+    <div className="detail-panel">
+      <div className="dp-header"><div className="dp-title" style={{color:lv?.color}}>● {lv?.label} Node</div><button className="dp-close" onClick={()=>dispatch({type:'DESELECT'})}>{I.x}</button></div>
+      <div className="dp-body">
+        <div className="dp-field"><label className="dp-label">Title</label><input className="dp-input" value={node.title} onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{title:e.target.value}})}/></div>
+        <div className="dp-field"><label className="dp-label">Description</label><textarea className="dp-textarea" value={node.description||''} placeholder="What does this element represent?" onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{description:e.target.value}})}/></div>
+        <div style={{display:'flex',gap:8}}>
+          <div className="dp-field" style={{flex:1}}><label className="dp-label">Level</label><select className="dp-select" value={node.level} onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{level:e.target.value}})}>{LEVELS.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></div>
+          <div className="dp-field" style={{flex:1}}><label className="dp-label">Timeframe</label><input className="dp-input" value={node.timeframe||''} placeholder="e.g. Year 1-2" onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{timeframe:e.target.value}})}/></div>
+        </div>
+        <div className="dp-field"><label className="dp-label">Indicators <span className="dp-label-sub">one per line</span></label><textarea className="dp-textarea" value={(node.indicators||[]).join('\n')} placeholder="e.g. Maternal mortality ratio per 100,000" style={{minHeight:40,fontSize:10}} onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{indicators:e.target.value.split('\n').filter(Boolean)}})}/></div>
+        <div className="dp-field">
+          <label className="dp-label">Node-Level Assumptions <span className="dp-label-sub">conditions specific to this result</span></label>
+          {(node.assumptions||[]).map(a=>(
+            <div key={a.id} className="assumption-item">
+              <div className="sys-assumption-status" style={{background:ASSUMPTION_COLORS[a.status]}} title={a.status} onClick={()=>updA(a.id,{status:STATUS_CYCLE[a.status]})}/>
+              <input value={a.text} placeholder="Assumption..." onChange={e=>updA(a.id,{text:e.target.value})}/>
+              <button className="sys-remove" onClick={()=>rmA(a.id)}>×</button>
+            </div>))}
+          <button className="add-btn" onClick={addA}>{I.plus} Add assumption</button>
+        </div>
+      </div>
+      <div className="dp-actions"><button className="delete-btn" onClick={()=>{if(confirm('Delete this node and all its connections?'))dispatch({type:'DELETE_NODE',id:node.id})}}>Delete Node</button></div>
+    </div>);
+}
+
+// ── Connection Detail Panel ──────────────────────────────────
+function ConnectionDetail({conn,nodes,dispatch}){
+  const src=nodes.find(n=>n.id===conn.sourceId),tgt=nodes.find(n=>n.id===conn.targetId);
+  const addA=()=>{const u=[...(conn.assumptions||[]),{id:uid('a'),text:'',status:'untested'}];dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{assumptions:u}});};
+  const updA=(aId,u)=>{dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{assumptions:conn.assumptions.map(a=>a.id===aId?{...a,...u}:a)}});};
+  const rmA=(aId)=>{dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{assumptions:conn.assumptions.filter(a=>a.id!==aId)}});};
+  const updE=(u)=>dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{evidence:{...conn.evidence,...u}}});
+
+  return(
+    <div className="detail-panel">
+      <div className="dp-header"><div className="dp-title">Causal Pathway</div><button className="dp-close" onClick={()=>dispatch({type:'DESELECT'})}>{I.x}</button></div>
+      <div className="dp-body">
+        <div className="pathway-summary">
+          <strong>{src?.title||'?'}</strong> <span style={{color:'var(--text-muted)',margin:'0 4px'}}>→</span> <strong>{tgt?.title||'?'}</strong>
+        </div>
+        {/* Direction */}
+        <div className="dp-field">
+          <label className="dp-label">Direction</label>
+          <div className="pathway-direction">
+            <button className={`dir-btn ${!conn.bidirectional?'active':''}`} onClick={()=>dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{bidirectional:false}})}>One-way →</button>
+            <button className={`dir-btn ${conn.bidirectional?'active':''}`} onClick={()=>dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{bidirectional:true}})}>Feedback ⇄</button>
+          </div>
+        </div>
+        {/* Evidence Strength */}
+        <div className="dp-field">
+          <label className="dp-label">Evidence Strength</label>
+          <div className="ev-row">
+            {Object.entries(EV_STRENGTH).map(([k,s])=>(
+              <button key={k} className={`ev-btn ${conn.evidence?.strength===k?'a-'+k:''}`} onClick={()=>updE({strength:k})}>{s.lbl}</button>
+            ))}
+          </div>
+        </div>
+        {/* Evidence Type */}
+        <div className="dp-field">
+          <label className="dp-label">Evidence Type</label>
+          <select className="dp-select" value={conn.evidence?.type||''} onChange={e=>updE({type:e.target.value})}>
+            <option value="">Select type…</option>
+            {EV_TYPES.map(t=><option key={t.id} value={t.id}>{t.lbl}</option>)}
+          </select>
+        </div>
+        {/* Transferability */}
+        <div className="dp-field">
+          <label className="dp-label">Context Transferability <span className="dp-label-sub">is evidence applicable here?</span></label>
+          <div className="ev-row">
+            {EV_TRANSFER.map(t=>(
+              <button key={t.id} className={`ev-btn ${conn.evidence?.transferability===t.id?'a-moderate':''}`} onClick={()=>updE({transferability:t.id})}>{t.lbl}</button>
+            ))}
+          </div>
+        </div>
+        {/* Notes */}
+        <div className="dp-field">
+          <label className="dp-label">Evidence Notes</label>
+          <textarea className="dp-textarea" value={conn.evidence?.notes||''} placeholder="Cite studies, experience, or rationale…" onChange={e=>updE({notes:e.target.value})}/>
+        </div>
+        {/* Pathway Assumptions */}
+        <div className="dp-field">
+          <label className="dp-label">Pathway Assumptions <span className="dp-label-sub">click dot to cycle status</span></label>
+          {(conn.assumptions||[]).map(a=>(
+            <div key={a.id} className="assumption-item">
+              <div className="sys-assumption-status" style={{background:ASSUMPTION_COLORS[a.status||'untested']}} title={a.status} onClick={()=>updA(a.id,{status:STATUS_CYCLE[a.status||'untested']})}/>
+              <input value={a.text} placeholder="If…then…assuming…" onChange={e=>updA(a.id,{text:e.target.value})}/>
+              <button className="sys-remove" onClick={()=>rmA(a.id)}>×</button>
+            </div>))}
+          <button className="add-btn" onClick={addA}>{I.plus} Add assumption</button>
+        </div>
+      </div>
+      <div className="dp-actions"><button className="delete-btn" onClick={()=>dispatch({type:'DELETE_CONNECTION',id:conn.id})}>Delete Pathway</button></div>
+    </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WELCOME SCREEN
+// ═══════════════════════════════════════════════════════════════
+function WelcomeScreen({dispatch}){
+  const fr=useRef();
+  const onImport=(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(ev)=>dispatch({type:'IMPORT',json:ev.target.result});r.readAsText(f);};
+  const complex=['rssh','peacebuilding'],simple=['health_simple'];
+  return(
+    <div className="welcome-overlay"><div className="welcome-card">
+      <div className="welcome-icon">🔗</div>
+      <div className="welcome-title">Theory of Change Builder</div>
+      <div className="welcome-sub">Build interactive, evidence-mapped causal diagrams with assumption tracking, evidence taxonomy, feedback loops, and narrative theory documentation.</div>
+      <div style={{textAlign:'left',marginBottom:10}}>
+        <div className="welcome-section-label">Complex Programmes</div>
+        <div className="welcome-grid">
+          {complex.map(k=>{const t=TEMPLATES[k];return(
+            <button key={k} className="welcome-btn welcome-btn-secondary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:k})}>
+              <div style={{fontSize:13}}>{t.icon} <strong>{t.name}</strong></div>
+              <div className="welcome-btn-info">{t.nodes.length} nodes · {t.connections.length} pathways · {t.connections.filter(c=>c.bidirectional).length} feedback loops</div>
+            </button>);})}
+        </div>
+      </div>
+      <div style={{textAlign:'left',marginBottom:14}}>
+        <div className="welcome-section-label">Starters</div>
+        <div className="welcome-grid">
+          {simple.map(k=>{const t=TEMPLATES[k];return(
+            <button key={k} className="welcome-btn welcome-btn-secondary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:k})}>
+              {t.icon} {t.name}
+            </button>);})}
+        </div>
+      </div>
+      <div className="welcome-actions">
+        <button className="welcome-btn welcome-btn-primary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:'blank'})}>Start Blank</button>
+        <button className="welcome-btn welcome-btn-secondary" style={{flex:'0'}} onClick={()=>fr.current?.click()}>Import JSON</button>
+        <input ref={fr} type="file" accept=".json" style={{display:'none'}} onChange={onImport}/>
+      </div>
+    </div></div>);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APP
+// ═══════════════════════════════════════════════════════════════
+function App(){
+  const[s,dispatch,undo,redo,canUndo,canRedo]=useUndoReducer();
+  const vpRef=useRef(null);const canRef=useRef(null);const fileRef=useRef();
+  const[ghost,setGhost]=useState(null);
+  const panRef=useRef({active:false,sx:0,sy:0,px:0,py:0,pid:null});
+
+  // ── Pointer-tracking zoom ────────────────────────────────
+  const onWheel=useCallback((e)=>{
+    e.preventDefault();
+    const vp=vpRef.current;if(!vp)return;
+    const rect=vp.getBoundingClientRect();
+    const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    // World point under cursor before zoom
+    const wx=(mx-s.panX)/s.zoom,wy=(my-s.panY)/s.zoom;
+    const delta=e.deltaY>0?-0.08:0.08;
+    const newZoom=Math.max(.15,Math.min(2.5,s.zoom+delta));
+    // Adjust pan so world point stays under cursor
+    const newPanX=mx-wx*newZoom,newPanY=my-wy*newZoom;
+    dispatch({type:'SET_ZOOM',zoom:newZoom});
+    dispatch({type:'SET_PAN',x:newPanX,y:newPanY});
+  },[s.zoom,s.panX,s.panY,dispatch]);
+
+  useEffect(()=>{
+    const vp=vpRef.current;if(vp)vp.addEventListener('wheel',onWheel,{passive:false});
+    return()=>{if(vp)vp.removeEventListener('wheel',onWheel);};
+  },[onWheel]);
+
+  // ── Pan (pointer events for touch) ───────────────────────
+  const onVpPointerDown=useCallback((e)=>{
+    const t=e.target;
+    if(t!==vpRef.current&&!t.classList.contains('canvas-grid')&&!t.classList.contains('level-lane')&&!t.classList.contains('level-lane-label')&&!t.classList.contains('canvas-inner'))return;
+    if(s.mode==='connect'){dispatch({type:'SET_MODE',mode:'select'});return;}
+    dispatch({type:'DESELECT'});
+    const r=panRef.current;r.active=true;r.sx=e.clientX;r.sy=e.clientY;r.px=s.panX;r.py=s.panY;r.pid=e.pointerId;
+    vpRef.current?.setPointerCapture?.(e.pointerId);
+    vpRef.current?.classList.add('grabbing');
+  },[s.panX,s.panY,s.mode,dispatch]);
+
+  const onVpPointerMove=useCallback((e)=>{
+    const r=panRef.current;if(!r.active)return;
+    dispatch({type:'SET_PAN',x:r.px+e.clientX-r.sx,y:r.py+e.clientY-r.sy});
+  },[dispatch]);
+
+  const onVpPointerUp=useCallback(()=>{
+    panRef.current.active=false;
+    vpRef.current?.classList.remove('grabbing');
+  },[]);
+
+  // ── Ghost connection line ────────────────────────────────
+  useEffect(()=>{
+    if(!s.connectSourceId){setGhost(null);return;}
+    const src=s.nodes.find(n=>n.id===s.connectSourceId);if(!src)return;
+    const onMove=(e)=>{
+      const vp=vpRef.current;if(!vp)return;
+      const rect=vp.getBoundingClientRect();
+      const mx=(e.clientX-rect.left-s.panX)/s.zoom,my=(e.clientY-rect.top-s.panY)/s.zoom;
+      setGhost({sx:src.x+NODE_W/2,sy:src.y,tx:mx,ty:my});
+    };
+    window.addEventListener('pointermove',onMove);
+    return()=>window.removeEventListener('pointermove',onMove);
+  },[s.connectSourceId,s.nodes,s.zoom,s.panX,s.panY]);
+
+  // ── Fit view ─────────────────────────────────────────────
+  const fitView=useCallback(()=>{
+    if(!s.nodes.length)return;const vp=vpRef.current;if(!vp)return;
+    const vpW=vp.clientWidth,vpH=vp.clientHeight;
+    let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+    s.nodes.forEach(n=>{x0=Math.min(x0,n.x);y0=Math.min(y0,n.y);x1=Math.max(x1,n.x+NODE_W);y1=Math.max(y1,n.y+100);});
+    const w=x1-x0+160,h=y1-y0+160;
+    const z=Math.min(vpW/w,vpH/h,1.2);
+    dispatch({type:'SET_ZOOM',zoom:z});
+    dispatch({type:'SET_PAN',x:(vpW-w*z)/2-x0*z+80*z,y:(vpH-h*z)/2-y0*z+80*z});
+  },[s.nodes,dispatch]);
+
+  // ── Auto-layout (animated) ───────────────────────────────
+  const autoLayout=useCallback(()=>{
+    dispatch({type:'SET_ANIMATING',v:true});
+    LEVELS.forEach(lv=>{
+      const inLv=s.nodes.filter(n=>n.level===lv.id);if(!inLv.length)return;
+      const tw=inLv.length*NODE_W+(inLv.length-1)*50;
+      const sx=Math.max(60,(2200-tw)/2);
+      inLv.forEach((n,i)=>dispatch({type:'MOVE_NODE',id:n.id,x:sx+i*(NODE_W+50),y:lv.y+40}));
+    });
+    setTimeout(()=>{dispatch({type:'SET_ANIMATING',v:false});fitView();},350);
+  },[s.nodes,fitView,dispatch]);
+
+  // ── Auto-fit on template load ────────────────────────────
+  const prevWelcome=useRef(s.showWelcome);
+  useEffect(()=>{if(prevWelcome.current&&!s.showWelcome&&s.nodes.length>0)setTimeout(fitView,80);prevWelcome.current=s.showWelcome;},[s.showWelcome,s.nodes.length,fitView]);
+
+  // ── Keyboard shortcuts ───────────────────────────────────
+  useEffect(()=>{
+    const onKey=(e)=>{
+      if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+      if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!e.shiftKey){e.preventDefault();undo();}
+      if((e.metaKey||e.ctrlKey)&&(e.key==='y'||(e.key==='z'&&e.shiftKey))){e.preventDefault();redo();}
+      if(e.key==='Delete'||e.key==='Backspace'){
+        if(s.selectedIds.length>1){dispatch({type:'BATCH_DELETE',ids:s.selectedIds});}
+        else if(s.selectedType==='node'&&s.selectedIds[0])dispatch({type:'DELETE_NODE',id:s.selectedIds[0]});
+        else if(s.selectedType==='connection'&&s.selectedIds[0])dispatch({type:'DELETE_CONNECTION',id:s.selectedIds[0]});
+      }
+      if(e.key==='Escape'){dispatch({type:'DESELECT'});dispatch({type:'SET_MODE',mode:'select'});}
+      if(e.key==='c'&&!e.metaKey&&!e.ctrlKey)dispatch({type:'SET_MODE',mode:s.mode==='connect'?'select':'connect'});
+      if(e.key==='f'&&!e.metaKey&&!e.ctrlKey)fitView();
+    };
+    window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);
+  },[s.selectedIds,s.selectedType,s.mode,undo,redo,fitView,dispatch]);
+
+  // ── Import handler ───────────────────────────────────────
+  const onImport=(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(ev)=>dispatch({type:'IMPORT',json:ev.target.result});r.readAsText(f);e.target.value='';};
+
+  // ── Toast auto-dismiss ───────────────────────────────────
+  useEffect(()=>{if(s.toast){const t=setTimeout(()=>dispatch({type:'SET_TOAST',msg:null}),2500);return()=>clearTimeout(t);}},[s.toast]);
+
+  // ── Derived ──────────────────────────────────────────────
+  const selNode=s.selectedType==='node'&&s.selectedIds.length===1?s.nodes.find(n=>n.id===s.selectedIds[0]):null;
+  const selConn=s.selectedType==='connection'&&s.selectedIds.length===1?s.connections.find(c=>c.id===s.selectedIds[0]):null;
+  const multiSel=s.selectedIds.length>1;
+  const totalAssumptions=s.connections.reduce((t,c)=>t+(c.assumptions?.length||0),0)+s.nodes.reduce((t,n)=>t+(n.assumptions?.length||0),0)+(s.narrative.systemAssumptions?.length||0);
+
+  // ── Narrative panel (Theory tab) ─────────────────────────
+  const addSysA=()=>dispatch({type:'UPDATE_NARRATIVE',u:{systemAssumptions:[...s.narrative.systemAssumptions,{id:uid('sa'),text:'',status:'untested'}]}});
+  const updSysA=(aId,u)=>dispatch({type:'UPDATE_NARRATIVE',u:{systemAssumptions:s.narrative.systemAssumptions.map(a=>a.id===aId?{...a,...u}:a)}});
+  const rmSysA=(aId)=>dispatch({type:'UPDATE_NARRATIVE',u:{systemAssumptions:s.narrative.systemAssumptions.filter(a=>a.id!==aId)}});
+
+  return(
+    <div className="app">
+      {/* ── Toolbar ────────────────────────────── */}
+      <div className="top-bar">
+        <div className="brand"><a href="../../" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:8}}><span className="brand-badge">PRAXIS</span></a><span className="brand-sep">|</span><span className="brand-page">Theory of Change</span></div>
+        <div className="tb-div"/>
+        <div className="tb-group">
+          <button className={`tb undo-btn ${canUndo?'can':''}`} onClick={undo} title="Undo (Ctrl+Z)">{I.undo}</button>
+          <button className={`tb undo-btn ${canRedo?'can':''}`} onClick={redo} title="Redo (Ctrl+Y)">{I.redo}</button>
+        </div>
+        <div className="tb-div"/>
+        <div className="tb-group">
+          <button className={`tb ${s.mode==='select'?'active':''}`} onClick={()=>dispatch({type:'SET_MODE',mode:'select'})} title="Select (V)">{I.pointer} <span>Select</span></button>
+          <button className={`tb ${s.mode==='connect'?'active':''}`} onClick={()=>dispatch({type:'SET_MODE',mode:s.mode==='connect'?'select':'connect'})} title="Connect (C)">{I.link} <span>Connect</span></button>
+        </div>
+        <div className="tb-div"/>
+        <div className="tb-group">
+          <button className={`tb ${s.showAssumptions?'active':''}`} onClick={()=>dispatch({type:'TOGGLE_ASSUMPTIONS'})}>{s.showAssumptions?I.eye:I.eyeOff} <span>Assumptions</span></button>
+          <button className={`tb ${s.showEvidence?'active':''}`} onClick={()=>dispatch({type:'TOGGLE_EVIDENCE'})}>{s.showEvidence?I.eye:I.eyeOff} <span>Evidence</span></button>
+        </div>
+        <div className="tb-div"/>
+        <div className="tb-group">
+          <button className="tb" onClick={()=>dispatch({type:'SET_ZOOM',zoom:s.zoom+.15})}>{I.zoomIn}</button>
+          <span className="zoom-display">{Math.round(s.zoom*100)}%</span>
+          <button className="tb" onClick={()=>dispatch({type:'SET_ZOOM',zoom:s.zoom-.15})}>{I.zoomOut}</button>
+          <button className="tb" onClick={fitView} title="Fit (F)">{I.fit}</button>
+          <button className="tb" onClick={autoLayout} title="Auto-arrange">{I.layout} <span>Arrange</span></button>
+        </div>
+        <div className="spacer"/>
+        {s.nodes.length>0&&<div className="stats">
+          <span className="stat">{s.nodes.length} nodes</span>
+          <span className="stat">{s.connections.length} paths</span>
+          <span className="stat">{totalAssumptions} assumptions</span>
+          <span className="stat">{s.connections.filter(c=>c.bidirectional).length} loops</span>
+        </div>}
+        <div className="tb-group">
+          <button className="tb" onClick={()=>{if(!s.nodes.length||confirm('New ToC? Unsaved work will be lost.'))dispatch({type:'NEW'})}} title="New">{I.plus} <span>New</span></button>
+          <button className="tb" onClick={()=>exportJSON(s)} title="Export JSON">{I.dl} <span>JSON</span></button>
+          <button className="tb" onClick={()=>exportSVG(s)} title="Export SVG">{I.svg} <span>SVG</span></button>
+          <button className="tb" onClick={()=>exportPNG(s)} title="Export PNG">{I.png} <span>PNG</span></button>
+          <button className="tb" onClick={()=>fileRef.current?.click()} title="Import">{I.ul}</button>
+          <input ref={fileRef} type="file" accept=".json" style={{display:'none'}} onChange={onImport}/>
+        </div>
+      </div>
+
+      <div className="main">
+        {/* ── Sidebar ──────────────────────────── */}
+        <div className="sidebar">
+          <div className="sidebar-tabs">
+            <button className={`sidebar-tab ${s.sidebarTab==='build'?'active':''}`} onClick={()=>dispatch({type:'SET_TAB',tab:'build'})}>Build</button>
+            <button className={`sidebar-tab ${s.sidebarTab==='theory'?'active':''}`} onClick={()=>dispatch({type:'SET_TAB',tab:'theory'})}>Theory</button>
+          </div>
+          <div className="sidebar-body">
+            {s.sidebarTab==='build'&&<>
+              <div className="sb-section">
+                <div className="sb-title">ToC Title</div>
+                <input className="sb-input" placeholder="Name your Theory of Change…" value={s.title} onChange={e=>dispatch({type:'SET_TITLE',title:e.target.value})}/>
+              </div>
+              <div className="sb-section">
+                <div className="sb-title">Add Elements</div>
+                {LEVELS.map(lv=>(
+                  <div key={lv.id} className="palette-node" onClick={()=>dispatch({type:'ADD_NODE',level:lv.id})}>
+                    <div className="palette-dot" style={{background:lv.color}}/>
+                    <div><div className="palette-node-name">{lv.label}</div><div className="palette-node-hint">{lv.hint}</div></div>
+                  </div>))}
+              </div>
+              <div className="sb-section">
+                <div className="sb-title">Evidence Legend</div>
+                {Object.entries(EV_STRENGTH).map(([k,st])=>(
+                  <div key={k} className="legend-row">
+                    <svg width={28} height={8}><line x1={0} y1={4} x2={28} y2={4} stroke={st.color} strokeWidth={st.w} strokeDasharray={st.dash} strokeLinecap="round"/></svg>
+                    <span>{st.lbl}</span>
+                  </div>))}
+              </div>
+              <div className="sb-section">
+                <div className="sb-title">Assumption Status</div>
+                {Object.entries(ASSUMPTION_COLORS).map(([k,c])=>(
+                  <div key={k} className="legend-row"><div className="legend-dot" style={{background:c}}/><span style={{textTransform:'capitalize'}}>{k}</span></div>))}
+              </div>
+              <div className="sb-section">
+                <div className="shortcut-box">
+                  <strong>Shortcuts</strong><br/>
+                  <kbd>Ctrl+Z</kbd> Undo · <kbd>Ctrl+Y</kbd> Redo<br/>
+                  <kbd>C</kbd> Connect · <kbd>F</kbd> Fit view<br/>
+                  <kbd>Shift</kbd>+click Multi-select<br/>
+                  <kbd>Del</kbd> Delete · <kbd>Esc</kbd> Deselect<br/>
+                  Scroll to zoom (tracks cursor)<br/>
+                  Drag canvas to pan
+                </div>
+              </div>
+            </>}
+            {s.sidebarTab==='theory'&&<>
+              <div className="sb-section">
+                <div className="sb-title">Programme Description</div>
+                <textarea className="sb-textarea" value={s.narrative.description||''} placeholder="What is this programme? Who does it serve? What problem does it address?" style={{minHeight:80}} onChange={e=>dispatch({type:'UPDATE_NARRATIVE',u:{description:e.target.value}})}/>
+              </div>
+              <div className="sb-section">
+                <div className="sb-title">Context & Setting</div>
+                <textarea className="sb-textarea" value={s.narrative.context||''} placeholder="Describe the implementation context: political, economic, social, institutional factors…" style={{minHeight:80}} onChange={e=>dispatch({type:'UPDATE_NARRATIVE',u:{context:e.target.value}})}/>
+              </div>
+              <div className="sb-section">
+                <div className="sb-title">Theory Narrative</div>
+                <textarea className="sb-textarea" value={s.narrative.theory||''} placeholder="Articulate WHY you believe the causal logic holds. What mechanisms drive change? What is the theoretical grounding?" style={{minHeight:120}} onChange={e=>dispatch({type:'UPDATE_NARRATIVE',u:{theory:e.target.value}})}/>
+              </div>
+              <div className="sb-section">
+                <div className="sb-title">System-Level Assumptions</div>
+                <div style={{fontSize:9,color:'var(--text-muted)',marginBottom:6}}>External conditions that must hold for the entire ToC — political stability, funding continuity, etc.</div>
+                {(s.narrative.systemAssumptions||[]).map(a=>(
+                  <div key={a.id} className="sys-assumption">
+                    <div className="sys-assumption-status" style={{background:ASSUMPTION_COLORS[a.status]}} title={a.status} onClick={()=>updSysA(a.id,{status:STATUS_CYCLE[a.status]})}/>
+                    <input value={a.text} placeholder="System assumption…" onChange={e=>updSysA(a.id,{text:e.target.value})}/>
+                    <button className="sys-remove" onClick={()=>rmSysA(a.id)}>×</button>
+                  </div>))}
+                <button className="add-btn" onClick={addSysA}>{I.plus} Add system assumption</button>
+              </div>
+            </>}
+          </div>
+          <a href="../" className="back-link">← Back to PRAXIS Tools</a>
+        </div>
+
+        {/* ── Canvas ───────────────────────────── */}
+        <div ref={vpRef} className={`canvas-vp ${s.mode==='connect'?'connecting':''}`}
+          onPointerDown={onVpPointerDown} onPointerMove={onVpPointerMove} onPointerUp={onVpPointerUp}>
+          <div ref={canRef} className="canvas-inner" style={{transform:`translate(${s.panX}px,${s.panY}px) scale(${s.zoom})`}}>
+            <div className="canvas-grid"/>
+            {LEVELS.map(lv=>(
+              <div key={lv.id} className="level-lane" style={{top:lv.y-30,height:LANE_H,background:lv.bg}}>
+                <div className="level-lane-label" style={{color:lv.color}}>{lv.label}</div>
+              </div>))}
+            <svg className="conn-svg" width="6000" height="4000">
+              <defs>
+                {Object.entries(EV_STRENGTH).map(([k,v])=>(
+                  <marker key={k} id={`arr-${k}`} markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill={v.color}/></marker>
+                ))}
+              </defs>
+              {s.connections.map(c=>{
+                const src=s.nodes.find(n=>n.id===c.sourceId),tgt=s.nodes.find(n=>n.id===c.targetId);
+                return <ConnectionPath key={c.id} conn={c} source={src} target={tgt} selected={s.selectedIds.includes(c.id)} showA={s.showAssumptions} showE={s.showEvidence} onSelect={(id)=>dispatch({type:'SELECT',id,selType:'connection'})}/>;
+              })}
+              {ghost&&<path d={`M${ghost.sx},${ghost.sy} L${ghost.tx},${ghost.ty}`} fill="none" stroke="#F59E0B" strokeWidth="2" strokeDasharray="6,4" opacity=".7"/>}
+            </svg>
+            {s.nodes.map(n=>(
+              <NodeCard key={n.id} node={n}
+                selected={s.selectedIds.length===1&&s.selectedIds[0]===n.id&&s.selectedType==='node'}
+                inSelection={s.selectedIds.length>1&&s.selectedIds.includes(n.id)}
+                isSource={s.connectSourceId===n.id}
+                isConnecting={!!s.connectSourceId&&s.connectSourceId!==n.id}
+                connectMode={s.mode==='connect'&&!s.connectSourceId}
+                connectSourceId={s.connectSourceId}
+                dispatch={dispatch} zoom={s.zoom} animating={s.animating}/>
+            ))}
+          </div>
+
+          {/* Mode indicators */}
+          {s.mode==='connect'&&!s.connectSourceId&&<div className="mode-indicator connect-mode">Click a node to start a connection</div>}
+          {s.connectSourceId&&<div className="mode-indicator connect-active">Click another node to connect — <span className="mode-cancel" onClick={()=>dispatch({type:'SET_MODE',mode:'select'})}>Cancel</span></div>}
+
+          {/* Multi-select batch bar */}
+          {multiSel&&<div className="batch-bar">
+            <span className="batch-count">{s.selectedIds.length} selected</span>
+            <button className="tb" onClick={()=>{if(confirm(`Delete ${s.selectedIds.length} items?`))dispatch({type:'BATCH_DELETE',ids:s.selectedIds})}}>{I.trash} Delete</button>
+            <button className="tb" onClick={()=>{dispatch({type:'DESELECT'})}}>{I.x} Clear</button>
+          </div>}
+        </div>
+
+        {/* ── Detail panels ────────────────────── */}
+        {selNode&&<NodeDetail node={selNode} dispatch={dispatch}/>}
+        {selConn&&<ConnectionDetail conn={selConn} nodes={s.nodes} dispatch={dispatch}/>}
+      </div>
+
+      {s.showWelcome&&<WelcomeScreen dispatch={dispatch}/>}
+      {s.toast&&<div className="toast">{s.toast}</div>}
+    </div>);
+}
+
+ReactDOM.render(<App/>,document.getElementById('root'));
+</script>
+</body>
+</html>
