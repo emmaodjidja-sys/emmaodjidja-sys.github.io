@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Data Explorer — PRAXIS Evaluation Toolkit</title>
-<meta name="description" content="Free data analysis tool for evaluation datasets. Upload .xlsx or .csv for instant descriptive statistics, Likert analysis, time series, regression, cross-tabulations, and Word export.">
+<meta name="description" content="Free data analysis tool for evaluation datasets. Upload .xlsx or .csv for instant descriptive statistics, Likert analysis, correlation, time series, regression with diagnostics, cross-tabulations with chi-square, and Word export.">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,59 +16,128 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',-apple-system,sans-serif;background:#0B1A2E;color:#E8ECF0;-webkit-font-smoothing:antialiased}
-.topbar{position:sticky;top:0;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:rgba(11,26,46,.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(46,196,182,.12);font-size:14px}
+
+/* Focus indicators */
+*:focus-visible{outline:2px solid #2EC4B6;outline-offset:2px}
+
+.topbar{position:sticky;top:0;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:rgba(11,26,46,.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(46,196,182,.12);font-size:14px;flex-wrap:wrap;gap:8px}
 .topbar a{text-decoration:none;color:#2EC4B6;font-weight:500;display:inline-flex;align-items:center;gap:6px}
-.topbar a:hover{color:#A4B3C2}
-.topbar .brand{font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.8px;color:#2EC4B6;font-size:12px}
-.topbar .nr{display:flex;align-items:center;gap:16px}
-.topbar .nr a{font-size:12px;color:#8899AA}
+.topbar a:hover{color:#94A3B8}
+.topbar .brand{font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.1em;color:#2EC4B6;font-size:12px}
+.topbar .nr{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.topbar .nr a{font-size:12px;color:#94A3B8}
 .topbar .nr a:hover{color:#2EC4B6}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @keyframes glow{0%,100%{box-shadow:0 0 20px rgba(46,196,182,.1)}50%{box-shadow:0 0 40px rgba(46,196,182,.25)}}
 .fu{animation:fadeUp .4s ease both}
 .skel{background:linear-gradient(90deg,#1a3050 25%,#1f3a5c 50%,#1a3050 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:6px}
-.ss{position:relative}.ss input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(46,196,182,.2);font-size:12px;background:rgba(255,255,255,.04);color:#E8ECF0;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif;transition:all .2s}
+
+/* SearchableSelect */
+.ss{position:relative}
+.ss input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(46,196,182,.2);font-size:12px;background:rgba(255,255,255,.04);color:#E8ECF0;outline:none;box-sizing:border-box;font-family:'DM Sans',sans-serif;transition:all .2s;min-height:36px}
 .ss input:focus{border-color:#2EC4B6;box-shadow:0 0 0 3px rgba(46,196,182,.15);background:rgba(255,255,255,.06)}
-.ss input::placeholder{color:#5a7a8a}
+.ss input::placeholder{color:#94A3B8}
 .ss .dd{position:absolute;top:calc(100% + 2px);left:0;right:0;max-height:220px;overflow-y:auto;background:#0f2240;border:1px solid rgba(46,196,182,.15);border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:20}
-.ss .di{padding:8px 12px;font-size:12px;cursor:pointer;color:#A4B3C2;border-bottom:1px solid rgba(255,255,255,.04);transition:all .1s}
-.ss .di:hover,.ss .di.a{background:rgba(46,196,182,.1);color:#E8ECF0}.ss .di .sub{font-size:10px;color:#5a7a8a;margin-left:6px}
+.ss .di{padding:8px 12px;font-size:12px;cursor:pointer;color:#94A3B8;border-bottom:1px solid rgba(255,255,255,.04);transition:all .1s;min-height:36px;display:flex;align-items:center;gap:6px}
+.ss .di:hover,.ss .di.active{background:rgba(46,196,182,.15);color:#E8ECF0}
+.ss .di.selected{color:#2EC4B6;font-weight:600}
+.ss .di.selected::before{content:'✓ ';color:#2EC4B6}
+.ss .di .sub{font-size:10px;color:#94A3B8;margin-left:auto}
+
+/* Tab bar */
+.tab-bar-wrapper{position:relative;background:rgba(0,0,0,.15);border-bottom:1px solid rgba(255,255,255,.06)}
+.tab-bar-wrapper::before,.tab-bar-wrapper::after{content:'';position:absolute;top:0;bottom:0;width:32px;pointer-events:none;z-index:1;opacity:0;transition:opacity .2s}
+.tab-bar-wrapper.scroll-left::before{left:0;background:linear-gradient(to right,rgba(11,26,46,.95),transparent);opacity:1}
+.tab-bar-wrapper.scroll-right::after{right:0;background:linear-gradient(to left,rgba(11,26,46,.95),transparent);opacity:1}
+.tab-bar{display:flex;overflow-x:auto;gap:0;padding:0 16px;scrollbar-width:none;-ms-overflow-style:none}
+.tab-bar::-webkit-scrollbar{display:none}
+
+.tb{background:none;border:none;padding:10px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;color:#94A3B8;border-bottom:2.5px solid transparent;transition:all .15s;font-family:'DM Sans',sans-serif;min-height:44px}
+.tb:hover{color:#E8ECF0}
+.tb.on{color:#2EC4B6;border-bottom-color:#2EC4B6}
+.tb.dim{opacity:.35}
+.tb .bg{font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700;background:rgba(46,196,182,.15);color:#2EC4B6;font-family:'JetBrains Mono',monospace}
+
 .cc{cursor:pointer;transition:all .2s}.cc:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(46,196,182,.12);border-color:rgba(46,196,182,.3)!important}
-.tb{background:none;border:none;padding:10px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;color:#5a7a8a;border-bottom:2.5px solid transparent;transition:all .15s;font-family:'DM Sans',sans-serif}
-.tb:hover{color:#A4B3C2}.tb.on{color:#2EC4B6;border-bottom-color:#2EC4B6}.tb.dim{opacity:.3}
-.tb .bg{font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700;background:rgba(46,196,182,.15);color:#2EC4B6}
 .sth thead th{position:sticky;top:0;z-index:2}
 .sort-th{cursor:pointer;user-select:none}.sort-th:hover{color:#2EC4B6!important}
 .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:16px;margin-bottom:12px}
-.select-dark{padding:9px 12px;border-radius:8px;border:1px solid rgba(46,196,182,.2);font-size:12px;background:rgba(255,255,255,.04);color:#E8ECF0;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+.select-dark{padding:9px 12px;border-radius:8px;border:1px solid rgba(46,196,182,.2);font-size:12px;background:rgba(255,255,255,.04);color:#E8ECF0;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;min-height:36px}
 .select-dark:focus{border-color:#2EC4B6;box-shadow:0 0 0 3px rgba(46,196,182,.15)}
+
+/* Upload zone */
+.upload-zone{border:2px dashed rgba(46,196,182,.2);border-radius:16px;padding:52px 28px;cursor:pointer;background:rgba(255,255,255,.02);transition:all .25s;animation:glow 3s ease-in-out infinite}
+.upload-zone:hover,.upload-zone.dragging{border-color:rgba(46,196,182,.6);background:rgba(46,196,182,.06);animation:none}
+.upload-zone:focus-visible{outline:2px solid #2EC4B6;outline-offset:4px;border-color:rgba(46,196,182,.6)}
+
+/* Stat card grid */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:14px}
+.stat-card{background:rgba(46,196,182,.05);border-radius:8px;padding:10px 8px;text-align:center;border:1px solid rgba(46,196,182,.1)}
+.stat-card .val{font-size:17px;font-weight:700;color:#E8ECF0}
+.stat-card .lbl{font-size:10px;color:#94A3B8}
+.stat-card.hl .val{color:#34A853}
+.stat-card.purple{background:rgba(123,97,255,.08);border-color:rgba(123,97,255,.2)}
+.stat-card.purple .val{color:#7B61FF}
+
+/* Collapsible sections */
+details summary{cursor:pointer;user-select:none}
+details summary:hover{color:#2EC4B6}
+
+/* Guided prompt cards */
+.guide-card{background:rgba(46,196,182,.04);border:1px solid rgba(46,196,182,.12);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .2s;font-size:12px;color:#94A3B8;display:flex;align-items:center;gap:8px}
+.guide-card:hover{background:rgba(46,196,182,.1);color:#E8ECF0;border-color:rgba(46,196,182,.3)}
+.guide-card .arrow{color:#2EC4B6;font-weight:700}
+
+/* Correlation heatmap cell */
+.corr-cell{cursor:pointer;transition:opacity .15s}
+.corr-cell:hover{opacity:.8}
+
+/* Mobile responsive */
+@media(max-width:640px){
+  .topbar{padding:8px 12px;font-size:12px}
+  .topbar .nr{gap:8px}
+  .tab-bar{padding:0 8px}
+  .tb{padding:8px 10px;font-size:11px}
+}
+
+/* Methodological note box */
+.meth-note{background:rgba(46,196,182,.04);border-left:3px solid #2EC4B6;padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:11px;color:#94A3B8;line-height:1.5}
+
+/* Export modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:#0f2240;border:1px solid rgba(46,196,182,.2);border-radius:12px;padding:24px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.5)}
 </style>
 </head>
 <body>
-<nav class="topbar">
-  <a href="../"><span style="font-size:16px">&#8592;</span> All Tools</a>
-  <div class="nr">
-    <span class="brand">PRAXIS</span>
-    <a href="../../">Home</a>
-    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank">GitHub</a>
-  </div>
-</nav>
 <div id="root"></div>
-<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
-<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/recharts@2.15.3/umd/Recharts.js"></script>
+<script>
+window.RechartsLib = window.Recharts || {};
+</script>
 <script type="text/babel">
 const {useState,useMemo,useCallback,useRef,useEffect}=React;
-const {BarChart,Bar,LineChart,Line,ScatterChart,Scatter,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer,ReferenceLine}=Recharts;
+const {BarChart,Bar,LineChart,Line,ScatterChart,Scatter,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer,ReferenceLine,Cell}=window.RechartsLib;
 
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTS & CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
 
-// ── Styles ──────────────────────────────────────────────────────
+const C={
+  navy:'#0B1A2E',navyLight:'#0f2240',navyMid:'#1a3050',
+  teal:'#2EC4B6',tealD:'#1a9e92',tealMuted:'rgba(46,196,182,0.12)',
+  textPrimary:'#E8ECF0',textSecondary:'#94A3B8',textTertiary:'#7A8FA0',
+  text:'#E8ECF0',text2:'#94A3B8',
+  success:'#34A853',warning:'#E8A317',error:'#E85D5D',purple:'#7B61FF',
+  off:'rgba(255,255,255,.06)',offB:'rgba(255,255,255,.08)',
+  pal:['#2EC4B6','#E8A317','#7B61FF','#E85D5D','#34A853','#FF6B9D','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7'],
+  lik5:['#E85D5D','#FBBC04','#6b8899','#34A853','#1a9e92'],
+  lik4:['#E85D5D','#FBBC04','#34A853','#1a9e92'],
+  divergingNeg:'#E85D5D',divergingZero:'#1a3050',divergingPos:'#2EC4B6'
+};
 
-const C={navy:"#0B1A2E",navyM:"#0f1f38",teal:"#2EC4B6",tealD:"#1a9e92",tealG:"rgba(46,196,182,0.12)",tealB:"rgba(46,196,182,.2)",slate:"#6b8899",slateL:"#A4B3C2",off:"rgba(255,255,255,.06)",offB:"rgba(255,255,255,.08)",text:"#E8ECF0",text2:"#8899AA",warm:"rgba(255,255,255,.02)",wh:"rgba(255,255,255,.03)",amber:"#E8A317",coral:"#E85D5D",green:"#34A853",purple:"#7B61FF",
-pal:["#2EC4B6","#E8A317","#7B61FF","#E85D5D","#34A853","#FF6B9D","#4ECDC4","#45B7D1","#96CEB4","#FFEAA7"],lik5:["#E85D5D","#FBBC04","#6b8899","#34A853","#1a9e92"],lik4:["#E85D5D","#FBBC04","#34A853","#1a9e92"]};
-
-// ── SVG Icons ───────────────────────────────────────────────────
 const I={
   users:<svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm-5 7a5 5 0 0110 0H3z" fill="#2EC4B6"/></svg>,
   tag:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h5.5l6.5 6.5-5.5 5.5L2 7.5V2z" stroke="#2EC4B6" strokeWidth="1.5" fill="none"/><circle cx="5.5" cy="5.5" r="1" fill="#2EC4B6"/></svg>,
@@ -78,542 +147,1460 @@ const I={
   clock:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#1a9e92" strokeWidth="1.5" fill="none"/><path d="M8 4v4.5l3 1.5" stroke="#1a9e92" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   trend:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="1,13 5,8 9,10 15,3" stroke="#2EC4B6" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   scatter:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="10" r="1.5" fill="#7B61FF"/><circle cx="7" cy="7" r="1.5" fill="#7B61FF"/><circle cx="11" cy="5" r="1.5" fill="#7B61FF"/><circle cx="13" cy="3" r="1.5" fill="#7B61FF" opacity=".5"/></svg>,
-  table:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="#5a7a8a" strokeWidth="1.2" fill="none"/><line x1="1" y1="5" x2="15" y2="5" stroke="#5a7a8a"/><line x1="6" y1="5" x2="6" y2="15" stroke="#5a7a8a"/></svg>,
+  table:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="#94A3B8" strokeWidth="1.2" fill="none"/><line x1="1" y1="5" x2="15" y2="5" stroke="#94A3B8"/><line x1="6" y1="5" x2="6" y2="15" stroke="#94A3B8"/></svg>,
   warn:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L1 14h14L8 1z" stroke="#E8A317" strokeWidth="1.2" fill="none"/><line x1="8" y1="6" x2="8" y2="10" stroke="#E8A317" strokeWidth="1.5" strokeLinecap="round"/><circle cx="8" cy="12" r=".8" fill="#E8A317"/></svg>,
-  book:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4.5c.8 0 1.5.7 1.5 1.5v10c0-.8-.7-1.5-1.5-1.5H2V2zm12 0H9.5C8.7 2 8 2.7 8 3.5v10c0-.8.7-1.5 1.5-1.5H14V2z" stroke="#5a7a8a" strokeWidth="1.2" fill="none"/></svg>,
+  book:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4.5c.8 0 1.5.7 1.5 1.5v10c0-.8-.7-1.5-1.5-1.5H2V2zm12 0H9.5C8.7 2 8 2.7 8 3.5v10c0-.8.7-1.5 1.5-1.5H14V2z" stroke="#94A3B8" strokeWidth="1.2" fill="none"/></svg>,
   grid:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="#2EC4B6" opacity=".3"/><rect x="9" y="1" width="6" height="6" rx="1" fill="#2EC4B6" opacity=".6"/><rect x="1" y="9" width="6" height="6" rx="1" fill="#2EC4B6" opacity=".6"/><rect x="9" y="9" width="6" height="6" rx="1" fill="#2EC4B6"/></svg>,
-  eye:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" stroke="#5a7a8a" strokeWidth="1.2" fill="none"/><circle cx="8" cy="8" r="2" stroke="#5a7a8a" strokeWidth="1.2" fill="none"/></svg>,
+  corr:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="4" height="4" rx="1" fill="#2EC4B6"/><rect x="6" y="1" width="4" height="4" rx="1" fill="#2EC4B6" opacity=".5"/><rect x="11" y="1" width="4" height="4" rx="1" fill="#2EC4B6" opacity=".2"/><rect x="1" y="6" width="4" height="4" rx="1" fill="#2EC4B6" opacity=".5"/><rect x="6" y="6" width="4" height="4" rx="1" fill="#2EC4B6"/><rect x="11" y="6" width="4" height="4" rx="1" fill="#E85D5D" opacity=".5"/><rect x="1" y="11" width="4" height="4" rx="1" fill="#2EC4B6" opacity=".2"/><rect x="6" y="11" width="4" height="4" rx="1" fill="#E85D5D" opacity=".5"/><rect x="11" y="11" width="4" height="4" rx="1" fill="#2EC4B6"/></svg>,
   upload:<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7 9m5-5l5 5" stroke="#2EC4B6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M20 16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2" stroke="#2EC4B6" strokeWidth="1.5" strokeLinecap="round"/></svg>,
 };
 
-// ── Core helpers ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// STATISTICAL ENGINE (from STATS-ENGINE-REFERENCE.js — verified implementations)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function normalCDF(x){
+  if(x<-8)return 0;if(x>8)return 1;
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const sign=x<0?-1:1,absX=Math.abs(x),t=1/(1+p*absX);
+  const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-absX*absX/2);
+  return 0.5*(1+sign*y);
+}
+function zToP(z){return 2*(1-normalCDF(Math.abs(z)));}
+
+function lnGamma(z){
+  if(z<0.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-lnGamma(1-z);
+  z-=1;const g=7;
+  const coef=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  let x=coef[0];for(let i=1;i<g+2;i++)x+=coef[i]/(z+i);
+  const t=z+g+0.5;
+  return 0.5*Math.log(2*Math.PI)+(z+0.5)*Math.log(t)-t+Math.log(x);
+}
+
+function betaIncomplete(a,b,x){
+  if(x<0||x>1)return NaN;if(x===0)return 0;if(x===1)return 1;
+  if(x>(a+1)/(a+b+2))return 1-betaIncomplete(b,a,1-x);
+  const lnBeta=lnGamma(a)+lnGamma(b)-lnGamma(a+b);
+  const front=Math.exp(Math.log(x)*a+Math.log(1-x)*b-lnBeta)/a;
+  const maxIter=200,eps=1e-14;let f=1,c=1,d=0;
+  for(let i=0;i<=maxIter;i++){
+    let m=Math.floor(i/2),num;
+    if(i===0)num=1;
+    else if(i%2===0)num=(m*(b-m)*x)/((a+2*m-1)*(a+2*m));
+    else num=-((a+m)*(a+b+m)*x)/((a+2*m)*(a+2*m+1));
+    d=1+num*d;if(Math.abs(d)<1e-30)d=1e-30;d=1/d;
+    c=1+num/c;if(Math.abs(c)<1e-30)c=1e-30;
+    const delta=c*d;f*=delta;
+    if(Math.abs(delta-1)<eps)break;
+  }
+  return front*(f-1);
+}
+
+function tCDF(t,df){
+  if(df<=0)return NaN;if(t===0)return 0.5;
+  const x=df/(df+t*t);
+  const prob=0.5*betaIncomplete(df/2,0.5,x);
+  return t>0?1-prob:prob;
+}
+function tToP(t,df){if(df<=0)return NaN;return 2*(1-tCDF(Math.abs(t),df));}
+
+function gammaIncomplete(a,x){
+  if(x<0)return 0;if(x===0)return 0;
+  if(x<a+1){
+    let sum=1/a,term=1/a;
+    for(let n=1;n<200;n++){term*=x/(a+n);sum+=term;if(Math.abs(term)<Math.abs(sum)*1e-14)break;}
+    return sum*Math.exp(-x+a*Math.log(x)-lnGamma(a));
+  }else{
+    let b=x+1-a,cc=1e30,dd=1/b,h=dd;
+    for(let i=1;i<=200;i++){
+      const an=-i*(i-a);b+=2;
+      dd=an*dd+b;if(Math.abs(dd)<1e-30)dd=1e-30;
+      cc=b+an/cc;if(Math.abs(cc)<1e-30)cc=1e-30;
+      dd=1/dd;const delta=dd*cc;h*=delta;
+      if(Math.abs(delta-1)<1e-14)break;
+    }
+    return 1-Math.exp(-x+a*Math.log(x)-lnGamma(a))*h;
+  }
+}
+
+function chiSquaredCDF(x,df){if(x<=0)return 0;return gammaIncomplete(df/2,x/2);}
+
+function fCDF(x,d1,d2){
+  if(x<=0)return 0;
+  const z=(d1*x)/(d1*x+d2);
+  return betaIncomplete(d1/2,d2/2,z);
+}
+
+function tCriticalValue(alpha,df){
+  let lo=0,hi=20;
+  for(let i=0;i<100;i++){
+    const mid=(lo+hi)/2;
+    if(1-tCDF(mid,df)>alpha)lo=mid;else hi=mid;
+    if(hi-lo<1e-8)break;
+  }
+  return(lo+hi)/2;
+}
+
+function descriptiveStats(nums){
+  if(!nums.length)return null;
+  const sorted=[...nums].sort((a,b)=>a-b);const n=sorted.length;
+  const sum=sorted.reduce((s,v)=>s+v,0);const mean=sum/n;
+  const variance=n>1?sorted.reduce((s,v)=>s+(v-mean)**2,0)/(n-1):0;
+  const sd=Math.sqrt(variance);const se=n>0?sd/Math.sqrt(n):0;
+  const quantile=(arr,p)=>{if(arr.length===1)return arr[0];const h=(arr.length-1)*p;const lo=Math.floor(h),hi=Math.ceil(h);return arr[lo]+(arr[hi]-arr[lo])*(h-lo);};
+  const median=quantile(sorted,0.5),q1=quantile(sorted,0.25),q3=quantile(sorted,0.75),iqr=q3-q1;
+  let skewness=0;
+  if(n>2&&sd>0){const m3=sorted.reduce((s,v)=>s+((v-mean)/sd)**3,0);skewness=(n*m3)/((n-1)*(n-2));}
+  let kurtosis=0;
+  if(n>3&&sd>0){const m4=sorted.reduce((s,v)=>s+((v-mean)/sd)**4,0);kurtosis=((n*(n+1))/((n-1)*(n-2)*(n-3)))*m4-(3*(n-1)**2)/((n-2)*(n-3));}
+  return{n,mean,sd,se,variance,median,q1,q3,iqr,min:sorted[0],max:sorted[n-1],skewness,kurtosis,sorted};
+}
+
+function olsRegression(xs,ys){
+  const pairs=[];
+  for(let i=0;i<xs.length;i++){
+    if(xs[i]!=null&&ys[i]!=null&&!isNaN(xs[i])&&!isNaN(ys[i]))pairs.push({x:Number(xs[i]),y:Number(ys[i])});
+  }
+  const n=pairs.length;if(n<3)return null;
+  let sx=0,sy=0,sxy=0,sxx=0;
+  for(const p of pairs){sx+=p.x;sy+=p.y;sxy+=p.x*p.y;sxx+=p.x*p.x;}
+  const xMean=sx/n,yMean=sy/n,sxxC=sxx-n*xMean*xMean;
+  if(sxxC===0)return null;
+  const slope=(sxy-n*xMean*yMean)/sxxC,intercept=yMean-slope*xMean;
+  const residuals=pairs.map(p=>p.y-(intercept+slope*p.x));
+  const ssr=residuals.reduce((s,r)=>s+r*r,0);
+  const sst=pairs.reduce((s,p)=>s+(p.y-yMean)**2,0);
+  const sse=sst-ssr;
+  const r2=sst>0?1-ssr/sst:0;
+  const adjR2=n>2?1-(1-r2)*(n-1)/(n-2):r2;
+  const mse=ssr/(n-2);const seReg=Math.sqrt(mse);
+  const seSlope=Math.sqrt(mse/sxxC);
+  const seIntercept=Math.sqrt(mse*(1/n+xMean*xMean/sxxC));
+  const tSlope=slope/seSlope,tIntercept=intercept/seIntercept;
+  const df=n-2;
+  const pSlope=tToP(tSlope,df),pIntercept=tToP(tIntercept,df);
+  const fStat=sst>0?(sse/1)/(ssr/(n-2)):0;
+  const pF=1-fCDF(fStat,1,n-2);
+  const tCrit=tCriticalValue(0.025,df);
+  const ciSlope=[slope-tCrit*seSlope,slope+tCrit*seSlope];
+  const ciIntercept=[intercept-tCrit*seIntercept,intercept+tCrit*seIntercept];
+  let dw=0;for(let i=1;i<residuals.length;i++)dw+=(residuals[i]-residuals[i-1])**2;
+  dw/=(ssr||1);
+  return{type:'ols',n,df,slope,intercept,seSlope,seIntercept,seReg,tSlope,tIntercept,pSlope,pIntercept,r2,adjR2,fStat,pF,ciSlope,ciIntercept,dw,residuals,fitted:pairs.map(p=>intercept+slope*p.x),pairs};
+}
+
+function logisticRegression(xs,ys){
+  const pairs=[];
+  for(let i=0;i<xs.length;i++){
+    if(xs[i]!=null&&ys[i]!=null&&!isNaN(xs[i])&&!isNaN(ys[i])){
+      const yv=Number(ys[i]);if(yv===0||yv===1)pairs.push({x:Number(xs[i]),y:yv});
+    }
+  }
+  const n=pairs.length;if(n<5)return null;
+  const dx=pairs.map(p=>p.x),dy=pairs.map(p=>p.y);
+  let b0=0,b1=0;
+  for(let iter=0;iter<30;iter++){
+    let g0=0,g1=0,h00=0,h01=0,h11=0;
+    for(let i=0;i<n;i++){
+      const z=b0+b1*dx[i];const p=1/(1+Math.exp(-Math.max(-20,Math.min(20,z))));
+      const r=dy[i]-p;const w=p*(1-p)+1e-10;
+      g0+=r;g1+=r*dx[i];h00+=w;h01+=w*dx[i];h11+=w*dx[i]*dx[i];
+    }
+    const det=h00*h11-h01*h01;if(Math.abs(det)<1e-12)break;
+    const db0=(h11*g0-h01*g1)/det,db1=(h00*g1-h01*g0)/det;
+    b0+=db0;b1+=db1;if(Math.abs(db0)<1e-8&&Math.abs(db1)<1e-8)break;
+  }
+  let h00=0,h01=0,h11=0,ll=0;const predicted=[];
+  for(let i=0;i<n;i++){
+    const z=b0+b1*dx[i];const p=1/(1+Math.exp(-Math.max(-20,Math.min(20,z))));
+    const w=p*(1-p)+1e-10;h00+=w;h01+=w*dx[i];h11+=w*dx[i]*dx[i];
+    ll+=dy[i]*Math.log(p+1e-10)+(1-dy[i])*Math.log(1-p+1e-10);
+    predicted.push({x:dx[i],y:dy[i],prob:p});
+  }
+  const det=h00*h11-h01*h01;if(Math.abs(det)<1e-12)return null;
+  const se0=Math.sqrt(h11/det),se1=Math.sqrt(h00/det);
+  const z1=b1/se1;
+  const pVal=zToP(z1);
+  const or=Math.exp(b1),orLo=Math.exp(b1-1.96*se1),orHi=Math.exp(b1+1.96*se1);
+  const yMean=dy.reduce((a,v)=>a+v,0)/n;
+  const llNull=n*(yMean*Math.log(yMean+1e-10)+(1-yMean)*Math.log(1-yMean+1e-10));
+  const pseudoR2=llNull!==0?1-ll/llNull:0;
+  let tp=0,tn=0,fp=0,fn=0;
+  for(const p of predicted){const pred=p.prob>=0.5?1:0;if(p.y===1&&pred===1)tp++;else if(p.y===0&&pred===0)tn++;else if(p.y===0&&pred===1)fp++;else fn++;}
+  const accuracy=(tp+tn)/n,sensitivity=tp+fn>0?tp/(tp+fn):0,specificity=tn+fp>0?tn/(tn+fp):0;
+  const pos=predicted.filter(p=>p.y===1).map(p=>p.prob),neg=predicted.filter(p=>p.y===0).map(p=>p.prob);
+  let concordant=0;for(const pp of pos)for(const np of neg){if(pp>np)concordant++;else if(pp===np)concordant+=0.5;}
+  const auc=pos.length>0&&neg.length>0?concordant/(pos.length*neg.length):0.5;
+  return{type:'logistic',n,b0,b1,se0,se1,z:Math.abs(z1),pVal,or,orLo,orHi,ll,pseudoR2,classification:{tp,tn,fp,fn,accuracy,sensitivity,specificity},auc,predicted,pairs};
+}
+
+function chiSquareTest(observed){
+  const nRows=observed.length,nCols=observed[0].length;
+  const rowTotals=observed.map(r=>r.reduce((s,v)=>s+v,0));
+  const colTotals=observed[0].map((_,j)=>observed.reduce((s,r)=>s+r[j],0));
+  const total=rowTotals.reduce((s,v)=>s+v,0);
+  if(total===0)return null;
+  let chiSq=0,minExpected=Infinity,cellsBelow5=0;const expected=[];
+  for(let i=0;i<nRows;i++){expected[i]=[];for(let j=0;j<nCols;j++){
+    const e=(rowTotals[i]*colTotals[j])/total;expected[i][j]=e;
+    if(e<5)cellsBelow5++;minExpected=Math.min(minExpected,e);
+    if(e>0)chiSq+=(observed[i][j]-e)**2/e;
+  }}
+  const df=(nRows-1)*(nCols-1);
+  const pValue=df>0?1-chiSquaredCDF(chiSq,df):1;
+  const cramersV=total>0&&Math.min(nRows,nCols)>1?Math.sqrt(chiSq/(total*(Math.min(nRows,nCols)-1))):0;
+  const vDf=Math.min(nRows,nCols)-1;
+  let vInterp='negligible';
+  if(vDf===1){if(cramersV>=0.5)vInterp='large';else if(cramersV>=0.3)vInterp='medium';else if(cramersV>=0.1)vInterp='small';}
+  else if(vDf===2){if(cramersV>=0.35)vInterp='large';else if(cramersV>=0.21)vInterp='medium';else if(cramersV>=0.07)vInterp='small';}
+  else{if(cramersV>=0.29)vInterp='large';else if(cramersV>=0.17)vInterp='medium';else if(cramersV>=0.06)vInterp='small';}
+  const totalCells=nRows*nCols;const warnings=[];
+  if(minExpected<1)warnings.push('Expected counts < 1 in some cells. Results unreliable.');
+  else if(cellsBelow5/totalCells>0.2)warnings.push(`${Math.round(cellsBelow5/totalCells*100)}% of cells have expected counts < 5. Consider collapsing categories.`);
+  else if(minExpected<5)warnings.push('Some expected counts < 5. Interpret with caution.');
+  return{chiSq,df,pValue,cramersV,vInterp,expected,minExpected,cellsBelow5,warnings,total};
+}
+
+function fisherExact2x2(a,b,c,d){
+  const n=a+b+c+d,r1=a+b,r2=c+d,c1=a+c,c2=b+d;
+  const lf=[0];for(let i=1;i<=n;i++)lf[i]=lf[i-1]+Math.log(i);
+  const tableP=(aa)=>{const bb=r1-aa,cc=c1-aa,dd=r2-cc;if(bb<0||cc<0||dd<0)return 0;return Math.exp(lf[r1]+lf[r2]+lf[c1]+lf[c2]-lf[n]-lf[aa]-lf[bb]-lf[cc]-lf[dd]);};
+  const pObs=tableP(a);let pValue=0;
+  const minA=Math.max(0,r1-c2),maxA=Math.min(r1,c1);
+  for(let aa=minA;aa<=maxA;aa++){const p=tableP(aa);if(p<=pObs+1e-12)pValue+=p;}
+  return Math.min(pValue,1);
+}
+
+function cronbachAlpha(items){
+  const k=items.length;if(k<2)return null;
+  const n=items[0].length;const validRows=[];
+  for(let i=0;i<n;i++){if(items.every(item=>item[i]!=null&&!isNaN(Number(item[i]))))validRows.push(i);}
+  if(validRows.length<3)return null;
+  const nValid=validRows.length;
+  const itemVars=items.map(item=>{const vals=validRows.map(i=>Number(item[i]));const m=vals.reduce((s,v)=>s+v,0)/nValid;return vals.reduce((s,v)=>s+(v-m)**2,0)/(nValid-1);});
+  const totals=validRows.map(i=>items.reduce((s,item)=>s+Number(item[i]),0));
+  const totalMean=totals.reduce((s,v)=>s+v,0)/nValid;
+  const totalVar=totals.reduce((s,v)=>s+(v-totalMean)**2,0)/(nValid-1);
+  if(totalVar===0)return null;
+  const sumItemVars=itemVars.reduce((s,v)=>s+v,0);
+  const alpha=(k/(k-1))*(1-sumItemVars/totalVar);
+  let interpretation;
+  if(alpha>=0.9)interpretation='Excellent';else if(alpha>=0.8)interpretation='Good';else if(alpha>=0.7)interpretation='Acceptable';else if(alpha>=0.6)interpretation='Questionable';else if(alpha>=0.5)interpretation='Poor';else interpretation='Unacceptable';
+  return{alpha,k,nValid,itemVars,totalVar,interpretation};
+}
+
+function pearsonCorrelation(xs,ys){
+  let n=0,sx=0,sy=0,sxy=0,sxx=0,syy=0;
+  for(let i=0;i<xs.length;i++){
+    if(xs[i]!=null&&ys[i]!=null&&!isNaN(Number(xs[i]))&&!isNaN(Number(ys[i]))){
+      const x=Number(xs[i]),y=Number(ys[i]);n++;sx+=x;sy+=y;sxy+=x*y;sxx+=x*x;syy+=y*y;
+    }
+  }
+  if(n<3)return null;
+  const denom=Math.sqrt((n*sxx-sx*sx)*(n*syy-sy*sy));
+  if(denom===0)return{r:0,t:0,p:1,n};
+  const r=(n*sxy-sx*sy)/denom;
+  const rClamped=Math.max(-0.9999999,Math.min(0.9999999,r));
+  const t=rClamped*Math.sqrt((n-2)/(1-rClamped*rClamped));
+  const p=tToP(t,n-2);
+  return{r,t,p,n};
+}
+
+function histogramBins(values){
+  if(!values.length)return[];
+  const sorted=[...values].sort((a,b)=>a-b);const n=sorted.length;
+  const min=sorted[0],max=sorted[n-1];
+  if(min===max)return[{binStart:min,binEnd:max,count:n,label:String(min)}];
+  const nBins=Math.max(5,Math.min(30,Math.ceil(1+3.322*Math.log10(n))));
+  const binWidth=(max-min)/nBins;const bins=[];
+  for(let i=0;i<nBins;i++){
+    const start=min+i*binWidth;const end=i===nBins-1?max+0.001:min+(i+1)*binWidth;
+    bins.push({binStart:start,binEnd:end,count:0,label:start.toFixed(1)});
+  }
+  for(const v of sorted){const idx=Math.min(Math.floor((v-min)/binWidth),nBins-1);bins[idx].count++;}
+  return bins;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA PARSING & TYPING (ported from v3 with enhancements)
+// ═══════════════════════════════════════════════════════════════════════════
+
 const norm=s=>s.replace(/[\u2018\u2019\u201A\u201B\u2032\u0060\u00B4]/g,"'");
 const trunc=(s,n=50)=>s&&s.length>n?s.substring(0,n)+"\u2026":s;
 const fmt=(n,d=1)=>typeof n==="number"?n.toFixed(d):n;
+const fmtP=p=>p<0.001?"< 0.001":p.toFixed(3);
+
 const META=[/^_id$/i,/^_uuid$/i,/^_submission_time$/i,/^_validation_status$/i,/^_notes$/i,/^_status$/i,/^_submitted_by$/i,/^_tags$/i,/^_index$/i,/^__version__$/i,/^formhub/i,/^start$/i,/^end$/i,/^today$/i,/^date$/i,/^deviceid$/i,/^phonenumber$/i,/^instanceID$/i,/^meta\//i,/_latitude$/i,/_longitude$/i,/_altitude$/i,/_precision$/i,/^latitude$/i,/^longitude$/i,/^gps$/i,/coordonn/i,/^timestamp$/i,/^event_id/i];
 const isMeta=n=>META.some(p=>p.test(n));
+
 function idKobo(h){const sl=h.filter(x=>x&&x.includes("/"));const pc=new Set();sl.forEach(x=>pc.add(x.split("/")[0].trim()));const rp=new Set(h.filter(x=>pc.has(x)));const dm=new Set();sl.forEach(x=>{if(rp.has(x.split("/")[0].trim()))dm.add(x);});return{dm,rp};}
+
 const LEN={"strongly agree":5,"agree":4,"neutral":3,"neither agree nor disagree":3,"disagree":2,"strongly disagree":1};
-const LFR=Object.entries({"tout a fait d'accord":5,"tout à fait d'accord":5,"tres d'accord":5,"très d'accord":5,"plutot d'accord":4,"plutôt d'accord":4,"d'accord":4,"ni d'accord ni pas d'accord":3,"ni d'accord ni en desaccord":3,"ni d'accord ni en désaccord":3,"ni d'accord ni desaccord":3,"neutre":3,"plutot en desaccord":2,"plutôt en désaccord":2,"pas d'accord":2,"desaccord":2,"désaccord":2,"en desaccord":2,"en désaccord":2,"tout a fait en desaccord":1,"tout à fait en désaccord":1,"pas du tout d'accord":1,"tres a l'aise":4,"très à l'aise":4,"plutot a l'aise":3,"plutôt à l'aise":3,"plutot mal a l'aise":2,"plutôt mal à l'aise":2,"tres mal a l'aise":1,"très mal à l'aise":1}).sort((a,b)=>b[0].length-a[0].length);
+const LFR=Object.entries({"tout a fait d'accord":5,"tout \u00e0 fait d'accord":5,"tres d'accord":5,"tr\u00e8s d'accord":5,"plutot d'accord":4,"plut\u00f4t d'accord":4,"d'accord":4,"ni d'accord ni pas d'accord":3,"ni d'accord ni en desaccord":3,"ni d'accord ni en d\u00e9saccord":3,"ni d'accord ni desaccord":3,"neutre":3,"plutot en desaccord":2,"plut\u00f4t en d\u00e9saccord":2,"pas d'accord":2,"desaccord":2,"d\u00e9saccord":2,"en desaccord":2,"en d\u00e9saccord":2,"tout a fait en desaccord":1,"tout \u00e0 fait en d\u00e9saccord":1,"pas du tout d'accord":1,"tres a l'aise":4,"tr\u00e8s \u00e0 l'aise":4,"plutot a l'aise":3,"plut\u00f4t \u00e0 l'aise":3,"plutot mal a l'aise":2,"plut\u00f4t mal \u00e0 l'aise":2,"tres mal a l'aise":1,"tr\u00e8s mal \u00e0 l'aise":1}).sort((a,b)=>b[0].length-a[0].length);
+
 function detLik(v){if(v==null)return null;const r=String(v).trim();if(!r)return null;const s=norm(r).toLowerCase();const em=s.match(/\((\d)\)/);if(em)return+em[1];const lm=s.match(/^(\d)\s*[:.]/);if(lm)return+lm[1];if(LEN[s]!==undefined)return LEN[s];for(const[k,val]of LFR)if(s.includes(norm(k)))return val;const n=Number(v);if(!isNaN(n)&&n>=1&&n<=5&&Number.isInteger(n))return n;return null;}
+
 function isLikCol(vs){const nn=vs.filter(v=>v!=null&&String(v).trim());if(nn.length<3||nn.every(v=>v===0||v===1||v==="0"||v==="1"))return false;for(const v of nn){const n=Number(v);if(!isNaN(n)&&Number.isInteger(n)&&n>5)return false;}return nn.map(detLik).filter(v=>v!==null).length/nn.length>.7;}
+
 function scRng(vs){const p=vs.map(detLik).filter(v=>v!==null);if(!p.length)return{mn:1,mx:5,pts:5};return{mn:Math.min(...p),mx:Math.max(...p),pts:Math.max(...p)-Math.min(...p)+1};}
+
 function pDate(v){if(v instanceof Date&&!isNaN(v))return v;const s=String(v).trim();const d1=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);if(d1){const d=new Date(+d1[3],+d1[2]-1,+d1[1]);if(!isNaN(d))return d;}const d2=s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);if(d2){const d=new Date(+d2[1],+d2[2]-1,+d2[3]);if(!isNaN(d))return d;}return null;}
+
 function isDateC(vs){const nn=vs.filter(v=>v!=null&&String(v).trim()).slice(0,50);if(nn.length<3)return false;return nn.map(pDate).filter(v=>v!==null).length/nn.length>.7;}
-function dType(name,vals,dummies){if(isMeta(name))return"meta";if(dummies.has(name))return"kobo_dummy";const nn=vals.filter(v=>v!=null&&String(v).trim()!=="");if(!nn.length)return"empty";if(nn.slice(0,5).every(v=>v instanceof Date))return"date";if(nn.every(v=>v===0||v===1||v==="0"||v==="1")&&nn.length>5)return"binary";if(isDateC(nn))return"date";if(isLikCol(nn))return"likert";const nc=nn.filter(v=>!isNaN(Number(v))&&typeof v!=="boolean").length;if(nc/nn.length>.85){const u=new Set(nn.map(Number));if(u.size<=15&&u.size<nn.length*.3)return"ordinal_numeric";return"numeric";}const al=nn.reduce((s,v)=>s+String(v).length,0)/nn.length;if(al>80)return"text";const u=new Set(nn.map(v=>String(v).trim()));if(u.size<=1)return"constant";if(u.size<=30)return"categorical";if(u.size<=60&&u.size<nn.length*.5)return"categorical";return"text";}
-function cStats(nums){const s=[...nums].sort((a,b)=>a-b),n=s.length;if(!n)return{n:0,mean:"-",sd:"-",med:"-",min:"-",max:"-"};const m=s.reduce((a,v)=>a+v,0)/n;const v=n>1?s.reduce((a,x)=>a+(x-m)**2,0)/(n-1):0;return{n,mean:m.toFixed(2),sd:Math.sqrt(v).toFixed(2),med:(n%2?s[Math.floor(n/2)]:(s[n/2-1]+s[n/2])/2).toFixed(1),min:s[0],max:s[n-1]};}
+
+function dType(name,vals,dummies){
+  if(isMeta(name))return"meta";if(dummies.has(name))return"kobo_dummy";
+  const nn=vals.filter(v=>v!=null&&String(v).trim()!=="");if(!nn.length)return"empty";
+  if(nn.slice(0,5).every(v=>v instanceof Date))return"date";
+  if(nn.every(v=>v===0||v===1||v==="0"||v==="1")&&nn.length>5)return"binary";
+  if(isDateC(nn))return"date";if(isLikCol(nn))return"likert";
+  const nc=nn.filter(v=>!isNaN(Number(v))&&typeof v!=="boolean").length;
+  if(nc/nn.length>.85){const u=new Set(nn.map(Number));if(u.size<=15&&u.size<nn.length*.3)return"ordinal_numeric";return"numeric";}
+  const al=nn.reduce((s,v)=>s+String(v).length,0)/nn.length;if(al>80)return"text";
+  const u=new Set(nn.map(v=>String(v).trim()));if(u.size<=1)return"constant";
+  if(u.size<=30)return"categorical";if(u.size<=60&&u.size<nn.length*.5)return"categorical";return"text";
+}
+
 function freqT(vs){const c={};let t=0;vs.forEach(v=>{if(v!=null&&String(v).trim()){const k=String(v).trim();c[k]=(c[k]||0)+1;t++;}});return Object.entries(c).map(([v,n])=>({value:v,count:n,pct:t?((n/t)*100).toFixed(1):"0"})).sort((a,b)=>b.count-a.count);}
-function ols(xs,ys){let n=0,sx=0,sy=0,sxy=0,sxx=0;for(let i=0;i<xs.length;i++){if(xs[i]!=null&&ys[i]!=null&&!isNaN(xs[i])&&!isNaN(ys[i])){n++;sx+=xs[i];sy+=ys[i];sxy+=xs[i]*ys[i];sxx+=xs[i]*xs[i];}}if(n<3)return null;const xm=sx/n,ym=sy/n,sl=(sxy-n*xm*ym)/(sxx-n*xm*xm),ic=ym-sl*xm;let ssr=0,sst=0;for(let i=0;i<xs.length;i++){if(xs[i]!=null&&ys[i]!=null&&!isNaN(xs[i])&&!isNaN(ys[i])){ssr+=(ys[i]-(ic+sl*xs[i]))**2;sst+=(ys[i]-ym)**2;}}const r2=sst>0?1-ssr/sst:0,se=Math.sqrt(ssr/(n-2)),seS=se/Math.sqrt(sxx-n*xm*xm),tS=Math.abs(sl/seS),p=Math.min(Math.exp(-.717*tS-.416*tS*tS),1);return{sl,ic,r2,n,seS,tS,p,type:"ols"};}
 
-// Logistic regression via IRLS (Newton-Raphson)
-function logReg(xs, ys) {
-  // Filter valid pairs where y is 0 or 1
-  const dx = [], dy = [];
-  for (let i = 0; i < xs.length; i++) {
-    if (xs[i] != null && ys[i] != null && !isNaN(xs[i]) && !isNaN(ys[i])) {
-      const yv = Number(ys[i]);
-      if (yv === 0 || yv === 1) { dx.push(Number(xs[i])); dy.push(yv); }
-    }
-  }
-  const n = dx.length;
-  if (n < 5) return null;
-  // IRLS: b = [intercept, slope]
-  let b0 = 0, b1 = 0;
-  for (let iter = 0; iter < 25; iter++) {
-    let g0 = 0, g1 = 0; // gradient
-    let h00 = 0, h01 = 0, h11 = 0; // Hessian
-    for (let i = 0; i < n; i++) {
-      const z = b0 + b1 * dx[i];
-      const p = 1 / (1 + Math.exp(-Math.max(-20, Math.min(20, z)))); // sigmoid with clamp
-      const r = dy[i] - p;
-      const w = p * (1 - p) + 1e-10;
-      g0 += r; g1 += r * dx[i];
-      h00 += w; h01 += w * dx[i]; h11 += w * dx[i] * dx[i];
-    }
-    const det = h00 * h11 - h01 * h01;
-    if (Math.abs(det) < 1e-12) break;
-    const db0 = (h11 * g0 - h01 * g1) / det;
-    const db1 = (h00 * g1 - h01 * g0) / det;
-    b0 += db0; b1 += db1;
-    if (Math.abs(db0) < 1e-8 && Math.abs(db1) < 1e-8) break;
-  }
-  // Compute SE from final Hessian
-  let h00 = 0, h01 = 0, h11 = 0, ll = 0;
-  for (let i = 0; i < n; i++) {
-    const z = b0 + b1 * dx[i];
-    const p = 1 / (1 + Math.exp(-Math.max(-20, Math.min(20, z))));
-    const w = p * (1 - p) + 1e-10;
-    h00 += w; h01 += w * dx[i]; h11 += w * dx[i] * dx[i];
-    ll += dy[i] * Math.log(p + 1e-10) + (1 - dy[i]) * Math.log(1 - p + 1e-10);
-  }
-  const det = h00 * h11 - h01 * h01;
-  if (Math.abs(det) < 1e-12) return null;
-  const se0 = Math.sqrt(h11 / det);
-  const se1 = Math.sqrt(h00 / det);
-  const z1 = Math.abs(b1 / se1);
-  const pVal = Math.min(Math.exp(-.717 * z1 - .416 * z1 * z1), 1);
-  const or = Math.exp(b1);
-  const orLo = Math.exp(b1 - 1.96 * se1);
-  const orHi = Math.exp(b1 + 1.96 * se1);
-  // Pseudo R-squared (McFadden)
-  const yMean = dy.reduce((a, v) => a + v, 0) / n;
-  const llNull = n * (yMean * Math.log(yMean + 1e-10) + (1 - yMean) * Math.log(1 - yMean + 1e-10));
-  const pseudoR2 = 1 - ll / llNull;
-  return { b0, b1, se0, se1, z: z1, p: pVal, or, orLo, orHi, ll, pseudoR2, n, type: "logistic" };
+function isBinaryY(yVals){const valid=yVals.filter(v=>v!=null&&!isNaN(v));if(valid.length<5)return false;const uniq=new Set(valid.map(Number));return uniq.size===2&&uniq.has(0)&&uniq.has(1);}
+
+function pFile(buf,fn){
+  const wb=XLSX.read(buf,{type:"array",cellDates:true});
+  let bs=wb.SheetNames[0],br=0;
+  for(const n of wb.SheetNames){const r=XLSX.utils.decode_range(wb.Sheets[n]["!ref"]||"A1");if(r.e.r-r.s.r>br){br=r.e.r-r.s.r;bs=n;}}
+  const raw=XLSX.utils.sheet_to_json(wb.Sheets[bs],{defval:null});
+  if(!raw.length)return null;
+  const hd=Object.keys(raw[0]);const{dm,rp}=idKobo(hd);
+  const cols=hd.map(h=>{const vs=raw.map(r=>r[h]);const t=dType(h,vs,dm);const nn=vs.filter(v=>v!=null&&String(v).trim()!=="");return{name:h,type:t,values:vs,nonNull:nn.length,missing:vs.length-nn.length,missPct:(((vs.length-nn.length)/vs.length)*100).toFixed(1)};});
+  const ah=hd.join(" ").toLowerCase();
+  const fr=(ah.match(/\b(du|de|le|la|les|des|est|une|vous|votre|dans|avec|que|par)\b/g)||[]).length;
+  return{fn,sheet:bs,sheetN:wb.SheetNames.length,rows:raw.length,colN:hd.length,cols,kbP:[...rp],lang:fr>5?"fr":"en",raw};
 }
 
-// Detect if Y is binary (0/1) for auto model selection
-function isBinaryY(yVals) {
-  const valid = yVals.filter(v => v != null && !isNaN(v));
-  if (valid.length < 5) return false;
-  const uniq = new Set(valid.map(Number));
-  return uniq.size === 2 && uniq.has(0) && uniq.has(1);
-}
-function pFile(buf,fn){const wb=XLSX.read(buf,{type:"array",cellDates:true});let bs=wb.SheetNames[0],br=0;for(const n of wb.SheetNames){const r=XLSX.utils.decode_range(wb.Sheets[n]["!ref"]||"A1");if(r.e.r-r.s.r>br){br=r.e.r-r.s.r;bs=n;}}const raw=XLSX.utils.sheet_to_json(wb.Sheets[bs],{defval:null});if(!raw.length)return null;const hd=Object.keys(raw[0]);const{dm,rp}=idKobo(hd);const cols=hd.map(h=>{const vs=raw.map(r=>r[h]);const t=dType(h,vs,dm);const nn=vs.filter(v=>v!=null&&String(v).trim()!=="");return{name:h,type:t,values:vs,nonNull:nn.length,missing:vs.length-nn.length,missPct:(((vs.length-nn.length)/vs.length)*100).toFixed(1)};});const ah=hd.join(" ").toLowerCase();const fr=(ah.match(/\b(du|de|le|la|les|des|est|une|vous|votre|dans|avec|que|par)\b/g)||[]).length;return{fn,sheet:bs,sheetN:wb.SheetNames.length,rows:raw.length,colN:hd.length,cols,kbP:[...rp],lang:fr>5?"fr":"en",raw};}
+// ═══════════════════════════════════════════════════════════════════════════
+// WEB WORKER FOR FILE PARSING
+// ═══════════════════════════════════════════════════════════════════════════
 
-// ── Word Export with Garamond + inline visualizations ────────────
-function exportToWord(data, cols, a) {
-  const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  // CSS bar: a colored inline block that Word HTML renders
-  const bar = (pct, color, w=200) => `<span style="display:inline-block;background:${color};height:14px;width:${Math.max(2, Math.round(pct/100*w))}px;border-radius:2px;vertical-align:middle"></span>`;
-  // Likert stacked bar row: colored cells proportional to percentages
-  const likBar = (pcts, colors) => {
-    let h = '<table style="width:100%;border-collapse:collapse;margin:2pt 0"><tr>';
-    pcts.forEach((p, i) => {
-      if (p > 0) h += `<td style="background:${colors[i]};width:${p}%;height:16px;border:none;padding:0;text-align:center;font-size:7pt;color:${i===2&&pcts.length===5?'#333':'#fff'};font-weight:bold">${p >= 10 ? p + '%' : ''}</td>`;
-    });
-    h += '</tr></table>';
-    return h;
-  };
-
-  const hdr = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Data Analysis Report</title>
-<style>
-@page{size:A4;margin:2.2cm}
-body{font-family:Garamond,'Times New Roman',Georgia,serif;font-size:11pt;color:#1a1a1a;line-height:1.55}
-h1{font-family:Garamond,'Times New Roman',serif;font-size:20pt;color:#0B1A2E;border-bottom:2.5pt solid #2EC4B6;padding-bottom:8pt;margin-bottom:6pt;letter-spacing:0.5pt}
-h2{font-family:Garamond,'Times New Roman',serif;font-size:14pt;color:#0B1A2E;margin-top:22pt;margin-bottom:8pt;border-bottom:1pt solid #ccc;padding-bottom:4pt}
-h3{font-family:Garamond,'Times New Roman',serif;font-size:12pt;color:#1a3050;margin-top:16pt;margin-bottom:4pt}
-table{border-collapse:collapse;width:100%;margin:6pt 0}
-th{background:#0B1A2E;color:white;padding:7pt 9pt;text-align:left;font-size:9.5pt;font-family:Garamond,'Times New Roman',serif;font-weight:bold}
-td{border:1px solid #d9d9d9;padding:5pt 9pt;font-size:10pt;vertical-align:middle}
-tr:nth-child(even) td{background:#f6f8fa}
-.hl td{background:#e4f7f4;font-weight:bold}
-.note{background:#f0f5f8;border-left:3pt solid #2EC4B6;padding:10pt 14pt;margin:10pt 0;font-size:10pt;font-style:italic}
-.footer{margin-top:28pt;padding-top:8pt;border-top:1pt solid #ccc;font-size:8.5pt;color:#888;text-align:center}
-.meta{color:#555;font-size:10pt;margin-bottom:6pt;line-height:1.4}
-.badge{display:inline-block;background:#e4f7f4;color:#0B1A2E;padding:2pt 8pt;border-radius:3pt;font-size:9pt;font-weight:bold;border:1pt solid #2EC4B6}
-.teal{color:#1a9e92;font-weight:bold}
-.chart-label{font-size:9pt;color:#555;width:160px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6pt}
-.chart-bar td{border:none;padding:2pt 4pt;font-size:9pt}
-</style></head><body>`;
-
-  let html = hdr;
-
-  // Title block
-  html += `<h1>Data Analysis Report</h1>`;
-  html += `<p class="meta"><b>File:</b> ${esc(data.fn)}<br><b>Sheet:</b> ${esc(data.sheet)} | <b>Rows:</b> ${data.rows.toLocaleString()} | <b>Columns:</b> ${data.colN}<br><b>Date:</b> ${today}<br><b>Generated by:</b> PRAXIS Data Explorer &mdash; <span class="teal">emmanuelneneodjidja.org/praxis</span></p>`;
-
-  // ── Dataset overview with visual completeness bar ──
-  html += "<h2>1. Dataset Overview</h2>";
-  const comp = Math.round(cols.reduce((s,c)=>s+(100-parseFloat(c.missPct)),0)/cols.length);
-  html += `<table><tr><th style="width:55%">Metric</th><th>Value</th></tr>`;
-  html += `<tr><td>Total respondents / observations</td><td><b>${data.rows.toLocaleString()}</b></td></tr>`;
-  html += `<tr><td>Categorical variables</td><td>${a.categorical.length}</td></tr>`;
-  html += `<tr><td>Likert scale items</td><td>${a.likert.length}</td></tr>`;
-  html += `<tr><td>Numeric variables</td><td>${a.numeric.length}</td></tr>`;
-  html += `<tr><td>Date / time variables</td><td>${a.date.length}</td></tr>`;
-  html += `<tr class="hl"><td>Overall data completeness</td><td>${bar(comp,'#2EC4B6',120)} <b>${comp}%</b></td></tr>`;
-  html += "</table>";
-
-  // ── Frequencies with inline bar charts ──
-  if (a.categorical.length > 0) {
-    html += "<h2>2. Frequency Distributions</h2>";
-    a.categorical.forEach(col => {
-      const fr = freqT(col.values);
-      const maxCount = fr.length > 0 ? fr[0].count : 1;
-      html += `<h3>${esc(col.name)}</h3>`;
-      html += `<p class="meta">n = ${col.nonNull} &nbsp;|&nbsp; ${fr.length} categories</p>`;
-      // Visual bar chart
-      html += '<table class="chart-bar" style="border:none;margin-bottom:4pt">';
-      fr.slice(0, 15).forEach(f => {
-        const pct = (f.count / maxCount) * 100;
-        html += `<tr class="chart-bar"><td class="chart-label">${esc(f.value)}</td><td style="border:none;width:60%">${bar(pct,'#2EC4B6',180)}</td><td style="border:none;font-size:9pt;color:#333;white-space:nowrap"><b>${f.count}</b> (${f.pct}%)</td></tr>`;
-      });
-      html += '</table>';
-      // Full table below
-      if (fr.length > 5) {
-        html += "<table><tr><th>Value</th><th style='text-align:right'>n</th><th style='text-align:right'>%</th></tr>";
-        fr.forEach(f => { html += `<tr><td>${esc(f.value)}</td><td style="text-align:right">${f.count}</td><td style="text-align:right">${f.pct}%</td></tr>`; });
-        html += "</table>";
-      }
-    });
-  }
-
-  // ── Likert with stacked bar visualizations ──
-  if (a.likert.length > 0) {
-    html += "<h2>3. Likert Scale Analysis</h2>";
-    if (data.rows < 30) html += `<div class="note">Small sample (n = ${data.rows}). Interpret means with caution. Consider reporting medians alongside means.</div>`;
-    const grp = {};
-    a.likert.forEach(c => { const r = scRng(c.values); const k = `${r.mn}-${r.mx}`; if (!grp[k]) grp[k] = {r, cs:[]}; grp[k].cs.push(c); });
-    const likColors5 = ['#E85D5D','#FBBC04','#A0AEC0','#34A853','#1a6b5a'];
-    const likColors4 = ['#E85D5D','#FBBC04','#34A853','#1a6b5a'];
-    Object.entries(grp).forEach(([k, g]) => {
-      const {r} = g;
-      const colors = r.pts === 4 ? likColors4 : likColors5;
-      const labels = r.pts === 5 ? ['Str. Disagree','Disagree','Neutral','Agree','Str. Agree'] : r.pts === 4 ? ['Very uncomf.','Uncomf.','Comf.','Very comf.'] : Array.from({length:r.pts},(_,i)=>String(i+r.mn));
-
-      html += `<h3>${r.pts}-point Scale (${g.cs.length} items)</h3>`;
-      // Legend
-      html += '<p style="font-size:9pt;color:#555;margin:4pt 0">';
-      labels.forEach((l,i) => { html += `<span style="display:inline-block;background:${colors[i]};width:12px;height:12px;border-radius:2px;vertical-align:middle;margin-right:2px"></span> ${l} &nbsp;&nbsp;`; });
-      html += '</p>';
-      // Each item: label + stacked bar + mean
-      g.cs.map(c => {
-        const ct = {}; for (let i = r.mn; i <= r.mx; i++) ct[i] = 0;
-        let tot = 0;
-        c.values.forEach(v => { if (v == null || !String(v).trim()) return; const lv = detLik(v); if (lv !== null && lv >= r.mn && lv <= r.mx) { ct[lv]++; tot++; } });
-        const mn = tot ? Object.entries(ct).reduce((s,[k,v]) => s + Number(k)*v, 0) / tot : 0;
-        const pcts = [];
-        for (let i = r.mn; i <= r.mx; i++) pcts.push(tot ? Math.round((ct[i]/tot)*100) : 0);
-        return { name: c.name, tot, mn, pcts, ct };
-      }).sort((x,y) => y.mn - x.mn).forEach(item => {
-        html += `<table style="border:none;margin:3pt 0;width:100%"><tr>`;
-        html += `<td style="border:none;width:42%;font-size:9.5pt;padding:3pt 6pt;vertical-align:middle">${esc(item.name)}</td>`;
-        html += `<td style="border:none;width:44%;padding:2pt;vertical-align:middle">${likBar(item.pcts, colors)}</td>`;
-        html += `<td style="border:none;width:14%;text-align:right;padding:3pt 6pt;font-size:9.5pt;vertical-align:middle"><b class="teal">${item.mn.toFixed(2)}</b><br><span style="font-size:8pt;color:#888">n=${item.tot}</span></td>`;
-        html += `</tr></table>`;
-      });
-      // Summary table
-      html += `<table style="margin-top:8pt"><tr><th>Item</th><th>n</th><th>Mean</th>`;
-      for (let i = r.mn; i <= r.mx; i++) html += `<th style="text-align:center">${i}</th>`;
-      html += "</tr>";
-      g.cs.forEach(c => {
-        const ct = {}; for (let i = r.mn; i <= r.mx; i++) ct[i] = 0;
-        let tot = 0;
-        c.values.forEach(v => { if (v == null || !String(v).trim()) return; const lv = detLik(v); if (lv !== null && lv >= r.mn && lv <= r.mx) { ct[lv]++; tot++; } });
-        const mn = tot ? Object.entries(ct).reduce((s,[k,v]) => s + Number(k)*v, 0) / tot : 0;
-        html += `<tr><td style="font-size:9pt">${esc(c.name)}</td><td style="text-align:center">${tot}</td><td style="text-align:center"><b>${mn.toFixed(2)}</b></td>`;
-        for (let i = r.mn; i <= r.mx; i++) html += `<td style="text-align:center;font-size:9pt">${ct[i]} <span style="color:#888">(${tot ? ((ct[i]/tot)*100).toFixed(0) : 0}%)</span></td>`;
-        html += "</tr>";
-      });
-      html += "</table>";
-    });
-  }
-
-  // ── Numeric with visual range bars ──
-  if (a.numeric.length > 0) {
-    html += "<h2>4. Descriptive Statistics</h2>";
-    html += "<table><tr><th>Variable</th><th>n</th><th>Mean</th><th>SD</th><th>Median</th><th>Min</th><th>Max</th><th style='width:90px'>Distribution</th></tr>";
-    // Get global max for relative bar sizing
-    const allMax = Math.max(...a.numeric.map(c => { const nums = c.values.filter(v=>v!=null&&!isNaN(Number(v))).map(Number); return nums.length ? Math.max(...nums) : 0; }));
-    a.numeric.forEach(c => {
-      const nums = c.values.filter(v => v != null && !isNaN(Number(v))).map(Number);
-      const st = cStats(nums);
-      const relMean = allMax > 0 ? (parseFloat(st.mean) / allMax) * 100 : 0;
-      html += `<tr><td style="font-size:9.5pt">${esc(c.name)}</td><td style="text-align:center">${st.n}</td><td style="text-align:center"><b>${st.mean}</b></td><td style="text-align:center">${st.sd}</td><td style="text-align:center">${st.med}</td><td style="text-align:center">${st.min}</td><td style="text-align:center">${st.max}</td><td>${bar(Math.min(relMean, 100),'#E8A317',80)}</td></tr>`;
-    });
-    html += "</table>";
-  }
-
-  // ── Missing data with visual bars ──
-  const wm = cols.filter(c => !["meta","kobo_dummy","empty","binary","constant"].includes(c.type) && c.missing > 0).sort((x,y) => y.missing - x.missing);
-  if (wm.length > 0) {
-    html += "<h2>5. Missing Data</h2>";
-    html += "<table><tr><th>Variable</th><th style='text-align:center'>Valid n</th><th style='text-align:center'>Missing</th><th style='text-align:center'>%</th><th style='width:100px'>Completeness</th></tr>";
-    wm.forEach(c => {
-      const compPct = 100 - parseFloat(c.missPct);
-      html += `<tr><td style="font-size:9.5pt">${esc(c.name)}</td><td style="text-align:center">${c.nonNull}</td><td style="text-align:center">${c.missing}</td><td style="text-align:center;color:#E85D5D;font-weight:bold">${c.missPct}%</td><td>${bar(compPct,'#34A853',80)}${bar(parseFloat(c.missPct),'#E85D5D',80)}</td></tr>`;
-    });
-    html += "</table>";
-  } else {
-    html += "<h2>5. Missing Data</h2>";
-    html += '<div class="note">No missing data detected in analyzable variables. All variables have 100% completeness.</div>';
-  }
-
-  // ── Codebook ──
-  html += "<h2>6. Variable Codebook</h2>";
-  html += "<table><tr><th>#</th><th>Variable</th><th>Type</th><th style='text-align:center'>Valid n</th><th style='text-align:center'>Missing %</th><th style='text-align:center'>Unique</th><th>Sample values</th></tr>";
-  cols.filter(c => !["meta","kobo_dummy","empty","binary"].includes(c.type)).forEach((c, i) => {
-    const u = new Set(c.values.filter(v => v != null).map(v => String(v).trim()));
-    const samp = [...u].slice(0, 3).map(s => esc(s.length > 25 ? s.substring(0,25) + '...' : s)).join(', ');
-    const typeColor = {categorical:'#2EC4B6',likert:'#7B61FF',numeric:'#E8A317',ordinal_numeric:'#E8A317',date:'#1a9e92',text:'#888',constant:'#aaa'}[c.type] || '#888';
-    html += `<tr><td style="text-align:center">${i+1}</td><td style="font-size:9.5pt">${esc(c.name)}</td><td><span style="display:inline-block;background:${typeColor};color:#fff;padding:1pt 6pt;border-radius:3pt;font-size:8pt;font-weight:bold">${c.type}</span></td><td style="text-align:center">${c.nonNull}</td><td style="text-align:center;color:${c.missing > 0 ? '#E85D5D' : '#34A853'}">${c.missPct}%</td><td style="text-align:center">${u.size}</td><td style="font-size:8.5pt;color:#666">${samp}</td></tr>`;
+function parseWithWorker(buffer,filename){
+  return new Promise((resolve,reject)=>{
+    try{
+      const workerCode=`
+        importScripts('https://unpkg.com/xlsx/dist/xlsx.full.min.js');
+        self.onmessage=function(e){
+          try{
+            var wb=XLSX.read(e.data.buffer,{type:"array",cellDates:true});
+            var bs=wb.SheetNames[0],br=0;
+            for(var i=0;i<wb.SheetNames.length;i++){var n=wb.SheetNames[i];var r=XLSX.utils.decode_range(wb.Sheets[n]["!ref"]||"A1");if(r.e.r-r.s.r>br){br=r.e.r-r.s.r;bs=n;}}
+            var raw=XLSX.utils.sheet_to_json(wb.Sheets[bs],{defval:null});
+            self.postMessage({raw:raw,sheet:bs,sheetN:wb.SheetNames.length,fn:e.data.fn});
+          }catch(err){self.postMessage({error:err.message});}
+        };
+      `;
+      const blob=new Blob([workerCode],{type:'application/javascript'});
+      const url=URL.createObjectURL(blob);
+      const worker=new Worker(url);
+      worker.onmessage=function(e){
+        worker.terminate();URL.revokeObjectURL(url);
+        if(e.data.error){reject(new Error(e.data.error));return;}
+        const raw=e.data.raw;if(!raw||!raw.length){reject(new Error('No data'));return;}
+        const hd=Object.keys(raw[0]);const{dm,rp}=idKobo(hd);
+        const cols=hd.map(h=>{const vs=raw.map(r=>r[h]);const t=dType(h,vs,dm);const nn=vs.filter(v=>v!=null&&String(v).trim()!=="");return{name:h,type:t,values:vs,nonNull:nn.length,missing:vs.length-nn.length,missPct:(((vs.length-nn.length)/vs.length)*100).toFixed(1)};});
+        const ah=hd.join(" ").toLowerCase();
+        const fr=(ah.match(/\b(du|de|le|la|les|des|est|une|vous|votre|dans|avec|que|par)\b/g)||[]).length;
+        resolve({fn:e.data.fn,sheet:e.data.sheet,sheetN:e.data.sheetN,rows:raw.length,colN:hd.length,cols,kbP:[...rp],lang:fr>5?"fr":"en",raw});
+      };
+      worker.onerror=function(err){worker.terminate();URL.revokeObjectURL(url);reject(err);};
+      worker.postMessage({buffer:buffer,fn:filename},[buffer.buffer||buffer]);
+    }catch(err){
+      // Fallback to main thread
+      try{resolve(pFile(buffer,filename));}catch(e2){reject(e2);}
+    }
   });
-  html += "</table>";
-
-  html += `<div class="footer">Generated by PRAXIS Data Explorer &mdash; <b>emmanuelneneodjidja.org/praxis</b><br>${today} &nbsp;|&nbsp; All analysis performed client-side. No data was transmitted.</div></body></html>`;
-
-  const blob = new Blob([html], { type: "application/msword" });
-  const url = URL.createObjectURL(blob);
-  const el = document.createElement("a");
-  el.href = url;
-  el.download = "praxis-analysis-" + data.fn.replace(/\.[^.]+$/, "") + ".doc";
-  document.body.appendChild(el);
-  el.click();
-  document.body.removeChild(el);
-  URL.revokeObjectURL(url);
 }
 
-// ── Components ──────────────────────────────────────────────────
-function SS({options,value,onChange,placeholder="Search..."}){
-  const[q,setQ]=useState("");const[open,setOpen]=useState(false);const ref=useRef(null);
-  const fil=useMemo(()=>options.filter(o=>o.label.toLowerCase().includes(q.toLowerCase())),[options,q]);
-  const sel=options.find(o=>o.value===value);
-  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
-  return(<div className="ss" ref={ref}><input value={open?q:(sel?sel.label:"")} placeholder={placeholder} onFocus={()=>{setOpen(true);setQ("");}} onChange={e=>setQ(e.target.value)}/>{open&&fil.length>0&&<div className="dd">{fil.slice(0,20).map(o=><div key={o.value} className={`di${o.value===value?" a":""}`} onMouseDown={()=>{onChange(o.value);setOpen(false);setQ("");}}>{o.label}{o.sub&&<span className="sub">{o.sub}</span>}</div>)}</div>}</div>);
+// ═══════════════════════════════════════════════════════════════════════════
+// SHARED UI COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+class ErrorBoundary extends React.Component{
+  constructor(props){super(props);this.state={hasError:false,error:null};}
+  static getDerivedStateFromError(error){return{hasError:true,error};}
+  componentDidCatch(error,info){console.error('PRAXIS ErrorBoundary caught:',error,info);}
+  render(){
+    if(this.state.hasError)return(
+      <div style={{padding:40,textAlign:'center',background:'rgba(232,93,93,0.05)',borderRadius:10,border:'1px solid rgba(232,93,93,0.15)',margin:16}}>
+        <div style={{fontSize:14,fontWeight:600,color:'#E85D5D',marginBottom:8}}>This analysis encountered an error</div>
+        <div style={{fontSize:12,color:'#94A3B8',marginBottom:16,maxWidth:400,margin:'0 auto 16px'}}>{this.state.error?.message||'An unexpected error occurred while processing your data.'}</div>
+        <button onClick={()=>this.setState({hasError:false,error:null})} style={{background:'rgba(46,196,182,0.1)',border:'1px solid rgba(46,196,182,0.3)',color:'#2EC4B6',padding:'8px 20px',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>Try again</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+function SearchableSelect({options,value,onChange,label,placeholder}){
+  const[open,setOpen]=useState(false);const[query,setQuery]=useState('');const[activeIdx,setActiveIdx]=useState(-1);
+  const ref=useRef(null);const listRef=useRef(null);const inputRef=useRef(null);
+  const id=useRef('ss-'+Math.random().toString(36).substr(2,6)).current;
+  const selected=options.find(o=>o.value===value);
+  const filtered=useMemo(()=>{if(!query)return options;const q=query.toLowerCase();return options.filter(o=>o.label.toLowerCase().includes(q)||(o.sub&&o.sub.toLowerCase().includes(q)));},[options,query]);
+  useEffect(()=>{const handler=(e)=>{if(ref.current&&!ref.current.contains(e.target)){setOpen(false);setQuery('');}};document.addEventListener('mousedown',handler);return()=>document.removeEventListener('mousedown',handler);},[]);
+  useEffect(()=>{if(open&&activeIdx>=0&&listRef.current){const item=listRef.current.children[activeIdx];if(item)item.scrollIntoView({block:'nearest'});}},[activeIdx,open]);
+  const handleKeyDown=(e)=>{
+    if(!open){if(e.key==='ArrowDown'||e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(true);setQuery('');setActiveIdx(0);}return;}
+    switch(e.key){
+      case'ArrowDown':e.preventDefault();setActiveIdx(prev=>Math.min(prev+1,filtered.length-1));break;
+      case'ArrowUp':e.preventDefault();setActiveIdx(prev=>Math.max(prev-1,0));break;
+      case'Enter':e.preventDefault();if(activeIdx>=0&&filtered[activeIdx]){onChange(filtered[activeIdx].value);setOpen(false);setQuery('');}break;
+      case'Escape':e.preventDefault();setOpen(false);setQuery('');inputRef.current?.focus();break;
+      case'Tab':setOpen(false);setQuery('');break;
+    }
+  };
+  const activeDescendant=activeIdx>=0?`${id}-option-${activeIdx}`:undefined;
+  return(
+    <div className="ss" ref={ref}>
+      <input ref={inputRef} role="combobox" aria-expanded={open} aria-haspopup="listbox" aria-controls={`${id}-listbox`} aria-activedescendant={activeDescendant} aria-label={label||placeholder||'Select'} value={open?query:(selected?selected.label:'')} placeholder={placeholder||'Select...'} onFocus={()=>{setOpen(true);setQuery('');setActiveIdx(0);}} onChange={(e)=>{setQuery(e.target.value);setActiveIdx(0);}} onKeyDown={handleKeyDown}/>
+      {open&&filtered.length>0&&(
+        <div className="dd" role="listbox" id={`${id}-listbox`} ref={listRef} aria-label={label||'Options'}>
+          {filtered.slice(0,20).map((o,i)=>(
+            <div key={o.value} id={`${id}-option-${i}`} role="option" aria-selected={o.value===value} className={`di${o.value===value?' selected':''}${i===activeIdx?' active':''}`} onMouseDown={()=>{onChange(o.value);setOpen(false);setQuery('');}} onMouseEnter={()=>setActiveIdx(i)}>
+              {o.label}{o.sub&&<span className="sub">{o.sub}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TabBar({tabs,activeTab,onChange}){
+  const tabListRef=useRef(null);const wrapperRef=useRef(null);
+  const[scrollState,setScrollState]=useState({left:false,right:false});
+  useEffect(()=>{
+    const el=tabListRef.current;if(!el)return;
+    const check=()=>{setScrollState({left:el.scrollLeft>5,right:el.scrollLeft<el.scrollWidth-el.clientWidth-5});};
+    check();el.addEventListener('scroll',check);window.addEventListener('resize',check);
+    return()=>{el.removeEventListener('scroll',check);window.removeEventListener('resize',check);};
+  },[]);
+  const handleKeyDown=(e,idx)=>{
+    const enabledTabs=tabs.filter(t=>!t.disabled);const currentIdx=enabledTabs.findIndex(t=>t.id===tabs[idx].id);let newIdx;
+    switch(e.key){
+      case'ArrowRight':e.preventDefault();newIdx=(currentIdx+1)%enabledTabs.length;onChange(enabledTabs[newIdx].id);tabListRef.current?.querySelector(`[data-tab="${enabledTabs[newIdx].id}"]`)?.focus();break;
+      case'ArrowLeft':e.preventDefault();newIdx=(currentIdx-1+enabledTabs.length)%enabledTabs.length;onChange(enabledTabs[newIdx].id);tabListRef.current?.querySelector(`[data-tab="${enabledTabs[newIdx].id}"]`)?.focus();break;
+      case'Home':e.preventDefault();onChange(enabledTabs[0].id);tabListRef.current?.querySelector(`[data-tab="${enabledTabs[0].id}"]`)?.focus();break;
+      case'End':e.preventDefault();onChange(enabledTabs[enabledTabs.length-1].id);tabListRef.current?.querySelector(`[data-tab="${enabledTabs[enabledTabs.length-1].id}"]`)?.focus();break;
+    }
+  };
+  return(
+    <div ref={wrapperRef} className={`tab-bar-wrapper${scrollState.left?' scroll-left':''}${scrollState.right?' scroll-right':''}`}>
+      <div role="tablist" aria-label="Analysis tabs" ref={tabListRef} className="tab-bar">
+        {tabs.map((t,i)=>{const isActive=activeTab===t.id;const isEmpty=t.count!==undefined&&t.count===0;return(
+          <button key={t.id} role="tab" id={`tab-${t.id}`} data-tab={t.id} aria-selected={isActive} aria-controls={`panel-${t.id}`} tabIndex={isActive?0:-1} className={`tb${isActive?' on':''}${isEmpty?' dim':''}`} onClick={()=>onChange(t.id)} onKeyDown={(e)=>handleKeyDown(e,i)}>
+            {t.icon}<span>{t.label}</span>{t.count>0&&<span className="bg" aria-label={`${t.count} items`}>{t.count}</span>}
+          </button>
+        );})}
+      </div>
+    </div>
+  );
 }
 
 function Empty({type,a,go}){
   const m={categorical:{t:"No categorical variables found.",s:a?.likert.length?{tab:"likert",t:`${a.likert.length} Likert items detected \u2192 Likert tab`}:null},likert:{t:"No Likert scales found.",s:a?.categorical.length?{tab:"frequencies",t:`${a.categorical.length} categorical variables \u2192 Frequencies`}:null},numeric:{t:"No numeric variables found.",s:a?.likert.length?{tab:"likert",t:`${a.likert.length} Likert items \u2192 Likert tab`}:null}};
   const d=m[type]||{t:"No data for this view.",s:null};
-  return(<div className="fu" style={{padding:48,textAlign:"center"}}><div style={{fontSize:14,color:C.text2,marginBottom:12}}>{d.t}</div>{d.s&&<button onClick={()=>go(d.s.tab)} style={{background:"rgba(46,196,182,.1)",border:`1px solid rgba(46,196,182,.3)`,color:C.teal,padding:"10px 20px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{d.s.t}</button>}</div>);
+  return(<div className="fu" style={{padding:48,textAlign:"center"}}><div style={{fontSize:14,color:C.text2,marginBottom:12}}>{d.t}</div>{d.s&&<button onClick={()=>go(d.s.tab)} style={{background:"rgba(46,196,182,.1)",border:"1px solid rgba(46,196,182,.3)",color:C.teal,padding:"10px 20px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{d.s.t}</button>}</div>);
 }
 
-function GroupByTab({cols,a,data}){const[gc,setGc]=useState("");const[mc,setMc]=useState("");const[fn,setFn]=useState("mean");const cats=[...a.categorical,...a.date];const res=useMemo(()=>{if(!gc||!mc)return null;const g=cols.find(c=>c.name===gc),m=cols.find(c=>c.name===mc);if(!g||!m)return null;const groups={};for(let i=0;i<data.rows;i++){const gv=g.values[i],mv=m.values[i];if(gv==null||mv==null||isNaN(Number(mv)))continue;const k=String(gv).trim();if(!groups[k])groups[k]=[];groups[k].push(Number(mv));}return Object.entries(groups).map(([k,vs])=>({name:trunc(k,25),full:k,count:vs.length,sum:vs.reduce((a,v)=>a+v,0),mean:vs.reduce((a,v)=>a+v,0)/vs.length})).sort((a,b)=>b[fn]-a[fn]);},[gc,mc,fn,cols,data]);
-return(<div className="fu card"><div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:14}}>Grouped Aggregation</div><div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}><div style={{flex:1,minWidth:180}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Measure (numeric)</label><SS options={a.numeric.map(c=>({value:c.name,label:trunc(c.name,42)}))} value={mc} onChange={setMc}/></div><div style={{flex:1,minWidth:180}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Group by</label><SS options={cats.map(c=>({value:c.name,label:trunc(c.name,42),sub:`${new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim())).size}`}))} value={gc} onChange={setGc}/></div><div style={{minWidth:100}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Function</label><select className="select-dark" value={fn} onChange={e=>setFn(e.target.value)} style={{width:"100%"}}><option value="sum">SUM</option><option value="mean">MEAN</option><option value="count">COUNT</option></select></div></div>{res&&<><ResponsiveContainer width="100%" height={Math.max(180,res.length*28+40)}><BarChart data={res} layout="vertical" margin={{left:10,right:20,top:5,bottom:5}}><CartesianGrid strokeDasharray="3 3" stroke={C.off} horizontal={false}/><XAxis type="number" tick={{fontSize:10,fill:C.text2}}/><YAxis type="category" dataKey="name" width={140} tick={{fontSize:10,fill:C.slateL}}/><Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f1f38",border:`1px solid ${C.offB}`}}/><Bar dataKey={fn} fill={C.teal} radius={[0,4,4,0]} barSize={18}/></BarChart></ResponsiveContainer><div style={{overflowX:"auto",marginTop:10}}><table className="sth" style={{width:"100%",fontSize:11,borderCollapse:"collapse"}}><thead><tr style={{borderBottom:`1px solid ${C.offB}`}}>{["Group","n","Sum","Mean"].map(h=><th key={h} style={{textAlign:h==="Group"?"left":"right",padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>{h}</th>)}</tr></thead><tbody>{res.map((r,i)=><tr key={i} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"4px 8px",fontWeight:500,color:C.slateL}} title={r.full}>{r.name}</td><td style={{textAlign:"right",padding:"4px 8px",color:C.text2}}>{r.count}</td><td style={{textAlign:"right",padding:"4px 8px",fontWeight:600,color:C.teal}}>{fmt(r.sum,1)}</td><td style={{textAlign:"right",padding:"4px 8px",color:C.slateL}}>{fmt(r.mean,2)}</td></tr>)}</tbody></table></div></>}</div>);}
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: OVERVIEW
+// ═══════════════════════════════════════════════════════════════════════════
 
-function TSTab({cols,a,data}){const[dc,setDc]=useState("");const[mc,setMc]=useState("");const[iv,setIv]=useState("year");const[dg,setDg]=useState("");const dCols=[...a.date,...cols.filter(c=>c.name.toLowerCase().includes("year")&&c.type!=="meta"&&c.type!=="date")];const cats=a.categorical.filter(c=>new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim())).size<=10);
-const res=useMemo(()=>{if(!dc)return null;const d=cols.find(c=>c.name===dc),m=mc?cols.find(c=>c.name===mc):null,g=dg?cols.find(c=>c.name===dg):null;if(!d)return null;const bk={};for(let i=0;i<data.rows;i++){let pd=pDate(d.values[i]),key;if(pd){key=iv==="year"?pd.getFullYear():iv==="month"?pd.getFullYear()+"-"+String(pd.getMonth()+1).padStart(2,"0"):pd.getFullYear()+"-Q"+Math.ceil((pd.getMonth()+1)/3);}else{const n=Number(d.values[i]);if(!isNaN(n)&&n>1900&&n<2100)key=String(Math.floor(n));else continue;}const gv=g?String(g.values[i]||"Other").trim():"_all";if(!bk[key])bk[key]={};if(!bk[key][gv])bk[key][gv]={c:0,s:0};bk[key][gv].c++;if(m&&m.values[i]!=null&&!isNaN(Number(m.values[i])))bk[key][gv].s+=Number(m.values[i]);}const gVs=dg?[...new Set(Object.values(bk).flatMap(b=>Object.keys(b)))].filter(v=>v!=="_all").sort():["_all"];return{sorted:Object.keys(bk).sort(),bk,gVs,hasM:!!m};},[dc,mc,iv,dg,cols,data]);
-const cd=useMemo(()=>{if(!res)return[];return res.sorted.map(k=>{const r={name:k};res.gVs.forEach(g=>{const b=res.bk[k]?.[g];r[g]=b?(res.hasM?b.s:b.c):0;});return r;});},[res]);
-if(!dCols.length)return <div className="fu" style={{padding:40,textAlign:"center",color:C.text2}}>No date or year columns found. Reclassify a variable on the Overview tab.</div>;
-return(<div className="fu card"><div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:14}}>Time Series</div><div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}><div style={{flex:1,minWidth:150}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Time variable</label><SS options={dCols.map(c=>({value:c.name,label:trunc(c.name,38)}))} value={dc} onChange={setDc}/></div><div style={{flex:1,minWidth:150}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Measure</label><SS options={[{value:"",label:"Event count"},...a.numeric.map(c=>({value:c.name,label:"Sum: "+trunc(c.name,28)}))]} value={mc} onChange={setMc}/></div><div style={{minWidth:90}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Interval</label><select className="select-dark" value={iv} onChange={e=>setIv(e.target.value)} style={{width:"100%"}}><option value="year">Year</option><option value="quarter">Quarter</option><option value="month">Month</option></select></div><div style={{flex:1,minWidth:150}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Disaggregate</label><SS options={[{value:"",label:"None"},...cats.map(c=>({value:c.name,label:trunc(c.name,28)}))]} value={dg} onChange={setDg}/></div></div>{cd.length>0&&res&&<ResponsiveContainer width="100%" height={320}><LineChart data={cd} margin={{left:10,right:20,top:10,bottom:5}}><CartesianGrid strokeDasharray="3 3" stroke={C.off}/><XAxis dataKey="name" tick={{fontSize:10,fill:C.text2}} angle={cd.length>20?-45:0} textAnchor={cd.length>20?"end":"middle"} height={cd.length>20?60:30}/><YAxis tick={{fontSize:10,fill:C.text2}}/><Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f1f38",border:`1px solid ${C.offB}`}}/>{res.gVs.length>1&&<Legend wrapperStyle={{fontSize:10}}/>}{res.gVs.map((g,i)=><Line key={g} type="monotone" dataKey={g} name={g==="_all"?(res.hasM?"Sum":"Count"):g} stroke={C.pal[i%C.pal.length]} strokeWidth={2} dot={{r:2}}/>)}</LineChart></ResponsiveContainer>}</div>);}
+function OverviewTab({data,cols,a,setTab,ovr,setOvr,tc}){
+  const setO=(n,t)=>setOvr(p=>({...p,[n]:t}));
+  const clrO=n=>setOvr(p=>{const x={...p};delete x[n];return x;});
+  const wm=cols.filter(c=>!["meta","kobo_dummy","empty","binary","constant"].includes(c.type)&&c.missing>0).sort((x,y)=>y.missing-x.missing).slice(0,20);
+  const wmCd=wm.map(c=>({name:trunc(c.name,28),missing:parseFloat(c.missPct)}));
+  const guides=[];
+  if(a.likert.length>0)guides.push({t:`Your data has ${a.likert.length} Likert items`,tab:'likert',arrow:'\u2192 View Likert analysis'});
+  if(a.numeric.length>0)guides.push({t:`${a.numeric.length} numeric variables detected`,tab:'numeric',arrow:'\u2192 View distributions'});
+  if(a.date.length>0)guides.push({t:`${a.date.length} date columns found`,tab:'timeseries',arrow:'\u2192 Explore time trends'});
+  if(a.categorical.length>0)guides.push({t:`${a.categorical.length} categorical variables`,tab:'frequencies',arrow:'\u2192 View frequencies'});
 
-function RegTab({cols,a}){
-  const[xc,setXc]=useState("");
-  const[yc,setYc]=useState("");
-  const[forceModel,setForceModel]=useState("auto");
-  const nc=[...a.numeric,...a.likert];
-  // Y options: numeric + categorical with 2 levels (for logistic)
-  const yOpts = useMemo(() => {
-    const opts = nc.map(c => ({value:c.name,label:trunc(c.name,42),sub:"numeric"}));
-    // Add binary/categorical columns with exactly 2 values
-    a.categorical.forEach(c => {
-      const uniq = [...new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim()))];
-      if (uniq.length === 2) opts.push({value:c.name,label:trunc(c.name,42),sub:"binary: "+uniq.join(" / ")});
-    });
-    cols.filter(c=>c.type==="binary").forEach(c => {
-      opts.push({value:c.name,label:trunc(c.name,42),sub:"binary (0/1)"});
-    });
-    return opts;
-  }, [nc, a, cols]);
-
-  // Prepare Y values: if categorical binary, encode as 0/1
-  const yCol = useMemo(() => cols.find(c=>c.name===yc), [yc, cols]);
-  const yVals = useMemo(() => {
-    if (!yCol) return null;
-    const vals = yCol.values;
-    // If already numeric, just map
-    if (["numeric","ordinal_numeric","likert","binary"].includes(yCol.type)) return vals.map(Number);
-    // Categorical with 2 levels: encode
-    const uniq = [...new Set(vals.filter(v=>v!=null).map(v=>String(v).trim()))];
-    if (uniq.length === 2) return vals.map(v => v != null ? (String(v).trim() === uniq[0] ? 0 : 1) : null);
-    return vals.map(Number);
-  }, [yCol]);
-
-  const xv = useMemo(() => xc ? cols.find(c=>c.name===xc)?.values.map(Number) : null, [xc, cols]);
-  const isBin = useMemo(() => yVals ? isBinaryY(yVals) : false, [yVals]);
-  const model = forceModel === "auto" ? (isBin ? "logistic" : "ols") : forceModel;
-
-  const reg = useMemo(() => {
-    if (!xv || !yVals) return null;
-    if (model === "logistic") return logReg(xv, yVals);
-    return ols(xv, yVals);
-  }, [xv, yVals, model]);
-
-  const pts = useMemo(() => {
-    if (!xv || !yVals) return [];
-    const p = [];
-    for (let i = 0; i < xv.length; i++) { if (!isNaN(xv[i]) && yVals[i] != null && !isNaN(yVals[i])) p.push({x:xv[i],y:Number(yVals[i])}); }
-    if (p.length > 500) { const s = Math.ceil(p.length/500); return p.filter((_,i) => i%s===0); }
-    return p;
-  }, [xv, yVals]);
-
-  // For logistic: generate S-curve points
-  const sCurve = useMemo(() => {
-    if (!reg || reg.type !== "logistic" || !pts.length) return [];
-    const xMin = Math.min(...pts.map(d=>d.x)), xMax = Math.max(...pts.map(d=>d.x));
-    const step = (xMax - xMin) / 80;
-    const curve = [];
-    for (let x = xMin; x <= xMax; x += step) {
-      const z = reg.b0 + reg.b1 * x;
-      curve.push({x, y: 1/(1+Math.exp(-Math.max(-20,Math.min(20,z))))});
-    }
-    return curve;
-  }, [reg, pts]);
-
-  // Encode label for binary Y
-  const yLabels = useMemo(() => {
-    if (!yCol) return null;
-    if (!isBin) return null;
-    if (yCol.type === "categorical") {
-      const uniq = [...new Set(yCol.values.filter(v=>v!=null).map(v=>String(v).trim()))];
-      if (uniq.length === 2) return {zero: uniq[0], one: uniq[1]};
-    }
-    return {zero: "0", one: "1"};
-  }, [yCol, isBin]);
-
-  return (
-    <div className="fu card">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
-        <div style={{fontSize:14,fontWeight:700,color:C.text}}>Regression Analysis</div>
-        <div style={{display:"flex",gap:4,alignItems:"center"}}>
-          {["auto","ols","logistic"].map(m => (
-            <button key={m} onClick={()=>setForceModel(m)} style={{padding:"3px 10px",borderRadius:5,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",border:`1px solid ${forceModel===m?"rgba(46,196,182,.4)":C.off}`,background:forceModel===m?"rgba(46,196,182,.15)":"transparent",color:forceModel===m?C.teal:C.text2}}>
-              {m==="auto"?"Auto-detect":m==="ols"?"OLS (linear)":"Logistic"}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
-        <div style={{flex:1,minWidth:200}}>
-          <label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>X (independent)</label>
-          <SS options={nc.map(c=>({value:c.name,label:trunc(c.name,42)}))} value={xc} onChange={setXc}/>
-        </div>
-        <div style={{flex:1,minWidth:200}}>
-          <label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Y (dependent){isBin && <span style={{color:C.purple,marginLeft:6,fontSize:10}}>Binary detected</span>}</label>
-          <SS options={yOpts} value={yc} onChange={setYc}/>
-        </div>
-      </div>
-      {isBin && model === "logistic" && yLabels && (
-        <div style={{marginBottom:12,padding:"8px 12px",background:"rgba(123,97,255,.06)",borderRadius:8,border:"1px solid rgba(123,97,255,.15)",fontSize:11,color:C.slateL}}>
-          Logistic regression selected. Y encoding: <strong style={{color:C.text}}>{yLabels.zero}</strong> = 0, <strong style={{color:C.text}}>{yLabels.one}</strong> = 1
+  return(<div className="fu">
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8,marginBottom:18}}>
+      {[{l:"Respondents",v:data.rows.toLocaleString(),i:I.users},{l:"Categorical",v:a.categorical.length,i:I.tag,t:"frequencies"},{l:"Likert",v:a.likert.length,i:I.scale,t:"likert"},{l:"Numeric",v:a.numeric.length,i:I.hash,t:"numeric"},{l:"Date/Time",v:a.date.length,i:I.clock,t:"timeseries"},{l:"Completeness",v:Math.round(cols.reduce((s,c)=>s+(100-parseFloat(c.missPct)),0)/cols.length)+"%",i:I.check}].map((s,i)=>
+        <div key={i} className={`fu${s.t?" cc":""}`} style={{background:"rgba(255,255,255,.03)",border:`1px solid ${C.off}`,borderRadius:10,padding:"14px 10px",textAlign:"center",animationDelay:`${i*60}ms`}} onClick={s.t?()=>setTab(s.t):undefined}>
+          <div style={{marginBottom:3,display:"flex",justifyContent:"center"}}>{s.i}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text}}>{s.v}</div>
+          <div style={{fontSize:10,color:C.text2,fontWeight:500}}>{s.l}</div>
         </div>
       )}
-      {reg && reg.type === "ols" && <>
-        <ResponsiveContainer width="100%" height={300}><ScatterChart margin={{left:10,right:20,top:10,bottom:5}}><CartesianGrid strokeDasharray="3 3" stroke={C.off}/><XAxis type="number" dataKey="x" tick={{fontSize:10,fill:C.text2}}/><YAxis type="number" dataKey="y" tick={{fontSize:10,fill:C.text2}}/><Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f1f38",border:`1px solid ${C.offB}`}}/><Scatter data={pts} fill={C.teal} fillOpacity={.5} r={3}/>{pts.length>0&&<ReferenceLine stroke={C.coral} strokeWidth={2} strokeDasharray="5 3" segment={[{x:Math.min(...pts.map(d=>d.x)),y:reg.ic+reg.sl*Math.min(...pts.map(d=>d.x))},{x:Math.max(...pts.map(d=>d.x)),y:reg.ic+reg.sl*Math.max(...pts.map(d=>d.x))}]}/>}</ScatterChart></ResponsiveContainer>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(110px,1fr))",gap:8,marginTop:14}}>{[{l:"R\u00b2",v:reg.r2.toFixed(4)},{l:"Slope (\u03b2)",v:reg.sl.toFixed(4)},{l:"Intercept",v:reg.ic.toFixed(2)},{l:"SE (slope)",v:reg.seS.toFixed(4)},{l:"t-stat",v:reg.tS.toFixed(2)},{l:"p-value",v:reg.p<.001?"<0.001":reg.p.toFixed(3),h:reg.p<.05},{l:"n",v:reg.n}].map((s,i)=><div key={i} style={{background:"rgba(46,196,182,.05)",borderRadius:8,padding:"10px 8px",textAlign:"center",border:`1px solid rgba(46,196,182,.1)`}}><div style={{fontSize:17,fontWeight:700,color:s.h?C.green:C.text}}>{s.v}</div><div style={{fontSize:10,color:C.text2}}>{s.l}</div></div>)}</div>
-        <div style={{marginTop:12,fontSize:12,color:C.teal,background:"rgba(46,196,182,.06)",padding:"10px 14px",borderRadius:8,fontWeight:600,border:`1px solid rgba(46,196,182,.15)`}}>Y = {reg.ic.toFixed(3)} + {reg.sl.toFixed(3)} &times; X{reg.p<.05?<span style={{color:C.green,marginLeft:10}}>Significant (p &lt; 0.05)</span>:<span style={{color:C.text2,marginLeft:10}}>Not significant</span>}</div>
-      </>}
-      {reg && reg.type === "logistic" && <>
-        <ResponsiveContainer width="100%" height={300}>
-          <ScatterChart margin={{left:10,right:20,top:10,bottom:5}}>
-            <CartesianGrid strokeDasharray="3 3" stroke={C.off}/>
-            <XAxis type="number" dataKey="x" tick={{fontSize:10,fill:C.text2}}/>
-            <YAxis type="number" dataKey="y" domain={[-0.05,1.05]} tick={{fontSize:10,fill:C.text2}} tickFormatter={v=>v===0||v===1?v:v.toFixed(1)}/>
-            <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f1f38",border:`1px solid ${C.offB}`}}/>
-            <Scatter data={pts} fill={C.teal} fillOpacity={.4} r={3}/>
-            <Scatter data={sCurve} fill="none" line={{stroke:C.purple,strokeWidth:2.5}} legendType="none" r={0}/>
-          </ScatterChart>
-        </ResponsiveContainer>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:8,marginTop:14}}>
-          {[
-            {l:"Odds Ratio",v:reg.or.toFixed(3),h:reg.p<.05},
-            {l:"OR 95% CI Low",v:reg.orLo.toFixed(3)},
-            {l:"OR 95% CI High",v:reg.orHi.toFixed(3)},
-            {l:"Coeff (\u03b2\u2081)",v:reg.b1.toFixed(4)},
-            {l:"SE (coeff)",v:reg.se1.toFixed(4)},
-            {l:"z-stat",v:reg.z.toFixed(2)},
-            {l:"p-value",v:reg.p<.001?"<0.001":reg.p.toFixed(3),h:reg.p<.05},
-            {l:"Pseudo R\u00b2",v:reg.pseudoR2.toFixed(4)},
-            {l:"n",v:reg.n},
-          ].map((s,i)=><div key={i} style={{background:s.l==="Odds Ratio"?"rgba(123,97,255,.08)":"rgba(46,196,182,.05)",borderRadius:8,padding:"10px 8px",textAlign:"center",border:`1px solid ${s.l==="Odds Ratio"?"rgba(123,97,255,.2)":"rgba(46,196,182,.1)"}`}}>
-            <div style={{fontSize:s.l==="Odds Ratio"?20:16,fontWeight:700,color:s.h?C.green:s.l==="Odds Ratio"?C.purple:C.text}}>{s.v}</div>
-            <div style={{fontSize:10,color:C.text2}}>{s.l}</div>
-          </div>)}
-        </div>
-        <div style={{marginTop:12,fontSize:12,background:"rgba(123,97,255,.06)",padding:"12px 14px",borderRadius:8,border:"1px solid rgba(123,97,255,.15)"}}>
-          <div style={{color:C.purple,fontWeight:600,marginBottom:4}}>log(p / 1-p) = {reg.b0.toFixed(3)} + {reg.b1.toFixed(3)} &times; X</div>
-          <div style={{color:C.slateL,fontSize:11}}>
-            {reg.or > 1
-              ? `Each unit increase in X multiplies the odds of Y=1 by ${reg.or.toFixed(2)} (${((reg.or-1)*100).toFixed(0)}% increase).`
-              : `Each unit increase in X multiplies the odds of Y=1 by ${reg.or.toFixed(2)} (${((1-reg.or)*100).toFixed(0)}% decrease).`}
-            {reg.p < .05 ? " This effect is statistically significant." : " This effect is not statistically significant."}
-          </div>
-        </div>
-      </>}
     </div>
-  );
+
+    {guides.length>0&&<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(250px,1fr))',gap:8,marginBottom:16}}>
+      {guides.map((g,i)=><div key={i} className="guide-card" onClick={()=>setTab(g.tab)}><span>{g.t}</span><span className="arrow">{g.arrow}</span></div>)}
+    </div>}
+
+    {/* Missing data panel */}
+    {wm.length>0&&<div className="card" style={{marginBottom:12}}>
+      <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>Missing Data <span style={{fontWeight:400,color:C.text2}}>({wm.length} variables)</span></div>
+      {wmCd.length>0&&<ResponsiveContainer width="100%" height={Math.max(100,wmCd.length*24+30)}>
+        <BarChart data={wmCd} layout="vertical" margin={{left:10,right:20}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.off} horizontal={false}/>
+          <XAxis type="number" domain={[0,100]} tick={{fontSize:10,fill:C.text2}} unit="%"/>
+          <YAxis type="category" dataKey="name" width={170} tick={{fontSize:10,fill:C.text2}}/>
+          <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}}/>
+          <Bar dataKey="missing" fill={C.error} name="Missing %" radius={[0,3,3,0]} barSize={14}/>
+        </BarChart>
+      </ResponsiveContainer>}
+    </div>}
+    {wm.length===0&&<div className="card" style={{background:"rgba(52,168,83,.06)",border:"1px solid rgba(52,168,83,.2)",marginBottom:12}}><div style={{fontSize:13,fontWeight:600,color:C.success}}>No missing data in analyzable variables</div></div>}
+
+    <div className="card">
+      <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>Variable Types <span style={{fontSize:10,fontWeight:400,color:C.text2}}>Use dropdowns to reclassify</span></div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:5}}>
+        {cols.filter(c=>!["meta","kobo_dummy","empty","binary"].includes(c.type)||c.ovrd).map((c,i)=>
+          <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"4px 8px",borderRadius:6,background:c.ovrd?"rgba(123,97,255,.06)":"rgba(255,255,255,.02)",fontSize:11,border:c.ovrd?"1px solid rgba(123,97,255,.2)":"1px solid transparent"}}>
+            <select className="select-dark" value={c.type} onChange={e=>setO(c.name,e.target.value)} style={{padding:"1px 4px",fontSize:9,fontWeight:700,color:"#fff",background:tc[c.type]||C.text2,minWidth:62,borderRadius:4}}>
+              {["categorical","likert","numeric","date","text","meta"].map(t=><option key={t} value={t}>{t}</option>)}
+            </select>
+            <span style={{color:C.text2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}} title={c.name}>{trunc(c.name,40)}</span>
+            {c.ovrd&&<span onClick={()=>clrO(c.name)} style={{color:C.error,cursor:"pointer",fontSize:11,fontWeight:700}}>&times;</span>}
+          </div>
+        )}
+      </div>
+      {a.excluded.length>0&&<details style={{marginTop:8}}><summary style={{fontSize:11,color:C.text2,cursor:"pointer"}}>{a.excluded.length} auto-excluded</summary><div style={{fontSize:10,color:C.text2,marginTop:4,lineHeight:1.5}}>{a.excluded.map(c=>c.name).join(" \u00b7 ")}</div></details>}
+    </div>
+  </div>);
 }
 
-function XTab({cols,a}){const[oc,setOc]=useState("");const[dc,setDc]=useState("");const az=cols.filter(c=>["categorical","likert","ordinal_numeric"].includes(c.type));const dOpts=a.categorical.filter(c=>new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim())).size>1);const res=useMemo(()=>{if(!oc||!dc)return null;const o=cols.find(c=>c.name===oc),d=cols.find(c=>c.name===dc);if(!o||!d)return null;const tb={},dV=new Set(),oV=new Set();for(let i=0;i<o.values.length;i++){const ov=o.values[i]!=null?String(o.values[i]).trim():null,dv=d.values[i]!=null?String(d.values[i]).trim():null;if(!ov||!dv)continue;dV.add(dv);oV.add(ov);if(!tb[dv])tb[dv]={};tb[dv][ov]=(tb[dv][ov]||0)+1;}return{tb,dV:[...dV].sort(),oV:[...oV].sort()};},[oc,dc,cols]);const cd=useMemo(()=>{if(!res)return[];return res.dV.map(dv=>{const r={name:trunc(dv,20)};let t=0;res.oV.forEach(ov=>{t+=(res.tb[dv]?.[ov]||0);});res.oV.forEach(ov=>{r[ov]=t?parseFloat(((res.tb[dv]?.[ov]||0)/t*100).toFixed(1)):0;});return r;});},[res]);
-return(<div className="fu card"><div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:14}}>Cross-tabulation</div><div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}><div style={{flex:1,minWidth:200}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Outcome</label><SS options={az.map(c=>({value:c.name,label:trunc(c.name,42)}))} value={oc} onChange={setOc}/></div><div style={{flex:1,minWidth:200}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Disaggregate by</label><SS options={dOpts.map(c=>({value:c.name,label:trunc(c.name,38),sub:`${new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim())).size}`}))} value={dc} onChange={setDc}/></div></div>{res&&res.dV.length>1&&<ResponsiveContainer width="100%" height={Math.max(180,cd.length*35+50)}><BarChart data={cd} layout="vertical" margin={{left:10,right:20,top:5,bottom:5}}><CartesianGrid strokeDasharray="3 3" stroke={C.off} horizontal={false}/><XAxis type="number" domain={[0,100]} tick={{fontSize:10,fill:C.text2}} unit="%"/><YAxis type="category" dataKey="name" width={120} tick={{fontSize:10,fill:C.slateL}}/><Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f1f38",border:`1px solid ${C.offB}`}} formatter={v=>[`${v}%`]}/><Legend wrapperStyle={{fontSize:10}}/>{res.oV.map((ov,i)=><Bar key={ov} dataKey={ov} stackId="a" fill={C.pal[i%C.pal.length]}/>)}</BarChart></ResponsiveContainer>}{res&&res.dV.length<=1&&<div style={{padding:12,color:C.amber,fontSize:12}}>Only one category in this disaggregator.</div>}</div>);}
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: FREQUENCIES
+// ═══════════════════════════════════════════════════════════════════════════
 
-function MissTab({cols}){const wm=cols.filter(c=>!["meta","kobo_dummy","empty","binary","constant"].includes(c.type)&&c.missing>0).sort((a,b)=>b.missing-a.missing).slice(0,20);if(!wm.length)return <div className="fu card" style={{background:"rgba(52,168,83,.06)",border:`1px solid rgba(52,168,83,.2)`}}><div style={{fontSize:14,fontWeight:600,color:C.green}}>No missing data in analyzable variables</div></div>;const cd=wm.map(c=>({name:trunc(c.name,28),missing:parseFloat(c.missPct)}));
-return <div className="fu card"><div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>Missing Data</div><ResponsiveContainer width="100%" height={Math.max(120,cd.length*24+30)}><BarChart data={cd} layout="vertical" margin={{left:10,right:20}}><CartesianGrid strokeDasharray="3 3" stroke={C.off} horizontal={false}/><XAxis type="number" domain={[0,100]} tick={{fontSize:10,fill:C.text2}} unit="%"/><YAxis type="category" dataKey="name" width={170} tick={{fontSize:10,fill:C.slateL}}/><Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f1f38",border:`1px solid ${C.offB}`}}/><Bar dataKey="missing" fill={C.coral} name="Missing %" radius={[0,3,3,0]} barSize={14}/></BarChart></ResponsiveContainer></div>;}
+function FrequenciesTab({a,setTab}){
+  if(a.categorical.length===0)return <Empty type="categorical" a={a} go={setTab}/>;
+  return(<div>{a.categorical.map((col,i)=>{
+    const fr=freqT(col.values);const cd=fr.slice(0,12).map(f=>({name:trunc(f.value,25),count:f.count}));
+    return(<div key={i} className="fu card" style={{animationDelay:`${i*40}ms`}}>
+      <div style={{fontSize:12,fontWeight:600,color:C.text,marginBottom:2}}>{trunc(col.name,80)}</div>
+      <div style={{fontSize:10,color:C.text2,marginBottom:8}}>n={col.nonNull} | {fr.length} categories{fr.length>12?" (top 12)":""}</div>
+      <ResponsiveContainer width="100%" height={Math.max(100,cd.length*26+20)}>
+        <BarChart data={cd} layout="vertical" margin={{left:10,right:20,top:2,bottom:2}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.off} horizontal={false}/>
+          <XAxis type="number" tick={{fontSize:10,fill:C.text2}}/>
+          <YAxis type="category" dataKey="name" width={140} tick={{fontSize:10,fill:C.text2}}/>
+          <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}}/>
+          <Bar dataKey="count" fill={C.teal} radius={[0,3,3,0]} barSize={16}/>
+        </BarChart>
+      </ResponsiveContainer>
+      <details style={{marginTop:4}}><summary style={{fontSize:11,color:C.tealD,cursor:"pointer",fontWeight:600}}>Table</summary>
+        <table style={{width:"100%",fontSize:11,borderCollapse:"collapse",marginTop:4}}>
+          <thead><tr style={{borderBottom:`1px solid ${C.offB}`}}><th style={{textAlign:"left",padding:"3px 8px",color:C.text2}}>Value</th><th style={{textAlign:"right",padding:"3px 8px",color:C.text2}}>n</th><th style={{textAlign:"right",padding:"3px 8px",color:C.text2}}>%</th></tr></thead>
+          <tbody>{fr.map((f,j)=><tr key={j} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"3px 8px",color:C.text2}}>{trunc(f.value,55)}</td><td style={{textAlign:"right",padding:"3px 8px",fontWeight:500,color:C.text}}>{f.count}</td><td style={{textAlign:"right",padding:"3px 8px",color:C.teal}}>{f.pct}%</td></tr>)}</tbody>
+        </table>
+      </details>
+    </div>);
+  })}</div>);
+}
 
-function CBTab({cols}){const[sk,setSk]=useState("idx");const[sd,setSd]=useState(1);const tog=k=>{if(sk===k)setSd(d=>-d);else{setSk(k);setSd(1);}};const rows=cols.filter(c=>!["meta","kobo_dummy","empty","binary"].includes(c.type)).map((c,i)=>{const u=new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim()));return{...c,idx:i,uC:u.size,samp:[...u].slice(0,3).map(s=>trunc(s,16))};});const sorted=[...rows].sort((a,b)=>{if(sk==="idx")return(a.idx-b.idx)*sd;if(sk==="type")return a.type.localeCompare(b.type)*sd;if(sk==="miss")return(parseFloat(a.missPct)-parseFloat(b.missPct))*sd;if(sk==="uniq")return(a.uC-b.uC)*sd;return 0;});const tc={categorical:C.teal,likert:C.purple,numeric:C.amber,ordinal_numeric:C.amber,date:C.tealD,text:C.slate,constant:"#444"};const th=(l,k)=><th className="sort-th" onClick={()=>tog(k)} style={{textAlign:"left",padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>{l}{sk===k?(sd===1?" \u25b2":" \u25bc"):""}</th>;
-return <div className="fu card" style={{overflowX:"auto",maxHeight:500,overflow:"auto"}}><div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>Codebook <span style={{fontSize:10,fontWeight:400,color:C.text2}}>Click headers to sort</span></div><table className="sth" style={{width:"100%",fontSize:11,borderCollapse:"collapse"}}><thead><tr style={{borderBottom:`1px solid ${C.offB}`}}>{th("#","idx")}{th("Variable","idx")}{th("Type","type")}<th style={{textAlign:"center",padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>n</th>{th("Missing","miss")}{th("Unique","uniq")}<th style={{padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>Samples</th></tr></thead><tbody>{sorted.map((r,i)=><tr key={i} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"4px 8px",color:C.slate}}>{r.idx+1}</td><td style={{padding:"4px 8px",fontWeight:500,maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:C.slateL}} title={r.name}>{trunc(r.name,40)}</td><td style={{padding:"4px 8px"}}><span style={{padding:"1px 6px",borderRadius:3,fontSize:9,fontWeight:700,color:"#fff",background:tc[r.type]||C.slate}}>{r.type}</span></td><td style={{textAlign:"center",padding:"4px 8px",color:C.slateL}}>{r.nonNull}</td><td style={{padding:"4px 8px",color:r.missing>0?C.coral:C.green}}>{r.missPct}%</td><td style={{textAlign:"center",padding:"4px 8px",color:C.slateL}}>{r.uC}</td><td style={{padding:"4px 8px",color:C.slate,fontSize:10}}>{r.samp.join(", ")}</td></tr>)}</tbody></table></div>;}
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: LIKERT (enhanced with Cronbach's alpha, median, mode, top-2-box)
+// ═══════════════════════════════════════════════════════════════════════════
 
-function LikertTab({a,data}){
+function LikertTab({a,data,setTab}){
+  if(a.likert.length===0)return <Empty type="likert" a={a} go={setTab}/>;
+  const[showNote,setShowNote]=useState(false);
   const grp={};a.likert.forEach(c=>{const r=scRng(c.values);const k=`${r.mn}-${r.mx}`;if(!grp[k])grp[k]={r,cs:[]};grp[k].cs.push(c);});
-  return <div className="fu">{Object.entries(grp).map(([k,g])=>{const{r}=g;const colors=r.pts===4?C.lik4:C.lik5;const labels=r.pts===5?["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"]:r.pts===4?["Very uncomfortable","Uncomfortable","Comfortable","Very comfortable"]:Array.from({length:r.pts},(_,i)=>String(i+r.mn));
-    const items=g.cs.map(c=>{const ct={};for(let i=r.mn;i<=r.mx;i++)ct[i]=0;let tot=0,unp=0;c.values.forEach(v=>{if(v==null||!String(v).trim())return;const lv=detLik(v);if(lv!==null&&lv>=r.mn&&lv<=r.mx){ct[lv]++;tot++;}else unp++;});const mn=tot?Object.entries(ct).reduce((s,[k,v])=>s+Number(k)*v,0)/tot:0;const pc={};for(let i=r.mn;i<=r.mx;i++)pc[i]=tot?((ct[i]/tot)*100).toFixed(1):"0";return{nm:trunc(c.name,52),fn:c.name,tot,mn:mn.toFixed(2),ct,pc,unp};}).sort((x,y)=>+y.mn-+x.mn);
-    return <div key={k} className="card"><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}><div style={{fontSize:14,fontWeight:700,color:C.text}}>{r.pts}-point Scale <span style={{fontWeight:400,color:C.text2}}>({g.cs.length} items)</span></div>{data.rows<30&&<div style={{fontSize:10,color:C.coral,background:"rgba(232,93,93,.1)",padding:"4px 12px",borderRadius:20,fontWeight:600,border:"1px solid rgba(232,93,93,.2)"}}>Small sample (n={data.rows})</div>}</div>
-      {items.map((it,idx)=><div key={idx} style={{marginBottom:14}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4,gap:8}}><div style={{fontSize:11,color:C.slateL,fontWeight:500,flex:1,lineHeight:1.4}} title={it.fn}>{it.nm}</div><div style={{display:"flex",gap:8,alignItems:"center",whiteSpace:"nowrap"}}><span style={{fontSize:10,color:C.slate}}>n={it.tot}</span><span style={{fontSize:12,color:C.teal,fontWeight:700}}>Mean {it.mn}</span></div></div><div style={{display:"flex",height:22,borderRadius:4,overflow:"hidden",background:"rgba(255,255,255,.05)"}}>{Array.from({length:r.mx-r.mn+1},(_,i)=>i+r.mn).map((v,vi)=>{const p=parseFloat(it.pc[v]);if(!p)return null;return <div key={v} title={`${labels[vi]}: ${p}% (n=${it.ct[v]})`} style={{width:`${p}%`,background:colors[vi],display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:vi===2&&r.pts===5?"#0B1A2E":"#fff",fontWeight:600,transition:"width .5s ease"}}>{p>=9?`${p}%`:""}</div>;})}</div>{it.unp>0&&<div style={{fontSize:9,color:C.amber,marginTop:2}}>{it.unp} excluded (NA/refuse)</div>}</div>)}
-      <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>{labels.map((l,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:10,height:10,borderRadius:2,background:colors[i]}}/><span style={{fontSize:10,color:C.text2}}>{l}</span></div>)}</div></div>;})}</div>;
+  return(<div className="fu">
+    <div className="meth-note" style={{marginBottom:12,cursor:'pointer'}} onClick={()=>setShowNote(!showNote)}>
+      <strong style={{color:C.teal}}>Methodological note</strong> {showNote?'▾':'▸'}
+      {showNote&&<div style={{marginTop:6}}>Likert items are ordinal. Means assume equal intervals between categories. Medians are the more conservative central tendency measure. Consider reporting both. Cronbach's alpha treats ordinal data as interval for reliability estimation.</div>}
+    </div>
+    {Object.entries(grp).map(([k,g])=>{
+      const{r}=g;const colors=r.pts===4?C.lik4:C.lik5;
+      const labels=r.pts===5?["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"]:r.pts===4?["Very uncomfortable","Uncomfortable","Comfortable","Very comfortable"]:Array.from({length:r.pts},(_,i)=>String(i+r.mn));
+
+      // Cronbach's alpha for this group
+      const alphaResult=useMemo(()=>{
+        if(g.cs.length<2)return null;
+        const items=g.cs.map(c=>c.values.map(v=>{const lv=detLik(v);return lv!==null&&lv>=r.mn&&lv<=r.mx?lv:null;}));
+        return cronbachAlpha(items);
+      },[g.cs,r]);
+
+      const items=g.cs.map(c=>{
+        const ct={};for(let i=r.mn;i<=r.mx;i++)ct[i]=0;let tot=0,unp=0;
+        c.values.forEach(v=>{if(v==null||!String(v).trim())return;const lv=detLik(v);if(lv!==null&&lv>=r.mn&&lv<=r.mx){ct[lv]++;tot++;}else unp++;});
+        const mn=tot?Object.entries(ct).reduce((s,[k,v])=>s+Number(k)*v,0)/tot:0;
+        // Median
+        const allVals=[];for(let i=r.mn;i<=r.mx;i++)for(let j=0;j<ct[i];j++)allVals.push(i);
+        allVals.sort((a,b)=>a-b);
+        const median=allVals.length?allVals[Math.floor(allVals.length/2)]:0;
+        // Mode (most frequent category label)
+        let modeVal=r.mn,modeCount=0;for(let i=r.mn;i<=r.mx;i++){if(ct[i]>modeCount){modeCount=ct[i];modeVal=i;}}
+        const modeLabel=labels[modeVal-r.mn]||String(modeVal);
+        // Top-2-box and Bottom-2-box
+        const top2=tot?(((ct[r.mx]||0)+(ct[r.mx-1]||0))/tot*100).toFixed(1):"0";
+        const bot2=tot?(((ct[r.mn]||0)+(ct[r.mn+1]||0))/tot*100).toFixed(1):"0";
+        const pc={};for(let i=r.mn;i<=r.mx;i++)pc[i]=tot?((ct[i]/tot)*100).toFixed(1):"0";
+        return{nm:trunc(c.name,52),fn:c.name,tot,mn:mn.toFixed(2),median,modeLabel,top2,bot2,ct,pc,unp};
+      }).sort((x,y)=>+y.mn-+x.mn);
+
+      return(<div key={k} className="card">
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+          <div style={{fontSize:14,fontWeight:700,color:C.text}}>{r.pts}-point Scale <span style={{fontWeight:400,color:C.text2}}>({g.cs.length} items)</span></div>
+          {data.rows<30&&<div style={{fontSize:10,color:C.error,background:"rgba(232,93,93,.1)",padding:"4px 12px",borderRadius:20,fontWeight:600,border:"1px solid rgba(232,93,93,.2)"}}>Small sample (n={data.rows})</div>}
+        </div>
+
+        {alphaResult&&<div style={{background:"rgba(123,97,255,.06)",border:"1px solid rgba(123,97,255,.15)",borderRadius:8,padding:"10px 14px",marginBottom:14}}>
+          <div style={{fontSize:12,fontWeight:600,color:C.purple,marginBottom:4}}>Internal Consistency (Cronbach's \u03b1)</div>
+          <div style={{display:"flex",gap:16,flexWrap:"wrap",fontSize:11,color:C.text2}}>
+            <span>\u03b1 = <strong style={{color:C.text,fontSize:14}}>{alphaResult.alpha.toFixed(3)}</strong></span>
+            <span>Interpretation: <strong style={{color:alphaResult.alpha>=0.7?C.success:alphaResult.alpha>=0.6?C.warning:C.error}}>{alphaResult.interpretation}</strong></span>
+            <span>k = {alphaResult.k}</span>
+            <span>n (listwise) = {alphaResult.nValid}</span>
+          </div>
+        </div>}
+
+        {items.map((it,idx)=><div key={idx} style={{marginBottom:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4,gap:8}}>
+            <div style={{fontSize:11,color:C.text2,fontWeight:500,flex:1,lineHeight:1.4}} title={it.fn}>{it.nm}</div>
+            <div style={{display:"flex",gap:8,alignItems:"center",whiteSpace:"nowrap",flexShrink:0}}>
+              <span style={{fontSize:10,color:C.text2}}>n={it.tot}</span>
+              <span style={{fontSize:10,color:C.text2}}>Mdn={it.median}</span>
+              <span style={{fontSize:12,color:C.teal,fontWeight:700}}>M={it.mn}</span>
+              <span style={{fontSize:10,color:C.success}}>\u2191{it.top2}%</span>
+            </div>
+          </div>
+          <div style={{display:"flex",height:22,borderRadius:4,overflow:"hidden",background:"rgba(255,255,255,.05)"}}>
+            {Array.from({length:r.mx-r.mn+1},(_,i)=>i+r.mn).map((v,vi)=>{const p=parseFloat(it.pc[v]);if(!p)return null;return <div key={v} title={`${labels[vi]}: ${p}% (n=${it.ct[v]})`} style={{width:`${p}%`,background:colors[vi],display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:vi===2&&r.pts===5?"#0B1A2E":"#fff",fontWeight:600,transition:"width .5s ease"}}>{p>=9?`${p}%`:""}</div>;})}
+          </div>
+          {it.unp>0&&<div style={{fontSize:9,color:C.warning,marginTop:2}}>{it.unp} excluded (NA/refuse)</div>}
+        </div>)}
+
+        <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>{labels.map((l,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:10,height:10,borderRadius:2,background:colors[i]}}/><span style={{fontSize:10,color:C.text2}}>{l}</span></div>)}</div>
+
+        <details style={{marginTop:10}}><summary style={{fontSize:11,color:C.tealD,cursor:"pointer",fontWeight:600}}>Summary Table</summary>
+          <table style={{width:"100%",fontSize:10,borderCollapse:"collapse",marginTop:6}}>
+            <thead><tr style={{borderBottom:`1px solid ${C.offB}`}}><th style={{textAlign:"left",padding:"4px 6px",color:C.text2,background:C.navy}}>Item</th><th style={{textAlign:"center",padding:"4px 6px",color:C.text2,background:C.navy}}>n</th><th style={{textAlign:"center",padding:"4px 6px",color:C.text2,background:C.navy}}>Mean</th><th style={{textAlign:"center",padding:"4px 6px",color:C.text2,background:C.navy}}>Mdn</th><th style={{textAlign:"center",padding:"4px 6px",color:C.text2,background:C.navy}}>Mode</th><th style={{textAlign:"center",padding:"4px 6px",color:C.text2,background:C.navy}}>Top-2</th><th style={{textAlign:"center",padding:"4px 6px",color:C.text2,background:C.navy}}>Bot-2</th></tr></thead>
+            <tbody>{items.map((it,j)=><tr key={j} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"3px 6px",color:C.text2}} title={it.fn}>{it.nm}</td><td style={{textAlign:"center",padding:"3px 6px",color:C.text2}}>{it.tot}</td><td style={{textAlign:"center",padding:"3px 6px",fontWeight:600,color:C.teal}}>{it.mn}</td><td style={{textAlign:"center",padding:"3px 6px",color:C.text2}}>{it.median}</td><td style={{textAlign:"center",padding:"3px 6px",color:C.text2,fontSize:9}}>{it.modeLabel}</td><td style={{textAlign:"center",padding:"3px 6px",color:C.success}}>{it.top2}%</td><td style={{textAlign:"center",padding:"3px 6px",color:C.error}}>{it.bot2}%</td></tr>)}</tbody>
+          </table>
+        </details>
+      </div>);
+    })}
+  </div>);
 }
 
-// ── MAIN ────────────────────────────────────────────────────────
-function App(){
-  const[data,setData]=useState(null);const[loading,setLoading]=useState(false);const[err,setErr]=useState(null);const[tab,setTab]=useState("overview");const[drag,setDrag]=useState(false);const[ovr,setOvr]=useState({});const fRef=useRef(null);
-  const hFile=useCallback(f=>{if(!f)return;const x=f.name.split(".").pop().toLowerCase();if(!["xlsx","xls","csv"].includes(x)){setErr("Upload .xlsx, .xls, or .csv");return;}setLoading(true);setErr(null);const r=new FileReader();r.onload=e=>{try{const d=pFile(new Uint8Array(e.target.result),f.name);if(!d||!d.rows)setErr("Could not read data.");else{setData(d);setTab("overview");setOvr({});}}catch(er){setErr("Error: "+er.message);}setLoading(false);};r.readAsArrayBuffer(f);},[]);
-  const cols=useMemo(()=>data?data.cols.map(c=>ovr[c.name]?{...c,type:ovr[c.name],ovrd:true}:c):[],[data,ovr]);
-  const a=useMemo(()=>{if(!data)return null;const ex=["meta","kobo_dummy","empty","binary","constant"];return{categorical:cols.filter(c=>c.type==="categorical"),likert:cols.filter(c=>c.type==="likert"),numeric:cols.filter(c=>c.type==="numeric"||c.type==="ordinal_numeric"),date:cols.filter(c=>c.type==="date"),text:cols.filter(c=>c.type==="text"),excluded:cols.filter(c=>ex.includes(c.type)),all:cols.filter(c=>!ex.includes(c.type))};},[cols,data]);
-  const tabs=[{id:"overview",label:"Overview",icon:I.users},{id:"frequencies",label:"Frequencies",icon:I.tag,n:a?.categorical.length},{id:"likert",label:"Likert",icon:I.scale,n:a?.likert.length},{id:"numeric",label:"Numeric",icon:I.hash,n:a?.numeric.length},{id:"groupby",label:"Group By",icon:I.grid},{id:"timeseries",label:"Trends",icon:I.trend,n:a?.date.length},{id:"regression",label:"Regression",icon:I.scatter},{id:"crosstab",label:"Cross-tab",icon:I.table},{id:"missing",label:"Missing",icon:I.warn},{id:"preview",label:"Preview",icon:I.eye},{id:"codebook",label:"Codebook",icon:I.book}];
-  const tc={categorical:C.teal,likert:C.purple,numeric:C.amber,ordinal_numeric:C.amber,date:C.tealD,text:C.slate,constant:"#444"};
-  const setO=(n,t)=>setOvr(p=>({...p,[n]:t}));const clrO=n=>setOvr(p=>{const x={...p};delete x[n];return x;});
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: NUMERIC (enhanced with IQR, skew, kurtosis, histograms)
+// ═══════════════════════════════════════════════════════════════════════════
 
-  // ── UPLOAD SCREEN ─────────────────────────────────────────────
+function NumericTab({a,setTab}){
+  if(a.numeric.length===0)return <Empty type="numeric" a={a} go={setTab}/>;
+  const[viewMode,setViewMode]=useState('table');
+  const stats=useMemo(()=>a.numeric.map(c=>{
+    const nums=c.values.filter(v=>v!=null&&!isNaN(Number(v))).map(Number);
+    const st=descriptiveStats(nums);
+    const bins=histogramBins(nums);
+    return{col:c,...st,bins};
+  }),[a.numeric]);
+  return(<div className="fu card">
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+      <div style={{fontSize:14,fontWeight:700,color:C.text}}>Descriptive Statistics</div>
+      <div style={{display:'flex',gap:4}}>
+        {['table','histogram'].map(m=><button key={m} onClick={()=>setViewMode(m)} style={{padding:'3px 10px',borderRadius:5,fontSize:10,fontWeight:600,cursor:'pointer',fontFamily:'inherit',border:`1px solid ${viewMode===m?'rgba(46,196,182,.4)':C.off}`,background:viewMode===m?'rgba(46,196,182,.15)':'transparent',color:viewMode===m?C.teal:C.text2}}>{m==='table'?'Table':'Histograms'}</button>)}
+      </div>
+    </div>
+    {viewMode==='table'&&<div style={{overflowX:"auto"}}>
+      <table className="sth" style={{width:"100%",fontSize:10,borderCollapse:"collapse"}}>
+        <thead><tr style={{borderBottom:`1px solid ${C.offB}`}}>
+          {["Variable","n","Mean","SD","SE","Median","Q1","Q3","IQR","Min","Max","Skew","Kurt"].map(h=><th key={h} style={{textAlign:h==="Variable"?"left":"center",padding:"5px 6px",color:C.text2,fontWeight:600,background:C.navy}}>{h}</th>)}
+        </tr></thead>
+        <tbody>{stats.map((s,i)=>s&&<tr key={i} style={{borderBottom:`1px solid ${C.off}`}}>
+          <td style={{padding:"4px 6px",fontWeight:500,maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:C.text2}} title={s.col.name}>{trunc(s.col.name,30)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.text2}}>{s.n}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",fontWeight:600,color:C.teal}}>{s.mean.toFixed(2)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.text2}}>{s.sd.toFixed(2)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.text2}}>{s.se.toFixed(3)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.text2}}>{s.median.toFixed(2)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.text2}}>{s.q1.toFixed(2)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.text2}}>{s.q3.toFixed(2)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.text2}}>{s.iqr.toFixed(2)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.textTertiary}}>{s.min}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:C.textTertiary}}>{s.max}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:Math.abs(s.skewness)>1?C.warning:C.text2}}>{s.skewness.toFixed(2)}</td>
+          <td style={{textAlign:"center",padding:"4px 6px",color:Math.abs(s.kurtosis)>2?C.warning:C.text2}}>{s.kurtosis.toFixed(2)}</td>
+        </tr>)}</tbody>
+      </table>
+    </div>}
+    {viewMode==='histogram'&&<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(320px,1fr))',gap:12}}>
+      {stats.map((s,i)=>s&&s.bins.length>1&&<div key={i} className="card">
+        <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{trunc(s.col.name,40)}</div>
+        <div style={{fontSize:10,color:C.text2,marginBottom:4}}>n={s.n} | M={s.mean.toFixed(2)} | Mdn={s.median.toFixed(2)}</div>
+        <ResponsiveContainer width="100%" height={140}>
+          <BarChart data={s.bins} margin={{left:5,right:5,top:5,bottom:5}}>
+            <XAxis dataKey="label" tick={{fontSize:8,fill:C.text2}} interval="preserveStartEnd"/>
+            <YAxis tick={{fontSize:8,fill:C.text2}} width={30}/>
+            <Tooltip contentStyle={{fontSize:10,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}}/>
+            <Bar dataKey="count" fill={C.teal} radius={[2,2,0,0]}/>
+            <ReferenceLine x={s.bins.reduce((best,b)=>Math.abs(b.binStart-s.mean)<Math.abs(best.binStart-s.mean)?b:best,s.bins[0]).label} stroke={C.error} strokeDasharray="3 3" strokeWidth={1.5}/>
+          </BarChart>
+        </ResponsiveContainer>
+        <div style={{fontSize:9,color:C.text2,textAlign:'center'}}>Red line = mean</div>
+      </div>)}
+    </div>}
+    <div style={{marginTop:8,fontSize:10,color:C.textTertiary}}>Skew &gt; |1| and Kurt &gt; |2| highlighted in amber. SE = Standard Error.</div>
+  </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: CROSS-TAB (enhanced with chi-square, Cramér's V, Fisher's exact)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function CrossTabTab({cols,a}){
+  const[oc,setOc]=useState("");const[dc,setDc]=useState("");
+  const[viewType,setViewType]=useState("row_pct");
+  const az=cols.filter(c=>["categorical","likert","ordinal_numeric"].includes(c.type));
+  const dOpts=a.categorical.filter(c=>new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim())).size>1);
+
+  const res=useMemo(()=>{
+    if(!oc||!dc)return null;
+    const o=cols.find(c=>c.name===oc),d=cols.find(c=>c.name===dc);
+    if(!o||!d)return null;
+    const tb={},dV=new Set(),oV=new Set();
+    for(let i=0;i<o.values.length;i++){
+      const ov=o.values[i]!=null?String(o.values[i]).trim():null,dv=d.values[i]!=null?String(d.values[i]).trim():null;
+      if(!ov||!dv)continue;dV.add(dv);oV.add(ov);
+      if(!tb[dv])tb[dv]={};tb[dv][ov]=(tb[dv][ov]||0)+1;
+    }
+    const dArr=[...dV].sort(),oArr=[...oV].sort();
+    // Build observed matrix for chi-square
+    const observed=dArr.map(dv=>oArr.map(ov=>(tb[dv]?.[ov]||0)));
+    const chi=observed.length>1&&observed[0].length>1?chiSquareTest(observed):null;
+    // Fisher for 2x2
+    const fisher=(chi&&dArr.length===2&&oArr.length===2)?fisherExact2x2(observed[0][0],observed[0][1],observed[1][0],observed[1][1]):null;
+    return{tb,dV:dArr,oV:oArr,observed,chi,fisher};
+  },[oc,dc,cols]);
+
+  const cd=useMemo(()=>{
+    if(!res)return[];
+    return res.dV.map(dv=>{const r={name:trunc(dv,20)};let t=0;res.oV.forEach(ov=>{t+=(res.tb[dv]?.[ov]||0);});
+      res.oV.forEach(ov=>{const raw=res.tb[dv]?.[ov]||0;
+        if(viewType==='row_pct')r[ov]=t?parseFloat((raw/t*100).toFixed(1)):0;
+        else if(viewType==='counts')r[ov]=raw;
+        else if(viewType==='col_pct'){const colT=res.dV.reduce((s,d2)=>s+(res.tb[d2]?.[ov]||0),0);r[ov]=colT?parseFloat((raw/colT*100).toFixed(1)):0;}
+      });return r;});
+  },[res,viewType]);
+
+  return(<div className="fu card">
+    <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:14}}>Cross-tabulation</div>
+    <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+      <div style={{flex:1,minWidth:180}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Outcome</label><SearchableSelect options={az.map(c=>({value:c.name,label:trunc(c.name,42)}))} value={oc} onChange={setOc} label="Outcome variable"/></div>
+      <div style={{flex:1,minWidth:180}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Disaggregate by</label><SearchableSelect options={dOpts.map(c=>({value:c.name,label:trunc(c.name,38),sub:`${new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim())).size}`}))} value={dc} onChange={setDc} label="Disaggregation variable"/></div>
+      <div style={{minWidth:100}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Display</label>
+        <select className="select-dark" value={viewType} onChange={e=>setViewType(e.target.value)} style={{width:'100%'}}><option value="row_pct">Row %</option><option value="counts">Counts</option><option value="col_pct">Column %</option></select>
+      </div>
+    </div>
+
+    {res&&res.dV.length>1&&<>
+      <ResponsiveContainer width="100%" height={Math.max(180,cd.length*35+50)}>
+        <BarChart data={cd} layout="vertical" margin={{left:10,right:20,top:5,bottom:5}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.off} horizontal={false}/>
+          <XAxis type="number" domain={viewType!=='counts'?[0,100]:undefined} tick={{fontSize:10,fill:C.text2}} unit={viewType!=='counts'?'%':''}/>
+          <YAxis type="category" dataKey="name" width={120} tick={{fontSize:10,fill:C.text2}}/>
+          <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}} formatter={v=>[viewType!=='counts'?`${v}%`:v]}/>
+          <Legend wrapperStyle={{fontSize:10}}/>
+          {res.oV.map((ov,i)=><Bar key={ov} dataKey={ov} stackId={viewType!=='counts'?"a":undefined} fill={C.pal[i%C.pal.length]}/>)}
+        </BarChart>
+      </ResponsiveContainer>
+
+      {/* Chi-square results */}
+      {res.chi&&<div style={{background:"rgba(123,97,255,.06)",border:"1px solid rgba(123,97,255,.15)",borderRadius:8,padding:"12px 14px",marginTop:12}}>
+        <div style={{fontSize:12,fontWeight:600,color:C.purple,marginBottom:6}}>Chi-square Test of Independence</div>
+        <div style={{display:"flex",gap:16,flexWrap:"wrap",fontSize:11,color:C.text2}}>
+          <span>\u03c7\u00b2 = <strong style={{color:C.text}}>{res.chi.chiSq.toFixed(3)}</strong></span>
+          <span>df = {res.chi.df}</span>
+          <span>p = <strong style={{color:res.chi.pValue<0.05?C.success:C.text2}}>{fmtP(res.chi.pValue)}</strong></span>
+          <span>Cram\u00e9r's V = <strong style={{color:C.text}}>{res.chi.cramersV.toFixed(3)}</strong> ({res.chi.vInterp})</span>
+        </div>
+        {res.chi.pValue<0.05&&<div style={{fontSize:11,color:C.success,marginTop:4}}>The association is statistically significant (p &lt; 0.05).</div>}
+        {res.chi.pValue>=0.05&&<div style={{fontSize:11,color:C.text2,marginTop:4}}>No statistically significant association detected.</div>}
+        {res.chi.warnings.map((w,i)=><div key={i} style={{fontSize:10,color:C.warning,marginTop:3}}>\u26a0 {w}</div>)}
+        {res.fisher!=null&&<div style={{fontSize:11,color:C.text2,marginTop:4}}>Fisher's exact test (2\u00d72): p = <strong style={{color:C.text}}>{fmtP(res.fisher)}</strong></div>}
+        <div style={{fontSize:10,color:C.textTertiary,marginTop:4}}>Cram\u00e9r's V interpretation: small ({'>'}0.1), medium ({'>'}0.3), large ({'>'}0.5) for 2\u00d72 tables.</div>
+      </div>}
+    </>}
+    {res&&res.dV.length<=1&&<div style={{padding:12,color:C.warning,fontSize:12}}>Only one category in this disaggregator.</div>}
+  </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: CORRELATION (NEW - heatmap + scatterplot drill-down)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function CorrelationTab({a}){
+  const numVars=useMemo(()=>[...a.numeric,...a.likert].slice(0,25),[a]);
+  const[selected,setSelected]=useState(null);
+
+  const matrix=useMemo(()=>{
+    if(numVars.length<2)return null;
+    const m=[];
+    for(let i=0;i<numVars.length;i++){
+      m[i]=[];
+      for(let j=0;j<numVars.length;j++){
+        if(i===j)m[i][j]={r:1,p:0,n:numVars[i].nonNull};
+        else if(j<i)m[i][j]=m[j][i];
+        else{
+          const xv=numVars[i].values.map(v=>v!=null?Number(v):null);
+          const yv=numVars[j].values.map(v=>v!=null?Number(v):null);
+          m[i][j]=pearsonCorrelation(xv,yv)||{r:0,p:1,n:0};
+        }
+      }
+    }
+    return m;
+  },[numVars]);
+
+  const corrColor=(r)=>{
+    if(r>0)return `rgba(46,196,182,${Math.abs(r)*0.8+0.1})`;
+    if(r<0)return `rgba(232,93,93,${Math.abs(r)*0.8+0.1})`;
+    return C.navyMid;
+  };
+
+  const drillPts=useMemo(()=>{
+    if(!selected)return[];
+    const xv=numVars[selected[0]].values,yv=numVars[selected[1]].values;
+    const pts=[];
+    for(let i=0;i<xv.length;i++){
+      if(xv[i]!=null&&yv[i]!=null&&!isNaN(Number(xv[i]))&&!isNaN(Number(yv[i])))pts.push({x:Number(xv[i]),y:Number(yv[i])});
+    }
+    return pts.length>500?pts.filter((_,i)=>i%Math.ceil(pts.length/500)===0):pts;
+  },[selected,numVars]);
+
+  if(numVars.length<2)return <div className="fu" style={{padding:48,textAlign:"center",color:C.text2}}>Need at least 2 numeric/Likert variables for correlation analysis.</div>;
+
+  const cellSize=Math.min(44,Math.max(28,380/numVars.length));
+
+  return(<div className="fu card">
+    <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:14}}>Correlation Matrix <span style={{fontWeight:400,color:C.text2}}>({numVars.length} variables)</span></div>
+    <div style={{fontSize:10,color:C.text2,marginBottom:8}}>Click a cell to see the scatterplot. Bold = significant at p &lt; 0.05.</div>
+
+    <div style={{overflowX:'auto',marginBottom:16}}>
+      <table style={{borderCollapse:'collapse',fontSize:9}}>
+        <thead><tr><th style={{padding:2}}></th>{numVars.map((v,j)=><th key={j} style={{padding:2,maxWidth:cellSize,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:C.text2,fontWeight:500,transform:'rotate(-45deg)',transformOrigin:'left bottom',height:60}} title={v.name}>{trunc(v.name,12)}</th>)}</tr></thead>
+        <tbody>{numVars.map((v,i)=><tr key={i}>
+          <td style={{padding:'2px 4px',color:C.text2,fontWeight:500,whiteSpace:'nowrap',maxWidth:100,overflow:'hidden',textOverflow:'ellipsis',fontSize:9}} title={v.name}>{trunc(v.name,14)}</td>
+          {numVars.map((v2,j)=>{
+            if(!matrix)return <td key={j}></td>;
+            const cell=matrix[i][j];
+            const isSig=cell.p<0.05;
+            const isLower=j<=i;
+            return <td key={j} className={isLower&&i!==j?"corr-cell":""} onClick={isLower&&i!==j?()=>setSelected([Math.min(i,j),Math.max(i,j)]):undefined} style={{width:cellSize,height:cellSize,textAlign:'center',background:i===j?C.navyMid:corrColor(cell.r),color:Math.abs(cell.r)>0.5?'#fff':C.text2,fontWeight:isSig?700:400,fontSize:9,border:`1px solid ${C.navy}`,cursor:isLower&&i!==j?'pointer':'default'}} title={i!==j?`r=${cell.r.toFixed(3)}, p=${fmtP(cell.p)}, n=${cell.n}`:v.name}>
+              {i===j?'1':(isLower?cell.r.toFixed(2):'')}
+            </td>;
+          })}
+        </tr>)}</tbody>
+      </table>
+    </div>
+
+    <div style={{display:'flex',gap:12,fontSize:10,color:C.text2,marginBottom:12}}>
+      <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:12,height:12,background:'rgba(46,196,182,.6)',borderRadius:2,display:'inline-block'}}/> Positive</span>
+      <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:12,height:12,background:'rgba(232,93,93,.6)',borderRadius:2,display:'inline-block'}}/> Negative</span>
+      <span><strong>Bold</strong> = p &lt; 0.05</span>
+    </div>
+
+    {selected&&matrix&&<div style={{background:'rgba(255,255,255,.02)',border:`1px solid ${C.off}`,borderRadius:8,padding:14}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+        <div style={{fontSize:12,fontWeight:600,color:C.text}}>
+          {trunc(numVars[selected[0]].name,25)} vs {trunc(numVars[selected[1]].name,25)}
+        </div>
+        <button onClick={()=>setSelected(null)} style={{background:'none',border:'none',color:C.text2,cursor:'pointer',fontSize:14}}>&times;</button>
+      </div>
+      <div style={{fontSize:11,color:C.text2,marginBottom:8}}>
+        r = {matrix[selected[0]][selected[1]].r.toFixed(4)} | p = {fmtP(matrix[selected[0]][selected[1]].p)} | n = {matrix[selected[0]][selected[1]].n}
+        {Math.abs(matrix[selected[0]][selected[1]].r)>=0.7&&<span style={{color:C.success,marginLeft:6}}>Strong</span>}
+        {Math.abs(matrix[selected[0]][selected[1]].r)>=0.3&&Math.abs(matrix[selected[0]][selected[1]].r)<0.7&&<span style={{color:C.warning,marginLeft:6}}>Moderate</span>}
+        {Math.abs(matrix[selected[0]][selected[1]].r)<0.3&&<span style={{color:C.text2,marginLeft:6}}>Weak</span>}
+      </div>
+      {drillPts.length>0&&<ResponsiveContainer width="100%" height={250}>
+        <ScatterChart margin={{left:10,right:20,top:10,bottom:10}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.off}/>
+          <XAxis type="number" dataKey="x" tick={{fontSize:10,fill:C.text2}} name={numVars[selected[0]].name}/>
+          <YAxis type="number" dataKey="y" tick={{fontSize:10,fill:C.text2}} name={numVars[selected[1]].name}/>
+          <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}}/>
+          <Scatter data={drillPts} fill={C.teal} fillOpacity={.5} r={3}/>
+        </ScatterChart>
+      </ResponsiveContainer>}
+      <div style={{fontSize:10,color:C.textTertiary,marginTop:4}}>R\u00b2 = {(matrix[selected[0]][selected[1]].r**2).toFixed(4)} \u2014 {(matrix[selected[0]][selected[1]].r**2*100).toFixed(1)}% of variance explained.</div>
+    </div>}
+  </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: REGRESSION (enhanced OLS diagnostics + fixed logistic)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function RegressionTab({cols,a}){
+  const[xc,setXc]=useState("");const[yc,setYc]=useState("");const[forceModel,setForceModel]=useState("auto");
+  const[showDiag,setShowDiag]=useState(false);
+  const nc=[...a.numeric,...a.likert];
+  const yOpts=useMemo(()=>{
+    const opts=nc.map(c=>({value:c.name,label:trunc(c.name,42),sub:"numeric"}));
+    a.categorical.forEach(c=>{const uniq=[...new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim()))].sort();if(uniq.length===2)opts.push({value:c.name,label:trunc(c.name,42),sub:"binary: "+uniq.join(" / ")});});
+    cols.filter(c=>c.type==="binary").forEach(c=>{opts.push({value:c.name,label:trunc(c.name,42),sub:"binary (0/1)"});});
+    return opts;
+  },[nc,a,cols]);
+
+  const yCol=useMemo(()=>cols.find(c=>c.name===yc),[yc,cols]);
+  const yLabels=useMemo(()=>{
+    if(!yCol)return null;
+    if(yCol.type==="categorical"){
+      const uniq=[...new Set(yCol.values.filter(v=>v!=null).map(v=>String(v).trim()))].sort();
+      if(uniq.length===2)return{zero:uniq[0],one:uniq[1]};
+    }
+    return null;
+  },[yCol]);
+
+  const yVals=useMemo(()=>{
+    if(!yCol)return null;
+    if(["numeric","ordinal_numeric","likert","binary"].includes(yCol.type))return yCol.values.map(v=>v!=null?Number(v):null);
+    // Categorical binary: deterministic encoding (alphabetical sort)
+    const uniq=[...new Set(yCol.values.filter(v=>v!=null).map(v=>String(v).trim()))].sort();
+    if(uniq.length===2)return yCol.values.map(v=>v!=null?(String(v).trim()===uniq[0]?0:1):null);
+    return yCol.values.map(v=>v!=null?Number(v):null);
+  },[yCol]);
+
+  const xv=useMemo(()=>xc?cols.find(c=>c.name===xc)?.values.map(v=>v!=null?Number(v):null):null,[xc,cols]);
+  const isBin=useMemo(()=>yVals?isBinaryY(yVals):false,[yVals]);
+  const model=forceModel==="auto"?(isBin?"logistic":"ols"):forceModel;
+
+  const reg=useMemo(()=>{
+    if(!xv||!yVals)return null;
+    if(model==="logistic")return logisticRegression(xv,yVals);
+    return olsRegression(xv,yVals);
+  },[xv,yVals,model]);
+
+  const pts=useMemo(()=>{
+    if(!xv||!yVals)return[];
+    const p=[];for(let i=0;i<xv.length;i++){if(xv[i]!=null&&!isNaN(xv[i])&&yVals[i]!=null&&!isNaN(yVals[i]))p.push({x:xv[i],y:Number(yVals[i])});}
+    return p.length>500?p.filter((_,i)=>i%Math.ceil(p.length/500)===0):p;
+  },[xv,yVals]);
+
+  const sCurve=useMemo(()=>{
+    if(!reg||reg.type!=='logistic'||!pts.length)return[];
+    const xMin=Math.min(...pts.map(d=>d.x)),xMax=Math.max(...pts.map(d=>d.x));
+    const step=(xMax-xMin)/80;const curve=[];
+    for(let x=xMin;x<=xMax;x+=step){const z=reg.b0+reg.b1*x;curve.push({x,y:1/(1+Math.exp(-Math.max(-20,Math.min(20,z))))});}
+    return curve;
+  },[reg,pts]);
+
+  // Residual diagnostic data
+  const diagData=useMemo(()=>{
+    if(!reg||reg.type!=='ols')return null;
+    const resVsFit=reg.residuals.map((r,i)=>({fitted:reg.fitted[i],residual:r}));
+    // QQ data
+    const sortedRes=[...reg.residuals].sort((a,b)=>a-b);
+    const n=sortedRes.length;
+    const qq=sortedRes.map((r,i)=>{
+      const p=(i+0.5)/n;
+      // Inverse normal approximation (Beasley-Springer-Moro)
+      let t2=p<0.5?p:1-p;t2=Math.sqrt(-2*Math.log(t2));
+      const theoretical=t2-(2.515517+0.802853*t2+0.010328*t2*t2)/(1+1.432788*t2+0.189269*t2*t2+0.001308*t2*t2*t2);
+      return{theoretical:p<0.5?-theoretical:theoretical,actual:r};
+    });
+    return{resVsFit,qq};
+  },[reg]);
+
+  return(<div className="fu card">
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+      <div style={{fontSize:14,fontWeight:700,color:C.text}}>Regression Analysis</div>
+      <div style={{display:"flex",gap:4,alignItems:"center"}}>
+        {["auto","ols","logistic"].map(m=><button key={m} onClick={()=>setForceModel(m)} style={{padding:"3px 10px",borderRadius:5,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit",border:`1px solid ${forceModel===m?"rgba(46,196,182,.4)":C.off}`,background:forceModel===m?"rgba(46,196,182,.15)":"transparent",color:forceModel===m?C.teal:C.text2}}>{m==="auto"?"Auto-detect":m==="ols"?"OLS (linear)":"Logistic"}</button>)}
+      </div>
+    </div>
+    <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+      <div style={{flex:1,minWidth:180}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>X (independent)</label><SearchableSelect options={nc.map(c=>({value:c.name,label:trunc(c.name,42)}))} value={xc} onChange={setXc} label="X variable"/></div>
+      <div style={{flex:1,minWidth:180}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Y (dependent){isBin&&<span style={{color:C.purple,marginLeft:6,fontSize:10}}>Binary detected</span>}</label><SearchableSelect options={yOpts} value={yc} onChange={setYc} label="Y variable"/></div>
+    </div>
+    {isBin&&model==="logistic"&&yLabels&&<div style={{marginBottom:12,padding:"8px 12px",background:"rgba(123,97,255,.06)",borderRadius:8,border:"1px solid rgba(123,97,255,.15)",fontSize:11,color:C.text2}}>Logistic regression. Y encoding: <strong style={{color:C.text}}>{yLabels.zero}</strong> = 0, <strong style={{color:C.text}}>{yLabels.one}</strong> = 1 (alphabetical)</div>}
+
+    {/* OLS Results */}
+    {reg&&reg.type==="ols"&&<>
+      <ResponsiveContainer width="100%" height={300}>
+        <ScatterChart margin={{left:10,right:20,top:10,bottom:5}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.off}/>
+          <XAxis type="number" dataKey="x" tick={{fontSize:10,fill:C.text2}}/>
+          <YAxis type="number" dataKey="y" tick={{fontSize:10,fill:C.text2}}/>
+          <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}}/>
+          <Scatter data={pts} fill={C.teal} fillOpacity={.5} r={3}/>
+          {pts.length>0&&<ReferenceLine stroke={C.error} strokeWidth={2} strokeDasharray="5 3" segment={[{x:Math.min(...pts.map(d=>d.x)),y:reg.intercept+reg.slope*Math.min(...pts.map(d=>d.x))},{x:Math.max(...pts.map(d=>d.x)),y:reg.intercept+reg.slope*Math.max(...pts.map(d=>d.x))}]}/>}
+        </ScatterChart>
+      </ResponsiveContainer>
+
+      <div style={{overflowX:'auto',marginTop:14}}>
+        <table style={{width:'100%',fontSize:11,borderCollapse:'collapse'}}>
+          <thead><tr style={{borderBottom:`1px solid ${C.offB}`}}>
+            <th style={{textAlign:'left',padding:'6px 8px',color:C.text2,background:C.navy}}>Metric</th>
+            <th style={{textAlign:'right',padding:'6px 8px',color:C.text2,background:C.navy}}>Value</th>
+          </tr></thead>
+          <tbody>
+            {[
+              ['R\u00b2',reg.r2.toFixed(4)],['Adjusted R\u00b2',reg.adjR2.toFixed(4)],
+              ['F-statistic',`${reg.fStat.toFixed(2)} (p = ${fmtP(reg.pF)})`],['n',reg.n],
+              ['Slope (\u03b2\u2081)',reg.slope.toFixed(4)],['95% CI (slope)',`[${reg.ciSlope[0].toFixed(4)}, ${reg.ciSlope[1].toFixed(4)}]`],
+              ['SE (slope)',reg.seSlope.toFixed(4)],['t-statistic (slope)',reg.tSlope.toFixed(3)],
+              ['p-value (slope)',fmtP(reg.pSlope)],
+              ['Intercept (\u03b2\u2080)',reg.intercept.toFixed(4)],['95% CI (intercept)',`[${reg.ciIntercept[0].toFixed(4)}, ${reg.ciIntercept[1].toFixed(4)}]`],
+              ['p-value (intercept)',fmtP(reg.pIntercept)],
+              ['Durbin-Watson',reg.dw.toFixed(3)]
+            ].map(([l,v],i)=><tr key={i} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:'4px 8px',color:C.text2}}>{l}</td><td style={{textAlign:'right',padding:'4px 8px',fontWeight:600,color:l.includes('p-value')?((v.includes('<')||parseFloat(v)<0.05)?C.success:C.text2):C.text}}>{v}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{marginTop:12,fontSize:12,color:C.teal,background:"rgba(46,196,182,.06)",padding:"10px 14px",borderRadius:8,fontWeight:600,border:"1px solid rgba(46,196,182,.15)"}}>
+        Y = {reg.intercept.toFixed(3)} + {reg.slope.toFixed(3)} \u00d7 X
+        {reg.pSlope<.05?<span style={{color:C.success,marginLeft:10}}>Significant (p &lt; 0.05)</span>:<span style={{color:C.text2,marginLeft:10}}>Not significant</span>}
+      </div>
+      <div style={{fontSize:10,color:C.text2,marginTop:6}}>R\u00b2 = {(reg.r2*100).toFixed(1)}% of variance in Y explained by X. Durbin-Watson near 2 suggests no autocorrelation.</div>
+
+      {/* Residual diagnostics */}
+      <div style={{marginTop:12}}>
+        <button onClick={()=>setShowDiag(!showDiag)} style={{background:'none',border:`1px solid ${C.off}`,color:C.text2,padding:'6px 14px',borderRadius:6,fontSize:11,cursor:'pointer',fontWeight:600,fontFamily:'inherit'}}>
+          {showDiag?'\u25be':'▸'} Residual Diagnostics
+        </button>
+        {showDiag&&diagData&&<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginTop:12}}>
+          <div>
+            <div style={{fontSize:11,fontWeight:600,color:C.text2,marginBottom:4}}>Residuals vs Fitted</div>
+            <ResponsiveContainer width="100%" height={180}>
+              <ScatterChart margin={{left:5,right:10,top:5,bottom:5}}>
+                <CartesianGrid strokeDasharray="3 3" stroke={C.off}/>
+                <XAxis type="number" dataKey="fitted" tick={{fontSize:9,fill:C.text2}} name="Fitted"/>
+                <YAxis type="number" dataKey="residual" tick={{fontSize:9,fill:C.text2}} name="Residual"/>
+                <ReferenceLine y={0} stroke={C.error} strokeDasharray="3 3"/>
+                <Scatter data={diagData.resVsFit} fill={C.teal} fillOpacity={.4} r={2}/>
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:600,color:C.text2,marginBottom:4}}>Q-Q Plot (Residuals)</div>
+            <ResponsiveContainer width="100%" height={180}>
+              <ScatterChart margin={{left:5,right:10,top:5,bottom:5}}>
+                <CartesianGrid strokeDasharray="3 3" stroke={C.off}/>
+                <XAxis type="number" dataKey="theoretical" tick={{fontSize:9,fill:C.text2}} name="Theoretical"/>
+                <YAxis type="number" dataKey="actual" tick={{fontSize:9,fill:C.text2}} name="Actual"/>
+                <Scatter data={diagData.qq} fill={C.purple} fillOpacity={.5} r={2}/>
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+        </div>}
+      </div>
+    </>}
+
+    {/* Logistic Results */}
+    {reg&&reg.type==="logistic"&&<>
+      <ResponsiveContainer width="100%" height={300}>
+        <ScatterChart margin={{left:10,right:20,top:10,bottom:5}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.off}/>
+          <XAxis type="number" dataKey="x" tick={{fontSize:10,fill:C.text2}}/>
+          <YAxis type="number" dataKey="y" domain={[-0.05,1.05]} tick={{fontSize:10,fill:C.text2}} tickFormatter={v=>v===0||v===1?String(v):v.toFixed(1)}/>
+          <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}}/>
+          <Scatter data={pts} fill={C.teal} fillOpacity={.4} r={3}/>
+          <Scatter data={sCurve} fill="none" line={{stroke:C.purple,strokeWidth:2.5}} legendType="none" r={0}/>
+        </ScatterChart>
+      </ResponsiveContainer>
+
+      <div className="stat-grid">
+        {[{l:"Odds Ratio",v:reg.or.toFixed(3),cls:'purple'},{l:"OR 95% CI",v:`[${reg.orLo.toFixed(2)}, ${reg.orHi.toFixed(2)}]`},{l:"Coeff (\u03b2\u2081)",v:reg.b1.toFixed(4)},{l:"SE",v:reg.se1.toFixed(4)},{l:"z-stat",v:reg.z.toFixed(2)},{l:"p-value",v:fmtP(reg.pVal),hl:reg.pVal<.05},{l:"Pseudo R\u00b2",v:reg.pseudoR2.toFixed(4)},{l:"AUC",v:reg.auc.toFixed(3)},{l:"n",v:reg.n}].map((s,i)=>
+          <div key={i} className={`stat-card${s.cls?' purple':''}${s.hl?' hl':''}`}><div className="val">{s.v}</div><div className="lbl">{s.l}</div></div>
+        )}
+      </div>
+
+      {/* Classification table */}
+      <div style={{marginTop:14,background:"rgba(123,97,255,.06)",border:"1px solid rgba(123,97,255,.15)",borderRadius:8,padding:"12px 14px"}}>
+        <div style={{fontSize:12,fontWeight:600,color:C.purple,marginBottom:8}}>Classification Table (threshold = 0.5)</div>
+        <table style={{borderCollapse:'collapse',fontSize:11,marginBottom:8}}>
+          <thead><tr><th style={{padding:'4px 12px',color:C.text2,border:`1px solid ${C.off}`,background:C.navy}}></th><th style={{padding:'4px 12px',color:C.text2,border:`1px solid ${C.off}`,background:C.navy}}>Pred 0</th><th style={{padding:'4px 12px',color:C.text2,border:`1px solid ${C.off}`,background:C.navy}}>Pred 1</th></tr></thead>
+          <tbody>
+            <tr><td style={{padding:'4px 12px',fontWeight:600,color:C.text2,border:`1px solid ${C.off}`}}>Actual 0</td><td style={{textAlign:'center',padding:'4px 12px',color:C.success,border:`1px solid ${C.off}`}}>{reg.classification.tn}</td><td style={{textAlign:'center',padding:'4px 12px',color:C.error,border:`1px solid ${C.off}`}}>{reg.classification.fp}</td></tr>
+            <tr><td style={{padding:'4px 12px',fontWeight:600,color:C.text2,border:`1px solid ${C.off}`}}>Actual 1</td><td style={{textAlign:'center',padding:'4px 12px',color:C.error,border:`1px solid ${C.off}`}}>{reg.classification.fn}</td><td style={{textAlign:'center',padding:'4px 12px',color:C.success,border:`1px solid ${C.off}`}}>{reg.classification.tp}</td></tr>
+          </tbody>
+        </table>
+        <div style={{display:'flex',gap:14,fontSize:11,color:C.text2,flexWrap:'wrap'}}>
+          <span>Accuracy: <strong style={{color:C.text}}>{(reg.classification.accuracy*100).toFixed(1)}%</strong></span>
+          <span>Sensitivity: <strong style={{color:C.text}}>{(reg.classification.sensitivity*100).toFixed(1)}%</strong></span>
+          <span>Specificity: <strong style={{color:C.text}}>{(reg.classification.specificity*100).toFixed(1)}%</strong></span>
+          <span>AUC: <strong style={{color:C.text}}>{reg.auc.toFixed(3)}</strong></span>
+        </div>
+      </div>
+
+      <div style={{marginTop:12,fontSize:12,background:"rgba(123,97,255,.06)",padding:"12px 14px",borderRadius:8,border:"1px solid rgba(123,97,255,.15)"}}>
+        <div style={{color:C.purple,fontWeight:600,marginBottom:4}}>log(p / 1-p) = {reg.b0.toFixed(3)} + {reg.b1.toFixed(3)} \u00d7 X</div>
+        <div style={{color:C.text2,fontSize:11}}>
+          {reg.or>1?`Each unit increase in X multiplies the odds of Y=1 by ${reg.or.toFixed(2)} (${((reg.or-1)*100).toFixed(0)}% increase).`:`Each unit increase in X multiplies the odds of Y=1 by ${reg.or.toFixed(2)} (${((1-reg.or)*100).toFixed(0)}% decrease).`}
+          {reg.pVal<.05?" This effect is statistically significant.":" This effect is not statistically significant."}
+        </div>
+      </div>
+    </>}
+  </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: GROUP BY
+// ═══════════════════════════════════════════════════════════════════════════
+
+function GroupByTab({cols,a,data}){
+  const[gc,setGc]=useState("");const[mc,setMc]=useState("");const[fn,setFn]=useState("mean");
+  const cats=[...a.categorical,...a.date];
+  const res=useMemo(()=>{
+    if(!gc||!mc)return null;
+    const g=cols.find(c=>c.name===gc),m=cols.find(c=>c.name===mc);if(!g||!m)return null;
+    const groups={};for(let i=0;i<data.rows;i++){const gv=g.values[i],mv=m.values[i];if(gv==null||mv==null||isNaN(Number(mv)))continue;const k=String(gv).trim();if(!groups[k])groups[k]=[];groups[k].push(Number(mv));}
+    return Object.entries(groups).map(([k,vs])=>({name:trunc(k,25),full:k,count:vs.length,sum:vs.reduce((a,v)=>a+v,0),mean:vs.reduce((a,v)=>a+v,0)/vs.length})).sort((a,b)=>b[fn]-a[fn]);
+  },[gc,mc,fn,cols,data]);
+  return(<div className="fu card">
+    <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:14}}>Grouped Aggregation</div>
+    <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+      <div style={{flex:1,minWidth:140}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Measure (numeric)</label><SearchableSelect options={a.numeric.map(c=>({value:c.name,label:trunc(c.name,42)}))} value={mc} onChange={setMc} label="Measure"/></div>
+      <div style={{flex:1,minWidth:140}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Group by</label><SearchableSelect options={cats.map(c=>({value:c.name,label:trunc(c.name,42),sub:`${new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim())).size}`}))} value={gc} onChange={setGc} label="Group by"/></div>
+      <div style={{minWidth:100}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Function</label><select className="select-dark" value={fn} onChange={e=>setFn(e.target.value)} style={{width:"100%"}}><option value="sum">SUM</option><option value="mean">MEAN</option><option value="count">COUNT</option></select></div>
+    </div>
+    {res&&<><ResponsiveContainer width="100%" height={Math.max(180,res.length*28+40)}>
+      <BarChart data={res} layout="vertical" margin={{left:10,right:20,top:5,bottom:5}}>
+        <CartesianGrid strokeDasharray="3 3" stroke={C.off} horizontal={false}/>
+        <XAxis type="number" tick={{fontSize:10,fill:C.text2}}/>
+        <YAxis type="category" dataKey="name" width={140} tick={{fontSize:10,fill:C.text2}}/>
+        <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}}/>
+        <Bar dataKey={fn} fill={C.teal} radius={[0,4,4,0]} barSize={18}/>
+      </BarChart>
+    </ResponsiveContainer>
+    <div style={{overflowX:"auto",marginTop:10}}>
+      <table className="sth" style={{width:"100%",fontSize:11,borderCollapse:"collapse"}}>
+        <thead><tr style={{borderBottom:`1px solid ${C.offB}`}}>{["Group","n","Sum","Mean"].map(h=><th key={h} style={{textAlign:h==="Group"?"left":"right",padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>{h}</th>)}</tr></thead>
+        <tbody>{res.map((r,i)=><tr key={i} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"4px 8px",fontWeight:500,color:C.text2}} title={r.full}>{r.name}</td><td style={{textAlign:"right",padding:"4px 8px",color:C.text2}}>{r.count}</td><td style={{textAlign:"right",padding:"4px 8px",fontWeight:600,color:C.teal}}>{fmt(r.sum,1)}</td><td style={{textAlign:"right",padding:"4px 8px",color:C.text2}}>{fmt(r.mean,2)}</td></tr>)}</tbody>
+      </table>
+    </div></>}
+  </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: TIME SERIES
+// ═══════════════════════════════════════════════════════════════════════════
+
+function TimeSeriesTab({cols,a,data}){
+  const[dc,setDc]=useState("");const[mc,setMc]=useState("");const[iv,setIv]=useState("year");const[dg,setDg]=useState("");
+  const dCols=[...a.date,...cols.filter(c=>c.name.toLowerCase().includes("year")&&c.type!=="meta"&&c.type!=="date")];
+  const cats=a.categorical.filter(c=>new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim())).size<=10);
+  const res=useMemo(()=>{
+    if(!dc)return null;const d=cols.find(c=>c.name===dc),m=mc?cols.find(c=>c.name===mc):null,g=dg?cols.find(c=>c.name===dg):null;if(!d)return null;
+    const bk={};for(let i=0;i<data.rows;i++){let pd2=pDate(d.values[i]),key;if(pd2){key=iv==="year"?pd2.getFullYear():iv==="month"?pd2.getFullYear()+"-"+String(pd2.getMonth()+1).padStart(2,"0"):pd2.getFullYear()+"-Q"+Math.ceil((pd2.getMonth()+1)/3);}else{const n=Number(d.values[i]);if(!isNaN(n)&&n>1900&&n<2100)key=String(Math.floor(n));else continue;}
+      const gv=g?String(g.values[i]||"Other").trim():"_all";if(!bk[key])bk[key]={};if(!bk[key][gv])bk[key][gv]={c:0,s:0};bk[key][gv].c++;if(m&&m.values[i]!=null&&!isNaN(Number(m.values[i])))bk[key][gv].s+=Number(m.values[i]);}
+    const gVs=dg?[...new Set(Object.values(bk).flatMap(b=>Object.keys(b)))].filter(v=>v!=="_all").sort():["_all"];
+    return{sorted:Object.keys(bk).sort(),bk,gVs,hasM:!!m};
+  },[dc,mc,iv,dg,cols,data]);
+  const cd=useMemo(()=>{if(!res)return[];return res.sorted.map(k=>{const r={name:k};res.gVs.forEach(g=>{const b=res.bk[k]?.[g];r[g]=b?(res.hasM?b.s:b.c):0;});return r;});},[res]);
+  if(!dCols.length)return <div className="fu" style={{padding:40,textAlign:"center",color:C.text2}}>No date or year columns found. Reclassify a variable on the Overview tab.</div>;
+  return(<div className="fu card">
+    <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:14}}>Time Series</div>
+    <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+      <div style={{flex:1,minWidth:140}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Time variable</label><SearchableSelect options={dCols.map(c=>({value:c.name,label:trunc(c.name,38)}))} value={dc} onChange={setDc} label="Time variable"/></div>
+      <div style={{flex:1,minWidth:140}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Measure</label><SearchableSelect options={[{value:"",label:"Event count"},...a.numeric.map(c=>({value:c.name,label:"Sum: "+trunc(c.name,28)}))]} value={mc} onChange={setMc} label="Measure"/></div>
+      <div style={{minWidth:90}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Interval</label><select className="select-dark" value={iv} onChange={e=>setIv(e.target.value)} style={{width:"100%"}}><option value="year">Year</option><option value="quarter">Quarter</option><option value="month">Month</option></select></div>
+      <div style={{flex:1,minWidth:140}}><label style={{fontSize:11,fontWeight:600,color:C.text2,display:"block",marginBottom:4}}>Disaggregate</label><SearchableSelect options={[{value:"",label:"None"},...cats.map(c=>({value:c.name,label:trunc(c.name,28)}))]} value={dg} onChange={setDg} label="Disaggregate"/></div>
+    </div>
+    {cd.length>0&&res&&<ResponsiveContainer width="100%" height={320}>
+      <LineChart data={cd} margin={{left:10,right:20,top:10,bottom:5}}>
+        <CartesianGrid strokeDasharray="3 3" stroke={C.off}/>
+        <XAxis dataKey="name" tick={{fontSize:10,fill:C.text2}} angle={cd.length>20?-45:0} textAnchor={cd.length>20?"end":"middle"} height={cd.length>20?60:30}/>
+        <YAxis tick={{fontSize:10,fill:C.text2}}/>
+        <Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f2240",border:`1px solid ${C.offB}`}}/>
+        {res.gVs.length>1&&<Legend wrapperStyle={{fontSize:10}}/>}
+        {res.gVs.map((g,i)=><Line key={g} type="monotone" dataKey={g} name={g==="_all"?(res.hasM?"Sum":"Count"):g} stroke={C.pal[i%C.pal.length]} strokeWidth={2} dot={{r:2}}/>)}
+      </LineChart>
+    </ResponsiveContainer>}
+  </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB: CODEBOOK (absorbs Preview)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function CodebookTab({cols,data}){
+  const[sk,setSk]=useState("idx");const[sd,setSd]=useState(1);const[showPreview,setShowPreview]=useState(false);
+  const tog=k=>{if(sk===k)setSd(d=>-d);else{setSk(k);setSd(1);}};
+  const rows=cols.filter(c=>!["meta","kobo_dummy","empty","binary"].includes(c.type)).map((c,i)=>{const u=new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim()));return{...c,idx:i,uC:u.size,samp:[...u].slice(0,3).map(s=>trunc(s,16))};});
+  const sorted=[...rows].sort((a,b)=>{if(sk==="idx")return(a.idx-b.idx)*sd;if(sk==="type")return a.type.localeCompare(b.type)*sd;if(sk==="miss")return(parseFloat(a.missPct)-parseFloat(b.missPct))*sd;if(sk==="uniq")return(a.uC-b.uC)*sd;return 0;});
+  const tc2={categorical:C.teal,likert:C.purple,numeric:C.warning,ordinal_numeric:C.warning,date:C.tealD,text:C.textTertiary,constant:"#444"};
+  const th=(l,k)=><th className="sort-th" onClick={()=>tog(k)} style={{textAlign:"left",padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>{l}{sk===k?(sd===1?" \u25b2":" \u25bc"):""}</th>;
+  return(<div className="fu">
+    <div className="card" style={{overflowX:"auto",maxHeight:500,overflow:"auto"}}>
+      <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>Codebook <span style={{fontSize:10,fontWeight:400,color:C.text2}}>Click headers to sort</span></div>
+      <table className="sth" style={{width:"100%",fontSize:11,borderCollapse:"collapse"}}>
+        <thead><tr style={{borderBottom:`1px solid ${C.offB}`}}>{th("#","idx")}{th("Variable","idx")}{th("Type","type")}<th style={{textAlign:"center",padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>n</th>{th("Missing","miss")}{th("Unique","uniq")}<th style={{padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>Samples</th></tr></thead>
+        <tbody>{sorted.map((r,i)=><tr key={i} style={{borderBottom:`1px solid ${C.off}`}}>
+          <td style={{padding:"4px 8px",color:C.textTertiary}}>{r.idx+1}</td>
+          <td style={{padding:"4px 8px",fontWeight:500,maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:C.text2}} title={r.name}>{trunc(r.name,40)}</td>
+          <td style={{padding:"4px 8px"}}><span style={{padding:"1px 6px",borderRadius:3,fontSize:9,fontWeight:700,color:"#fff",background:tc2[r.type]||C.textTertiary,fontFamily:"'JetBrains Mono',monospace"}}>{r.type}</span></td>
+          <td style={{textAlign:"center",padding:"4px 8px",color:C.text2}}>{r.nonNull}</td>
+          <td style={{padding:"4px 8px",color:r.missing>0?C.error:C.success}}>{r.missPct}%</td>
+          <td style={{textAlign:"center",padding:"4px 8px",color:C.text2}}>{r.uC}</td>
+          <td style={{padding:"4px 8px",color:C.textTertiary,fontSize:10}}>{r.samp.join(", ")}</td>
+        </tr>)}</tbody>
+      </table>
+    </div>
+
+    {/* Data Preview (absorbed from Preview tab) */}
+    <div className="card" style={{marginTop:12}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+        <div style={{fontSize:14,fontWeight:700,color:C.text}}>Data Preview</div>
+        <button onClick={()=>setShowPreview(!showPreview)} style={{background:'none',border:`1px solid ${C.off}`,color:C.text2,padding:'4px 12px',borderRadius:6,fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>{showPreview?'Hide':'Show first 20 rows'}</button>
+      </div>
+      {showPreview&&<div style={{overflowX:"auto"}}>
+        <table className="sth" style={{fontSize:10,borderCollapse:"collapse",whiteSpace:"nowrap"}}>
+          <thead><tr style={{borderBottom:`1px solid ${C.offB}`}}><th style={{padding:"4px 8px",color:C.text2,background:C.navy}}>#</th>{cols.slice(0,20).map((c,i)=><th key={i} style={{padding:"4px 8px",color:C.text2,background:C.navy,maxWidth:100,overflow:"hidden",textOverflow:"ellipsis"}} title={c.name}>{trunc(c.name,14)}</th>)}{cols.length>20&&<th style={{padding:"4px 8px",color:C.textTertiary,background:C.navy}}>+{cols.length-20}</th>}</tr></thead>
+          <tbody>{data.raw.slice(0,20).map((r,i)=><tr key={i} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"3px 8px",color:C.textTertiary}}>{i+1}</td>{cols.slice(0,20).map((c,j)=><td key={j} style={{padding:"3px 8px",maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",color:C.text2}} title={String(r[c.name]??"")}>{trunc(String(r[c.name]??""),16)}</td>)}</tr>)}</tbody>
+        </table>
+      </div>}
+    </div>
+  </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WORD EXPORT with Section Selection Modal
+// ═══════════════════════════════════════════════════════════════════════════
+
+function ExportModal({show,onClose,onExport}){
+  const[sections,setSections]=useState({overview:true,frequencies:true,likert:true,numeric:true,crosstab:true,regression:true,correlation:false,missing:false,codebook:false});
+  if(!show)return null;
+  const toggle=k=>setSections(p=>({...p,[k]:!p[k]}));
+  const labels={overview:'Dataset Overview',frequencies:'Frequency Distributions',likert:'Likert Scale Analysis',numeric:'Descriptive Statistics',crosstab:'Cross-tabulations',regression:'Regression Results',correlation:'Correlation Matrix',missing:'Missing Data',codebook:'Variable Codebook'};
+  return(<div className="modal-overlay" onClick={onClose}>
+    <div className="modal-box" onClick={e=>e.stopPropagation()}>
+      <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:14}}>Export Word Report</div>
+      <div style={{fontSize:11,color:C.text2,marginBottom:12}}>Select sections to include:</div>
+      {Object.entries(labels).map(([k,l])=><label key={k} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',fontSize:12,color:C.text2,cursor:'pointer'}}>
+        <input type="checkbox" checked={sections[k]} onChange={()=>toggle(k)} style={{accentColor:C.teal}}/>
+        {l}
+      </label>)}
+      <div style={{display:'flex',gap:8,marginTop:16}}>
+        <button onClick={()=>onExport(sections)} style={{background:C.teal,border:'none',color:'#fff',padding:'8px 20px',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>Export .doc</button>
+        <button onClick={onClose} style={{background:'none',border:`1px solid ${C.off}`,color:C.text2,padding:'8px 20px',borderRadius:8,fontSize:13,cursor:'pointer',fontFamily:'inherit'}}>Cancel</button>
+      </div>
+    </div>
+  </div>);
+}
+
+function exportToWord(data,cols,a,sections){
+  const today=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  const esc=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const bar=(pct,color,w=200)=>`<span style="display:inline-block;background:${color};height:14px;width:${Math.max(2,Math.round(pct/100*w))}px;border-radius:2px;vertical-align:middle"></span>`;
+  const likBar=(pcts,colors)=>{let h='<table style="width:100%;border-collapse:collapse;margin:2pt 0"><tr>';pcts.forEach((p,i)=>{if(p>0)h+=`<td style="background:${colors[i]};width:${p}%;height:16px;border:none;padding:0;text-align:center;font-size:7pt;color:${i===2&&pcts.length===5?'#333':'#fff'};font-weight:bold">${p>=10?p+'%':''}</td>`;});h+='</tr></table>';return h;};
+
+  const hdr=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Data Analysis Report</title>
+<style>@page{size:A4;margin:2.2cm}body{font-family:Garamond,'Times New Roman',Georgia,serif;font-size:11pt;color:#1a1a1a;line-height:1.55}h1{font-family:Garamond,serif;font-size:20pt;color:#0B1A2E;border-bottom:2.5pt solid #2EC4B6;padding-bottom:8pt;margin-bottom:6pt}h2{font-family:Garamond,serif;font-size:14pt;color:#0B1A2E;margin-top:22pt;margin-bottom:8pt;border-bottom:1pt solid #ccc;padding-bottom:4pt}h3{font-family:Garamond,serif;font-size:12pt;color:#1a3050;margin-top:16pt;margin-bottom:4pt}table{border-collapse:collapse;width:100%;margin:6pt 0}th{background:#0B1A2E;color:white;padding:7pt 9pt;text-align:left;font-size:9.5pt;font-weight:bold}td{border:1px solid #d9d9d9;padding:5pt 9pt;font-size:10pt}tr:nth-child(even) td{background:#f6f8fa}.hl td{background:#e4f7f4;font-weight:bold}.note{background:#f0f5f8;border-left:3pt solid #2EC4B6;padding:10pt 14pt;margin:10pt 0;font-size:10pt;font-style:italic}.footer{margin-top:28pt;padding-top:8pt;border-top:1pt solid #ccc;font-size:8.5pt;color:#888;text-align:center}.meta{color:#555;font-size:10pt;margin-bottom:6pt}.teal{color:#1a9e92;font-weight:bold}.chart-bar td{border:none;padding:2pt 4pt;font-size:9pt}</style></head><body>`;
+
+  let html=hdr;let secNum=0;
+  html+=`<h1>Data Analysis Report</h1>`;
+  html+=`<p class="meta"><b>File:</b> ${esc(data.fn)}<br><b>Sheet:</b> ${esc(data.sheet)} | <b>Rows:</b> ${data.rows.toLocaleString()} | <b>Columns:</b> ${data.colN}<br><b>Date:</b> ${today}<br><b>Generated by:</b> PRAXIS Data Explorer v4 &mdash; <span class="teal">emmanuelneneodjidja.org/praxis</span></p>`;
+
+  if(sections.overview){
+    secNum++;const comp=Math.round(cols.reduce((s,c)=>s+(100-parseFloat(c.missPct)),0)/cols.length);
+    html+=`<h2>${secNum}. Dataset Overview</h2>`;
+    html+=`<table><tr><th style="width:55%">Metric</th><th>Value</th></tr>`;
+    html+=`<tr><td>Total observations</td><td><b>${data.rows.toLocaleString()}</b></td></tr>`;
+    html+=`<tr><td>Categorical variables</td><td>${a.categorical.length}</td></tr>`;
+    html+=`<tr><td>Likert scale items</td><td>${a.likert.length}</td></tr>`;
+    html+=`<tr><td>Numeric variables</td><td>${a.numeric.length}</td></tr>`;
+    html+=`<tr><td>Date/time variables</td><td>${a.date.length}</td></tr>`;
+    html+=`<tr class="hl"><td>Overall data completeness</td><td>${bar(comp,'#2EC4B6',120)} <b>${comp}%</b></td></tr></table>`;
+  }
+
+  if(sections.frequencies&&a.categorical.length>0){
+    secNum++;html+=`<h2>${secNum}. Frequency Distributions</h2>`;
+    a.categorical.forEach(col=>{const fr=freqT(col.values);const maxCount=fr.length>0?fr[0].count:1;
+      html+=`<h3>${esc(col.name)}</h3><p class="meta">n = ${col.nonNull} | ${fr.length} categories</p>`;
+      html+='<table class="chart-bar" style="border:none;margin-bottom:4pt">';
+      fr.slice(0,15).forEach(f=>{const pct=(f.count/maxCount)*100;html+=`<tr class="chart-bar"><td style="border:none;width:160px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9pt;color:#555">${esc(f.value)}</td><td style="border:none;width:60%">${bar(pct,'#2EC4B6',180)}</td><td style="border:none;font-size:9pt;white-space:nowrap"><b>${f.count}</b> (${f.pct}%)</td></tr>`;});
+      html+='</table>';
+    });
+  }
+
+  if(sections.likert&&a.likert.length>0){
+    secNum++;html+=`<h2>${secNum}. Likert Scale Analysis</h2>`;
+    const grp={};a.likert.forEach(c=>{const r=scRng(c.values);const k=`${r.mn}-${r.mx}`;if(!grp[k])grp[k]={r,cs:[]};grp[k].cs.push(c);});
+    const likColors5=['#E85D5D','#FBBC04','#A0AEC0','#34A853','#1a6b5a'],likColors4=['#E85D5D','#FBBC04','#34A853','#1a6b5a'];
+    Object.entries(grp).forEach(([k,g])=>{
+      const{r}=g;const colors=r.pts===4?likColors4:likColors5;
+      const labels=r.pts===5?['Str. Disagree','Disagree','Neutral','Agree','Str. Agree']:r.pts===4?['Very uncomf.','Uncomf.','Comf.','Very comf.']:Array.from({length:r.pts},(_,i)=>String(i+r.mn));
+      html+=`<h3>${r.pts}-point Scale (${g.cs.length} items)</h3>`;
+      g.cs.map(c=>{const ct={};for(let i=r.mn;i<=r.mx;i++)ct[i]=0;let tot=0;c.values.forEach(v=>{if(v==null||!String(v).trim())return;const lv=detLik(v);if(lv!==null&&lv>=r.mn&&lv<=r.mx){ct[lv]++;tot++;}});const mn=tot?Object.entries(ct).reduce((s,[k,v])=>s+Number(k)*v,0)/tot:0;const pcts=[];for(let i=r.mn;i<=r.mx;i++)pcts.push(tot?Math.round((ct[i]/tot)*100):0);return{name:c.name,tot,mn,pcts};}).sort((x,y)=>y.mn-x.mn).forEach(item=>{
+        html+=`<table style="border:none;margin:3pt 0;width:100%"><tr><td style="border:none;width:42%;font-size:9.5pt;padding:3pt 6pt">${esc(item.name)}</td><td style="border:none;width:44%;padding:2pt">${likBar(item.pcts,colors)}</td><td style="border:none;width:14%;text-align:right;padding:3pt 6pt;font-size:9.5pt"><b class="teal">${item.mn.toFixed(2)}</b><br><span style="font-size:8pt;color:#888">n=${item.tot}</span></td></tr></table>`;
+      });
+    });
+  }
+
+  if(sections.numeric&&a.numeric.length>0){
+    secNum++;html+=`<h2>${secNum}. Descriptive Statistics</h2>`;
+    html+="<table><tr><th>Variable</th><th>n</th><th>Mean</th><th>SD</th><th>Median</th><th>IQR</th><th>Min</th><th>Max</th><th>Skew</th></tr>";
+    a.numeric.forEach(c=>{const nums=c.values.filter(v=>v!=null&&!isNaN(Number(v))).map(Number);const st=descriptiveStats(nums);if(st)html+=`<tr><td style="font-size:9.5pt">${esc(c.name)}</td><td style="text-align:center">${st.n}</td><td style="text-align:center"><b>${st.mean.toFixed(2)}</b></td><td style="text-align:center">${st.sd.toFixed(2)}</td><td style="text-align:center">${st.median.toFixed(2)}</td><td style="text-align:center">${st.iqr.toFixed(2)}</td><td style="text-align:center">${st.min}</td><td style="text-align:center">${st.max}</td><td style="text-align:center">${st.skewness.toFixed(2)}</td></tr>`;});
+    html+="</table>";
+  }
+
+  if(sections.missing){
+    secNum++;const wm=cols.filter(c=>!["meta","kobo_dummy","empty","binary","constant"].includes(c.type)&&c.missing>0).sort((x,y)=>y.missing-x.missing);
+    html+=`<h2>${secNum}. Missing Data</h2>`;
+    if(wm.length>0){html+="<table><tr><th>Variable</th><th>Valid n</th><th>Missing</th><th>%</th></tr>";wm.forEach(c=>{html+=`<tr><td>${esc(c.name)}</td><td style="text-align:center">${c.nonNull}</td><td style="text-align:center">${c.missing}</td><td style="text-align:center;color:#E85D5D;font-weight:bold">${c.missPct}%</td></tr>`;});html+="</table>";}
+    else html+='<div class="note">No missing data detected. All variables have 100% completeness.</div>';
+  }
+
+  if(sections.codebook){
+    secNum++;html+=`<h2>${secNum}. Variable Codebook</h2>`;
+    html+="<table><tr><th>#</th><th>Variable</th><th>Type</th><th>Valid n</th><th>Missing %</th><th>Unique</th><th>Samples</th></tr>";
+    cols.filter(c=>!["meta","kobo_dummy","empty","binary"].includes(c.type)).forEach((c,i)=>{const u=new Set(c.values.filter(v=>v!=null).map(v=>String(v).trim()));const samp=[...u].slice(0,3).map(s=>esc(s.length>25?s.substring(0,25)+'...':s)).join(', ');
+      const tc3={categorical:'#2EC4B6',likert:'#7B61FF',numeric:'#E8A317',ordinal_numeric:'#E8A317',date:'#1a9e92',text:'#888'}[c.type]||'#888';
+      html+=`<tr><td style="text-align:center">${i+1}</td><td style="font-size:9.5pt">${esc(c.name)}</td><td><span style="background:${tc3};color:#fff;padding:1pt 6pt;border-radius:3pt;font-size:8pt;font-weight:bold">${c.type}</span></td><td style="text-align:center">${c.nonNull}</td><td style="text-align:center">${c.missPct}%</td><td style="text-align:center">${u.size}</td><td style="font-size:8.5pt;color:#666">${samp}</td></tr>`;});
+    html+="</table>";
+  }
+
+  // Methodological notes
+  secNum++;html+=`<h2>${secNum}. Methodological Notes</h2>`;
+  html+=`<div class="note">All analyses were performed client-side using PRAXIS Data Explorer v4. Statistical tests include: proper t-distribution CDF for OLS p-values, chi-squared distribution for cross-tabulation tests, normal CDF (Abramowitz &amp; Stegun approximation) for logistic regression z-tests, and Cronbach's alpha for reliability analysis. Confidence intervals use t-critical values via bisection search. Fisher's exact test is available for 2&times;2 tables. All p-values use proper distribution functions with degrees of freedom.</div>`;
+
+  html+=`<div class="footer">Generated by PRAXIS Data Explorer v4 &mdash; <b>emmanuelneneodjidja.org/praxis</b><br>${today} | All analysis performed client-side. No data was transmitted.</div></body></html>`;
+
+  const blob=new Blob([html],{type:"application/msword"});const url=URL.createObjectURL(blob);const el=document.createElement("a");
+  el.href=url;el.download="praxis-analysis-"+data.fn.replace(/\.[^.]+$/,"")+".doc";document.body.appendChild(el);el.click();document.body.removeChild(el);URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════════════════════════════
+
+function App(){
+  const[data,setData]=useState(null);const[loading,setLoading]=useState(false);const[err,setErr]=useState(null);
+  const[tab,setTab]=useState("overview");const[ovr,setOvr]=useState({});
+  const[showExport,setShowExport]=useState(false);
+  const fRef=useRef(null);
+
+  const hFile=useCallback(f=>{
+    if(!f)return;const x=f.name.split(".").pop().toLowerCase();
+    if(!["xlsx","xls","csv"].includes(x)){setErr("Upload .xlsx, .xls, or .csv");return;}
+    setLoading(true);setErr(null);
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const buf=new Uint8Array(e.target.result);
+      parseWithWorker(buf,f.name).then(d=>{
+        if(!d||!d.rows)setErr("Could not read data.");else{setData(d);setTab("overview");setOvr({});}
+        setLoading(false);
+      }).catch(er=>{
+        // Fallback to main thread
+        try{const d=pFile(buf,f.name);if(!d||!d.rows)setErr("Could not read data.");else{setData(d);setTab("overview");setOvr({});}}catch(e2){setErr("Error: "+e2.message);}
+        setLoading(false);
+      });
+    };reader.readAsArrayBuffer(f);
+  },[]);
+
+  const cols=useMemo(()=>data?data.cols.map(c=>ovr[c.name]?{...c,type:ovr[c.name],ovrd:true}:c):[],[data,ovr]);
+  const a=useMemo(()=>{
+    if(!data)return null;const ex=["meta","kobo_dummy","empty","binary","constant"];
+    return{categorical:cols.filter(c=>c.type==="categorical"),likert:cols.filter(c=>c.type==="likert"),numeric:cols.filter(c=>c.type==="numeric"||c.type==="ordinal_numeric"),date:cols.filter(c=>c.type==="date"),text:cols.filter(c=>c.type==="text"),excluded:cols.filter(c=>ex.includes(c.type)),all:cols.filter(c=>!ex.includes(c.type))};
+  },[cols,data]);
+
+  const tc={categorical:C.teal,likert:C.purple,numeric:C.warning,ordinal_numeric:C.warning,date:C.tealD,text:C.textTertiary,constant:"#444"};
+
+  const tabDefs=[
+    {id:"overview",label:"Overview",icon:I.users},
+    {id:"frequencies",label:"Frequencies",icon:I.tag,count:a?.categorical.length},
+    {id:"likert",label:"Likert",icon:I.scale,count:a?.likert.length},
+    {id:"numeric",label:"Numeric",icon:I.hash,count:a?.numeric.length},
+    {id:"crosstab",label:"Cross-tab",icon:I.table},
+    {id:"correlation",label:"Correlation",icon:I.corr},
+    {id:"regression",label:"Regression",icon:I.scatter},
+    {id:"groupby",label:"Group By",icon:I.grid},
+    {id:"timeseries",label:"Trends",icon:I.trend,count:a?.date.length},
+    {id:"codebook",label:"Codebook",icon:I.book},
+  ];
+
+  const handleKeyDownUpload=(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fRef.current?.click();}};
+
+  // ── UPLOAD SCREEN ──
   if(!data)return(
     <div style={{fontFamily:"'DM Sans',sans-serif",background:"linear-gradient(145deg,#060e1a 0%,#0B1A2E 40%,#0f2240 100%)",minHeight:"100vh",color:C.text,display:"flex",flexDirection:"column"}}>
-      <div style={{padding:"12px 28px",display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${C.off}`}}><a href="../" style={{color:C.text2,fontSize:12,textDecoration:"none",display:"flex",alignItems:"center",gap:4,marginRight:4,opacity:.7}}><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Tools</a><span style={{color:C.off}}>|</span><span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:600,letterSpacing:".12em",color:C.teal}}>PRAXIS</span><span style={{color:C.text2,fontSize:13}}>Data Explorer</span><span style={{marginLeft:"auto",fontSize:10,color:C.teal,background:"rgba(46,196,182,.1)",padding:"4px 14px",borderRadius:20,fontWeight:700,border:`1px solid rgba(46,196,182,.25)`}}>FREE &middot; OPEN SOURCE</span></div>
+      <div style={{padding:"12px 28px",display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${C.off}`,flexWrap:'wrap'}}>
+        <a href="../" style={{color:C.text2,fontSize:12,textDecoration:"none",display:"flex",alignItems:"center",gap:4,marginRight:4,opacity:.7}}><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Tools</a>
+        <span style={{color:C.off}}>|</span><span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:600,letterSpacing:".1em",color:C.teal}}>PRAXIS</span><span style={{color:C.text2,fontSize:13}}>Data Explorer</span>
+        <span style={{marginLeft:"auto",fontSize:10,color:C.teal,background:"rgba(46,196,182,.1)",padding:"4px 14px",borderRadius:20,fontWeight:700,border:"1px solid rgba(46,196,182,.25)"}}>FREE &middot; OPEN SOURCE</span>
+      </div>
       <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:28}}>
         <div style={{maxWidth:560,width:"100%",textAlign:"center"}}>
           <div className="fu" style={{fontSize:32,fontWeight:700,color:C.text,marginBottom:10,lineHeight:1.2}}>Instant analysis for<br/><span style={{color:C.teal}}>evaluation data</span></div>
-          <p className="fu fu1" style={{fontSize:15,color:C.text2,marginBottom:36,lineHeight:1.7,maxWidth:420,margin:"0 auto 36px"}}>Upload your dataset. Get descriptive statistics, Likert analysis, time series, grouped aggregations, and regression in seconds. No data leaves your browser.</p>
+          <p className="fu" style={{fontSize:15,color:C.text2,marginBottom:36,lineHeight:1.7,maxWidth:420,margin:"0 auto 36px"}}>Upload your dataset. Get descriptive statistics, Likert analysis, correlation matrix, time series, grouped aggregations, and regression with diagnostics in seconds. No data leaves your browser.</p>
           {loading?<div className="fu" style={{padding:48}}><div style={{width:48,height:48,border:`3px solid ${C.off}`,borderTopColor:C.teal,borderRadius:"50%",margin:"0 auto 16px",animation:"spin .7s linear infinite"}}/><div style={{fontSize:14,fontWeight:600,color:C.text}}>Analyzing your data...</div><div style={{display:"flex",gap:8,justifyContent:"center",marginTop:14}}>{[1,2,3,4].map(i=><div key={i} className="skel" style={{width:70,height:10,animationDelay:`${i*200}ms`}}/>)}</div></div>
-          :<div className="fu fu2" onClick={()=>fRef.current?.click()} onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);hFile(e.dataTransfer.files[0]);}}
-            style={{border:`2px dashed ${drag?"rgba(46,196,182,.6)":"rgba(46,196,182,.2)"}`,borderRadius:16,padding:"52px 28px",cursor:"pointer",background:drag?"rgba(46,196,182,.06)":"rgba(255,255,255,.02)",transition:"all .25s",animation:drag?"none":"glow 3s ease-in-out infinite"}}>
+          :<div className="upload-zone" role="button" tabIndex={0} aria-label="Upload spreadsheet file. Supports xlsx, xls, and csv formats." onClick={()=>fRef.current?.click()} onKeyDown={handleKeyDownUpload}
+            onDragOver={e=>{e.preventDefault();e.currentTarget.classList.add('dragging');}} onDragLeave={e=>{e.currentTarget.classList.remove('dragging');}} onDrop={e=>{e.preventDefault();e.currentTarget.classList.remove('dragging');hFile(e.dataTransfer.files[0]);}}>
             <div style={{marginBottom:12,display:"flex",justifyContent:"center"}}>{I.upload}</div>
             <div style={{fontSize:16,fontWeight:600,color:C.text,marginBottom:6}}>Drop your file here or click to browse</div>
             <div style={{fontSize:12,color:C.text2}}>Supports .xlsx, .xls, .csv up to 50,000 rows</div>
-            <input ref={fRef} type="file" accept=".xlsx,.xls,.csv" style={{display:"none"}} onChange={e=>hFile(e.target.files[0])}/>
+            <input ref={fRef} type="file" accept=".xlsx,.xls,.csv" style={{display:"none"}} onChange={e=>hFile(e.target.files[0])} aria-hidden="true" tabIndex={-1}/>
           </div>}
-          {err&&<div className="fu" style={{marginTop:14,padding:"10px 14px",background:"rgba(232,93,93,.1)",borderRadius:8,color:C.coral,fontSize:13,border:"1px solid rgba(232,93,93,.2)"}}>{err}</div>}
-          <div className="fu fu3" style={{marginTop:24,display:"flex",gap:20,justifyContent:"center",flexWrap:"wrap"}}>
-            {["Frequencies & charts","Likert scale analysis","Time series & trends","OLS regression","Cross-tabulations","Grouped aggregation"].map(t=><span key={t} style={{fontSize:11,color:C.text2,display:"flex",alignItems:"center",gap:4}}><span style={{color:C.teal}}>&#10003;</span> {t}</span>)}
+          {err&&<div className="fu" style={{marginTop:14,padding:"10px 14px",background:"rgba(232,93,93,.1)",borderRadius:8,color:C.error,fontSize:13,border:"1px solid rgba(232,93,93,.2)"}}>{err}</div>}
+          <div className="fu" style={{marginTop:24,display:"flex",gap:16,justifyContent:"center",flexWrap:"wrap"}}>
+            {["Frequencies & charts","Likert with reliability","Distribution analysis","Time series & trends","OLS & logistic regression","Cross-tabs with \u03c7\u00b2","Correlation matrix","Grouped aggregation","Word report export"].map(t=><span key={t} style={{fontSize:11,color:C.text2,display:"flex",alignItems:"center",gap:4}}><span style={{color:C.teal}}>&#10003;</span> {t}</span>)}
           </div>
-          <div className="fu fu4" style={{marginTop:28,fontSize:12,color:C.slate,background:"rgba(255,255,255,.03)",border:`1px solid ${C.off}`,borderRadius:10,padding:"12px 18px",display:"inline-block"}}><strong style={{color:C.slateL}}>Privacy first:</strong> All processing happens locally in your browser. Zero data transmission.</div>
+          <div className="fu" style={{marginTop:28,fontSize:12,color:C.textTertiary,background:"rgba(255,255,255,.03)",border:`1px solid ${C.off}`,borderRadius:10,padding:"12px 18px",display:"inline-block"}}><strong style={{color:C.text2}}>Privacy first:</strong> All processing happens locally in your browser. Zero data transmission.</div>
         </div>
       </div>
     </div>
   );
 
-  // ── ANALYSIS VIEW ─────────────────────────────────────────────
+  // ── ANALYSIS VIEW ──
   return(
     <div style={{fontFamily:"'DM Sans',sans-serif",background:C.navy,minHeight:"100vh",color:C.text}}>
-      <div style={{background:"rgba(0,0,0,.2)",padding:"8px 24px",display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${C.off}`,flexWrap:"wrap"}}><a href="../" style={{color:C.text2,fontSize:11,textDecoration:"none",display:"flex",alignItems:"center",gap:3,opacity:.6}}><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Tools</a><span style={{color:C.off}}>|</span><span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,letterSpacing:".1em",color:C.teal}}>PRAXIS</span><span style={{color:C.text2,fontSize:12}}>Data Explorer</span><div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:11,color:C.slate,maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{data.fn}</span><span style={{fontSize:10,color:C.text2}}>{data.rows.toLocaleString()} rows</span><button onClick={()=>exportToWord(data,cols,a)} style={{background:"rgba(46,196,182,.15)",border:`1px solid rgba(46,196,182,.3)`,color:C.teal,padding:"4px 12px",borderRadius:6,fontSize:11,cursor:"pointer",fontWeight:600,fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0l3-3m-3 3L5 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12v2h12v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>Report (.doc)</button><button onClick={()=>{setData(null);setErr(null);}} style={{background:"rgba(255,255,255,.06)",border:`1px solid ${C.off}`,color:C.slateL,padding:"4px 12px",borderRadius:6,fontSize:11,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>New file</button></div></div>
-      <div style={{background:"rgba(0,0,0,.15)",borderBottom:`1px solid ${C.off}`,padding:"0 16px",display:"flex",overflowX:"auto",gap:0}}>{tabs.map(t=>{const empty=t.n!==undefined&&t.n===0;return <button key={t.id} className={`tb${tab===t.id?" on":""}${empty?" dim":""}`} onClick={()=>setTab(t.id)}>{t.icon}<span>{t.label}</span>{t.n>0&&<span className="bg">{t.n}</span>}</button>;})}</div>
-      <div style={{padding:"16px 24px",maxWidth:1060,margin:"0 auto"}}>
-
-        {tab==="overview"&&<div className="fu">
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8,marginBottom:18}}>{[{l:"Respondents",v:data.rows.toLocaleString(),i:I.users},{l:"Categorical",v:a.categorical.length,i:I.tag,t:"frequencies"},{l:"Likert",v:a.likert.length,i:I.scale,t:"likert"},{l:"Numeric",v:a.numeric.length,i:I.hash,t:"numeric"},{l:"Date/Time",v:a.date.length,i:I.clock,t:"timeseries"},{l:"Completeness",v:Math.round(cols.reduce((s,c)=>s+(100-parseFloat(c.missPct)),0)/cols.length)+"%",i:I.check,t:"missing"}].map((s,i)=><div key={i} className={`fu${s.t?" cc":""}`} style={{background:"rgba(255,255,255,.03)",border:`1px solid ${C.off}`,borderRadius:10,padding:"14px 10px",textAlign:"center",animationDelay:`${i*60}ms`}} onClick={s.t?()=>setTab(s.t):undefined}><div style={{marginBottom:3,display:"flex",justifyContent:"center"}}>{s.i}</div><div style={{fontSize:22,fontWeight:700,color:C.text}}>{s.v}</div><div style={{fontSize:10,color:C.text2,fontWeight:500}}>{s.l}</div></div>)}</div>
-          <div className="card"><div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>Variable Types <span style={{fontSize:10,fontWeight:400,color:C.slate}}>Use dropdowns to reclassify</span></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:5}}>{cols.filter(c=>!["meta","kobo_dummy","empty","binary"].includes(c.type)||c.ovrd).map((c,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"4px 8px",borderRadius:6,background:c.ovrd?"rgba(123,97,255,.06)":"rgba(255,255,255,.02)",fontSize:11,border:c.ovrd?"1px solid rgba(123,97,255,.2)":`1px solid transparent`}}><select className="select-dark" value={c.type} onChange={e=>setO(c.name,e.target.value)} style={{padding:"1px 4px",fontSize:9,fontWeight:700,color:"#fff",background:tc[c.type]||C.slate,minWidth:62,borderRadius:4}}>{["categorical","likert","numeric","date","text","meta"].map(t=><option key={t} value={t}>{t}</option>)}</select><span style={{color:C.slateL,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}} title={c.name}>{trunc(c.name,40)}</span>{c.ovrd&&<span onClick={()=>clrO(c.name)} style={{color:C.coral,cursor:"pointer",fontSize:11,fontWeight:700}}>&times;</span>}</div>)}</div>{a.excluded.length>0&&<details style={{marginTop:8}}><summary style={{fontSize:11,color:C.slate,cursor:"pointer"}}>{a.excluded.length} auto-excluded</summary><div style={{fontSize:10,color:C.slate,marginTop:4,lineHeight:1.5}}>{a.excluded.map(c=>c.name).join(" \u00b7 ")}</div></details>}</div>
-        </div>}
-
-        {tab==="frequencies"&&(a.categorical.length===0?<Empty type="categorical" a={a} go={setTab}/>:<div>{a.categorical.map((col,i)=>{const fr=freqT(col.values);const cd=fr.slice(0,12).map(f=>({name:trunc(f.value,25),count:f.count}));return <div key={i} className="fu card" style={{animationDelay:`${i*40}ms`}}><div style={{fontSize:12,fontWeight:600,color:C.text,marginBottom:2}}>{trunc(col.name,80)}</div><div style={{fontSize:10,color:C.text2,marginBottom:8}}>n={col.nonNull} | {fr.length} categories{fr.length>12?" (top 12)":""}</div><ResponsiveContainer width="100%" height={Math.max(100,cd.length*26+20)}><BarChart data={cd} layout="vertical" margin={{left:10,right:20,top:2,bottom:2}}><CartesianGrid strokeDasharray="3 3" stroke={C.off} horizontal={false}/><XAxis type="number" tick={{fontSize:10,fill:C.text2}}/><YAxis type="category" dataKey="name" width={140} tick={{fontSize:10,fill:C.slateL}}/><Tooltip contentStyle={{fontSize:11,borderRadius:6,background:"#0f1f38",border:`1px solid ${C.offB}`}}/><Bar dataKey="count" fill={C.teal} radius={[0,3,3,0]} barSize={16}/></BarChart></ResponsiveContainer><details style={{marginTop:4}}><summary style={{fontSize:11,color:C.tealD,cursor:"pointer",fontWeight:600}}>Table</summary><table style={{width:"100%",fontSize:11,borderCollapse:"collapse",marginTop:4}}><thead><tr style={{borderBottom:`1px solid ${C.offB}`}}><th style={{textAlign:"left",padding:"3px 8px",color:C.text2}}>Value</th><th style={{textAlign:"right",padding:"3px 8px",color:C.text2}}>n</th><th style={{textAlign:"right",padding:"3px 8px",color:C.text2}}>%</th></tr></thead><tbody>{fr.map((f,j)=><tr key={j} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"3px 8px",color:C.slateL}}>{trunc(f.value,55)}</td><td style={{textAlign:"right",padding:"3px 8px",fontWeight:500,color:C.text}}>{f.count}</td><td style={{textAlign:"right",padding:"3px 8px",color:C.teal}}>{f.pct}%</td></tr>)}</tbody></table></details></div>;})}</div>)}
-
-        {tab==="likert"&&(a.likert.length===0?<Empty type="likert" a={a} go={setTab}/>:<LikertTab a={a} data={data}/>)}
-
-        {tab==="numeric"&&(a.numeric.length===0?<Empty type="numeric" a={a} go={setTab}/>:<div className="fu card" style={{overflowX:"auto"}}><table className="sth" style={{width:"100%",fontSize:11,borderCollapse:"collapse"}}><thead><tr style={{borderBottom:`1px solid ${C.offB}`}}>{["Variable","n","Mean","SD","Median","Min","Max"].map(h=><th key={h} style={{textAlign:h==="Variable"?"left":"center",padding:"5px 8px",color:C.text2,fontWeight:600,background:C.navy}}>{h}</th>)}</tr></thead><tbody>{a.numeric.map((c,i)=>{const st=cStats(c.values.filter(v=>v!=null&&!isNaN(Number(v))).map(Number));return <tr key={i} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"4px 8px",fontWeight:500,maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:C.slateL}} title={c.name}>{trunc(c.name,35)}</td><td style={{textAlign:"center",padding:"4px 8px",color:C.text2}}>{st.n}</td><td style={{textAlign:"center",padding:"4px 8px",fontWeight:600,color:C.teal}}>{st.mean}</td><td style={{textAlign:"center",padding:"4px 8px",color:C.text2}}>{st.sd}</td><td style={{textAlign:"center",padding:"4px 8px",color:C.slateL}}>{st.med}</td><td style={{textAlign:"center",padding:"4px 8px",color:C.slate}}>{st.min}</td><td style={{textAlign:"center",padding:"4px 8px",color:C.slate}}>{st.max}</td></tr>;})}</tbody></table></div>)}
-
-        {tab==="groupby"&&<GroupByTab cols={cols} a={a} data={data}/>}
-        {tab==="timeseries"&&<TSTab cols={cols} a={a} data={data}/>}
-        {tab==="regression"&&<RegTab cols={cols} a={a}/>}
-        {tab==="crosstab"&&<XTab cols={cols} a={a}/>}
-        {tab==="missing"&&<MissTab cols={cols}/>}
-
-        {tab==="preview"&&<div className="fu card" style={{overflowX:"auto"}}><div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>Data Preview <span style={{fontWeight:400,color:C.text2}}>(first 20 rows)</span></div><table className="sth" style={{fontSize:10,borderCollapse:"collapse",whiteSpace:"nowrap"}}><thead><tr style={{borderBottom:`1px solid ${C.offB}`}}><th style={{padding:"4px 8px",color:C.text2,background:C.navy}}>#</th>{cols.slice(0,20).map((c,i)=><th key={i} style={{padding:"4px 8px",color:C.text2,background:C.navy,maxWidth:100,overflow:"hidden",textOverflow:"ellipsis"}} title={c.name}>{trunc(c.name,14)}</th>)}{cols.length>20&&<th style={{padding:"4px 8px",color:C.slate,background:C.navy}}>+{cols.length-20}</th>}</tr></thead><tbody>{data.raw.slice(0,20).map((r,i)=><tr key={i} style={{borderBottom:`1px solid ${C.off}`}}><td style={{padding:"3px 8px",color:C.slate}}>{i+1}</td>{cols.slice(0,20).map((c,j)=><td key={j} style={{padding:"3px 8px",maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",color:C.slateL}} title={String(r[c.name]??"")}>{trunc(String(r[c.name]??""),16)}</td>)}</tr>)}</tbody></table></div>}
-
-        {tab==="codebook"&&<CBTab cols={cols}/>}
+      <div style={{background:"rgba(0,0,0,.2)",padding:"8px 24px",display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${C.off}`,flexWrap:"wrap"}}>
+        <a href="../" style={{color:C.text2,fontSize:11,textDecoration:"none",display:"flex",alignItems:"center",gap:3,opacity:.6}}><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Tools</a>
+        <span style={{color:C.off}}>|</span><span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,letterSpacing:".1em",color:C.teal}}>PRAXIS</span><span style={{color:C.text2,fontSize:12}}>Data Explorer</span>
+        <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:10,flexWrap:'wrap'}}>
+          <span style={{fontSize:11,color:C.textTertiary,maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{data.fn}</span>
+          <span style={{fontSize:10,color:C.text2}}>{data.rows.toLocaleString()} rows</span>
+          <button onClick={()=>setShowExport(true)} style={{background:"rgba(46,196,182,.15)",border:"1px solid rgba(46,196,182,.3)",color:C.teal,padding:"4px 12px",borderRadius:6,fontSize:11,cursor:"pointer",fontWeight:600,fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0l3-3m-3 3L5 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12v2h12v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>Export \u25bc
+          </button>
+          <button onClick={()=>{setData(null);setErr(null);}} style={{background:"rgba(255,255,255,.06)",border:`1px solid ${C.off}`,color:C.text2,padding:"4px 12px",borderRadius:6,fontSize:11,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>New file</button>
+        </div>
       </div>
-      <div style={{textAlign:"center",padding:"16px",fontSize:10,color:C.slate}}>PRAXIS Data Explorer v3 | Client-side only | <a href="https://emmanuelneneodjidja.org/praxis/" style={{color:C.tealD,textDecoration:"none"}}>emmanuelneneodjidja.org/praxis</a></div>
+
+      <TabBar tabs={tabDefs} activeTab={tab} onChange={setTab}/>
+
+      <div style={{padding:"16px 24px",maxWidth:1060,margin:"0 auto"}}>
+        <div role="tabpanel" aria-labelledby={`tab-${tab}`} id={`panel-${tab}`}>
+
+          {tab==="overview"&&<ErrorBoundary><OverviewTab data={data} cols={cols} a={a} setTab={setTab} ovr={ovr} setOvr={setOvr} tc={tc}/></ErrorBoundary>}
+          {tab==="frequencies"&&<ErrorBoundary><FrequenciesTab a={a} setTab={setTab}/></ErrorBoundary>}
+          {tab==="likert"&&<ErrorBoundary><LikertTab a={a} data={data} setTab={setTab}/></ErrorBoundary>}
+          {tab==="numeric"&&<ErrorBoundary><NumericTab a={a} setTab={setTab}/></ErrorBoundary>}
+          {tab==="crosstab"&&<ErrorBoundary><CrossTabTab cols={cols} a={a}/></ErrorBoundary>}
+          {tab==="correlation"&&<ErrorBoundary><CorrelationTab a={a}/></ErrorBoundary>}
+          {tab==="regression"&&<ErrorBoundary><RegressionTab cols={cols} a={a}/></ErrorBoundary>}
+          {tab==="groupby"&&<ErrorBoundary><GroupByTab cols={cols} a={a} data={data}/></ErrorBoundary>}
+          {tab==="timeseries"&&<ErrorBoundary><TimeSeriesTab cols={cols} a={a} data={data}/></ErrorBoundary>}
+          {tab==="codebook"&&<ErrorBoundary><CodebookTab cols={cols} data={data}/></ErrorBoundary>}
+
+        </div>
+      </div>
+
+      <div style={{textAlign:"center",padding:"16px",fontSize:10,color:C.textTertiary}}>
+        PRAXIS Data Explorer v4 | Client-side only | <a href="https://emmanuelneneodjidja.org/praxis/" style={{color:C.tealD,textDecoration:"none"}}>emmanuelneneodjidja.org/praxis</a>
+      </div>
+
+      <ExportModal show={showExport} onClose={()=>setShowExport(false)} onExport={(sections)=>{exportToWord(data,cols,a,sections);setShowExport(false);}}/>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+// ═══════════════════════════════════════════════════════════════════════════
+// MOUNT
+// ═══════════════════════════════════════════════════════════════════════════
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
