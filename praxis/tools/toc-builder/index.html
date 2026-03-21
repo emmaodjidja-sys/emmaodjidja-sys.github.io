@@ -9,9 +9,9 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#0B1A2E;--navy-mid:#122240;--navy-light:#1a3050;--teal:#2EC4B6;--teal-dark:#1a9e92;--teal-light:#d0f0ed;--teal-glow:rgba(46,196,182,0.15);--slate:#64748B;--slate-light:#94A3B8;--bg:#F1F5F9;--surface:#FFFFFF;--border:#E2E8F0;--text:#0F172A;--text-muted:#64748B;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;--red-light:#FEE2E2;--green:#10B981;--green-light:#D1FAE5;--blue:#3B82F6;--blue-light:#DBEAFE;--purple:#8B5CF6;--purple-light:#EDE9FE}
+:root{--wb-navy:#0B1A2E;--navy:var(--wb-navy,#0B1A2E);--navy-mid:#122240;--navy-light:#1a3050;--teal:#2EC4B6;--teal-dark:#1a9e92;--teal-light:#d0f0ed;--teal-glow:rgba(46,196,182,0.15);--slate:#64748B;--slate-light:#94A3B8;--bg:#F1F5F9;--surface:#FFFFFF;--border:#E2E8F0;--text:#0F172A;--text-muted:#64748B;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;--red-light:#FEE2E2;--green:#10B981;--green-light:#D1FAE5;--blue:#3B82F6;--blue-light:#DBEAFE;--purple:#8B5CF6;--purple-light:#EDE9FE}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh}
 button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inherit}
@@ -20,7 +20,8 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 /* ── Top bar ──────────────── */
 .top-bar{height:48px;background:var(--navy);display:flex;align-items:center;padding:0 12px;gap:6px;flex-shrink:0;z-index:100}
 .brand{display:flex;align-items:center;gap:8px;margin-right:12px}
-.brand-badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--teal);text-transform:uppercase}
+.brand-badge{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--teal);text-transform:uppercase}
+.brand-360{font-size:9px;font-weight:700;color:var(--teal);border:1px solid var(--teal);border-radius:4px;padding:1px 4px;margin-left:2px;letter-spacing:.05em}
 .brand-sep{color:rgba(136,153,170,.4);font-weight:300;font-size:13px}
 .brand-page{color:#CBD5E1;font-size:12px;font-weight:500}
 .tb-div{width:1px;height:24px;background:rgba(255,255,255,.1);margin:0 6px}
@@ -30,9 +31,9 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .tb.active{background:var(--teal);color:var(--navy)}
 .tb svg{width:14px;height:14px;flex-shrink:0}
 .spacer{flex:1}
-.zoom-display{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate-light);min-width:36px;text-align:center}
+.zoom-display{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;color:var(--slate-light);min-width:36px;text-align:center}
 .stats{display:flex;gap:10px;align-items:center;margin-right:6px}
-.stat{font-size:10px;color:var(--slate-light);font-family:'JetBrains Mono',monospace}
+.stat{font-size:10px;color:var(--slate-light);font-family:'DM Sans',sans-serif;font-weight:600}
 .undo-btn{opacity:.4;pointer-events:none}
 .undo-btn.can{opacity:1;pointer-events:auto}
 
@@ -61,7 +62,7 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .legend-row span{font-size:10px;color:var(--text-muted)}
 .legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .shortcut-box{font-size:10px;color:var(--text-muted);line-height:1.6;padding:8px;background:var(--bg);border-radius:6px}
-.shortcut-box kbd{display:inline-block;padding:1px 4px;border-radius:3px;font-size:9px;font-family:'JetBrains Mono',monospace;background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.shortcut-box kbd{display:inline-block;padding:1px 4px;border-radius:3px;font-size:9px;font-family:'DM Sans',sans-serif;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--text)}
 /* System assumption in sidebar */
 .sys-assumption{display:flex;gap:5px;align-items:flex-start;padding:6px;border-radius:5px;background:var(--bg);border:1px solid var(--border);margin-bottom:4px}
 .sys-assumption input{flex:1;border:none;background:transparent;font-size:11px;font-family:inherit;color:var(--text);outline:none}
@@ -96,7 +97,7 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .toc-node.connect-source{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.2)}
 .toc-node.connect-target:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.2)}
 .toc-node.dragging{z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.15);transition:none!important}
-.node-stripe{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:9px 0 0 9px}
+.node-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:9px 0 0 9px}
 .node-body{padding:8px 10px 8px 14px}
 .node-level-tag{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.65}
 .node-title{font-size:12px;font-weight:600;line-height:1.3;word-break:break-word}
@@ -111,6 +112,7 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .node-port-bottom{bottom:-5px;left:50%;margin-left:-5px}
 .node-port-left{left:-5px;top:50%;margin-top:-5px}
 .node-port-right{right:-5px;top:50%;margin-top:-5px}
+.node-trace-code{position:absolute;top:-16px;left:0;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;color:#94A3B8;pointer-events:none;white-space:nowrap}
 
 /* ── SVG connections ──────── */
 .conn-svg{position:absolute;inset:0;pointer-events:none;z-index:3}
@@ -122,7 +124,7 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 /* ── Batch toolbar ────────── */
 .batch-bar{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--navy);border-radius:8px;padding:4px 8px;display:flex;gap:4px;align-items:center;z-index:30;box-shadow:0 4px 16px rgba(0,0,0,.25)}
 .batch-bar .tb{font-size:10px;padding:4px 8px}
-.batch-count{font-size:10px;color:var(--teal);font-weight:700;padding:0 6px;font-family:'JetBrains Mono',monospace}
+.batch-count{font-size:10px;color:var(--teal);font-weight:700;padding:0 6px;font-family:'DM Sans',sans-serif}
 
 /* ── Detail panel ─────────── */
 .detail-panel{width:310px;background:var(--surface);border-left:1px solid var(--border);flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;z-index:10}
@@ -140,13 +142,15 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .dp-textarea:focus{outline:none;border-color:var(--teal)}
 .dp-select{padding:6px 8px;border-radius:5px;border:1.5px solid var(--border);font-size:12px;background:var(--surface);color:var(--text)}
 .dp-select:focus{outline:none;border-color:var(--teal)}
-.ev-row{display:flex;gap:3px}
-.ev-btn{flex:1;padding:5px 3px;border-radius:5px;border:1.5px solid var(--border);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;background:var(--surface);color:var(--text-muted);text-align:center;transition:all .15s}
+.dp-muted{font-size:10px;color:var(--slate-light);font-weight:500}
+.ev-row{display:flex;gap:3px;flex-wrap:wrap}
+.ev-btn{flex:1;padding:5px 3px;border-radius:5px;border:1.5px solid var(--border);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;background:var(--surface);color:var(--text-muted);text-align:center;transition:all .15s;min-width:0}
 .ev-btn:hover{border-color:var(--slate-light)}
 .ev-btn.a-strong{background:var(--green-light);border-color:var(--green);color:#065F46}
 .ev-btn.a-moderate{background:var(--blue-light);border-color:var(--blue);color:#1E40AF}
 .ev-btn.a-weak{background:var(--amber-light);border-color:var(--amber);color:#92400E}
 .ev-btn.a-none{background:var(--red-light);border-color:var(--red);color:#991B1B}
+.ev-btn.a-contested{background:#FEF3C7;border-color:#D97706;color:#92400E}
 .assumption-item{display:flex;gap:5px;align-items:flex-start;padding:6px;border-radius:5px;background:var(--bg);border:1px solid var(--border);margin-bottom:3px}
 .assumption-item input{flex:1;border:none;background:transparent;font-size:11px;font-family:inherit;color:var(--text);outline:none}
 .dp-actions{padding:12px 14px;border-top:1px solid var(--border)}
@@ -158,10 +162,51 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .dir-btn{flex:1;padding:4px;border-radius:4px;border:1.5px solid var(--border);font-size:9px;font-weight:700;text-align:center;background:var(--surface);color:var(--text-muted);transition:all .15s}
 .dir-btn.active{border-color:var(--teal);background:var(--teal-glow);color:var(--teal)}
 
+/* ── Knowledge Source ────── */
+.ks-line{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:5px;background:var(--bg);border:1px solid var(--border);font-size:10px;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.ks-line:hover{border-color:var(--teal)}
+.ks-line-set{color:var(--text)}
+.ks-inline{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;border:1px solid var(--border);cursor:pointer;font-size:10px;flex-shrink:0;transition:all .15s;background:var(--surface)}
+.ks-inline:hover{border-color:var(--teal);background:var(--teal-glow)}
+.ks-popover{position:absolute;z-index:60;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:10px;min-width:200px}
+.ks-popover select,.ks-popover input{font-size:11px;padding:4px 6px;border-radius:4px;border:1px solid var(--border);width:100%;margin-top:3px}
+
+/* ── Import zone ─────────── */
+.import-zone{border:2px dashed var(--border);border-radius:8px;padding:14px 10px;text-align:center;font-size:11px;color:var(--text-muted);transition:all .2s;cursor:pointer;margin-bottom:8px}
+.import-zone:hover,.import-zone.drag-over{border-color:var(--teal);background:var(--teal-glow);color:var(--teal)}
+
+/* ── Modal ────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+.modal-card{background:var(--surface);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.15);max-width:720px;width:95%;max-height:90vh;display:flex;flex-direction:column}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:14px;font-weight:700}
+.modal-body{padding:18px;overflow-y:auto;flex:1}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.modal-btn{padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s}
+.modal-btn:hover{border-color:var(--teal);color:var(--teal)}
+.modal-btn.primary{background:var(--teal);color:var(--navy);border-color:var(--teal)}
+.modal-btn.primary:hover{background:var(--teal-dark);color:#fff}
+
+/* ── Foundation popover ──── */
+.foundation-popover{position:absolute;z-index:55;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.1);padding:12px 14px;max-width:280px;font-size:11px;line-height:1.5;color:var(--text)}
+.foundation-popover .fp-actions{display:flex;gap:6px;margin-top:8px}
+.foundation-popover .fp-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;border:1px solid var(--teal);background:var(--teal-glow);color:var(--teal);cursor:pointer}
+.foundation-popover .fp-link{font-size:9px;color:var(--text-muted);cursor:pointer;text-decoration:underline;padding:4px 0;display:flex;align-items:center}
+
+/* ── Sensitivity banners ─── */
+.sens-banner{padding:6px 14px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sens-banner.sensitive{background:var(--amber-light);color:#92400E;border-bottom:1px solid #F59E0B}
+.sens-banner.highly-sensitive{background:var(--red-light);color:#991B1B;border-bottom:1px solid var(--red)}
+
+/* ── Template icons ────────── */
+.tpl-icon{width:20px;height:20px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+.tpl-icon svg{width:18px;height:18px}
+
 /* ── Welcome ──────────────── */
 .welcome-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;background:rgba(241,245,249,.92);backdrop-filter:blur(4px)}
 .welcome-card{background:var(--surface);border-radius:14px;padding:32px;box-shadow:0 16px 48px rgba(0,0,0,.1);max-width:640px;width:95%}
-.welcome-icon{font-size:40px;text-align:center;margin-bottom:12px}
+.welcome-icon{display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.welcome-icon svg{width:48px;height:48px}
 .welcome-title{font-size:20px;font-weight:800;text-align:center;margin-bottom:6px;color:var(--navy)}
 .welcome-sub{font-size:13px;color:var(--text-muted);line-height:1.6;text-align:center;margin-bottom:20px}
 .welcome-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-bottom:6px}
@@ -173,6 +218,15 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .welcome-btn-secondary:hover{border-color:var(--teal);color:var(--teal)}
 .welcome-btn-info{font-size:9px;color:var(--text-muted);font-weight:500;margin-top:2px}
 .welcome-actions{display:flex;gap:6px;justify-content:center}
+
+/* ── Export dropdown ────────── */
+.export-dropdown{position:absolute;top:44px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:110;min-width:180px;padding:4px 0}
+.export-dropdown-item{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:11px;font-weight:600;color:var(--text);cursor:pointer;transition:background .1s;border:none;background:none;width:100%;text-align:left}
+.export-dropdown-item:hover{background:var(--bg)}
+.export-dropdown-sep{height:1px;background:var(--border);margin:4px 0}
+
+/* ── Bulk source popover ──── */
+.bulk-source-popover{position:absolute;z-index:60;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:12px;min-width:240px}
 
 /* ── Toast ─────────────────── */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:toastIn .3s ease}
@@ -188,7 +242,7 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--slate-light)}
 
 /* ── Print ──────────────────── */
-@media print{.top-bar,.sidebar,.detail-panel,.welcome-overlay,.batch-bar,.mode-indicator,.toast{display:none!important}.canvas-vp{overflow:visible!important}.canvas-inner{transform:none!important;width:auto!important;height:auto!important}}
+@media print{.top-bar,.sidebar,.detail-panel,.welcome-overlay,.batch-bar,.mode-indicator,.toast,.sens-banner{display:none!important}.canvas-vp{overflow:visible!important}.canvas-inner{transform:none!important;width:auto!important;height:auto!important}}
 </style>
 </head>
 <body>
@@ -207,7 +261,7 @@ const LEVELS=[
   {id:'activity',label:'Activities',color:'#64748B',bg:'rgba(100,116,139,0.03)',y:1760,hint:'What the programme does'},
 ];
 const LANE_H=380,NODE_W=200,GRID=24;
-const EV_STRENGTH={strong:{color:'#10B981',w:3,dash:'',lbl:'Strong'},moderate:{color:'#3B82F6',w:2.5,dash:'',lbl:'Moderate'},weak:{color:'#F59E0B',w:2,dash:'8,4',lbl:'Weak'},none:{color:'#94A3B8',w:1.5,dash:'4,4',lbl:'None'}};
+const EV_STRENGTH={strong:{color:'#10B981',w:3,dash:'',lbl:'Strong'},moderate:{color:'#3B82F6',w:2.5,dash:'',lbl:'Moderate'},weak:{color:'#F59E0B',w:2,dash:'8,4',lbl:'Weak'},none:{color:'#94A3B8',w:1.5,dash:'4,4',lbl:'None'},contested:{color:'#D97706',w:2,dash:'3,3',lbl:'Contested'}};
 const EV_TYPES=[{id:'systematic_review',lbl:'Systematic Review'},{id:'rct',lbl:'RCT / Experimental'},{id:'quasi_experimental',lbl:'Quasi-Experimental'},{id:'observational',lbl:'Observational'},{id:'mixed_methods',lbl:'Mixed Methods'},{id:'expert_opinion',lbl:'Expert Opinion'},{id:'theoretical',lbl:'Theoretical'},{id:'programme_data',lbl:'Programme Data'}];
 const EV_TRANSFER=[{id:'high',lbl:'High'},{id:'moderate',lbl:'Moderate'},{id:'low',lbl:'Low'},{id:'unknown',lbl:'Unknown'}];
 const ASSUMPTION_COLORS={untested:'#94A3B8',validated:'#10B981',critical:'#F59E0B',invalid:'#EF4444'};
@@ -216,147 +270,226 @@ let _id=100;const uid=(p='i')=>`${p}-${++_id}-${Math.random().toString(36).slice
 const snap=v=>Math.round(v/GRID)*GRID;
 
 // ═══════════════════════════════════════════════════════════════
+// KNOWLEDGE SOURCE TYPES [IC2]
+// ═══════════════════════════════════════════════════════════════
+const SOURCE_TYPES=[
+  {id:'unset',icon:'',color:'#E2E8F0',label:'Not set'},
+  {id:'participatory',icon:'\u{1F465}',color:'#8B5CF6',label:'Participatory'},
+  {id:'programme_document',icon:'\u{1F4C4}',color:'#3B82F6',label:'Programme Document'},
+  {id:'academic_literature',icon:'\u{1F4DA}',color:'#10B981',label:'Academic Literature'},
+  {id:'evaluator_inference',icon:'\u{1F50D}',color:'#F59E0B',label:'Evaluator Inference'},
+  {id:'ai_generated',icon:'\u2726',color:'#2EC4B6',label:'AI Generated'},
+];
+const defaultKS=()=>({contributed_by:'',source_type:'unset',date:''});
+const getSourceType=(id)=>SOURCE_TYPES.find(s=>s.id===id)||SOURCE_TYPES[0];
+const ensureKS=(obj)=>obj.knowledge_source?obj:{...obj,knowledge_source:defaultKS()};
+const ensureAssumptionKS=(assumptions)=>(assumptions||[]).map(a=>a.knowledge_source?a:{...a,knowledge_source:defaultKS()});
+
+// ═══════════════════════════════════════════════════════════════
+// TRACEABILITY [E5]
+// ═══════════════════════════════════════════════════════════════
+function computeNextCodes(nodes,connections){
+  let maxN=0,maxC=0;
+  (nodes||[]).forEach(n=>{if(n.traceability_code){const m=n.traceability_code.match(/^n(\d+)$/);if(m)maxN=Math.max(maxN,parseInt(m[1]));}});
+  (connections||[]).forEach(c=>{if(c.traceability_code){const m=c.traceability_code.match(/^c(\d+)$/);if(m)maxC=Math.max(maxC,parseInt(m[1]));}});
+  return{nextNode:maxN+1,nextConn:maxC+1};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IMPORT HELPERS [C7]
+// ═══════════════════════════════════════════════════════════════
+const LEVEL_KEYWORDS={
+  impact:['impact','goal','long-term','societal change','ultimate outcome','vision','purpose','development objective','strategic objective','higher-level','sdg','sustainable development','long term change','enduring change','systemic change','transformative change'],
+  outcome:['outcome','behaviour change','institutional change','behavioural','practice change','systems change','behavioral change','adoption','sustained change','policy change','capacity outcome'],
+  intermediate:['intermediate','intermediate outcome','enabling condition','precondition','early outcome','medium-term','bridging','mediating','pathway','enabling factor','stepping stone'],
+  output:['output','deliverable','product','service delivered','direct result','tangible result','produced','milestone','target','result','completion'],
+  activity:['activity','intervention','action','task','training','workshop','procurement','technical assistance','campaign','mobilisation','implementation','process','conduct','deliver','facilitate','support','provide','establish'],
+};
+
+function detectLevel(text){
+  const t=text.toLowerCase();
+  for(const[level,keywords]of Object.entries(LEVEL_KEYWORDS)){
+    for(const kw of keywords){if(t.includes(kw))return level;}
+  }
+  return 'output';
+}
+
+function parseTextToNodes(text){
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const nodes=[];let nc=1;
+  lines.forEach((line)=>{
+    const cleaned=line.replace(/^[\d\.\-\*\#\>\s]+/,'').trim();
+    if(!cleaned)return;
+    const level=detectLevel(cleaned);
+    const lv=LEVELS.find(l=>l.id===level);
+    const sameLevel=nodes.filter(n=>n.level===level);
+    nodes.push({id:uid('n'),title:cleaned,description:'',level,x:snap(300+sameLevel.length*240),y:snap((lv?.y||1340)+40),indicators:[],assumptions:[],timeframe:'',knowledge_source:defaultKS(),traceability_code:'n'+(nc++)});
+  });
+  return nodes;
+}
+
+function parseCSV(text){
+  const rows=[];let current='';let inQuote=false;const lines=text.split('\n');
+  lines.forEach(line=>{
+    if(inQuote){current+='\n'+line;const qCount=(line.match(/"/g)||[]).length;if(qCount%2===1){inQuote=false;rows.push(current);current='';}}
+    else{const qCount=(line.match(/"/g)||[]).length;if(qCount%2===1){inQuote=true;current=line;}else{rows.push(line);}}
+  });
+  if(current)rows.push(current);
+  const parsed=rows.map(row=>{const cells=[];let cell='';let q=false;
+    for(let i=0;i<row.length;i++){const ch=row[i];if(q){if(ch==='"'&&row[i+1]==='"'){cell+='"';i++;}else if(ch==='"'){q=false;}else{cell+=ch;}}else{if(ch==='"'){q=true;}else if(ch===','){cells.push(cell.trim());cell='';}else{cell+=ch;}}}
+    cells.push(cell.trim());return cells;});
+  if(parsed.length<2)return[];
+  const header=parsed[0].map(h=>h.toLowerCase());
+  const titleIdx=header.findIndex(h=>h.includes('title')||h.includes('name')||h.includes('result')||h.includes('description'));
+  const levelIdx=header.findIndex(h=>h.includes('level')||h.includes('type')||h.includes('tier'));
+  if(titleIdx===-1)return parsed.slice(1).map(r=>r.join(' ')).filter(Boolean).map(t=>({title:t,level:detectLevel(t)}));
+  return parsed.slice(1).filter(r=>r[titleIdx]).map(r=>{
+    const title=r[titleIdx]||'';
+    let level=levelIdx>=0?(r[levelIdx]||'').toLowerCase():'';
+    if(!LEVELS.find(l=>l.id===level))level=detectLevel(title);
+    return{title,level};
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
 // TEMPLATES (complex real-world programmes)
 // ═══════════════════════════════════════════════════════════════
 const TEMPLATES={
-blank:{name:'Blank Canvas',icon:'📄',nodes:[],connections:[],narrative:{}},
+blank:{name:'Blank Canvas',nodes:[],connections:[],narrative:{}},
 rssh:{
-  name:'Global Fund RSSH',icon:'🌍',
-  narrative:{description:'Resilient and Sustainable Systems for Health (RSSH) investment supporting HIV, TB, and malaria service delivery through six WHO building blocks.',context:'Low-income country with high disease burden, weak health systems, and donor-dependent financing. DHIS2 deployed but data quality uneven. Community health worker programme nascent.',theory:'Strengthening the six health system building blocks (HMIS, HRH, supply chain, laboratory, financial management, community systems) creates synergistic improvements in service delivery quality and coverage, which in turn reduce disease-specific mortality and progress toward UHC. The theory assumes these building blocks interact — e.g., data quality enables better programming, which increases demand for better data.',systemAssumptions:[{id:'sa1',text:'No major conflict, pandemic, or humanitarian crisis disrupts programme implementation',status:'critical'},{id:'sa2',text:'Government maintains political commitment to health sector despite electoral cycles',status:'critical'},{id:'sa3',text:'Global Fund continues current funding levels through grant period',status:'validated'},{id:'sa4',text:'International drug/commodity prices remain stable',status:'untested'}]},
+  name:'Global Fund RSSH',
+  narrative:{description:'Resilient and Sustainable Systems for Health (RSSH) investment supporting HIV, TB, and malaria service delivery through six WHO building blocks.',context:'Low-income country with high disease burden, weak health systems, and donor-dependent financing. DHIS2 deployed but data quality uneven. Community health worker programme nascent.',theory:'Strengthening the six health system building blocks (HMIS, HRH, supply chain, laboratory, financial management, community systems) creates synergistic improvements in service delivery quality and coverage, which in turn reduce disease-specific mortality and progress toward UHC. The theory assumes these building blocks interact — e.g., data quality enables better programming, which increases demand for better data.',systemAssumptions:[{id:'sa1',text:'No major conflict, pandemic, or humanitarian crisis disrupts programme implementation',status:'critical',knowledge_source:defaultKS()},{id:'sa2',text:'Government maintains political commitment to health sector despite electoral cycles',status:'critical',knowledge_source:defaultKS()},{id:'sa3',text:'Global Fund continues current funding levels through grant period',status:'validated',knowledge_source:defaultKS()},{id:'sa4',text:'International drug/commodity prices remain stable',status:'untested',knowledge_source:defaultKS()}]},
   nodes:[
-    {id:'r1',title:'Reduced HIV, TB & malaria mortality',level:'impact',x:500,y:130,timeframe:'10+ years',indicators:['HIV incidence/1000','TB case fatality rate','Malaria mortality rate U5'],assumptions:[]},
-    {id:'r2',title:'Progress toward UHC',level:'impact',x:1050,y:130,timeframe:'10+ years',indicators:['UHC service coverage index','Catastrophic health expenditure (%)'],assumptions:[]},
-    {id:'r3',title:'Increased equitable service coverage',level:'outcome',x:250,y:550,timeframe:'3-5 years',indicators:['ART coverage (%)','TB treatment success rate','ITN access (%)'],assumptions:[{id:'na1',text:'Coverage gains reach key and vulnerable populations, not just easy-to-reach',status:'critical'}]},
-    {id:'r4',title:'Improved quality of care',level:'outcome',x:700,y:550,timeframe:'3-5 years',indicators:['Facility quality score','Correct treatment rate (%)'],assumptions:[]},
-    {id:'r5',title:'Strengthened national ownership',level:'outcome',x:1150,y:550,timeframe:'3-7 years',indicators:['Domestic health expenditure (%)','Co-financing compliance'],assumptions:[{id:'na2',text:'Government fiscal space exists for progressive absorption',status:'untested'}]},
-    {id:'r6',title:'Community systems strengthened',level:'outcome',x:1600,y:550,timeframe:'3-5 years',indicators:['CLM sites (#)','CLM feedback loops functional (%)'],assumptions:[]},
-    {id:'r7',title:'Functional HMIS producing quality data',level:'intermediate',x:100,y:970,timeframe:'1-3 years',indicators:['Reporting completeness (%)','Data accuracy score'],assumptions:[]},
-    {id:'r8',title:'Health workforce deployed & supervised',level:'intermediate',x:450,y:970,timeframe:'1-3 years',indicators:['HW vacancy rate (%)','Supervision visits/qtr'],assumptions:[]},
-    {id:'r9',title:'Essential medicines available',level:'intermediate',x:800,y:970,timeframe:'1-2 years',indicators:['Stock-out rate (%)','Order fill rate (%)'],assumptions:[]},
-    {id:'r10',title:'Laboratory network functional',level:'intermediate',x:1150,y:970,timeframe:'1-3 years',indicators:['Sample rejection rate (%)','VL turnaround (days)'],assumptions:[]},
-    {id:'r11',title:'Financial management systems operational',level:'intermediate',x:1500,y:970,timeframe:'1-2 years',indicators:['Absorption rate (%)','Audit findings (#)'],assumptions:[]},
-    {id:'r12',title:'CHWs integrated into health system',level:'intermediate',x:1850,y:970,timeframe:'2-4 years',indicators:['CHW reporting rate (%)','CHW attrition (%)'],assumptions:[{id:'na3',text:'Government adopts CHW compensation policy',status:'critical'}]},
-    {id:'r13',title:'DHIS2 upgraded & staff trained',level:'output',x:100,y:1390,timeframe:'Year 1',indicators:['Districts with e-reporting (#)'],assumptions:[]},
-    {id:'r14',title:'Pre/in-service training delivered',level:'output',x:400,y:1390,timeframe:'Year 1-2',indicators:['HWs trained (#)'],assumptions:[]},
-    {id:'r15',title:'Supply chain systems established',level:'output',x:700,y:1390,timeframe:'Year 1',indicators:['eLMIS sites (#)'],assumptions:[]},
-    {id:'r16',title:'Lab equipment procured & installed',level:'output',x:1050,y:1390,timeframe:'Year 1',indicators:['GeneXpert installed (#)'],assumptions:[]},
-    {id:'r17',title:'PFM & grant management strengthened',level:'output',x:1400,y:1390,timeframe:'Year 1',indicators:['PFM staff trained (#)'],assumptions:[]},
-    {id:'r18',title:'CHW programme established',level:'output',x:1700,y:1390,timeframe:'Year 1-2',indicators:['CHWs deployed (#)'],assumptions:[]},
-    {id:'r19',title:'Community-led monitoring launched',level:'output',x:2000,y:1390,timeframe:'Year 1-2',indicators:['Community monitors trained (#)'],assumptions:[]},
-    {id:'r20',title:'HMIS strengthening & DQA',level:'activity',x:100,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'r21',title:'HRH capacity building',level:'activity',x:450,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'r22',title:'Supply chain & procurement TA',level:'activity',x:750,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'r23',title:'Laboratory systems TA',level:'activity',x:1100,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'r24',title:'Financial management TA',level:'activity',x:1450,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'r25',title:'Community systems strengthening',level:'activity',x:1800,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'r1',title:'Reduced HIV, TB & malaria mortality',level:'impact',x:500,y:130,timeframe:'10+ years',indicators:['HIV incidence/1000','TB case fatality rate','Malaria mortality rate U5'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r2',title:'Progress toward UHC',level:'impact',x:1050,y:130,timeframe:'10+ years',indicators:['UHC service coverage index','Catastrophic health expenditure (%)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r3',title:'Increased equitable service coverage',level:'outcome',x:250,y:550,timeframe:'3-5 years',indicators:['ART coverage (%)','TB treatment success rate','ITN access (%)'],assumptions:[{id:'na1',text:'Coverage gains reach key and vulnerable populations, not just easy-to-reach',status:'critical',knowledge_source:defaultKS()}],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'r4',title:'Improved quality of care',level:'outcome',x:700,y:550,timeframe:'3-5 years',indicators:['Facility quality score','Correct treatment rate (%)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r5',title:'Strengthened national ownership',level:'outcome',x:1150,y:550,timeframe:'3-7 years',indicators:['Domestic health expenditure (%)','Co-financing compliance'],assumptions:[{id:'na2',text:'Government fiscal space exists for progressive absorption',status:'untested',knowledge_source:defaultKS()}],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'r6',title:'Community systems strengthened',level:'outcome',x:1600,y:550,timeframe:'3-5 years',indicators:['CLM sites (#)','CLM feedback loops functional (%)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'r7',title:'Functional HMIS producing quality data',level:'intermediate',x:100,y:970,timeframe:'1-3 years',indicators:['Reporting completeness (%)','Data accuracy score'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r8',title:'Health workforce deployed & supervised',level:'intermediate',x:450,y:970,timeframe:'1-3 years',indicators:['HW vacancy rate (%)','Supervision visits/qtr'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r9',title:'Essential medicines available',level:'intermediate',x:800,y:970,timeframe:'1-2 years',indicators:['Stock-out rate (%)','Order fill rate (%)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r10',title:'Laboratory network functional',level:'intermediate',x:1150,y:970,timeframe:'1-3 years',indicators:['Sample rejection rate (%)','VL turnaround (days)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r11',title:'Financial management systems operational',level:'intermediate',x:1500,y:970,timeframe:'1-2 years',indicators:['Absorption rate (%)','Audit findings (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r12',title:'CHWs integrated into health system',level:'intermediate',x:1850,y:970,timeframe:'2-4 years',indicators:['CHW reporting rate (%)','CHW attrition (%)'],assumptions:[{id:'na3',text:'Government adopts CHW compensation policy',status:'critical',knowledge_source:defaultKS()}],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'r13',title:'DHIS2 upgraded & staff trained',level:'output',x:100,y:1390,timeframe:'Year 1',indicators:['Districts with e-reporting (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r14',title:'Pre/in-service training delivered',level:'output',x:400,y:1390,timeframe:'Year 1-2',indicators:['HWs trained (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r15',title:'Supply chain systems established',level:'output',x:700,y:1390,timeframe:'Year 1',indicators:['eLMIS sites (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r16',title:'Lab equipment procured & installed',level:'output',x:1050,y:1390,timeframe:'Year 1',indicators:['GeneXpert installed (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r17',title:'PFM & grant management strengthened',level:'output',x:1400,y:1390,timeframe:'Year 1',indicators:['PFM staff trained (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r18',title:'CHW programme established',level:'output',x:1700,y:1390,timeframe:'Year 1-2',indicators:['CHWs deployed (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r19',title:'Community-led monitoring launched',level:'output',x:2000,y:1390,timeframe:'Year 1-2',indicators:['Community monitors trained (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'r20',title:'HMIS strengthening & DQA',level:'activity',x:100,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r21',title:'HRH capacity building',level:'activity',x:450,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r22',title:'Supply chain & procurement TA',level:'activity',x:750,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r23',title:'Laboratory systems TA',level:'activity',x:1100,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r24',title:'Financial management TA',level:'activity',x:1450,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'r25',title:'Community systems strengthening',level:'activity',x:1800,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
   ],
   connections:[
-    {id:'rc1',sourceId:'r20',targetId:'r13',evidence:{strength:'strong',type:'mixed_methods',transferability:'high',notes:'WHO DHIS2 implementation evidence'},assumptions:[{id:'a1',text:'MoH commits IT infrastructure and connectivity',status:'critical'}],bidirectional:false},
-    {id:'rc2',sourceId:'r21',targetId:'r14',evidence:{strength:'strong',type:'systematic_review',transferability:'moderate',notes:''},assumptions:[{id:'a2',text:'Trained staff retained in post',status:'critical'},{id:'a3',text:'Pre-service institutions update curricula',status:'untested'}],bidirectional:false},
-    {id:'rc3',sourceId:'r22',targetId:'r15',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[{id:'a4',text:'Procurement regulations allow timely purchasing',status:'untested'}],bidirectional:false},
+    {id:'rc1',sourceId:'r20',targetId:'r13',evidence:{strength:'strong',type:'mixed_methods',transferability:'high',notes:'WHO DHIS2 implementation evidence'},assumptions:[{id:'a1',text:'MoH commits IT infrastructure and connectivity',status:'critical',knowledge_source:defaultKS()}],bidirectional:false},
+    {id:'rc2',sourceId:'r21',targetId:'r14',evidence:{strength:'strong',type:'systematic_review',transferability:'moderate',notes:''},assumptions:[{id:'a2',text:'Trained staff retained in post',status:'critical',knowledge_source:defaultKS()},{id:'a3',text:'Pre-service institutions update curricula',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
+    {id:'rc3',sourceId:'r22',targetId:'r15',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[{id:'a4',text:'Procurement regulations allow timely purchasing',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'rc4',sourceId:'r23',targetId:'r16',evidence:{strength:'strong',type:'rct',transferability:'high',notes:'GeneXpert evidence base well-established'},assumptions:[],bidirectional:false},
     {id:'rc5',sourceId:'r24',targetId:'r17',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
-    {id:'rc6',sourceId:'r25',targetId:'r18',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[{id:'a5',text:'Community acceptance of CHW role',status:'validated'}],bidirectional:false},
-    {id:'rc7',sourceId:'r25',targetId:'r19',evidence:{strength:'weak',type:'observational',transferability:'low',notes:'CLM evidence still emerging globally'},assumptions:[{id:'a6',text:'Facilities respond constructively to community feedback',status:'untested'}],bidirectional:false},
+    {id:'rc6',sourceId:'r25',targetId:'r18',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[{id:'a5',text:'Community acceptance of CHW role',status:'validated',knowledge_source:defaultKS()}],bidirectional:false},
+    {id:'rc7',sourceId:'r25',targetId:'r19',evidence:{strength:'weak',type:'observational',transferability:'low',notes:'CLM evidence still emerging globally'},assumptions:[{id:'a6',text:'Facilities respond constructively to community feedback',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'rc8',sourceId:'r13',targetId:'r7',evidence:{strength:'strong',type:'programme_data',transferability:'high',notes:''},assumptions:[],bidirectional:false},
     {id:'rc9',sourceId:'r14',targetId:'r8',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
-    {id:'rc10',sourceId:'r15',targetId:'r9',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[{id:'a7',text:'No major supply disruptions (global stockouts, port delays)',status:'critical'}],bidirectional:false},
+    {id:'rc10',sourceId:'r15',targetId:'r9',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[{id:'a7',text:'No major supply disruptions (global stockouts, port delays)',status:'critical',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'rc11',sourceId:'r16',targetId:'r10',evidence:{strength:'strong',type:'rct',transferability:'high',notes:''},assumptions:[],bidirectional:false},
     {id:'rc12',sourceId:'r17',targetId:'r11',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
     {id:'rc13',sourceId:'r18',targetId:'r12',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
     {id:'rc14',sourceId:'r14',targetId:'r7',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:'Data use training improves HMIS quality'},assumptions:[],bidirectional:false},
     {id:'rc15',sourceId:'r19',targetId:'r12',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:''},assumptions:[],bidirectional:false},
-    // Feedback loop: data quality ↔ service delivery
-    {id:'rc_fb1',sourceId:'r7',targetId:'r3',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:'Data-driven programming improves coverage'},assumptions:[{id:'a8',text:'Data is actually used for decision-making',status:'untested'}],bidirectional:true},
+    {id:'rc_fb1',sourceId:'r7',targetId:'r3',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:'Data-driven programming improves coverage'},assumptions:[{id:'a8',text:'Data is actually used for decision-making',status:'untested',knowledge_source:defaultKS()}],bidirectional:true},
     {id:'rc17',sourceId:'r7',targetId:'r4',evidence:{strength:'moderate',type:'theoretical',transferability:'moderate',notes:'Quality monitoring requires functioning HMIS'},assumptions:[],bidirectional:false},
     {id:'rc18',sourceId:'r8',targetId:'r3',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:'Strong global evidence linking HRH to coverage'},assumptions:[],bidirectional:false},
     {id:'rc19',sourceId:'r8',targetId:'r4',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
     {id:'rc20',sourceId:'r9',targetId:'r3',evidence:{strength:'strong',type:'observational',transferability:'high',notes:'Stock-outs directly reduce service uptake'},assumptions:[],bidirectional:false},
     {id:'rc21',sourceId:'r9',targetId:'r4',evidence:{strength:'strong',type:'observational',transferability:'high',notes:''},assumptions:[],bidirectional:false},
     {id:'rc22',sourceId:'r10',targetId:'r3',evidence:{strength:'strong',type:'rct',transferability:'high',notes:'VL monitoring essential for ART effectiveness'},assumptions:[],bidirectional:false},
-    {id:'rc24',sourceId:'r11',targetId:'r5',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:''},assumptions:[{id:'a9',text:'Fiscal space exists for health budget increases',status:'untested'}],bidirectional:false},
+    {id:'rc24',sourceId:'r11',targetId:'r5',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:''},assumptions:[{id:'a9',text:'Fiscal space exists for health budget increases',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'rc25',sourceId:'r12',targetId:'r3',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:'CHWs extend coverage to hard-to-reach'},assumptions:[],bidirectional:false},
     {id:'rc26',sourceId:'r12',targetId:'r6',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
     {id:'rc27',sourceId:'r7',targetId:'r5',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Data transparency supports accountability'},assumptions:[],bidirectional:false},
-    {id:'rc28',sourceId:'r3',targetId:'r1',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:'Lancet Commission evidence'},assumptions:[{id:'a10',text:'No emergence of drug-resistant strains',status:'untested'},{id:'a11',text:'No major conflict disrupting services',status:'critical'}],bidirectional:false},
+    {id:'rc28',sourceId:'r3',targetId:'r1',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:'Lancet Commission evidence'},assumptions:[{id:'a10',text:'No emergence of drug-resistant strains',status:'untested',knowledge_source:defaultKS()},{id:'a11',text:'No major conflict disrupting services',status:'critical',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'rc29',sourceId:'r4',targetId:'r1',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
-    {id:'rc30',sourceId:'r3',targetId:'r2',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[{id:'a12',text:'Financial protection mechanisms in place',status:'untested'}],bidirectional:false},
+    {id:'rc30',sourceId:'r3',targetId:'r2',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[{id:'a12',text:'Financial protection mechanisms in place',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'rc31',sourceId:'r4',targetId:'r2',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
-    {id:'rc32',sourceId:'r5',targetId:'r2',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:'Sustainability requires domestic ownership'},assumptions:[{id:'a13',text:'Political commitment survives electoral cycles',status:'critical'}],bidirectional:false},
-    {id:'rc33',sourceId:'r6',targetId:'r2',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Community systems–UHC link still emerging'},assumptions:[],bidirectional:false},
+    {id:'rc32',sourceId:'r5',targetId:'r2',evidence:{strength:'moderate',type:'expert_opinion',transferability:'moderate',notes:'Sustainability requires domestic ownership'},assumptions:[{id:'a13',text:'Political commitment survives electoral cycles',status:'critical',knowledge_source:defaultKS()}],bidirectional:false},
+    {id:'rc33',sourceId:'r6',targetId:'r2',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Community systems-UHC link still emerging'},assumptions:[],bidirectional:false},
   ]
 },
 peacebuilding:{
-  name:'UN Peacebuilding',icon:'🕊️',
-  narrative:{description:'Multi-pillar peacebuilding programme addressing governance, justice, economic recovery, reconciliation, and gender equality in a post-conflict setting.',context:'Post-conflict fragile state, 3 years after ceasefire. Weak state institutions, displaced populations returning, inter-ethnic tensions. UN peacekeeping mission transitioning. Multiple armed groups partially integrated.',theory:'Sustainable peace requires simultaneous investment in legitimate governance, transitional justice, economic reintegration, inter-group reconciliation, and women\'s empowerment. These pillars are interdependent — economic reintegration without reconciliation risks renewed tensions; reconciliation without governance reform lacks institutional anchoring. The theory explicitly acknowledges that most causal pathways carry weak or contested evidence, reflecting the genuine uncertainty in peacebuilding practice.',systemAssumptions:[{id:'psa1',text:'No resumption of large-scale armed violence',status:'critical'},{id:'psa2',text:'Regional neighbours do not actively destabilise',status:'critical'},{id:'psa3',text:'International funding sustained through transition period',status:'untested'},{id:'psa4',text:'Elite power-sharing agreement holds',status:'critical'}]},
+  name:'UN Peacebuilding',
+  narrative:{description:'Multi-pillar peacebuilding programme addressing governance, justice, economic recovery, reconciliation, and gender equality in a post-conflict setting.',context:'Post-conflict fragile state, 3 years after ceasefire. Weak state institutions, displaced populations returning, inter-ethnic tensions. UN peacekeeping mission transitioning. Multiple armed groups partially integrated.',theory:'Sustainable peace requires simultaneous investment in legitimate governance, transitional justice, economic reintegration, inter-group reconciliation, and women\'s empowerment. These pillars are interdependent — economic reintegration without reconciliation risks renewed tensions; reconciliation without governance reform lacks institutional anchoring. The theory explicitly acknowledges that most causal pathways carry weak or contested evidence, reflecting the genuine uncertainty in peacebuilding practice.',systemAssumptions:[{id:'psa1',text:'No resumption of large-scale armed violence',status:'critical',knowledge_source:defaultKS()},{id:'psa2',text:'Regional neighbours do not actively destabilise',status:'critical',knowledge_source:defaultKS()},{id:'psa3',text:'International funding sustained through transition period',status:'untested',knowledge_source:defaultKS()},{id:'psa4',text:'Elite power-sharing agreement holds',status:'critical',knowledge_source:defaultKS()}]},
   nodes:[
-    {id:'pb1',title:'Sustained peace & social cohesion',level:'impact',x:500,y:130,timeframe:'10+ years',indicators:['Battle-related deaths/yr','Social cohesion index'],assumptions:[]},
-    {id:'pb2',title:'Inclusive development & resilience',level:'impact',x:1150,y:130,timeframe:'10+ years',indicators:['Poverty headcount in conflict areas'],assumptions:[]},
-    {id:'pb3',title:'Legitimate & accountable governance',level:'outcome',x:150,y:550,timeframe:'5-8 years',indicators:['Citizen trust in government (%)'],assumptions:[{id:'pna1',text:'Governance reform is not captured by former conflict elites',status:'critical'}]},
-    {id:'pb4',title:'Rule of law & transitional justice',level:'outcome',x:550,y:550,timeframe:'5-10 years',indicators:['Access to justice index'],assumptions:[]},
-    {id:'pb5',title:'Economic recovery & livelihoods',level:'outcome',x:950,y:550,timeframe:'3-7 years',indicators:['Youth unemployment in conflict areas (%)'],assumptions:[]},
-    {id:'pb6',title:'Inter-group dialogue & reconciliation',level:'outcome',x:1350,y:550,timeframe:'5-15 years',indicators:['Cross-group contact frequency'],assumptions:[{id:'pna2',text:'No new triggering events reignite grievances',status:'critical'}]},
-    {id:'pb7',title:'Gender-responsive peace outcomes',level:'outcome',x:1750,y:550,timeframe:'5-10 years',indicators:['Women in peace negotiations (%)'],assumptions:[]},
-    {id:'pb8',title:'Local governance structures functional',level:'intermediate',x:150,y:970,timeframe:'2-4 years',indicators:['Peace committees active (#)'],assumptions:[]},
-    {id:'pb9',title:'Security sector reformed',level:'intermediate',x:500,y:970,timeframe:'3-6 years',indicators:['HR complaints against security forces'],assumptions:[]},
-    {id:'pb10',title:'Ex-combatants reintegrated',level:'intermediate',x:850,y:970,timeframe:'2-5 years',indicators:['DDR graduates employed (%)','Recidivism rate (%)'],assumptions:[{id:'pna3',text:'Psychosocial trauma addressed alongside economic reintegration',status:'critical'}]},
-    {id:'pb11',title:'Community reconciliation processes active',level:'intermediate',x:1200,y:970,timeframe:'2-5 years',indicators:['Dialogue sessions held (#)'],assumptions:[]},
-    {id:'pb12',title:'Women\'s organisations empowered',level:'intermediate',x:1600,y:970,timeframe:'2-4 years',indicators:['Women\'s CSOs funded (#)'],assumptions:[]},
-    {id:'pb13',title:'Peace infrastructure established',level:'output',x:150,y:1390,timeframe:'Year 1-2',indicators:['Peace committees (#)','Early warning coverage'],assumptions:[]},
-    {id:'pb14',title:'Security forces trained',level:'output',x:500,y:1390,timeframe:'Year 1-3',indicators:['Personnel trained (#)'],assumptions:[]},
-    {id:'pb15',title:'Livelihoods programmes delivered',level:'output',x:850,y:1390,timeframe:'Year 1-2',indicators:['Youth trained (#)'],assumptions:[]},
-    {id:'pb16',title:'Reconciliation platforms created',level:'output',x:1200,y:1390,timeframe:'Year 1-2',indicators:['Dialogue platforms (#)'],assumptions:[]},
-    {id:'pb17',title:'Gender & GBV services established',level:'output',x:1600,y:1390,timeframe:'Year 1-2',indicators:['SGBV one-stop centres (#)'],assumptions:[]},
-    {id:'pb18',title:'Governance & peace infrastructure',level:'activity',x:150,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'pb19',title:'Security sector reform programme',level:'activity',x:500,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'pb20',title:'Economic reintegration & DDR',level:'activity',x:850,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'pb21',title:'Dialogue & reconciliation',level:'activity',x:1200,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
-    {id:'pb22',title:'Gender equality & GBV response',level:'activity',x:1600,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[]},
+    {id:'pb1',title:'Sustained peace & social cohesion',level:'impact',x:500,y:130,timeframe:'10+ years',indicators:['Battle-related deaths/yr','Social cohesion index'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb2',title:'Inclusive development & resilience',level:'impact',x:1150,y:130,timeframe:'10+ years',indicators:['Poverty headcount in conflict areas'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb3',title:'Legitimate & accountable governance',level:'outcome',x:150,y:550,timeframe:'5-8 years',indicators:['Citizen trust in government (%)'],assumptions:[{id:'pna1',text:'Governance reform is not captured by former conflict elites',status:'critical',knowledge_source:defaultKS()}],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'pb4',title:'Rule of law & transitional justice',level:'outcome',x:550,y:550,timeframe:'5-10 years',indicators:['Access to justice index'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'evaluator_inference',date:''}},
+    {id:'pb5',title:'Economic recovery & livelihoods',level:'outcome',x:950,y:550,timeframe:'3-7 years',indicators:['Youth unemployment in conflict areas (%)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb6',title:'Inter-group dialogue & reconciliation',level:'outcome',x:1350,y:550,timeframe:'5-15 years',indicators:['Cross-group contact frequency'],assumptions:[{id:'pna2',text:'No new triggering events reignite grievances',status:'critical',knowledge_source:defaultKS()}],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'pb7',title:'Gender-responsive peace outcomes',level:'outcome',x:1750,y:550,timeframe:'5-10 years',indicators:['Women in peace negotiations (%)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'evaluator_inference',date:''}},
+    {id:'pb8',title:'Local governance structures functional',level:'intermediate',x:150,y:970,timeframe:'2-4 years',indicators:['Peace committees active (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb9',title:'Security sector reformed',level:'intermediate',x:500,y:970,timeframe:'3-6 years',indicators:['HR complaints against security forces'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb10',title:'Ex-combatants reintegrated',level:'intermediate',x:850,y:970,timeframe:'2-5 years',indicators:['DDR graduates employed (%)','Recidivism rate (%)'],assumptions:[{id:'pna3',text:'Psychosocial trauma addressed alongside economic reintegration',status:'critical',knowledge_source:defaultKS()}],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'pb11',title:'Community reconciliation processes active',level:'intermediate',x:1200,y:970,timeframe:'2-5 years',indicators:['Dialogue sessions held (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'pb12',title:'Women\'s organisations empowered',level:'intermediate',x:1600,y:970,timeframe:'2-4 years',indicators:['Women\'s CSOs funded (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'evaluator_inference',date:''}},
+    {id:'pb13',title:'Peace infrastructure established',level:'output',x:150,y:1390,timeframe:'Year 1-2',indicators:['Peace committees (#)','Early warning coverage'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb14',title:'Security forces trained',level:'output',x:500,y:1390,timeframe:'Year 1-3',indicators:['Personnel trained (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb15',title:'Livelihoods programmes delivered',level:'output',x:850,y:1390,timeframe:'Year 1-2',indicators:['Youth trained (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb16',title:'Reconciliation platforms created',level:'output',x:1200,y:1390,timeframe:'Year 1-2',indicators:['Dialogue platforms (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'pb17',title:'Gender & GBV services established',level:'output',x:1600,y:1390,timeframe:'Year 1-2',indicators:['SGBV one-stop centres (#)'],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb18',title:'Governance & peace infrastructure',level:'activity',x:150,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb19',title:'Security sector reform programme',level:'activity',x:500,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb20',title:'Economic reintegration & DDR',level:'activity',x:850,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
+    {id:'pb21',title:'Dialogue & reconciliation',level:'activity',x:1200,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'participatory',date:''}},
+    {id:'pb22',title:'Gender equality & GBV response',level:'activity',x:1600,y:1810,timeframe:'Ongoing',indicators:[],assumptions:[],knowledge_source:{contributed_by:'',source_type:'programme_document',date:''}},
   ],
   connections:[
-    {id:'pbc1',sourceId:'pb18',targetId:'pb13',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:''},assumptions:[{id:'pa1',text:'Local elites do not capture peace committees',status:'critical'}],bidirectional:false},
-    {id:'pbc2',sourceId:'pb19',targetId:'pb14',evidence:{strength:'weak',type:'observational',transferability:'low',notes:'SSR evidence base limited in fragile states'},assumptions:[{id:'pa2',text:'Security command supports reform',status:'critical'}],bidirectional:false},
-    {id:'pbc3',sourceId:'pb20',targetId:'pb15',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:''},assumptions:[{id:'pa3',text:'Markets accessible despite conflict legacy',status:'untested'}],bidirectional:false},
-    {id:'pbc4',sourceId:'pb21',targetId:'pb16',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:''},assumptions:[{id:'pa4',text:'Genuine cross-identity participation',status:'untested'}],bidirectional:false},
-    {id:'pbc5',sourceId:'pb22',targetId:'pb17',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[{id:'pa5',text:'Patriarchal norms do not block participation',status:'critical'}],bidirectional:false},
+    {id:'pbc1',sourceId:'pb18',targetId:'pb13',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:''},assumptions:[{id:'pa1',text:'Local elites do not capture peace committees',status:'critical',knowledge_source:defaultKS()}],bidirectional:false},
+    {id:'pbc2',sourceId:'pb19',targetId:'pb14',evidence:{strength:'weak',type:'observational',transferability:'low',notes:'SSR evidence base limited in fragile states'},assumptions:[{id:'pa2',text:'Security command supports reform',status:'critical',knowledge_source:defaultKS()}],bidirectional:false},
+    {id:'pbc3',sourceId:'pb20',targetId:'pb15',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:''},assumptions:[{id:'pa3',text:'Markets accessible despite conflict legacy',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
+    {id:'pbc4',sourceId:'pb21',targetId:'pb16',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:''},assumptions:[{id:'pa4',text:'Genuine cross-identity participation',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
+    {id:'pbc5',sourceId:'pb22',targetId:'pb17',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[{id:'pa5',text:'Patriarchal norms do not block participation',status:'critical',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'pbc6',sourceId:'pb13',targetId:'pb8',evidence:{strength:'moderate',type:'observational',transferability:'low',notes:''},assumptions:[],bidirectional:false},
-    {id:'pbc7',sourceId:'pb14',targetId:'pb9',evidence:{strength:'weak',type:'expert_opinion',transferability:'low',notes:''},assumptions:[{id:'pa6',text:'Training changes behaviour, not just knowledge',status:'untested'}],bidirectional:false},
+    {id:'pbc7',sourceId:'pb14',targetId:'pb9',evidence:{strength:'weak',type:'expert_opinion',transferability:'low',notes:''},assumptions:[{id:'pa6',text:'Training changes behaviour, not just knowledge',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'pbc8',sourceId:'pb15',targetId:'pb10',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:'Livelihoods reduce economic drivers of recidivism'},assumptions:[],bidirectional:false},
     {id:'pbc9',sourceId:'pb16',targetId:'pb11',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:''},assumptions:[],bidirectional:false},
     {id:'pbc10',sourceId:'pb17',targetId:'pb12',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
-    // Cross-cutting — peacebuilding's interconnected nature
     {id:'pbc11',sourceId:'pb15',targetId:'pb11',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Joint economic activity builds cross-group contact'},assumptions:[],bidirectional:false},
     {id:'pbc12',sourceId:'pb8',targetId:'pb11',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Local structures facilitate dialogue'},assumptions:[],bidirectional:false},
-    // Feedback loop: reconciliation ↔ governance legitimacy
-    {id:'pbc_fb1',sourceId:'pb8',targetId:'pb3',evidence:{strength:'moderate',type:'observational',transferability:'low',notes:''},assumptions:[{id:'pa7',text:'National govt devolves real authority to local structures',status:'critical'}],bidirectional:true},
+    {id:'pbc_fb1',sourceId:'pb8',targetId:'pb3',evidence:{strength:'moderate',type:'observational',transferability:'low',notes:''},assumptions:[{id:'pa7',text:'National govt devolves real authority to local structures',status:'critical',knowledge_source:defaultKS()}],bidirectional:true},
     {id:'pbc14',sourceId:'pb9',targetId:'pb3',evidence:{strength:'moderate',type:'expert_opinion',transferability:'low',notes:''},assumptions:[],bidirectional:false},
     {id:'pbc15',sourceId:'pb9',targetId:'pb4',evidence:{strength:'moderate',type:'expert_opinion',transferability:'low',notes:''},assumptions:[],bidirectional:false},
-    {id:'pbc16',sourceId:'pb10',targetId:'pb5',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:'Contested — livelihood impact on peace unclear'},assumptions:[{id:'pa8',text:'Economic reintegration outweighs grievances',status:'untested'}],bidirectional:false},
+    {id:'pbc16',sourceId:'pb10',targetId:'pb5',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:'Contested - livelihood impact on peace unclear'},assumptions:[{id:'pa8',text:'Economic reintegration outweighs grievances',status:'untested',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'pbc17',sourceId:'pb11',targetId:'pb6',evidence:{strength:'moderate',type:'mixed_methods',transferability:'low',notes:'Contact hypothesis evidence mixed in conflict settings'},assumptions:[],bidirectional:false},
     {id:'pbc18',sourceId:'pb12',targetId:'pb7',evidence:{strength:'moderate',type:'mixed_methods',transferability:'moderate',notes:'UNSCR 1325 evidence base'},assumptions:[],bidirectional:false},
     {id:'pbc19',sourceId:'pb12',targetId:'pb3',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Women\'s participation in governance'},assumptions:[],bidirectional:false},
     {id:'pbc20',sourceId:'pb3',targetId:'pb1',evidence:{strength:'moderate',type:'observational',transferability:'low',notes:'Governance legitimacy reduces conflict risk'},assumptions:[],bidirectional:false},
     {id:'pbc21',sourceId:'pb4',targetId:'pb1',evidence:{strength:'moderate',type:'expert_opinion',transferability:'low',notes:''},assumptions:[],bidirectional:false},
     {id:'pbc22',sourceId:'pb5',targetId:'pb2',evidence:{strength:'moderate',type:'quasi_experimental',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
-    {id:'pbc23',sourceId:'pb6',targetId:'pb1',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Social cohesion → peace causal link contested'},assumptions:[{id:'pa9',text:'Structural drivers (inequality, exclusion) addressed',status:'critical'}],bidirectional:false},
+    {id:'pbc23',sourceId:'pb6',targetId:'pb1',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Social cohesion - peace causal link contested'},assumptions:[{id:'pa9',text:'Structural drivers (inequality, exclusion) addressed',status:'critical',knowledge_source:defaultKS()}],bidirectional:false},
     {id:'pbc24',sourceId:'pb7',targetId:'pb1',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Gender-peace link evidence still building'},assumptions:[],bidirectional:false},
-    {id:'pbc25',sourceId:'pb5',targetId:'pb1',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Economic recovery → peace is non-linear'},assumptions:[],bidirectional:false},
+    {id:'pbc25',sourceId:'pb5',targetId:'pb1',evidence:{strength:'weak',type:'theoretical',transferability:'low',notes:'Economic recovery - peace is non-linear'},assumptions:[],bidirectional:false},
     {id:'pbc26',sourceId:'pb3',targetId:'pb2',evidence:{strength:'moderate',type:'observational',transferability:'moderate',notes:''},assumptions:[],bidirectional:false},
   ]
 },
 health_simple:{
-  name:'Health (Starter)',icon:'🏥',
+  name:'Health (Starter)',
   narrative:{description:'Basic health service strengthening programme.',context:'',theory:'',systemAssumptions:[]},
   nodes:[
-    {id:'hs1',title:'Reduced morbidity & mortality',level:'impact',x:800,y:130,timeframe:'5-10 years',indicators:[],assumptions:[]},
-    {id:'hs2',title:'Increased service utilisation',level:'outcome',x:600,y:550,timeframe:'2-4 years',indicators:[],assumptions:[]},
-    {id:'hs3',title:'Improved service quality',level:'outcome',x:1050,y:550,timeframe:'2-4 years',indicators:[],assumptions:[]},
-    {id:'hs4',title:'Improved health knowledge',level:'intermediate',x:500,y:970,timeframe:'1-2 years',indicators:[],assumptions:[]},
-    {id:'hs5',title:'Strengthened health workforce',level:'intermediate',x:900,y:970,timeframe:'1-3 years',indicators:[],assumptions:[]},
-    {id:'hs6',title:'CHWs trained',level:'output',x:500,y:1390,timeframe:'Year 1',indicators:[],assumptions:[]},
-    {id:'hs7',title:'Facilities upgraded',level:'output',x:900,y:1390,timeframe:'Year 1',indicators:[],assumptions:[]},
-    {id:'hs8',title:'Training programme',level:'activity',x:500,y:1810,indicators:[],assumptions:[]},
-    {id:'hs9',title:'Facility rehabilitation',level:'activity',x:900,y:1810,indicators:[],assumptions:[]},
+    {id:'hs1',title:'Reduced morbidity & mortality',level:'impact',x:800,y:130,timeframe:'5-10 years',indicators:[],assumptions:[],knowledge_source:defaultKS()},
+    {id:'hs2',title:'Increased service utilisation',level:'outcome',x:600,y:550,timeframe:'2-4 years',indicators:[],assumptions:[],knowledge_source:defaultKS()},
+    {id:'hs3',title:'Improved service quality',level:'outcome',x:1050,y:550,timeframe:'2-4 years',indicators:[],assumptions:[],knowledge_source:defaultKS()},
+    {id:'hs4',title:'Improved health knowledge',level:'intermediate',x:500,y:970,timeframe:'1-2 years',indicators:[],assumptions:[],knowledge_source:defaultKS()},
+    {id:'hs5',title:'Strengthened health workforce',level:'intermediate',x:900,y:970,timeframe:'1-3 years',indicators:[],assumptions:[],knowledge_source:defaultKS()},
+    {id:'hs6',title:'CHWs trained',level:'output',x:500,y:1390,timeframe:'Year 1',indicators:[],assumptions:[],knowledge_source:defaultKS()},
+    {id:'hs7',title:'Facilities upgraded',level:'output',x:900,y:1390,timeframe:'Year 1',indicators:[],assumptions:[],knowledge_source:defaultKS()},
+    {id:'hs8',title:'Training programme',level:'activity',x:500,y:1810,indicators:[],assumptions:[],knowledge_source:defaultKS()},
+    {id:'hs9',title:'Facility rehabilitation',level:'activity',x:900,y:1810,indicators:[],assumptions:[],knowledge_source:defaultKS()},
   ],
   connections:[
     {id:'hsc1',sourceId:'hs2',targetId:'hs1',evidence:{strength:'strong',type:'systematic_review',transferability:'high',notes:''},assumptions:[],bidirectional:false},
@@ -374,22 +507,76 @@ health_simple:{
 };
 
 // ═══════════════════════════════════════════════════════════════
+// SVG BUILDER [N1]
+// ═══════════════════════════════════════════════════════════════
+function buildSVGString(state, stakeholder){
+  const nodes=state.nodes;const conns=state.connections;
+  if(!nodes.length)return null;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  nodes.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+NODE_W);maxY=Math.max(maxY,n.y+120);});
+  const pad=60;minX-=pad;minY-=pad;maxX+=pad;maxY+=pad;
+  const W=maxX-minX,H=maxY-minY;
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${W} ${H}" width="${W}" height="${H}" font-family="DM Sans,sans-serif">`;
+  svg+=`<rect x="${minX}" y="${minY}" width="${W}" height="${H}" fill="#F8FAFC"/>`;
+  if(stakeholder){
+    svg+=`<defs><marker id="a-sh" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#CBD5E1"/></marker></defs>`;
+    conns.forEach(c=>{
+      const src=nodes.find(n=>n.id===c.sourceId),tgt=nodes.find(n=>n.id===c.targetId);if(!src||!tgt)return;
+      const ep=getConnEndpoints(src,tgt);
+      svg+=`<path d="${bezier(ep.sx,ep.sy,ep.tx,ep.ty)}" fill="none" stroke="#CBD5E1" stroke-width="1.5" marker-end="url(#a-sh)" opacity="0.7"/>`;
+    });
+    nodes.forEach(n=>{
+      const lv=LEVELS.find(l=>l.id===n.level);const h=50;
+      svg+=`<rect x="${n.x}" y="${n.y}" width="${NODE_W}" height="${h}" rx="8" fill="white" stroke="${lv?.color||'#ccc'}" stroke-width="1.5"/>`;
+      svg+=`<text x="${n.x+10}" y="${n.y+30}" font-size="11" font-weight="600" fill="#0F172A">${n.title.length>30?n.title.slice(0,30)+'...':n.title}</text>`;
+    });
+    svg+=`<text x="${minX+W/2}" y="${maxY-10}" text-anchor="middle" font-size="9" fill="#94A3B8" opacity="0.6">Created with PRAXIS 360\u00B0</text>`;
+  }else{
+    svg+=`<defs>${Object.entries(EV_STRENGTH).map(([k,v])=>`<marker id="a-${k}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="${v.color}"/></marker>`).join('')}</defs>`;
+    conns.forEach(c=>{
+      const src=nodes.find(n=>n.id===c.sourceId),tgt=nodes.find(n=>n.id===c.targetId);if(!src||!tgt)return;
+      const ep=getConnEndpoints(src,tgt);const st=EV_STRENGTH[c.evidence?.strength||'none'];
+      const p=bezier(ep.sx,ep.sy,ep.tx,ep.ty);
+      svg+=`<path d="${p}" fill="none" stroke="${st.color}" stroke-width="${st.w}" stroke-dasharray="${st.dash}" marker-end="url(#a-${c.evidence?.strength||'none'})"${c.bidirectional?` marker-start="url(#a-${c.evidence?.strength||'none'})"`:''} opacity="0.85"/>`;
+    });
+    nodes.forEach(n=>{
+      const lv=LEVELS.find(l=>l.id===n.level);const h=70;
+      const ks=n.knowledge_source||{};const st=getSourceType(ks.source_type);
+      svg+=`<g><rect x="${n.x}" y="${n.y}" width="${NODE_W}" height="${h}" rx="8" fill="white" stroke="${lv?.color||'#ccc'}" stroke-width="2"/>`;
+      svg+=`<rect x="${n.x}" y="${n.y}" width="3" height="${h}" rx="1.5" fill="${st.color}"/>`;
+      svg+=`<text x="${n.x+14}" y="${n.y+16}" font-size="8" font-weight="700" fill="${lv?.color}" letter-spacing="0.08em">${(lv?.label||'').toUpperCase()}</text>`;
+      svg+=`<text x="${n.x+14}" y="${n.y+32}" font-size="12" font-weight="600" fill="#0F172A">${n.title.length>28?n.title.slice(0,28)+'...':n.title}</text>`;
+      if(n.timeframe)svg+=`<text x="${n.x+14}" y="${n.y+48}" font-size="8" fill="#8B5CF6" font-weight="600">${n.timeframe}</text>`;
+      svg+=`</g>`;
+    });
+  }
+  if(state.title)svg+=`<text x="${minX+20}" y="${minY+24}" font-size="16" font-weight="800" fill="#0B1A2E">${state.title}</text>`;
+  svg+=`</svg>`;
+  return svg;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // UNDO/REDO + REDUCER
 // ═══════════════════════════════════════════════════════════════
-const INIT={title:'',narrative:{description:'',context:'',theory:'',systemAssumptions:[]},nodes:[],connections:[],selectedIds:[],selectedType:null,mode:'select',connectSourceId:null,zoom:1,panX:0,panY:0,showAssumptions:true,showEvidence:true,showWelcome:true,toast:null,sidebarTab:'build',animating:false};
-const UNDOABLE=new Set(['ADD_NODE','UPDATE_NODE','MOVE_NODE_FINAL','DELETE_NODE','ADD_CONNECTION','UPDATE_CONNECTION','DELETE_CONNECTION','LOAD_TEMPLATE','IMPORT','UPDATE_NARRATIVE','BATCH_DELETE','BATCH_MOVE']);
+const INIT={title:'',narrative:{description:'',context:'',theory:'',systemAssumptions:[]},nodes:[],connections:[],selectedIds:[],selectedType:null,mode:'select',connectSourceId:null,zoom:1,panX:0,panY:0,showAssumptions:true,showEvidence:true,showWelcome:true,toast:null,sidebarTab:'build',animating:false,_nextNodeCode:1,_nextConnectionCode:1,showCodes:false};
+const UNDOABLE=new Set(['ADD_NODE','UPDATE_NODE','MOVE_NODE_FINAL','DELETE_NODE','ADD_CONNECTION','UPDATE_CONNECTION','DELETE_CONNECTION','LOAD_TEMPLATE','IMPORT','UPDATE_NARRATIVE','BATCH_DELETE','BATCH_MOVE','APPLY_BULK_SOURCE']);
 
 function coreReducer(s,a){
   switch(a.type){
-  case 'LOAD_TEMPLATE':{const t=TEMPLATES[a.id];return{...s,title:t.name==='Blank Canvas'?'':t.name+' — Theory of Change',narrative:{description:t.narrative?.description||'',context:t.narrative?.context||'',theory:t.narrative?.theory||'',systemAssumptions:t.narrative?.systemAssumptions||[]},nodes:t.nodes.map(n=>({...n,id:n.id||uid('n'),description:n.description||'',indicators:n.indicators||[],assumptions:n.assumptions||[],timeframe:n.timeframe||''})),connections:t.connections.map(c=>({...c,id:c.id||uid('c'),evidence:c.evidence||{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:c.assumptions||[],bidirectional:c.bidirectional||false})),showWelcome:false,selectedIds:[],selectedType:null,sidebarTab:'build'};}
-  case 'ADD_NODE':{const lv=LEVELS.find(l=>l.id===a.level);const same=s.nodes.filter(n=>n.level===a.level);const x=300+same.length*240;const nd={id:uid('n'),title:'New '+lv.label.replace(/s$/,''),description:'',level:a.level,x:snap(x),y:snap(lv.y+40),indicators:[],assumptions:[],timeframe:''};return{...s,nodes:[...s.nodes,nd],selectedIds:[nd.id],selectedType:'node',showWelcome:false};}
+  case 'LOAD_TEMPLATE':{const t=TEMPLATES[a.id];
+    const nodesRaw=t.nodes.map((n,i)=>{const nd=ensureKS({...n,id:n.id||uid('n'),description:n.description||'',indicators:n.indicators||[],assumptions:ensureAssumptionKS(n.assumptions||[]),timeframe:n.timeframe||''});if(!nd.traceability_code)nd.traceability_code='n'+(i+1);return nd;});
+    const connsRaw=t.connections.map((c,i)=>{const cn={...c,id:c.id||uid('c'),evidence:c.evidence||{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:ensureAssumptionKS(c.assumptions||[]),bidirectional:c.bidirectional||false};if(!cn.traceability_code)cn.traceability_code='c'+(i+1);return cn;});
+    const codes=computeNextCodes(nodesRaw,connsRaw);
+    const sysA=ensureAssumptionKS(t.narrative?.systemAssumptions||[]);
+    return{...s,title:t.name==='Blank Canvas'?'':t.name+' -- Theory of Change',narrative:{description:t.narrative?.description||'',context:t.narrative?.context||'',theory:t.narrative?.theory||'',systemAssumptions:sysA},nodes:nodesRaw,connections:connsRaw,showWelcome:false,selectedIds:[],selectedType:null,sidebarTab:'build',_nextNodeCode:codes.nextNode,_nextConnectionCode:codes.nextConn};}
+  case 'ADD_NODE':{const lv=LEVELS.find(l=>l.id===a.level);const same=s.nodes.filter(n=>n.level===a.level);const x=300+same.length*240;const tc='n'+s._nextNodeCode;const nd={id:uid('n'),title:'New '+lv.label.replace(/s$/,''),description:'',level:a.level,x:snap(x),y:snap(lv.y+40),indicators:[],assumptions:[],timeframe:'',knowledge_source:defaultKS(),traceability_code:tc};return{...s,nodes:[...s.nodes,nd],selectedIds:[nd.id],selectedType:'node',showWelcome:false,_nextNodeCode:s._nextNodeCode+1};}
   case 'UPDATE_NODE':return{...s,nodes:s.nodes.map(n=>n.id===a.id?{...n,...a.u}:n)};
   case 'MOVE_NODE':return{...s,nodes:s.nodes.map(n=>n.id===a.id?{...n,x:a.x,y:a.y}:n)};
   case 'MOVE_NODE_FINAL':return{...s,nodes:s.nodes.map(n=>n.id===a.id?{...n,x:a.x,y:a.y}:n)};
   case 'BATCH_MOVE':return{...s,nodes:s.nodes.map(n=>{const d=a.deltas[n.id];return d?{...n,x:n.x+d.dx,y:n.y+d.dy}:n;})};
   case 'DELETE_NODE':return{...s,nodes:s.nodes.filter(n=>n.id!==a.id),connections:s.connections.filter(c=>c.sourceId!==a.id&&c.targetId!==a.id),selectedIds:[],selectedType:null};
   case 'BATCH_DELETE':{const ids=new Set(a.ids);return{...s,nodes:s.nodes.filter(n=>!ids.has(n.id)),connections:s.connections.filter(c=>!ids.has(c.id)&&!ids.has(c.sourceId)&&!ids.has(c.targetId)),selectedIds:[],selectedType:null};}
-  case 'ADD_CONNECTION':{if(a.sourceId===a.targetId)return s;const ex=s.connections.find(c=>(c.sourceId===a.sourceId&&c.targetId===a.targetId)||(c.sourceId===a.targetId&&c.targetId===a.sourceId));if(ex)return{...s,connectSourceId:null,mode:'select',toast:'Connection already exists'};const cn={id:uid('c'),sourceId:a.sourceId,targetId:a.targetId,evidence:{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:[],bidirectional:false};return{...s,connections:[...s.connections,cn],connectSourceId:null,mode:'select',selectedIds:[cn.id],selectedType:'connection'};}
+  case 'ADD_CONNECTION':{if(a.sourceId===a.targetId)return s;const ex=s.connections.find(c=>(c.sourceId===a.sourceId&&c.targetId===a.targetId)||(c.sourceId===a.targetId&&c.targetId===a.sourceId));if(ex)return{...s,connectSourceId:null,mode:'select',toast:'Connection already exists'};const tc='c'+s._nextConnectionCode;const cn={id:uid('c'),sourceId:a.sourceId,targetId:a.targetId,evidence:{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:[],bidirectional:false,traceability_code:tc};return{...s,connections:[...s.connections,cn],connectSourceId:null,mode:'select',selectedIds:[cn.id],selectedType:'connection',_nextConnectionCode:s._nextConnectionCode+1};}
   case 'UPDATE_CONNECTION':return{...s,connections:s.connections.map(c=>c.id===a.id?{...c,...a.u}:c)};
   case 'DELETE_CONNECTION':return{...s,connections:s.connections.filter(c=>c.id!==a.id),selectedIds:[],selectedType:null};
   case 'SELECT':return{...s,selectedIds:a.add?[...s.selectedIds.filter(x=>x!==a.id),a.id]:[a.id],selectedType:a.selType};
@@ -401,13 +588,27 @@ function coreReducer(s,a){
   case 'SET_PAN':return{...s,panX:a.x,panY:a.y};
   case 'TOGGLE_ASSUMPTIONS':return{...s,showAssumptions:!s.showAssumptions};
   case 'TOGGLE_EVIDENCE':return{...s,showEvidence:!s.showEvidence};
+  case 'TOGGLE_CODES':return{...s,showCodes:!s.showCodes};
   case 'SET_TITLE':return{...s,title:a.title};
   case 'UPDATE_NARRATIVE':return{...s,narrative:{...s.narrative,...a.u}};
   case 'SET_TOAST':return{...s,toast:a.msg};
   case 'SET_TAB':return{...s,sidebarTab:a.tab};
   case 'SET_ANIMATING':return{...s,animating:a.v};
+  case 'APPLY_BULK_SOURCE':{const ks={contributed_by:a.contributed_by||'',source_type:a.source_type||'unset',date:a.date||''};return{...s,nodes:s.nodes.map(n=>({...n,knowledge_source:ks}))};}
   case 'NEW':return{...INIT};
-  case 'IMPORT':{try{const d=JSON.parse(a.json);return{...s,title:d.title||'',narrative:d.narrative||{description:'',context:'',theory:'',systemAssumptions:[]},nodes:(d.nodes||[]).map(n=>({...n,assumptions:n.assumptions||[],timeframe:n.timeframe||'',indicators:n.indicators||[]})),connections:(d.connections||[]).map(c=>({...c,evidence:c.evidence||{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:c.assumptions||[],bidirectional:c.bidirectional||false})),showWelcome:false,selectedIds:[],selectedType:null};}catch(e){return{...s,toast:'Invalid JSON file'};}}
+  case 'IMPORT':{try{const d=typeof a.json==='string'?JSON.parse(a.json):a.json;
+    const rawNodes=(d.nodes||[]).map(n=>ensureKS({...n,assumptions:ensureAssumptionKS(n.assumptions||[]),timeframe:n.timeframe||'',indicators:n.indicators||[]}));
+    const rawConns=(d.connections||[]).map(c=>({...c,evidence:c.evidence||{strength:'none',type:'',transferability:'unknown',notes:''},assumptions:ensureAssumptionKS(c.assumptions||[]),bidirectional:c.bidirectional||false}));
+    // Ensure traceability codes
+    const usedN=new Set();const usedC=new Set();
+    rawNodes.forEach(n=>{if(n.traceability_code)usedN.add(n.traceability_code);});
+    rawConns.forEach(c=>{if(c.traceability_code)usedC.add(c.traceability_code);});
+    let nc=1,cc=1;
+    rawNodes.forEach(n=>{if(!n.traceability_code){while(usedN.has('n'+nc))nc++;n.traceability_code='n'+nc;usedN.add('n'+nc);nc++;}});
+    rawConns.forEach(c=>{if(!c.traceability_code){while(usedC.has('c'+cc))cc++;c.traceability_code='c'+cc;usedC.add('c'+cc);cc++;}});
+    const codes=computeNextCodes(rawNodes,rawConns);
+    const sysA=ensureAssumptionKS(d.narrative?.systemAssumptions||[]);
+    return{...s,title:d.title||'',narrative:{description:d.narrative?.description||'',context:d.narrative?.context||'',theory:d.narrative?.theory||'',systemAssumptions:sysA},nodes:rawNodes,connections:rawConns,showWelcome:false,selectedIds:[],selectedType:null,_nextNodeCode:codes.nextNode,_nextConnectionCode:codes.nextConn};}catch(e){return{...s,toast:'Invalid file'};}}
   default:return s;
 }}
 
@@ -444,61 +645,29 @@ function getConnEndpoints(source,target){
 }
 
 function exportJSON(s){
-  const d={title:s.title,narrative:s.narrative,nodes:s.nodes,connections:s.connections,exportedAt:new Date().toISOString(),tool:'PRAXIS Theory of Change Builder v2'};
+  // Compute knowledge_sources dictionary
+  const ksd={};
+  const addKS=(ks)=>{if(ks&&ks.source_type&&ks.source_type!=='unset'){if(!ksd[ks.source_type])ksd[ks.source_type]=[];if(ks.contributed_by&&!ksd[ks.source_type].includes(ks.contributed_by))ksd[ks.source_type].push(ks.contributed_by);}};
+  s.nodes.forEach(n=>{addKS(n.knowledge_source);(n.assumptions||[]).forEach(a=>addKS(a.knowledge_source));});
+  s.connections.forEach(c=>{(c.assumptions||[]).forEach(a=>addKS(a.knowledge_source));});
+  (s.narrative.systemAssumptions||[]).forEach(a=>addKS(a.knowledge_source));
+  const d={title:s.title,narrative:s.narrative,nodes:s.nodes,connections:s.connections,knowledge_sources:ksd,exportedAt:new Date().toISOString(),tool:'PRAXIS 360 Theory of Change Builder v3'};
   const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
   const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=(s.title||'theory-of-change').replace(/[^a-zA-Z0-9\-_ ]/g,'').replace(/\s+/g,'-').toLowerCase()+'.json';a.click();URL.revokeObjectURL(u);
 }
 
-function exportSVG(state){
-  const nodes=state.nodes;const conns=state.connections;
-  if(!nodes.length)return;
-  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  nodes.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+NODE_W);maxY=Math.max(maxY,n.y+120);});
-  const pad=60;minX-=pad;minY-=pad;maxX+=pad;maxY+=pad;
-  const W=maxX-minX,H=maxY-minY;
-  let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${W} ${H}" width="${W}" height="${H}" font-family="DM Sans,sans-serif">`;
-  svg+=`<rect x="${minX}" y="${minY}" width="${W}" height="${H}" fill="#F8FAFC"/>`;
-  // Connections
-  svg+=`<defs>${Object.entries(EV_STRENGTH).map(([k,v])=>`<marker id="a-${k}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="${v.color}"/></marker>`).join('')}</defs>`;
-  conns.forEach(c=>{
-    const src=nodes.find(n=>n.id===c.sourceId),tgt=nodes.find(n=>n.id===c.targetId);if(!src||!tgt)return;
-    const ep=getConnEndpoints(src,tgt);const st=EV_STRENGTH[c.evidence?.strength||'none'];
-    const p=bezier(ep.sx,ep.sy,ep.tx,ep.ty);
-    svg+=`<path d="${p}" fill="none" stroke="${st.color}" stroke-width="${st.w}" stroke-dasharray="${st.dash}" marker-end="url(#a-${c.evidence?.strength||'none'})"${c.bidirectional?` marker-start="url(#a-${c.evidence?.strength||'none'})"`:''} opacity="0.85"/>`;
-  });
-  // Nodes
-  nodes.forEach(n=>{
-    const lv=LEVELS.find(l=>l.id===n.level);const h=70;
-    svg+=`<g><rect x="${n.x}" y="${n.y}" width="${NODE_W}" height="${h}" rx="8" fill="white" stroke="${lv?.color||'#ccc'}" stroke-width="2"/>`;
-    svg+=`<rect x="${n.x}" y="${n.y}" width="4" height="${h}" rx="2" fill="${lv?.color}"/>`;
-    svg+=`<text x="${n.x+14}" y="${n.y+16}" font-size="8" font-weight="700" fill="${lv?.color}" text-transform="uppercase" letter-spacing="0.08em">${lv?.label||''}</text>`;
-    svg+=`<text x="${n.x+14}" y="${n.y+32}" font-size="12" font-weight="600" fill="#0F172A">${n.title.length>28?n.title.slice(0,28)+'…':n.title}</text>`;
-    if(n.timeframe)svg+=`<text x="${n.x+14}" y="${n.y+48}" font-size="8" fill="#8B5CF6" font-weight="600">${n.timeframe}</text>`;
-    svg+=`</g>`;
-  });
-  // Title
-  if(state.title)svg+=`<text x="${minX+20}" y="${minY+24}" font-size="16" font-weight="800" fill="#0B1A2E">${state.title}</text>`;
-  svg+=`</svg>`;
+function doExportSVG(state,stakeholder){
+  const svg=buildSVGString(state,stakeholder);if(!svg)return;
   const b=new Blob([svg],{type:'image/svg+xml'});const u=URL.createObjectURL(b);
-  const a=document.createElement('a');a.href=u;a.download=(state.title||'toc')+'.svg';a.click();URL.revokeObjectURL(u);
+  const a=document.createElement('a');a.href=u;a.download=(state.title||'toc')+(stakeholder?'-stakeholder':'')+'.svg';a.click();URL.revokeObjectURL(u);
 }
 
-function exportPNG(state){
-  const nodes=state.nodes;if(!nodes.length)return;
-  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  nodes.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+NODE_W);maxY=Math.max(maxY,n.y+120);});
-  const pad=60;minX-=pad;minY-=pad;maxX+=pad;maxY+=pad;const W=maxX-minX,H=maxY-minY;
-  // Reuse SVG export logic
-  const conns=state.connections;
-  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W*2}" height="${H*2}" viewBox="${minX} ${minY} ${W} ${H}">`;
-  svg+=`<rect x="${minX}" y="${minY}" width="${W}" height="${H}" fill="#F8FAFC"/>`;
-  svg+=`<defs>${Object.entries(EV_STRENGTH).map(([k,v])=>`<marker id="a-${k}" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="${v.color}"/></marker>`).join('')}</defs>`;
-  conns.forEach(c=>{const src=nodes.find(n=>n.id===c.sourceId),tgt=nodes.find(n=>n.id===c.targetId);if(!src||!tgt)return;const ep=getConnEndpoints(src,tgt);const st=EV_STRENGTH[c.evidence?.strength||'none'];svg+=`<path d="${bezier(ep.sx,ep.sy,ep.tx,ep.ty)}" fill="none" stroke="${st.color}" stroke-width="${st.w}" stroke-dasharray="${st.dash}" marker-end="url(#a-${c.evidence?.strength||'none'})" opacity="0.85"/>`;});
-  nodes.forEach(n=>{const lv=LEVELS.find(l=>l.id===n.level);const h=70;svg+=`<rect x="${n.x}" y="${n.y}" width="${NODE_W}" height="${h}" rx="8" fill="white" stroke="${lv?.color||'#ccc'}" stroke-width="2"/><rect x="${n.x}" y="${n.y}" width="4" height="${h}" rx="2" fill="${lv?.color}"/><text x="${n.x+14}" y="${n.y+32}" font-size="12" font-weight="600" fill="#0F172A" font-family="sans-serif">${n.title.length>28?n.title.slice(0,28)+'…':n.title}</text>`;});
-  if(state.title)svg+=`<text x="${minX+20}" y="${minY+24}" font-size="16" font-weight="800" fill="#0B1A2E" font-family="sans-serif">${state.title}</text>`;
-  svg+=`</svg>`;
+function doExportPNG(state,stakeholder){
+  const svg=buildSVGString(state,stakeholder);if(!svg)return;
+  const parser=new DOMParser();const doc=parser.parseFromString(svg,'image/svg+xml');const svgEl=doc.documentElement;
+  const W=parseFloat(svgEl.getAttribute('width'))||1200;const H=parseFloat(svgEl.getAttribute('height'))||800;
   const img=new Image();
-  img.onload=()=>{const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);c.toBlob(blob=>{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=(state.title||'toc')+'.png';a.click();URL.revokeObjectURL(u);},'image/png');};
+  img.onload=()=>{const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,W*2,H*2);c.toBlob(blob=>{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=(state.title||'toc')+(stakeholder?'-stakeholder':'')+'.png';a.click();URL.revokeObjectURL(u);},'image/png');};
   img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 
@@ -524,11 +693,117 @@ const I={
   svg:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
   png:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
   align:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>,
+  code:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
+};
+
+// Welcome SVG icons
+const WelcomeIcons={
+  hero:<svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="12" cy="14" r="4" stroke="#2EC4B6" strokeWidth="2"/><circle cx="36" cy="14" r="4" stroke="#2EC4B6" strokeWidth="2"/><circle cx="24" cy="34" r="4" stroke="#2EC4B6" strokeWidth="2"/><circle cx="8" cy="34" r="3" stroke="#0891B2" strokeWidth="1.5"/><circle cx="40" cy="34" r="3" stroke="#0891B2" strokeWidth="1.5"/><line x1="14" y1="16" x2="22" y2="32" stroke="#94A3B8" strokeWidth="1.5"/><line x1="34" y1="16" x2="26" y2="32" stroke="#94A3B8" strokeWidth="1.5"/><line x1="12" y1="18" x2="8" y2="31" stroke="#CBD5E1" strokeWidth="1"/><line x1="36" y1="18" x2="40" y2="31" stroke="#CBD5E1" strokeWidth="1"/><line x1="15" y1="14" x2="33" y2="14" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="3,2"/></svg>,
+  globe:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 014 10 15 15 0 01-4 10 15 15 0 01-4-10A15 15 0 0112 2z"/></svg>,
+  shield:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" stroke="#10B981" strokeWidth="2"/></svg>,
+  heartbeat:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>,
+  file:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
 };
 
 // ═══════════════════════════════════════════════════════════════
 // COMPONENTS
 // ═══════════════════════════════════════════════════════════════
+
+// ── Knowledge Source Inline [IC2] ─────────────────────────────
+function KnowledgeSourceInline({ks,onChange}){
+  const[open,setOpen]=useState(false);
+  const ref=useRef(null);
+  const st=getSourceType(ks?.source_type);
+  useEffect(()=>{if(!open)return;const h=(e)=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener('mousedown',h);return()=>document.removeEventListener('mousedown',h);},[open]);
+  return(
+    <div style={{position:'relative',display:'inline-flex'}} ref={ref}>
+      <div className="ks-inline" style={{background:st.id!=='unset'?st.color+'22':'',borderColor:st.id!=='unset'?st.color:''}} onClick={()=>setOpen(!open)} title={st.label}>{st.icon||'?'}</div>
+      {open&&<div className="ks-popover" style={{top:'100%',right:0,marginTop:4}}>
+        <div style={{fontSize:10,fontWeight:700,color:'var(--slate)',marginBottom:4}}>SOURCE TYPE</div>
+        <select value={ks?.source_type||'unset'} onChange={e=>{onChange({...(ks||defaultKS()),source_type:e.target.value});}} style={{marginBottom:6}}>
+          {SOURCE_TYPES.map(s=><option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
+        </select>
+        <div style={{fontSize:10,fontWeight:700,color:'var(--slate)',marginBottom:2}}>CONTRIBUTED BY</div>
+        <input value={ks?.contributed_by||''} placeholder="Name..." onChange={e=>onChange({...(ks||defaultKS()),contributed_by:e.target.value})}/>
+      </div>}
+    </div>);
+}
+
+// ── Bulk Source Popover [IC2] ─────────────────────────────────
+function BulkSourcePopover({onApply,onClose}){
+  const[st,setSt]=useState('unset');
+  const[by,setBy]=useState('');
+  const ref=useRef(null);
+  useEffect(()=>{const h=(e)=>{if(ref.current&&!ref.current.contains(e.target))onClose();};document.addEventListener('mousedown',h);return()=>document.removeEventListener('mousedown',h);},[onClose]);
+  return(
+    <div className="bulk-source-popover" ref={ref} style={{position:'absolute',top:'100%',left:0,marginTop:4}}>
+      <div style={{fontSize:10,fontWeight:700,color:'var(--slate)',marginBottom:4}}>APPLY SOURCE TO ALL NODES</div>
+      <select value={st} onChange={e=>setSt(e.target.value)} style={{width:'100%',padding:'5px 7px',borderRadius:4,border:'1px solid var(--border)',fontSize:11,marginBottom:6}}>
+        {SOURCE_TYPES.map(s=><option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
+      </select>
+      <input value={by} onChange={e=>setBy(e.target.value)} placeholder="Contributed by..." style={{width:'100%',padding:'5px 7px',borderRadius:4,border:'1px solid var(--border)',fontSize:11,marginBottom:8}}/>
+      <div style={{display:'flex',gap:6}}>
+        <button className="modal-btn primary" style={{flex:1,padding:'5px 8px',fontSize:10}} onClick={()=>{onApply(st,by);onClose();}}>Apply</button>
+        <button className="modal-btn" style={{padding:'5px 8px',fontSize:10}} onClick={onClose}>Cancel</button>
+      </div>
+    </div>);
+}
+
+// ── Foundation Popover [D6] ──────────────────────────────────
+function FoundationPopover({content,onDismiss,onSuppress}){
+  return(
+    <div className="foundation-popover">
+      <div>{content}</div>
+      <div className="fp-actions">
+        <button className="fp-btn" onClick={onDismiss}>Got it</button>
+        <span className="fp-link" onClick={onSuppress}>Don't show tips</span>
+      </div>
+    </div>);
+}
+
+// ── Text Import Modal [C7] ──────────────────────────────────
+function TextImportModal({onImport,onClose}){
+  const[text,setText]=useState('');
+  const preview=useMemo(()=>text.trim()?parseTextToNodes(text):[], [text]);
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header"><h3>Import from Text</h3><button className="dp-close" onClick={onClose}>{I.x}</button></div>
+        <div className="modal-body">
+          <div style={{fontSize:11,color:'var(--text-muted)',marginBottom:8}}>Paste your results framework, logframe, or list of results. One per line. Keywords like "impact", "outcome", "output", "activity" will auto-assign levels.</div>
+          <textarea className="sb-textarea" style={{minHeight:140,width:'100%'}} value={text} onChange={e=>setText(e.target.value)} placeholder={"Impact: Reduced mortality\nOutcome: Improved service coverage\nOutput: Staff trained\nActivity: Training programme"}/>
+          {preview.length>0&&<div style={{marginTop:10}}>
+            <div style={{fontSize:10,fontWeight:700,color:'var(--slate)',marginBottom:4}}>PREVIEW ({preview.length} nodes)</div>
+            <div style={{maxHeight:160,overflow:'auto',fontSize:10,lineHeight:1.8}}>
+              {preview.map((n,i)=>{const lv=LEVELS.find(l=>l.id===n.level);return <div key={i} style={{display:'flex',gap:6,alignItems:'center'}}><span style={{width:7,height:7,borderRadius:'50%',background:lv?.color,flexShrink:0}}/><span style={{color:lv?.color,fontWeight:700,fontSize:8,textTransform:'uppercase',minWidth:60}}>{lv?.label}</span><span>{n.title}</span></div>;})}
+            </div>
+          </div>}
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn" onClick={onClose}>Cancel</button>
+          <button className="modal-btn primary" disabled={!preview.length} onClick={()=>{onImport(preview);onClose();}}>Import {preview.length} nodes</button>
+        </div>
+      </div>
+    </div>);
+}
+
+// ── Stakeholder Preview Modal [N1] ──────────────────────────
+function StakeholderPreviewModal({state,onClose,mode}){
+  const svgStr=useMemo(()=>buildSVGString(state,true),[state]);
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card" style={{maxWidth:900}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-header"><h3>Stakeholder View Preview</h3><button className="dp-close" onClick={onClose}>{I.x}</button></div>
+        <div className="modal-body" style={{background:'#F8FAFC',borderRadius:8,padding:0,overflow:'auto'}}>
+          {svgStr&&<div dangerouslySetInnerHTML={{__html:svgStr}} style={{maxHeight:500,overflow:'auto'}}/>}
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn" onClick={onClose}>Close</button>
+          <button className="modal-btn primary" onClick={()=>{if(mode==='png')doExportPNG(state,true);else doExportSVG(state,true);onClose();}}>Export {mode==='png'?'PNG':'SVG'}</button>
+        </div>
+      </div>
+    </div>);
+}
 
 // ── Connection (memo'd) ──────────────────────────────────────
 const ConnectionPath=memo(function ConnectionPath({conn,source,target,selected,showA,showE,onSelect}){
@@ -540,22 +815,20 @@ const ConnectionPath=memo(function ConnectionPath({conn,source,target,selected,s
   const mid=bezierMid(ep.sx,ep.sy,ep.tx,ep.ty);
   const aC=conn.assumptions?.length||0;
   const evType=EV_TYPES.find(t=>t.id===conn.evidence?.type);
-  const sym=conn.evidence?.strength==='strong'?'✓':conn.evidence?.strength==='moderate'?'~':conn.evidence?.strength==='weak'?'!':'?';
+  const isContested=conn.evidence?.strength==='contested';
+  const sym=isContested?'\u2260':conn.evidence?.strength==='strong'?'\u2713':conn.evidence?.strength==='moderate'?'~':conn.evidence?.strength==='weak'?'!':'?';
 
   return(
     <g className={selected?'conn-selected':''}>
       <path d={path} className="conn-hit" onClick={()=>onSelect(conn.id)}/>
       <path d={path} fill="none" stroke={st.color} strokeWidth={st.w} strokeDasharray={st.dash} strokeLinecap="round" className="conn-path" onClick={()=>onSelect(conn.id)} markerEnd={`url(#arr-${conn.evidence?.strength||'none'})`} markerStart={conn.bidirectional?`url(#arr-${conn.evidence?.strength||'none'})`:undefined}/>
       {selected&&<path d={path} fill="none" stroke={st.color} strokeWidth={st.w+2} strokeDasharray={st.dash} strokeLinecap="round" opacity=".3"/>}
-      {/* Feedback loop indicator */}
       {conn.bidirectional&&<g><circle cx={mid.x-14} cy={mid.y} r={6} fill="none" stroke={st.color} strokeWidth="1.5"/><path d={`M${mid.x-17} ${mid.y-3} l3 3-3 3`} fill="none" stroke={st.color} strokeWidth="1.5"/></g>}
-      {/* Evidence dot */}
       {showE&&<g className="evidence-dot" onClick={()=>onSelect(conn.id)}>
         <circle cx={mid.x} cy={mid.y} r={9} fill={st.color} opacity=".9"/>
-        <text x={mid.x} y={mid.y+.5} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="8" fontWeight="800" fontFamily="DM Sans">{sym}</text>
+        <text x={mid.x} y={mid.y+.5} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={isContested?"10":"8"} fontWeight="800" fontFamily="DM Sans">{sym}</text>
         {evType&&<text x={mid.x} y={mid.y+16} textAnchor="middle" fontSize="7" fontFamily="DM Sans" fontWeight="600" fill={st.color} opacity=".8">{evType.lbl}</text>}
       </g>}
-      {/* Assumption count */}
       {showA&&aC>0&&<g className="assumption-count-badge" onClick={()=>onSelect(conn.id)}>
         <rect x={mid.x+14} y={mid.y-8} width={aC>9?22:18} height={16} rx={8} fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1"/>
         <text x={mid.x+14+(aC>9?11:9)} y={mid.y+1} textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fontFamily="DM Sans" fill="#92400E">{aC}</text>
@@ -564,10 +837,12 @@ const ConnectionPath=memo(function ConnectionPath({conn,source,target,selected,s
 });
 
 // ── Node Card (memo'd, pointer events, snap) ─────────────────
-const NodeCard=memo(function NodeCard({node,selected,inSelection,isSource,isConnecting,connectMode,connectSourceId,dispatch,zoom,animating}){
+const NodeCard=memo(function NodeCard({node,selected,inSelection,isSource,isConnecting,connectMode,connectSourceId,dispatch,zoom,animating,showCodes}){
   const level=LEVELS.find(l=>l.id===node.level);
   const nodeRef=useRef(null);
   const dragRef=useRef({active:false,sx:0,sy:0,nx:0,ny:0,moved:false,raf:0});
+  const ks=node.knowledge_source||{};
+  const ksSt=getSourceType(ks.source_type);
 
   const onPointerDown=useCallback((e)=>{
     if(e.target.closest('.node-port'))return;
@@ -592,7 +867,6 @@ const NodeCard=memo(function NodeCard({node,selected,inSelection,isSource,isConn
     const r=dragRef.current;
     if(r.active&&r.moved){
       cancelAnimationFrame(r.raf);
-      // Get current node position from DOM for the final coalesced undo entry
       const dx=(e.clientX-r.sx)/zoom,dy=(e.clientY-r.sy)/zoom;
       const nx=snap(Math.max(0,r.nx+dx)),ny=snap(Math.max(0,r.ny+dy));
       dispatch({type:'MOVE_NODE_FINAL',id:node.id,x:nx,y:ny});
@@ -625,7 +899,8 @@ const NodeCard=memo(function NodeCard({node,selected,inSelection,isSource,isConn
       className={`toc-node ${selected?'selected':''} ${inSelection?'in-selection':''} ${isSource?'connect-source':''} ${isConnecting&&!isSource?'connect-target':''} ${dragRef.current.active?'dragging':''} ${animating?'animating':''}`}
       style={{left:node.x,top:node.y}}
       onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onClick={onClick}>
-      <div className="node-stripe" style={{background:level?.color}}/>
+      {showCodes&&node.traceability_code&&<div className="node-trace-code">{node.traceability_code}</div>}
+      <div className="node-stripe" style={{background:ksSt.color}} title={ksSt.id!=='unset'?ksSt.label:'No source set'}/>
       <div className="node-body">
         <div className="node-level-tag" style={{color:level?.color}}>{level?.label}</div>
         <div className="node-title">{node.title}</div>
@@ -633,7 +908,7 @@ const NodeCard=memo(function NodeCard({node,selected,inSelection,isSource,isConn
         <div className="node-meta">
           {node.timeframe&&<span className="node-time-badge">{node.timeframe}</span>}
           {aC>0&&<span className="node-assumption-count">{aC} assumption{aC>1?'s':''}</span>}
-          {(node.indicators||[]).slice(0,2).map((ind,i)=><span key={i} className="node-ind-badge">{ind.length>25?ind.slice(0,25)+'…':ind}</span>)}
+          {(node.indicators||[]).slice(0,2).map((ind,i)=><span key={i} className="node-ind-badge">{ind.length>25?ind.slice(0,25)+'...':ind}</span>)}
         </div>
       </div>
       <div className="node-port node-port-top" onClick={onPortClick}/>
@@ -646,13 +921,17 @@ const NodeCard=memo(function NodeCard({node,selected,inSelection,isSource,isConn
 // ── Node Detail Panel ────────────────────────────────────────
 function NodeDetail({node,dispatch}){
   const lv=LEVELS.find(l=>l.id===node.level);
-  const addA=()=>dispatch({type:'UPDATE_NODE',id:node.id,u:{assumptions:[...(node.assumptions||[]),{id:uid('a'),text:'',status:'untested'}]}});
+  const[ksOpen,setKsOpen]=useState(false);
+  const addA=()=>dispatch({type:'UPDATE_NODE',id:node.id,u:{assumptions:[...(node.assumptions||[]),{id:uid('a'),text:'',status:'untested',knowledge_source:defaultKS()}]}});
   const updA=(aId,u)=>dispatch({type:'UPDATE_NODE',id:node.id,u:{assumptions:node.assumptions.map(a=>a.id===aId?{...a,...u}:a)}});
   const rmA=(aId)=>dispatch({type:'UPDATE_NODE',id:node.id,u:{assumptions:node.assumptions.filter(a=>a.id!==aId)}});
+  const ks=node.knowledge_source||defaultKS();
+  const ksSt=getSourceType(ks.source_type);
   return(
     <div className="detail-panel">
-      <div className="dp-header"><div className="dp-title" style={{color:lv?.color}}>● {lv?.label} Node</div><button className="dp-close" onClick={()=>dispatch({type:'DESELECT'})}>{I.x}</button></div>
+      <div className="dp-header"><div className="dp-title" style={{color:lv?.color}}>&#9679; {lv?.label} Node</div><button className="dp-close" onClick={()=>dispatch({type:'DESELECT'})}>{I.x}</button></div>
       <div className="dp-body">
+        {node.traceability_code&&<div className="dp-muted">Traceability: {node.traceability_code}</div>}
         <div className="dp-field"><label className="dp-label">Title</label><input className="dp-input" value={node.title} onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{title:e.target.value}})}/></div>
         <div className="dp-field"><label className="dp-label">Description</label><textarea className="dp-textarea" value={node.description||''} placeholder="What does this element represent?" onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{description:e.target.value}})}/></div>
         <div style={{display:'flex',gap:8}}>
@@ -666,9 +945,24 @@ function NodeDetail({node,dispatch}){
             <div key={a.id} className="assumption-item">
               <div className="sys-assumption-status" style={{background:ASSUMPTION_COLORS[a.status]}} title={a.status} onClick={()=>updA(a.id,{status:STATUS_CYCLE[a.status]})}/>
               <input value={a.text} placeholder="Assumption..." onChange={e=>updA(a.id,{text:e.target.value})}/>
-              <button className="sys-remove" onClick={()=>rmA(a.id)}>×</button>
+              <KnowledgeSourceInline ks={a.knowledge_source} onChange={(newKs)=>updA(a.id,{knowledge_source:newKs})}/>
+              <button className="sys-remove" onClick={()=>rmA(a.id)}>x</button>
             </div>))}
           <button className="add-btn" onClick={addA}>{I.plus} Add assumption</button>
+        </div>
+        {/* Knowledge Source */}
+        <div className="dp-field">
+          <label className="dp-label">Knowledge Source</label>
+          {ks.source_type==='unset'&&!ksOpen?
+            <div className="ks-line" onClick={()=>setKsOpen(true)}>Set knowledge source...</div>
+          :<div className="ks-line ks-line-set">
+            <span style={{fontSize:14}}>{ksSt.icon||'?'}</span>
+            <select value={ks.source_type} onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{knowledge_source:{...ks,source_type:e.target.value}}})} style={{flex:1,border:'none',background:'transparent',fontSize:11,fontWeight:600}}>
+              {SOURCE_TYPES.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
+            </select>
+            <span style={{fontSize:10,color:'var(--text-muted)'}}>by</span>
+            <input value={ks.contributed_by||''} onChange={e=>dispatch({type:'UPDATE_NODE',id:node.id,u:{knowledge_source:{...ks,contributed_by:e.target.value}}})} placeholder="Name..." style={{border:'none',background:'transparent',fontSize:11,width:80}}/>
+          </div>}
         </div>
       </div>
       <div className="dp-actions"><button className="delete-btn" onClick={()=>{if(confirm('Delete this node and all its connections?'))dispatch({type:'DELETE_NODE',id:node.id})}}>Delete Node</button></div>
@@ -678,44 +972,46 @@ function NodeDetail({node,dispatch}){
 // ── Connection Detail Panel ──────────────────────────────────
 function ConnectionDetail({conn,nodes,dispatch}){
   const src=nodes.find(n=>n.id===conn.sourceId),tgt=nodes.find(n=>n.id===conn.targetId);
-  const addA=()=>{const u=[...(conn.assumptions||[]),{id:uid('a'),text:'',status:'untested'}];dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{assumptions:u}});};
+  const addA=()=>{const u=[...(conn.assumptions||[]),{id:uid('a'),text:'',status:'untested',knowledge_source:defaultKS()}];dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{assumptions:u}});};
   const updA=(aId,u)=>{dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{assumptions:conn.assumptions.map(a=>a.id===aId?{...a,...u}:a)}});};
   const rmA=(aId)=>{dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{assumptions:conn.assumptions.filter(a=>a.id!==aId)}});};
   const updE=(u)=>dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{evidence:{...conn.evidence,...u}}});
+  const isContested=conn.evidence?.strength==='contested';
 
   return(
     <div className="detail-panel">
       <div className="dp-header"><div className="dp-title">Causal Pathway</div><button className="dp-close" onClick={()=>dispatch({type:'DESELECT'})}>{I.x}</button></div>
       <div className="dp-body">
+        {conn.traceability_code&&<div className="dp-muted">Traceability: {conn.traceability_code}</div>}
         <div className="pathway-summary">
-          <strong>{src?.title||'?'}</strong> <span style={{color:'var(--text-muted)',margin:'0 4px'}}>→</span> <strong>{tgt?.title||'?'}</strong>
+          <strong>{src?.title||'?'}</strong> <span style={{color:'var(--text-muted)',margin:'0 4px'}}>&rarr;</span> <strong>{tgt?.title||'?'}</strong>
         </div>
-        {/* Direction */}
         <div className="dp-field">
           <label className="dp-label">Direction</label>
           <div className="pathway-direction">
-            <button className={`dir-btn ${!conn.bidirectional?'active':''}`} onClick={()=>dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{bidirectional:false}})}>One-way →</button>
-            <button className={`dir-btn ${conn.bidirectional?'active':''}`} onClick={()=>dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{bidirectional:true}})}>Feedback ⇄</button>
+            <button className={`dir-btn ${!conn.bidirectional?'active':''}`} onClick={()=>dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{bidirectional:false}})}>One-way &rarr;</button>
+            <button className={`dir-btn ${conn.bidirectional?'active':''}`} onClick={()=>dispatch({type:'UPDATE_CONNECTION',id:conn.id,u:{bidirectional:true}})}>Feedback &harr;</button>
           </div>
         </div>
-        {/* Evidence Strength */}
         <div className="dp-field">
           <label className="dp-label">Evidence Strength</label>
           <div className="ev-row">
-            {Object.entries(EV_STRENGTH).map(([k,s])=>(
-              <button key={k} className={`ev-btn ${conn.evidence?.strength===k?'a-'+k:''}`} onClick={()=>updE({strength:k})}>{s.lbl}</button>
+            {Object.entries(EV_STRENGTH).map(([k,sv])=>(
+              <button key={k} className={`ev-btn ${conn.evidence?.strength===k?'a-'+k:''}`} onClick={()=>updE({strength:k})}>{sv.lbl}</button>
             ))}
           </div>
         </div>
-        {/* Evidence Type */}
+        {isContested&&<div className="dp-field">
+          <label className="dp-label">Contested Reason</label>
+          <textarea className="dp-textarea" value={conn.evidence?.contested_reason||''} placeholder="Why is this evidence contested?" onChange={e=>updE({contested_reason:e.target.value})}/>
+        </div>}
         <div className="dp-field">
           <label className="dp-label">Evidence Type</label>
           <select className="dp-select" value={conn.evidence?.type||''} onChange={e=>updE({type:e.target.value})}>
-            <option value="">Select type…</option>
+            <option value="">Select type...</option>
             {EV_TYPES.map(t=><option key={t.id} value={t.id}>{t.lbl}</option>)}
           </select>
         </div>
-        {/* Transferability */}
         <div className="dp-field">
           <label className="dp-label">Context Transferability <span className="dp-label-sub">is evidence applicable here?</span></label>
           <div className="ev-row">
@@ -724,19 +1020,18 @@ function ConnectionDetail({conn,nodes,dispatch}){
             ))}
           </div>
         </div>
-        {/* Notes */}
         <div className="dp-field">
           <label className="dp-label">Evidence Notes</label>
-          <textarea className="dp-textarea" value={conn.evidence?.notes||''} placeholder="Cite studies, experience, or rationale…" onChange={e=>updE({notes:e.target.value})}/>
+          <textarea className="dp-textarea" value={conn.evidence?.notes||''} placeholder="Cite studies, experience, or rationale..." onChange={e=>updE({notes:e.target.value})}/>
         </div>
-        {/* Pathway Assumptions */}
         <div className="dp-field">
           <label className="dp-label">Pathway Assumptions <span className="dp-label-sub">click dot to cycle status</span></label>
           {(conn.assumptions||[]).map(a=>(
             <div key={a.id} className="assumption-item">
               <div className="sys-assumption-status" style={{background:ASSUMPTION_COLORS[a.status||'untested']}} title={a.status} onClick={()=>updA(a.id,{status:STATUS_CYCLE[a.status||'untested']})}/>
-              <input value={a.text} placeholder="If…then…assuming…" onChange={e=>updA(a.id,{text:e.target.value})}/>
-              <button className="sys-remove" onClick={()=>rmA(a.id)}>×</button>
+              <input value={a.text} placeholder="If...then...assuming..." onChange={e=>updA(a.id,{text:e.target.value})}/>
+              <KnowledgeSourceInline ks={a.knowledge_source} onChange={(newKs)=>updA(a.id,{knowledge_source:newKs})}/>
+              <button className="sys-remove" onClick={()=>rmA(a.id)}>x</button>
             </div>))}
           <button className="add-btn" onClick={addA}>{I.plus} Add assumption</button>
         </div>
@@ -754,16 +1049,16 @@ function WelcomeScreen({dispatch}){
   const complex=['rssh','peacebuilding'],simple=['health_simple'];
   return(
     <div className="welcome-overlay"><div className="welcome-card">
-      <div className="welcome-icon">🔗</div>
+      <div className="welcome-icon">{WelcomeIcons.hero}</div>
       <div className="welcome-title">Theory of Change Builder</div>
       <div className="welcome-sub">Build interactive, evidence-mapped causal diagrams with assumption tracking, evidence taxonomy, feedback loops, and narrative theory documentation.</div>
       <div style={{textAlign:'left',marginBottom:10}}>
         <div className="welcome-section-label">Complex Programmes</div>
         <div className="welcome-grid">
-          {complex.map(k=>{const t=TEMPLATES[k];return(
+          {complex.map(k=>{const t=TEMPLATES[k];const icon=k==='rssh'?WelcomeIcons.globe:WelcomeIcons.shield;return(
             <button key={k} className="welcome-btn welcome-btn-secondary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:k})}>
-              <div style={{fontSize:13}}>{t.icon} <strong>{t.name}</strong></div>
-              <div className="welcome-btn-info">{t.nodes.length} nodes · {t.connections.length} pathways · {t.connections.filter(c=>c.bidirectional).length} feedback loops</div>
+              <div style={{fontSize:13,display:'flex',alignItems:'center',gap:6}}><span className="tpl-icon">{icon}</span> <strong>{t.name}</strong></div>
+              <div className="welcome-btn-info">{t.nodes.length} nodes &middot; {t.connections.length} pathways &middot; {t.connections.filter(c=>c.bidirectional).length} feedback loops</div>
             </button>);})}
         </div>
       </div>
@@ -772,12 +1067,12 @@ function WelcomeScreen({dispatch}){
         <div className="welcome-grid">
           {simple.map(k=>{const t=TEMPLATES[k];return(
             <button key={k} className="welcome-btn welcome-btn-secondary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:k})}>
-              {t.icon} {t.name}
+              <span style={{display:'inline-flex',alignItems:'center',gap:6}}><span className="tpl-icon">{WelcomeIcons.heartbeat}</span> {t.name}</span>
             </button>);})}
         </div>
       </div>
       <div className="welcome-actions">
-        <button className="welcome-btn welcome-btn-primary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:'blank'})}>Start Blank</button>
+        <button className="welcome-btn welcome-btn-primary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:'blank'})}><span style={{display:'inline-flex',alignItems:'center',gap:4}}>{WelcomeIcons.file} Start Blank</span></button>
         <button className="welcome-btn welcome-btn-secondary" style={{flex:'0'}} onClick={()=>fr.current?.click()}>Import JSON</button>
         <input ref={fr} type="file" accept=".json" style={{display:'none'}} onChange={onImport}/>
       </div>
@@ -785,13 +1080,45 @@ function WelcomeScreen({dispatch}){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// APP
+// TOC BUILDER COMPONENT [E3]
 // ═══════════════════════════════════════════════════════════════
-function App(){
+function ToCBuilder({sensitivity,experienceTier,initialData,onDataChange,fromStation0,embedded}){
   const[s,dispatch,undo,redo,canUndo,canRedo]=useUndoReducer();
   const vpRef=useRef(null);const canRef=useRef(null);const fileRef=useRef();
   const[ghost,setGhost]=useState(null);
   const panRef=useRef({active:false,sx:0,sy:0,px:0,py:0,pid:null});
+  const[exportOpen,setExportOpen]=useState(false);
+  const[stakeholderModal,setStakeholderModal]=useState(null);
+  const[textImportOpen,setTextImportOpen]=useState(false);
+  const[bulkSourceOpen,setBulkSourceOpen]=useState(false);
+  const[dragOver,setDragOver]=useState(false);
+  const[foundationTips,setFoundationTips]=useState({suppressed:false,shown:{}});
+  const dataChangeRef=useRef(null);
+  const initialLoadedRef=useRef(false);
+
+  // Load initial data
+  useEffect(()=>{
+    if(initialData&&!initialLoadedRef.current){
+      initialLoadedRef.current=true;
+      dispatch({type:'IMPORT',json:initialData});
+    }
+  },[initialData,dispatch]);
+
+  // Debounced onDataChange callback
+  useEffect(()=>{
+    if(!onDataChange)return;
+    if(dataChangeRef.current)clearTimeout(dataChangeRef.current);
+    dataChangeRef.current=setTimeout(()=>{
+      onDataChange({title:s.title,narrative:s.narrative,nodes:s.nodes,connections:s.connections});
+    },500);
+    return()=>{if(dataChangeRef.current)clearTimeout(dataChangeRef.current);};
+  },[s.title,s.narrative,s.nodes,s.connections,onDataChange]);
+
+  // Foundation tier tips
+  const showFoundationTip=useCallback((key,content)=>{
+    if(experienceTier!=='foundation'||foundationTips.suppressed||foundationTips.shown[key])return null;
+    return <FoundationPopover content={content} onDismiss={()=>setFoundationTips(prev=>({...prev,shown:{...prev.shown,[key]:true}}))} onSuppress={()=>setFoundationTips(prev=>({...prev,suppressed:true}))}/>;
+  },[experienceTier,foundationTips]);
 
   // ── Pointer-tracking zoom ────────────────────────────────
   const onWheel=useCallback((e)=>{
@@ -799,11 +1126,9 @@ function App(){
     const vp=vpRef.current;if(!vp)return;
     const rect=vp.getBoundingClientRect();
     const mx=e.clientX-rect.left,my=e.clientY-rect.top;
-    // World point under cursor before zoom
     const wx=(mx-s.panX)/s.zoom,wy=(my-s.panY)/s.zoom;
     const delta=e.deltaY>0?-0.08:0.08;
     const newZoom=Math.max(.15,Math.min(2.5,s.zoom+delta));
-    // Adjust pan so world point stays under cursor
     const newPanX=mx-wx*newZoom,newPanY=my-wy*newZoom;
     dispatch({type:'SET_ZOOM',zoom:newZoom});
     dispatch({type:'SET_PAN',x:newPanX,y:newPanY});
@@ -888,35 +1213,97 @@ function App(){
         else if(s.selectedType==='node'&&s.selectedIds[0])dispatch({type:'DELETE_NODE',id:s.selectedIds[0]});
         else if(s.selectedType==='connection'&&s.selectedIds[0])dispatch({type:'DELETE_CONNECTION',id:s.selectedIds[0]});
       }
-      if(e.key==='Escape'){dispatch({type:'DESELECT'});dispatch({type:'SET_MODE',mode:'select'});}
+      if(e.key==='Escape'){dispatch({type:'DESELECT'});dispatch({type:'SET_MODE',mode:'select'});setExportOpen(false);}
       if(e.key==='c'&&!e.metaKey&&!e.ctrlKey)dispatch({type:'SET_MODE',mode:s.mode==='connect'?'select':'connect'});
       if(e.key==='f'&&!e.metaKey&&!e.ctrlKey)fitView();
     };
     window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);
   },[s.selectedIds,s.selectedType,s.mode,undo,redo,fitView,dispatch]);
 
-  // ── Import handler ───────────────────────────────────────
-  const onImport=(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(ev)=>dispatch({type:'IMPORT',json:ev.target.result});r.readAsText(f);e.target.value='';};
+  // ── File import handler ───────────────────────────────────
+  const onImport=(e)=>{
+    const f=e.target.files[0];if(!f)return;
+    const ext=f.name.split('.').pop().toLowerCase();
+    if(ext==='json'){
+      const r=new FileReader();r.onload=(ev)=>{if(s.nodes.length&&!confirm('Replace current canvas with imported data?'))return;dispatch({type:'IMPORT',json:ev.target.result});};r.readAsText(f);
+    }else if(ext==='csv'){
+      const r=new FileReader();r.onload=(ev)=>{
+        const parsed=parseCSV(ev.target.result);
+        if(!parsed.length){dispatch({type:'SET_TOAST',msg:'Could not parse CSV'});return;}
+        const nodes=parsed.map((p,i)=>{const lv=LEVELS.find(l=>l.id===p.level)||LEVELS[3];const sameLevel=parsed.slice(0,i).filter(pp=>pp.level===p.level);return{id:uid('n'),title:p.title||'',description:'',level:p.level||'output',x:snap(300+sameLevel.length*240),y:snap((lv?.y||1340)+40),indicators:[],assumptions:[],timeframe:'',knowledge_source:defaultKS(),traceability_code:'n'+(i+1)};});
+        if(s.nodes.length&&!confirm('Replace current canvas with imported data?'))return;
+        dispatch({type:'IMPORT',json:JSON.stringify({nodes,connections:[]})});
+      };r.readAsText(f);
+    }else if(ext==='xlsx'||ext==='xls'){
+      dispatch({type:'SET_TOAST',msg:'Loading XLSX support...'});
+      const script=document.createElement('script');
+      script.src='https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
+      script.onload=()=>{
+        const r=new FileReader();r.onload=(ev)=>{
+          try{
+            const wb=window.XLSX.read(ev.target.result,{type:'array'});
+            const ws=wb.Sheets[wb.SheetNames[0]];
+            const csv=window.XLSX.utils.sheet_to_csv(ws);
+            const parsed=parseCSV(csv);
+            if(!parsed.length){dispatch({type:'SET_TOAST',msg:'Could not parse XLSX'});return;}
+            const nodes=parsed.map((p,i)=>{const lv=LEVELS.find(l=>l.id===p.level)||LEVELS[3];const sameLevel=parsed.slice(0,i).filter(pp=>pp.level===p.level);return{id:uid('n'),title:p.title||'',description:'',level:p.level||'output',x:snap(300+sameLevel.length*240),y:snap((lv?.y||1340)+40),indicators:[],assumptions:[],timeframe:'',knowledge_source:defaultKS(),traceability_code:'n'+(i+1)};});
+            if(s.nodes.length&&!confirm('Replace current canvas with imported data?'))return;
+            dispatch({type:'IMPORT',json:JSON.stringify({nodes,connections:[]})});
+          }catch(err){dispatch({type:'SET_TOAST',msg:'Error reading XLSX file'});}
+        };r.readAsArrayBuffer(f);
+      };
+      script.onerror=()=>dispatch({type:'SET_TOAST',msg:'Could not load XLSX library'});
+      document.head.appendChild(script);
+    }else if(f.type&&f.type.startsWith('image/')){
+      dispatch({type:'SET_TOAST',msg:'Image files are supported via the AI Skill, not direct import.'});
+    }else{
+      dispatch({type:'SET_TOAST',msg:'Unsupported file type. Use .json, .csv, or .xlsx'});
+    }
+    e.target.value='';
+  };
+
+  // ── Drop zone handler ─────────────────────────────────────
+  const onDrop=useCallback((e)=>{
+    e.preventDefault();setDragOver(false);
+    const files=e.dataTransfer?.files;if(!files||!files.length)return;
+    const fakeEvt={target:{files,value:''}};
+    onImport(fakeEvt);
+  },[s.nodes,dispatch]);
 
   // ── Toast auto-dismiss ───────────────────────────────────
   useEffect(()=>{if(s.toast){const t=setTimeout(()=>dispatch({type:'SET_TOAST',msg:null}),2500);return()=>clearTimeout(t);}},[s.toast]);
+
+  // ── Close export dropdown on outside click ────────────────
+  useEffect(()=>{if(!exportOpen)return;const h=()=>setExportOpen(false);setTimeout(()=>document.addEventListener('click',h),0);return()=>document.removeEventListener('click',h);},[exportOpen]);
 
   // ── Derived ──────────────────────────────────────────────
   const selNode=s.selectedType==='node'&&s.selectedIds.length===1?s.nodes.find(n=>n.id===s.selectedIds[0]):null;
   const selConn=s.selectedType==='connection'&&s.selectedIds.length===1?s.connections.find(c=>c.id===s.selectedIds[0]):null;
   const multiSel=s.selectedIds.length>1;
   const totalAssumptions=s.connections.reduce((t,c)=>t+(c.assumptions?.length||0),0)+s.nodes.reduce((t,n)=>t+(n.assumptions?.length||0),0)+(s.narrative.systemAssumptions?.length||0);
+  const isSensitive=sensitivity==='sensitive';
+  const isHighlySensitive=sensitivity==='highly_sensitive';
 
   // ── Narrative panel (Theory tab) ─────────────────────────
-  const addSysA=()=>dispatch({type:'UPDATE_NARRATIVE',u:{systemAssumptions:[...s.narrative.systemAssumptions,{id:uid('sa'),text:'',status:'untested'}]}});
+  const addSysA=()=>dispatch({type:'UPDATE_NARRATIVE',u:{systemAssumptions:[...s.narrative.systemAssumptions,{id:uid('sa'),text:'',status:'untested',knowledge_source:defaultKS()}]}});
   const updSysA=(aId,u)=>dispatch({type:'UPDATE_NARRATIVE',u:{systemAssumptions:s.narrative.systemAssumptions.map(a=>a.id===aId?{...a,...u}:a)}});
   const rmSysA=(aId)=>dispatch({type:'UPDATE_NARRATIVE',u:{systemAssumptions:s.narrative.systemAssumptions.filter(a=>a.id!==aId)}});
 
+  // Text import handler
+  const handleTextImport=(nodes)=>{
+    if(s.nodes.length&&!confirm('Replace current canvas with imported data?'))return;
+    dispatch({type:'IMPORT',json:JSON.stringify({nodes,connections:[]})});
+  };
+
   return(
     <div className="app">
+      {/* ── Sensitivity Banners [6.4] ──────────── */}
+      {isSensitive&&<div className="sens-banner sensitive">&#9888; Sensitive programme data -- avoid including personally identifiable information in node descriptions.</div>}
+      {isHighlySensitive&&<div className="sens-banner highly-sensitive">&#9888; Highly sensitive data -- AI features disabled. Do not include identifying details of beneficiaries or locations.</div>}
+
       {/* ── Toolbar ────────────────────────────── */}
-      <div className="top-bar">
-        <div className="brand"><a href="../../" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:8}}><span className="brand-badge">PRAXIS</span></a><span className="brand-sep">|</span><span className="brand-page">Theory of Change</span></div>
+      {!embedded&&<div className="top-bar">
+        <div className="brand"><a href="../../" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:8}}><span className="brand-badge">PRAXIS</span><span className="brand-360">360&deg;</span></a><span className="brand-sep">|</span><span className="brand-page">Theory of Change</span></div>
         <div className="tb-div"/>
         <div className="tb-group">
           <button className={`tb undo-btn ${canUndo?'can':''}`} onClick={undo} title="Undo (Ctrl+Z)">{I.undo}</button>
@@ -931,6 +1318,7 @@ function App(){
         <div className="tb-group">
           <button className={`tb ${s.showAssumptions?'active':''}`} onClick={()=>dispatch({type:'TOGGLE_ASSUMPTIONS'})}>{s.showAssumptions?I.eye:I.eyeOff} <span>Assumptions</span></button>
           <button className={`tb ${s.showEvidence?'active':''}`} onClick={()=>dispatch({type:'TOGGLE_EVIDENCE'})}>{s.showEvidence?I.eye:I.eyeOff} <span>Evidence</span></button>
+          <button className={`tb ${s.showCodes?'active':''}`} onClick={()=>dispatch({type:'TOGGLE_CODES'})} title="Show traceability codes">{I.code} <span>Codes</span></button>
         </div>
         <div className="tb-div"/>
         <div className="tb-group">
@@ -949,13 +1337,21 @@ function App(){
         </div>}
         <div className="tb-group">
           <button className="tb" onClick={()=>{if(!s.nodes.length||confirm('New ToC? Unsaved work will be lost.'))dispatch({type:'NEW'})}} title="New">{I.plus} <span>New</span></button>
-          <button className="tb" onClick={()=>exportJSON(s)} title="Export JSON">{I.dl} <span>JSON</span></button>
-          <button className="tb" onClick={()=>exportSVG(s)} title="Export SVG">{I.svg} <span>SVG</span></button>
-          <button className="tb" onClick={()=>exportPNG(s)} title="Export PNG">{I.png} <span>PNG</span></button>
+          <div style={{position:'relative'}}>
+            <button className="tb" onClick={(e)=>{e.stopPropagation();setExportOpen(!exportOpen);}} title="Export">{I.dl} <span>Export</span></button>
+            {exportOpen&&<div className="export-dropdown" onClick={e=>e.stopPropagation()}>
+              <button className="export-dropdown-item" onClick={()=>{doExportSVG(s,false);setExportOpen(false);}}>SVG (full)</button>
+              <button className="export-dropdown-item" onClick={()=>{doExportPNG(s,false);setExportOpen(false);}}>PNG (full)</button>
+              <button className="export-dropdown-item" onClick={()=>{exportJSON(s);setExportOpen(false);}}>JSON</button>
+              <div className="export-dropdown-sep"/>
+              <button className="export-dropdown-item" onClick={()=>{setStakeholderModal('svg');setExportOpen(false);}}>SVG for stakeholders</button>
+              <button className="export-dropdown-item" onClick={()=>{setStakeholderModal('png');setExportOpen(false);}}>PNG for stakeholders</button>
+            </div>}
+          </div>
           <button className="tb" onClick={()=>fileRef.current?.click()} title="Import">{I.ul}</button>
-          <input ref={fileRef} type="file" accept=".json" style={{display:'none'}} onChange={onImport}/>
+          <input ref={fileRef} type="file" accept=".json,.csv,.xlsx,.xls" style={{display:'none'}} onChange={onImport}/>
         </div>
-      </div>
+      </div>}
 
       <div className="main">
         {/* ── Sidebar ──────────────────────────── */}
@@ -968,7 +1364,7 @@ function App(){
             {s.sidebarTab==='build'&&<>
               <div className="sb-section">
                 <div className="sb-title">ToC Title</div>
-                <input className="sb-input" placeholder="Name your Theory of Change…" value={s.title} onChange={e=>dispatch({type:'SET_TITLE',title:e.target.value})}/>
+                <input className="sb-input" placeholder="Name your Theory of Change..." value={s.title} onChange={e=>dispatch({type:'SET_TITLE',title:e.target.value})}/>
               </div>
               <div className="sb-section">
                 <div className="sb-title">Add Elements</div>
@@ -977,6 +1373,24 @@ function App(){
                     <div className="palette-dot" style={{background:lv.color}}/>
                     <div><div className="palette-node-name">{lv.label}</div><div className="palette-node-hint">{lv.hint}</div></div>
                   </div>))}
+              </div>
+              {/* Import zone [C7] */}
+              <div className="sb-section">
+                <div className="sb-title">Import</div>
+                <div className={`import-zone ${dragOver?'drag-over':''}`}
+                  onDragOver={e=>{e.preventDefault();setDragOver(true);}}
+                  onDragLeave={()=>setDragOver(false)}
+                  onDrop={onDrop}
+                  onClick={()=>fileRef.current?.click()}>
+                  Drop .json / .csv / .xlsx here<br/>or click to browse
+                </div>
+                <button className="add-btn" onClick={()=>setTextImportOpen(true)} style={{justifyContent:'center'}}>Paste text</button>
+              </div>
+              {/* Bulk source attribution [IC2] */}
+              <div className="sb-section" style={{position:'relative'}}>
+                <div className="sb-title">Knowledge Source</div>
+                <button className="add-btn" onClick={()=>setBulkSourceOpen(!bulkSourceOpen)}>Apply Source to All Nodes</button>
+                {bulkSourceOpen&&<BulkSourcePopover onApply={(st,by)=>dispatch({type:'APPLY_BULK_SOURCE',source_type:st,contributed_by:by})} onClose={()=>setBulkSourceOpen(false)}/>}
               </div>
               <div className="sb-section">
                 <div className="sb-title">Evidence Legend</div>
@@ -992,25 +1406,31 @@ function App(){
                   <div key={k} className="legend-row"><div className="legend-dot" style={{background:c}}/><span style={{textTransform:'capitalize'}}>{k}</span></div>))}
               </div>
               <div className="sb-section">
+                <div className="sb-title">Source Types</div>
+                {SOURCE_TYPES.filter(st=>st.id!=='unset').map(st=>(
+                  <div key={st.id} className="legend-row"><div className="legend-dot" style={{background:st.color}}/><span>{st.icon} {st.label}</span></div>))}
+              </div>
+              <div className="sb-section">
                 <div className="shortcut-box">
                   <strong>Shortcuts</strong><br/>
-                  <kbd>Ctrl+Z</kbd> Undo · <kbd>Ctrl+Y</kbd> Redo<br/>
-                  <kbd>C</kbd> Connect · <kbd>F</kbd> Fit view<br/>
+                  <kbd>Ctrl+Z</kbd> Undo &middot; <kbd>Ctrl+Y</kbd> Redo<br/>
+                  <kbd>C</kbd> Connect &middot; <kbd>F</kbd> Fit view<br/>
                   <kbd>Shift</kbd>+click Multi-select<br/>
-                  <kbd>Del</kbd> Delete · <kbd>Esc</kbd> Deselect<br/>
+                  <kbd>Del</kbd> Delete &middot; <kbd>Esc</kbd> Deselect<br/>
                   Scroll to zoom (tracks cursor)<br/>
                   Drag canvas to pan
                 </div>
               </div>
             </>}
             {s.sidebarTab==='theory'&&<>
+              {(isSensitive||isHighlySensitive)&&<div style={{padding:'8px 10px',borderRadius:6,background:'var(--amber-light)',fontSize:10,color:'#92400E',fontWeight:600,marginBottom:10}}>Remember: avoid including identifying details of individuals or specific locations in narrative descriptions.</div>}
               <div className="sb-section">
                 <div className="sb-title">Programme Description</div>
                 <textarea className="sb-textarea" value={s.narrative.description||''} placeholder="What is this programme? Who does it serve? What problem does it address?" style={{minHeight:80}} onChange={e=>dispatch({type:'UPDATE_NARRATIVE',u:{description:e.target.value}})}/>
               </div>
               <div className="sb-section">
                 <div className="sb-title">Context & Setting</div>
-                <textarea className="sb-textarea" value={s.narrative.context||''} placeholder="Describe the implementation context: political, economic, social, institutional factors…" style={{minHeight:80}} onChange={e=>dispatch({type:'UPDATE_NARRATIVE',u:{context:e.target.value}})}/>
+                <textarea className="sb-textarea" value={s.narrative.context||''} placeholder="Describe the implementation context: political, economic, social, institutional factors..." style={{minHeight:80}} onChange={e=>dispatch({type:'UPDATE_NARRATIVE',u:{context:e.target.value}})}/>
               </div>
               <div className="sb-section">
                 <div className="sb-title">Theory Narrative</div>
@@ -1018,18 +1438,19 @@ function App(){
               </div>
               <div className="sb-section">
                 <div className="sb-title">System-Level Assumptions</div>
-                <div style={{fontSize:9,color:'var(--text-muted)',marginBottom:6}}>External conditions that must hold for the entire ToC — political stability, funding continuity, etc.</div>
+                <div style={{fontSize:9,color:'var(--text-muted)',marginBottom:6}}>External conditions that must hold for the entire ToC -- political stability, funding continuity, etc.</div>
                 {(s.narrative.systemAssumptions||[]).map(a=>(
                   <div key={a.id} className="sys-assumption">
                     <div className="sys-assumption-status" style={{background:ASSUMPTION_COLORS[a.status]}} title={a.status} onClick={()=>updSysA(a.id,{status:STATUS_CYCLE[a.status]})}/>
-                    <input value={a.text} placeholder="System assumption…" onChange={e=>updSysA(a.id,{text:e.target.value})}/>
-                    <button className="sys-remove" onClick={()=>rmSysA(a.id)}>×</button>
+                    <input value={a.text} placeholder="System assumption..." onChange={e=>updSysA(a.id,{text:e.target.value})}/>
+                    <KnowledgeSourceInline ks={a.knowledge_source} onChange={(newKs)=>updSysA(a.id,{knowledge_source:newKs})}/>
+                    <button className="sys-remove" onClick={()=>rmSysA(a.id)}>x</button>
                   </div>))}
                 <button className="add-btn" onClick={addSysA}>{I.plus} Add system assumption</button>
               </div>
             </>}
           </div>
-          <a href="../" className="back-link">← Back to PRAXIS Tools</a>
+          {!embedded&&<a href="../" className="back-link">&larr; Back to PRAXIS Tools</a>}
         </div>
 
         {/* ── Canvas ───────────────────────────── */}
@@ -1061,13 +1482,13 @@ function App(){
                 isConnecting={!!s.connectSourceId&&s.connectSourceId!==n.id}
                 connectMode={s.mode==='connect'&&!s.connectSourceId}
                 connectSourceId={s.connectSourceId}
-                dispatch={dispatch} zoom={s.zoom} animating={s.animating}/>
+                dispatch={dispatch} zoom={s.zoom} animating={s.animating} showCodes={s.showCodes}/>
             ))}
           </div>
 
           {/* Mode indicators */}
           {s.mode==='connect'&&!s.connectSourceId&&<div className="mode-indicator connect-mode">Click a node to start a connection</div>}
-          {s.connectSourceId&&<div className="mode-indicator connect-active">Click another node to connect — <span className="mode-cancel" onClick={()=>dispatch({type:'SET_MODE',mode:'select'})}>Cancel</span></div>}
+          {s.connectSourceId&&<div className="mode-indicator connect-active">Click another node to connect -- <span className="mode-cancel" onClick={()=>dispatch({type:'SET_MODE',mode:'select'})}>Cancel</span></div>}
 
           {/* Multi-select batch bar */}
           {multiSel&&<div className="batch-bar">
@@ -1084,10 +1505,20 @@ function App(){
 
       {s.showWelcome&&<WelcomeScreen dispatch={dispatch}/>}
       {s.toast&&<div className="toast">{s.toast}</div>}
+      {textImportOpen&&<TextImportModal onImport={handleTextImport} onClose={()=>setTextImportOpen(false)}/>}
+      {stakeholderModal&&<StakeholderPreviewModal state={s} onClose={()=>setStakeholderModal(null)} mode={stakeholderModal}/>}
     </div>);
 }
 
-ReactDOM.render(<App/>,document.getElementById('root'));
+// ═══════════════════════════════════════════════════════════════
+// STANDALONE WRAPPER [E3]
+// ═══════════════════════════════════════════════════════════════
+function StandaloneToCBuilder(){
+  return <ToCBuilder/>;
+}
+
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<StandaloneToCBuilder/>);
 </script>
 </body>
 </html>
