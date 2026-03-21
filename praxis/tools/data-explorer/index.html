@@ -11,7 +11,7 @@
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFiUlEQVR4nMVXS49cVxH+vjrn9u3HeOwMdhJ7PETGEB5KFgSJKBLhtWWRTXZk5U2ywYpYRAkSEgskHmKBxF/wMhISQkgsAAUUgZEdR0mMsZPxEBjb43Hw+DF9+3HPqY9Ftz0eprv9UBAl9aZLt+o79fiqigAMgOPgwdb8nvAyhRcgHQZQAqgwkjYmy/3oByCXRRy7cS3/HKurPQBGAFh4cvFg9vA6zZ6WC5AexMHd9SRohNyPB8vPX333wir3f2l/u9uLf7IYnlLtNYgIgP8TAIAgJBZWeMpvdVrp2djtxaMWbjsvphj6uIQgCtVeWwxPdXs4Ggk">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230B1A2E'/%3E%3Cline x1='7' y1='24' x2='7' y2='14' stroke='%232EC4B6' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='13' y1='24' x2='13' y2='8' stroke='%232EC4B6' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='19' y1='24' x2='19' y2='16' stroke='%232EC4B6' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='25' y1='24' x2='25' y2='11' stroke='%232EC4B6' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0B1A2E">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -48,7 +48,7 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:#0B1A2E;color:#E8
 </head>
 <body>
 <nav class="topbar">
-  <a href="../"><span style="font-size:16px">&#8592;</span> All Tools</a>
+  <a href="../"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> All Tools</a>
   <div class="nr">
     <span class="brand">PRAXIS</span>
     <a href="../../">Home</a>
@@ -572,7 +572,7 @@ function App(){
           </div>}
           {err&&<div className="fu" style={{marginTop:14,padding:"10px 14px",background:"rgba(232,93,93,.1)",borderRadius:8,color:C.coral,fontSize:13,border:"1px solid rgba(232,93,93,.2)"}}>{err}</div>}
           <div className="fu fu3" style={{marginTop:24,display:"flex",gap:20,justifyContent:"center",flexWrap:"wrap"}}>
-            {["Frequencies & charts","Likert scale analysis","Time series & trends","OLS regression","Cross-tabulations","Grouped aggregation"].map(t=><span key={t} style={{fontSize:11,color:C.text2,display:"flex",alignItems:"center",gap:4}}><span style={{color:C.teal}}>&#10003;</span> {t}</span>)}
+            {["Frequencies & charts","Likert scale analysis","Time series & trends","OLS regression","Cross-tabulations","Grouped aggregation"].map(t=><span key={t} style={{fontSize:11,color:C.text2,display:"flex",alignItems:"center",gap:4}}><svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{verticalAlign:"middle"}}><path d="M3 8.5l3.5 3.5L13 4" stroke={C.teal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> {t}</span>)}
           </div>
           <div className="fu fu4" style={{marginTop:28,fontSize:12,color:C.slate,background:"rgba(255,255,255,.03)",border:`1px solid ${C.off}`,borderRadius:10,padding:"12px 18px",display:"inline-block"}}><strong style={{color:C.slateL}}>Privacy first:</strong> All processing happens locally in your browser. Zero data transmission.</div>
         </div>
