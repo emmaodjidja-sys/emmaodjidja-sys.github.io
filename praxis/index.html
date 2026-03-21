@@ -64,6 +64,19 @@
       to { opacity: 1; transform: translateX(0); }
     }
     .anim { opacity: 0; animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+    /* Stat reveal — staggered slide-up */
+    .stat-reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.6s cubic-bezier(0.22,1,0.36,1);
+      transition-delay: calc(0.7s + var(--reveal-order) * 0.15s);
+    }
+    .stat-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
     .anim-d1 { animation-delay: 0.1s; }
     .anim-d2 { animation-delay: 0.2s; }
     .anim-d3 { animation-delay: 0.3s; }
@@ -589,7 +602,6 @@
     <div class="nav-links" id="navLinks">
       <a href="#ecosystem">Ecosystem</a>
       <a href="#tools">Tools</a>
-      <a href="#health">Health Module</a>
       <a href="#roadmap">Roadmap</a>
       <a href="https://www.emmanuelneneodjidja.org/" target="_blank">Author</a>
       <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" class="nav-cta">GitHub &rarr;</a>
@@ -618,21 +630,21 @@
       <a class="btn btn-primary" href="./tools/">Explore Tools &rarr;</a>
       <a class="btn btn-ghost" href="https://github.com/emmaodjidja-sys/praxis" target="_blank">View on GitHub</a>
     </div>
-    <div class="hero-stats anim anim-d5">
-      <div class="hero-stat">
-        <div class="hero-stat-num">6</div>
+    <div class="hero-stats">
+      <div class="hero-stat stat-reveal" style="--reveal-order:0">
+        <div class="hero-stat-num" data-target="6">0</div>
         <div class="hero-stat-label">Live Tools</div>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">161</div>
+      <div class="hero-stat stat-reveal" style="--reveal-order:1">
+        <div class="hero-stat-num" data-target="161">0</div>
         <div class="hero-stat-label">Indicators</div>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">20+</div>
+      <div class="hero-stat stat-reveal" style="--reveal-order:2">
+        <div class="hero-stat-num" data-target="20" data-suffix="+">0</div>
         <div class="hero-stat-label">Eval Approaches</div>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">7</div>
+      <div class="hero-stat stat-reveal" style="--reveal-order:3">
+        <div class="hero-stat-num" data-target="7">0</div>
         <div class="hero-stat-label">Health Sub-Skills</div>
       </div>
     </div>
@@ -822,7 +834,7 @@
         <span class="tool-card-cta">Open &rarr;</span>
       </a>
 
-      <a href="./indicator-bank/" class="tool-card">
+      <a href="./tools/indicator-bank/" class="tool-card">
         <div class="tool-card-head">
           <div class="tool-card-icon indicator">&#9776;</div>
           <span class="tool-status live">Live</span>
@@ -931,7 +943,7 @@
         <div>
           <div class="rm-status live">Live</div>
           <h4>Browser-Based Toolkit</h4>
-          <p>6 practitioner tools including Indicator Bank (161 indicators, 10 sectors) and DQI Planner.</p>
+          <p>6 practitioner tools including Indicator Bank (161 indicators, 10 sectors) and Evaluation Matrix Builder.</p>
         </div>
       </div>
       <div class="roadmap-item">
@@ -1032,6 +1044,40 @@ document.querySelectorAll('.eco-card, .tool-card, .health-card, .hw-card, .roadm
   el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
   observer.observe(el);
 });
+
+// ── Stat counter reveal + count-up ──
+(function() {
+  var counted = false;
+  var stats = document.querySelectorAll('.stat-reveal');
+  var statObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting && !counted) {
+        counted = true;
+        stats.forEach(function(stat) { stat.classList.add('visible'); });
+        // Start counting after the first card lands (~0.7s)
+        setTimeout(function() {
+          document.querySelectorAll('.hero-stat-num[data-target]').forEach(function(el) {
+            var target = parseInt(el.getAttribute('data-target'));
+            var suffix = el.getAttribute('data-suffix') || '';
+            var duration = 1200;
+            var start = performance.now();
+            function tick(now) {
+              var t = Math.min((now - start) / duration, 1);
+              // ease-out cubic
+              var ease = 1 - Math.pow(1 - t, 3);
+              var val = Math.round(ease * target);
+              el.textContent = val + suffix;
+              if (t < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+          });
+        }, 700);
+        statObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  stats.forEach(function(s) { statObserver.observe(s); });
+})();
 </script>
 </body>
 </html>
