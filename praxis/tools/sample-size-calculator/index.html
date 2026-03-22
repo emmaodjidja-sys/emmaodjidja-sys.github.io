@@ -1,343 +1,1216 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sample Size Calculator — PRAXIS Evaluation Toolkit</title>
-<meta name="description" content="Free sample size calculator for 8 evaluation designs. Coverage surveys, cluster RCTs, stepped-wedge, LQAS, DiD and more. Built on PRAXIS methodology.">
+<meta name="description" content="Free sample size calculator for 9 evaluation designs with qualitative sample planning. Coverage surveys, cluster RCTs, stepped-wedge, ITS power assessment, LQAS, DiD and more.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFiUlEQVR4nMVXS49cVxH+vjrn9u3HeOwMdhJ7PETGEB5KFgSJKBLhtWWRTXZk5U2ywYpYRAkSEgskHmKBxF/wMhISQkgsAAUUgZEdR0mMsZPxEBjb43Hw+DF9+3HPqY9Ftz0eprv9UBAl9aZLt+o79fiqigAMgOPgwdb8nvAyhRcgHQZQAqgwkjYmy/3oByCXRRy7cS3/HKurPQBGAFh4cvFg9vA6zZ6WC5AexMHd9SRohNyPB8vPX333wir3f2l/u9uLf7IYnlLtNYgIgP8TAIAgJBZWeMpvdVrp2djtxaMWbjsvphj6uIQgCtVeWwxPdXs4GgkekctBhLt8rBn/TdLNghHkcoJHIoRDgGyWY5IgyZ0alSODE3QA3F3YSuedYpAA4VAc53yabwNpOeXMfbuOWRF7AYwwU/YsA/y2wS1QxlhU/bWrXwnuX6RZb6p5IkZsFcpOvVlvOBziwMHFxovfP7rHQti12d3sDQZ1Wnhoz3xd1zIjQN5OQU7Zdi/s7vzlt38sfnXslzcBDKY/EDNeT0LJWX5ifvObLz2/8eUnn/hafzgEQHcJjUZhZrYj95KjrpN9+si304k3/tr7x/JKKJsl5JPLJGJKCxGAu8dQFEIZvT8cVnWdBCNJ4sLqBat6A5ptpVgulM2G9j28N7srgJgb+2jefwRGKFyQM0NGMxEKZqjrxJ/9+Bd7L6+tx6KIkASSyDljfn7Of/jTH6x35tqEy7FVJxNlVvVvD8cdouyoh8OJlV/XiSk7yHszPTsCMyTEADPCjJBGnSgRIQRMbsqPE4CAfq/Pfn+InH1bCsyM0r3z0mwAgkF3pImEJMQy6jOPHx7uWrsSGkUxBoBRDeye91azlHumRgQ3MxezeYDok7hNJAQAiUbi5Ve+c3XSS29FgoBiUVS6Ne5nAJgh3OZBo2GSBEF1apDbZwBJCYAFs+6NTau6XRkNszIylQcAQFIcf1wDEAGDMFzrXj9OWrw1g1zOsmjUJ/9+5rOr/7qYForWG6d+/+evrl+8/HTRKCpIU33clQfAHeFjlequywcQDRCywEc7rc21jatL719crQaXby5/9MHKsyEEB5RnuXigLtjVauVqMIgkWRaNNEi1nf7g/FJ30J9vZDX/+ebb34XweM65ZwhhyrC8PwASaGZeDQbFib+dfuxTS0urwSLOnF8+uHLxwuK169cfasy16+7ljf2Btu+F1146d/70++EPr/9mMY475cEBaCsL7tlOLy9/7tyHHy4ymDarapeRbiGkYMFzSv7I0oEbz3zrG//ee2Bf481f/+5AqhM4mpg7QnFXHiBo1ti+qRUxDnvDQYs0NGIcCoBnN8+ZZbPUuffemv/Ji997YuPSR7lf9UKjLCFpYh6m8oAEhCL2uusb6cq7K2V85uueeokAkLObAU4I7qIESoJcdCg3mmV19sR7DYvWbTTLG+5qT6uCiFEvTdALNFN9sx/Xz6x0aLyeczZBarSbCSmINv5OlNxZtJsei5jdpbLdSpBnSbNGgyKAzlStYDRSUCyL4oZ32hhcG9raqbMLg2GNECwBgFxREkIR/ebF9Y4ZO8oZOeWCgU7a1H2Auz//yXraXkiym1Jtjyw+iqVDj/VzztarKp5752xzxIusAAHaIjMGk8Xockd7rt3tb/ZaKaXOxCIUUgSxAvLwmC+3DQ5JJEkWsXr71Dtp0B+EGIKauzuDEcDRnJBQb9kUKCC7Y8/DC5tXhpdbdV3/91bto5mtFc5/YelVC+FHShMPkwoAcs7tGAJAAsJ40QEAjRdOljuiByDnNLAQM8ntVCzUjFZ4zq/d02lGsjWFSGaeZiSrcftNPc3s0slLVQz+nLIfZ7Ri0pExNnLfvx29T5LRCmU/HoM/d+nkpYr4P5/n/wEVxQxKohMgkgAAAABJRU5ErkJggg==">
-<meta name="theme-color" content="#0F2A1E">
 <style>
-body{margin:0;background:#FAFBFC;}
-.praxis-topbar{position:sticky;top:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:rgba(250,251,252,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;}
-.praxis-topbar a{text-decoration:none;color:#2D6A4F;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:color 0.2s,gap 0.2s;}
-.praxis-topbar a:hover{color:#1B4332;}
-.praxis-topbar .back-link:hover{gap:8px;}
-.praxis-topbar .back-arrow{font-size:18px;line-height:1;}
-.praxis-topbar .brand{font-weight:700;letter-spacing:0.5px;color:#1B4332;font-size:13px;opacity:0.7;}
-.praxis-topbar .nav-right{display:flex;align-items:center;gap:16px;}
-.praxis-topbar .nav-right a{font-size:13px;color:#555;}
-.praxis-topbar .nav-right a:hover{color:#2D6A4F;}
+/* ── CSS Custom Properties ──────────────────────────────────────── */
+:root {
+  --p-navy: #0B1A2E;
+  --p-navy-mid: #122240;
+  --p-teal: #2EC4B6;
+  --p-teal-dark: #1a9e92;
+  --p-teal-soft: rgba(46,196,182,0.07);
+  --p-teal-border: rgba(46,196,182,0.2);
+  --p-bg: #FAFBFC;
+  --p-surface: #FFFFFF;
+  --p-text: #1E293B;
+  --p-text2: #64748B;
+  --p-text3: #94A3B8;
+  --p-border: #E2E8F0;
+  --p-border2: #CBD5E1;
+  --p-error: #EF4444;
+  --p-error-bg: rgba(239,68,68,0.06);
+  --p-warning: #F59E0B;
+  --p-warning-bg: rgba(245,158,11,0.06);
+  --p-warning-border: rgba(245,158,11,0.25);
+  --p-success: #10B981;
+  --p-success-bg: rgba(16,185,129,0.06);
+  --p-font: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --p-radius: 10px;
+  --p-radius-sm: 6px;
+  --p-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --p-shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+  --p-focus: 0 0 0 2px var(--p-teal), 0 0 0 4px rgba(46,196,182,0.25);
+  --p-transition: 0.2s ease;
+}
+
+/* ── Reset & Base ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--p-font); font-size: 14px; color: var(--p-text); background: var(--p-bg); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; }
+input[type="number"] { font-family: inherit; font-size: inherit; }
+:focus-visible { outline: none; box-shadow: var(--p-focus); border-radius: var(--p-radius-sm); }
+
+/* ── Topbar ─────────────────────────────────────────────────────── */
+.topbar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: rgba(250,251,252,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--p-border); }
+.topbar a { text-decoration: none; color: var(--p-teal-dark); font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: color var(--p-transition); }
+.topbar a:hover { color: var(--p-navy); }
+.topbar .brand { font-weight: 700; letter-spacing: 0.5px; color: var(--p-navy); font-size: 13px; opacity: 0.6; }
+.topbar .nav-r { display: flex; align-items: center; gap: 16px; }
+.topbar .nav-r a { color: var(--p-text2); }
+
+/* ── Page Header ────────────────────────────────────────────────── */
+.page-header { max-width: 960px; margin: 0 auto; padding: 32px 24px 0; }
+.page-header h1 { font-size: 26px; font-weight: 700; color: var(--p-navy); margin-bottom: 4px; }
+.page-header .subtitle { font-size: 14px; color: var(--p-text2); margin-bottom: 20px; }
+
+/* ── Tier Selector ──────────────────────────────────────────────── */
+.tier-bar { display: inline-flex; background: var(--p-surface); border: 1px solid var(--p-border); border-radius: 8px; overflow: hidden; }
+.tier-btn { padding: 7px 18px; font-size: 13px; font-weight: 500; color: var(--p-text2); border-inline-end: 1px solid var(--p-border); transition: all var(--p-transition); }
+.tier-btn:last-child { border-inline-end: none; }
+.tier-btn:hover { background: var(--p-teal-soft); color: var(--p-text); }
+.tier-btn.active { background: var(--p-teal); color: white; font-weight: 600; }
+
+/* ── Section ────────────────────────────────────────────────────── */
+.main-content { max-width: 960px; margin: 0 auto; padding: 0 24px 120px; }
+.section { margin-top: 32px; }
+.section-title { font-size: 18px; font-weight: 700; color: var(--p-navy); margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+.section-subtitle { font-size: 13px; color: var(--p-text2); margin-bottom: 20px; }
+.section-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 4px; }
+.badge-quant { background: rgba(59,130,246,0.1); color: #3B82F6; }
+.badge-qual { background: rgba(139,92,246,0.1); color: #8B5CF6; }
+.badge-combined { background: var(--p-teal-soft); color: var(--p-teal-dark); }
+
+/* ── Cards ──────────────────────────────────────────────────────── */
+.card { background: var(--p-surface); border: 1px solid var(--p-border); border-radius: var(--p-radius); padding: 20px; box-shadow: var(--p-shadow); }
+.card-title { font-size: 14px; font-weight: 600; color: var(--p-navy); margin-bottom: 12px; }
+
+/* ── Design Grid ────────────────────────────────────────────────── */
+.design-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 24px; }
+.design-card { position: relative; padding: 14px 16px; border: 1.5px solid var(--p-border); border-radius: var(--p-radius); cursor: pointer; transition: all var(--p-transition); background: var(--p-surface); }
+.design-card:hover { border-color: var(--p-teal-border); background: var(--p-teal-soft); }
+.design-card.active { border-color: var(--p-teal); border-inline-start-width: 3.5px; background: var(--p-teal-soft); }
+.design-card .dc-name { font-size: 13px; font-weight: 600; color: var(--p-navy); display: flex; align-items: center; gap: 6px; }
+.design-card .dc-desc { font-size: 11.5px; color: var(--p-text2); margin-top: 3px; }
+.design-card .dc-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--p-border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all var(--p-transition); }
+.design-card.active .dc-check { background: var(--p-teal); border-color: var(--p-teal); }
+.design-card.active .dc-check svg { display: block; }
+.design-card .dc-check svg { display: none; }
+
+/* ── Wizard ─────────────────────────────────────────────────────── */
+.wizard-box { background: linear-gradient(135deg, rgba(46,196,182,0.04), rgba(59,130,246,0.04)); border: 1px solid var(--p-teal-border); border-radius: var(--p-radius); padding: 20px; margin-bottom: 20px; }
+.wizard-q { font-size: 14px; font-weight: 600; color: var(--p-navy); margin-bottom: 12px; }
+.wizard-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.wizard-opt { padding: 8px 16px; border: 1.5px solid var(--p-border); border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--p-text2); background: var(--p-surface); transition: all var(--p-transition); }
+.wizard-opt:hover { border-color: var(--p-teal); color: var(--p-text); }
+.wizard-opt.active { border-color: var(--p-teal); background: var(--p-teal-soft); color: var(--p-teal-dark); font-weight: 600; }
+
+/* ── Parameter Panel ────────────────────────────────────────────── */
+.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+@media (max-width: 700px) { .param-grid { grid-template-columns: 1fr; } }
+.param-item { }
+.param-label { font-size: 12px; font-weight: 600; color: var(--p-text2); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.param-hint { font-size: 11px; color: var(--p-text3); font-weight: 400; }
+.param-row { display: flex; align-items: center; gap: 10px; }
+.param-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: var(--p-border); outline: none; }
+.param-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--p-teal); border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.15); cursor: pointer; }
+.param-val { min-width: 64px; padding: 5px 8px; border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); text-align: center; font-size: 13px; font-weight: 600; color: var(--p-navy); background: var(--p-surface); }
+.param-val:focus { border-color: var(--p-teal); }
+.param-presets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.preset-btn { padding: 3px 10px; font-size: 11px; font-weight: 500; border: 1px solid var(--p-border); border-radius: 4px; color: var(--p-text2); background: var(--p-bg); transition: all var(--p-transition); }
+.preset-btn:hover { border-color: var(--p-teal); color: var(--p-teal-dark); }
+.preset-btn.active { background: var(--p-teal-soft); border-color: var(--p-teal); color: var(--p-teal-dark); font-weight: 600; }
+.preset-btn.rec { border-color: var(--p-teal-border); }
+
+/* ── Learn Block ────────────────────────────────────────────────── */
+.learn-block { margin-top: 6px; padding: 10px 14px; background: rgba(59,130,246,0.04); border: 1px solid rgba(59,130,246,0.12); border-radius: var(--p-radius-sm); font-size: 12px; color: var(--p-text2); line-height: 1.5; }
+.learn-toggle { font-size: 11px; color: #3B82F6; font-weight: 500; margin-top: 4px; cursor: pointer; }
+
+/* ── Results Card ───────────────────────────────────────────────── */
+.results-card { background: linear-gradient(135deg, var(--p-navy) 0%, var(--p-navy-mid) 100%); color: white; border-radius: var(--p-radius); padding: 24px; margin-bottom: 20px; }
+.results-card .rc-label { font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.results-card .rc-big { font-size: 42px; font-weight: 700; line-height: 1.1; }
+.results-card .rc-sub { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 6px; }
+.results-row { display: flex; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
+.results-item { }
+.results-item .ri-val { font-size: 20px; font-weight: 700; }
+.results-item .ri-label { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+/* ── Warning Card ───────────────────────────────────────────────── */
+.warn-card { padding: 14px 18px; border: 1px solid var(--p-warning-border); background: var(--p-warning-bg); border-radius: var(--p-radius-sm); margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+.warn-card .warn-icon { color: var(--p-warning); flex-shrink: 0; margin-top: 1px; }
+.warn-card .warn-text { font-size: 13px; color: var(--p-text); line-height: 1.5; }
+
+/* ── Qualitative Section ────────────────────────────────────────── */
+.purpose-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.purpose-btn { padding: 10px 18px; border: 1.5px solid var(--p-border); border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--p-text2); background: var(--p-surface); transition: all var(--p-transition); }
+.purpose-btn:hover { border-color: #8B5CF6; color: var(--p-text); }
+.purpose-btn.active { border-color: #8B5CF6; background: rgba(139,92,246,0.06); color: #7C3AED; font-weight: 600; }
+
+.method-checks { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.method-check { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1.5px solid var(--p-border); border-radius: 8px; font-size: 13px; cursor: pointer; transition: all var(--p-transition); }
+.method-check:hover { border-color: #8B5CF6; }
+.method-check.active { border-color: #8B5CF6; background: rgba(139,92,246,0.04); }
+.method-check input { accent-color: #8B5CF6; }
+
+.qual-card { background: var(--p-surface); border: 1px solid var(--p-border); border-radius: var(--p-radius); padding: 18px; margin-bottom: 12px; }
+.qual-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.qual-card-title { font-size: 14px; font-weight: 600; color: #7C3AED; }
+.qual-result { padding: 12px 16px; background: rgba(139,92,246,0.04); border-radius: var(--p-radius-sm); border: 1px solid rgba(139,92,246,0.12); }
+.qual-result .qr-big { font-size: 28px; font-weight: 700; color: #7C3AED; }
+.qual-result .qr-label { font-size: 12px; color: var(--p-text2); }
+
+/* ── Context Params ─────────────────────────────────────────────── */
+.ctx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.ctx-item label { display: block; font-size: 12px; font-weight: 600; color: var(--p-text2); margin-bottom: 6px; }
+.ctx-select { width: 100%; padding: 7px 10px; border: 1px solid var(--p-border); border-radius: var(--p-radius-sm); font-size: 13px; color: var(--p-text); background: var(--p-surface); }
+.ctx-select:focus { border-color: var(--p-teal); outline: none; box-shadow: var(--p-focus); }
+
+/* ── Combined Summary ───────────────────────────────────────────── */
+.summary-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.summary-table th { text-align: start; padding: 8px 12px; background: var(--p-navy); color: white; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-table td { padding: 8px 12px; border-bottom: 1px solid var(--p-border); }
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table .st-total td { font-weight: 700; background: var(--p-teal-soft); }
+.summary-table .st-section td { font-weight: 600; color: var(--p-navy); background: var(--p-bg); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+/* ── Sticky Bar ─────────────────────────────────────────────────── */
+.sticky-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 90; background: var(--p-navy); color: white; padding: 12px 24px; display: flex; align-items: center; justify-content: center; gap: 24px; font-size: 13px; box-shadow: 0 -2px 12px rgba(0,0,0,0.15); }
+.sticky-bar .sb-item { display: flex; align-items: center; gap: 6px; }
+.sticky-bar .sb-val { font-weight: 700; font-size: 15px; }
+.sticky-bar .sb-label { color: rgba(255,255,255,0.6); font-size: 11px; }
+.sticky-bar .sb-sep { width: 1px; height: 24px; background: rgba(255,255,255,0.15); }
+
+/* ── Export Button ──────────────────────────────────────────────── */
+.export-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.export-btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; transition: all var(--p-transition); }
+.export-btn-primary { background: var(--p-teal); color: white; }
+.export-btn-primary:hover { background: var(--p-teal-dark); }
+.export-btn-secondary { border: 1.5px solid var(--p-border); color: var(--p-text2); background: var(--p-surface); }
+.export-btn-secondary:hover { border-color: var(--p-teal); color: var(--p-teal-dark); }
+
+/* ── Sensitivity Drawer ─────────────────────────────────────────── */
+.sens-toggle { font-size: 13px; color: var(--p-teal-dark); font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 16px; }
+.sens-toggle:hover { color: var(--p-teal); }
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.page-footer { max-width: 960px; margin: 0 auto; padding: 24px 24px 32px; border-top: 1px solid var(--p-border); font-size: 12px; color: var(--p-text3); line-height: 1.6; }
+.page-footer a { color: var(--p-teal-dark); text-decoration: none; }
+
+/* ── Utility ────────────────────────────────────────────────────── */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.mt-sm { margin-top: 8px; }
+.mt-md { margin-top: 16px; }
+.mb-md { margin-bottom: 16px; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.reset-btn { font-size: 12px; color: var(--p-text3); font-weight: 500; }
+.reset-btn:hover { color: var(--p-error); }
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .page-header h1 { font-size: 22px; }
+  .topbar { padding: 8px 16px; }
+  .main-content { padding: 0 16px 120px; }
+  .results-card .rc-big { font-size: 32px; }
+  .sticky-bar { gap: 12px; padding: 10px 16px; font-size: 12px; flex-wrap: wrap; justify-content: flex-start; }
+  .design-grid { grid-template-columns: 1fr; }
+  .ctx-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-<nav class="praxis-topbar">
-  <a href="../" class="back-link"><span class="back-arrow">&#8592;</span> All Tools</a>
-  <div class="nav-right">
-    <span class="brand">PRAXIS</span>
-    <a href="../../">Home</a>
-    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank">GitHub</a>
-  </div>
-</nav>
 <div id="root"></div>
-<script type="text/babel">
-const { useState, useMemo, useCallback } = React;
+<script>
+/* ================================================================
+   PRAXIS Sample Size Calculator v2
+   Pure React.createElement() — no Babel, no JSX
+   ================================================================ */
+var h = React.createElement;
+var useState = React.useState;
+var useMemo = React.useMemo;
+var useCallback = React.useCallback;
+var useEffect = React.useEffect;
 
-// ── Inverse normal CDF ──────────────────────────────────────────────
-function zScore(p) {
-  if (p <= 0 || p >= 1) return 0;
-  const a1 = -39.69683028665376, a2 = 220.9460984245205;
-  const a3 = -275.9285104469687, a4 = 138.357751867269;
-  const a5 = -30.66479806614716, a6 = 2.506628277459239;
-  const b1 = -54.47609879822406, b2 = 161.5858368580409;
-  const b3 = -155.6989798598866, b4 = 66.80131188771972;
-  const b5 = -13.28068155288572;
-  const c1 = -0.007784894002430293, c2 = -0.3223964580411365;
-  const c3 = -2.400758277161838, c4 = -2.549732539343734;
-  const c5 = 4.374664141464968, c6 = 2.938163982698783;
-  const d1 = 0.007784695709041462, d2 = 0.3224671290700398;
-  const d3 = 2.445134137142996, d4 = 3.754408661907416;
-  const pLow = 0.02425, pHigh = 1 - pLow;
-  let q, r;
-  if (p < pLow) {
-    q = Math.sqrt(-2 * Math.log(p));
-    return (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
-  } else if (p <= pHigh) {
-    q = p - 0.5; r = q * q;
-    return (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q / (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
-  } else {
-    q = Math.sqrt(-2 * Math.log(1 - p));
-    const num = (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6);
-    const den = ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
-    return -(num / den);
-  }
-}
-function getZ(a) { return zScore(1 - a / 2); }
-function getZB(p) { return zScore(p / 100); }
-function binP(n, k, p) { let c = 1; for (let i = 0; i < k; i++) c *= (n - i) / (i + 1); return c * Math.pow(p, k) * Math.pow(1 - p, n - k); }
-
-// ── Calculators ─────────────────────────────────────────────────────
-const calc = {
-  singleProportion: (p) => { const z = getZ(p.alpha), pr = p.proportion / 100, d = p.precision / 100; const n = Math.ceil(z * z * pr * (1 - pr) / (d * d)); const nD = Math.ceil(n * p.deff); const nF = Math.ceil(nD / (1 - p.nonResponse / 100)); return { base: n, withDeff: nD, final: nF }; },
-  twoProportions: (p) => { const za = getZ(p.alpha), zb = getZB(p.power), r1 = p.p1 / 100, r2 = p.p2 / 100; const n1 = Math.ceil(Math.pow(za + zb, 2) * (r1 * (1 - r1) + r2 * (1 - r2) / p.ratio) / Math.pow(r1 - r2, 2)); const n2 = Math.ceil(n1 * p.ratio); const f1 = Math.ceil(n1 / (1 - p.nonResponse / 100)), f2 = Math.ceil(n2 / (1 - p.nonResponse / 100)); return { n1, n2, final1: f1, final2: f2, finalTotal: f1 + f2 }; },
-  twoMeans: (p) => { const za = getZ(p.alpha), zb = getZB(p.power); const n1 = Math.ceil(Math.pow(za + zb, 2) * p.sd * p.sd * (1 + 1 / p.ratio) / (p.delta * p.delta)); const n2 = Math.ceil(n1 * p.ratio); const f1 = Math.ceil(n1 / (1 - p.nonResponse / 100)), f2 = Math.ceil(n2 / (1 - p.nonResponse / 100)); return { n1, n2, final1: f1, final2: f2, finalTotal: f1 + f2 }; },
-  clusterRCT: (p) => { const za = getZ(p.alpha), zb = getZB(p.power), r1 = p.p1 / 100, r2 = p.p2 / 100; const nI = Math.ceil(Math.pow(za + zb, 2) * (r1 * (1 - r1) + r2 * (1 - r2)) / Math.pow(r1 - r2, 2)); const deff = 1 + (p.clusterSize - 1) * p.icc; const nC = Math.ceil(nI * deff); const cpa = Math.ceil(nC / p.clusterSize); const tpa = cpa * p.clusterSize; const fpa = Math.ceil(tpa / (1 - p.nonResponse / 100)); return { nIndiv: nI, deff: deff.toFixed(2), clustersPerArm: cpa, totalClusters: cpa * 2, finalTotal: fpa * 2 }; },
-  clusterSurvey: (p) => { const z = getZ(p.alpha), pr = p.proportion / 100, d = p.precision / 100; const nB = Math.ceil(z * z * pr * (1 - pr) / (d * d)); const nD = Math.ceil(nB * p.deff); const cl = Math.ceil(nD / p.clusterSize); const tot = cl * p.clusterSize; const fin = Math.ceil(tot / (1 - p.nonResponse / 100)); return { base: nB, withDeff: nD, clusters: cl, final: fin }; },
-  steppedWedge: (p) => { const za = getZ(p.alpha), zb = getZB(p.power), r1 = p.p1 / 100, r2 = p.p2 / 100; const poolVar = r1 * (1 - r1) + r2 * (1 - r2); const eff = Math.abs(r1 - r2); const T = p.steps + 1, K = p.steps; const num = 3 * (1 - p.icc) * (1 + T * p.icc * p.clusterSize); const den = T * (T - 1 / T) * p.icc * p.clusterSize + 1.5 * T * (1 - p.icc); const deSW = num / den; const nP = Math.ceil(Math.pow(za + zb, 2) * poolVar / (eff * eff)); const deff = 1 + (p.clusterSize - 1) * p.icc; const nPC = Math.ceil(nP * deff); const totC = Math.ceil(nPC * deSW / p.clusterSize); const cps = Math.max(1, Math.ceil(totC / K)); const ac = cps * K; const totN = ac * p.clusterSize * T; const fin = Math.ceil(totN / (1 - p.nonResponse / 100)); return { deff: deff.toFixed(2), deSwFactor: deSW.toFixed(3), totalClusters: ac, clustersPerStep: cps, periods: T, final: fin }; },
-  lqas: (p) => { const uT = p.upperThreshold / 100, lT = p.lowerThreshold / 100; let found = false, bN = 0, bD = 0, bA = 0, bB = 0; for (let n = 5; n <= Math.min(p.lotSize, 200); n++) { for (let d = 0; d < n; d++) { let cu = 0; for (let x = 0; x <= d; x++) cu += binP(n, x, uT); let cl = 0; for (let x = 0; x <= d; x++) cl += binP(n, x, lT); if (cu <= p.alpha / 100 && (1 - cl) <= p.beta / 100) { bN = n; bD = d; bA = cu; bB = 1 - cl; found = true; break; } } if (found) break; } if (!found) return { sampleSize: ">200", decisionRule: "-", alphaError: "-", betaError: "-", interpretation: "No valid solution found with n <= 200. Widen gap between thresholds or increase error rates." }; return { sampleSize: bN, decisionRule: bD, alphaError: (bA * 100).toFixed(1), betaError: (bB * 100).toFixed(1), interpretation: "Sample " + bN + " from each lot. If " + bD + " or fewer meet threshold, classify as inadequate coverage." }; },
-  did: (p) => { const za = getZ(p.alpha), zb = getZB(p.power); const nB = Math.ceil(Math.pow(za + zb, 2) * 2 * p.sd * p.sd / (p.delta * p.delta)); const nA = Math.ceil(nB * (1 - p.rSquared)); const pgp = Math.ceil(nA / p.periods); const tpg = pgp * p.periods; const tot = tpg * 2; const fin = Math.ceil(tot / (1 - p.nonResponse / 100)); return { nBase: nB, nAdjusted: nA, perGroupPerPeriod: pgp, total: tot, final: fin, periods: p.periods }; }
+/* ── Strings (localisation-ready) ─────────────────────────────── */
+var S = {
+  title: 'Sample Size Calculator',
+  subtitle: 'PRAXIS Evaluation Toolkit',
+  tiers: { foundation: 'Guided', practitioner: 'Standard', advanced: 'Expert' },
+  sections: { quant: 'Quantitative Sample Size', qual: 'Qualitative Sample Planning', combined: 'Combined Sample Plan' },
+  qualNote: 'Indicative planning figures \u2014 adjust based on saturation monitoring during fieldwork',
+  purposes: { formative: 'Formative / Process', summative: 'Summative / Outcome', developmental: 'Developmental', expost: 'Ex-post / Impact' },
+  access: { easy: 'Easy (urban, stable)', moderate: 'Moderate (rural, mixed)', difficult: 'Difficult (remote, insecure)' },
+  scope: { narrow: 'Narrow', moderate: 'Moderate', broad: 'Broad' },
+  heterogeneity: { low: 'Low', moderate: 'Moderate', high: 'High' },
+  sensitivity: { low: 'Low', moderate: 'Moderate', high: 'High' },
+  resources: { minimal: 'Minimal', moderate: 'Moderate', significant: 'Significant' },
+  depth: { overview: 'Overview', moderate: 'Moderate', deep: 'Deep' }
 };
 
-// ── Design definitions ──────────────────────────────────────────────
-const designs = [
-  { id: "singleProportion", label: "Single Proportion", desc: "Estimate prevalence or coverage", use: "Coverage surveys, KAP studies, baseline prevalence estimation" },
-  { id: "twoProportions", label: "Two Proportions", desc: "Compare proportions between groups", use: "RCTs, quasi-experimental designs with binary outcomes" },
-  { id: "twoMeans", label: "Two Means", desc: "Compare means between groups", use: "RCTs with continuous outcomes (scores, biomarkers, costs)" },
-  { id: "clusterRCT", label: "Cluster RCT", desc: "Cluster-randomised trial", use: "Facility- or community-randomised health interventions" },
-  { id: "clusterSurvey", label: "Cluster Survey", desc: "Multi-stage cluster sample", use: "DHS/MICS-style surveys, SMART nutrition surveys, EPI coverage" },
-  { id: "steppedWedge", label: "Stepped-Wedge", desc: "Stepped-wedge cluster design", use: "Phased rollout evaluations, health system interventions" },
-  { id: "lqas", label: "LQAS", desc: "Lot Quality Assurance Sampling", use: "Rapid coverage monitoring, supervision area classification" },
-  { id: "did", label: "Diff-in-Diff", desc: "DiD with repeated cross-sections", use: "Quasi-experimental impact evaluation, policy evaluation" }
+/* ── Utility: inverse normal CDF ──────────────────────────────── */
+function zScore(p){if(p<=0||p>=1)return 0;var a1=-39.69683028665376,a2=220.9460984245205,a3=-275.9285104469687,a4=138.357751867269,a5=-30.66479806614716,a6=2.506628277459239,b1=-54.47609879822406,b2=161.5858368580409,b3=-155.6989798598866,b4=66.80131188771972,b5=-13.28068155288572,c1=-0.007784894002430293,c2=-0.3223964580411365,c3=-2.400758277161838,c4=-2.549732539343734,c5=4.374664141464968,c6=2.938163982698783,d1=0.007784695709041462,d2=0.3224671290700398,d3=2.445134137142996,d4=3.754408661907416,pL=0.02425,pH=1-pL,q,r;if(p<pL){q=Math.sqrt(-2*Math.log(p));return(((((c1*q+c2)*q+c3)*q+c4)*q+c5)*q+c6)/((((d1*q+d2)*q+d3)*q+d4)*q+1);}else if(p<=pH){q=p-0.5;r=q*q;return(((((a1*r+a2)*r+a3)*r+a4)*r+a5)*r+a6)*q/(((((b1*r+b2)*r+b3)*r+b4)*r+b5)*r+1);}else{q=Math.sqrt(-2*Math.log(1-p));return -(((((c1*q+c2)*q+c3)*q+c4)*q+c5)*q+c6)/((((d1*q+d2)*q+d3)*q+d4)*q+1);}}
+function getZ(a){return zScore(1-a/2);}
+function getZB(p){return zScore(p/100);}
+function binP(n,k,p){var c=1;for(var i=0;i<k;i++)c*=(n-i)/(i+1);return c*Math.pow(p,k)*Math.pow(1-p,n-k);}
+
+/* Non-central t CDF approximation for ITS power */
+function ntCDF(t,df,ncp){
+  /* Patnaik approximation */
+  var v = df;
+  var x = t - ncp;
+  var p = 0.5 * (1 + erf(x / Math.sqrt(2 * (1 + ncp*ncp/(2*v)))));
+  return p;
+}
+function erf(x){var a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;var s=1;if(x<0)s=-1;x=Math.abs(x);var t=1/(1+p*x);var y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);return s*y;}
+
+/* ── Calculators ──────────────────────────────────────────────── */
+var calc = {
+  singleProportion: function(p) {
+    var z=getZ(p.alpha),pr=p.proportion/100,d=p.precision/100;
+    var n=Math.ceil(z*z*pr*(1-pr)/(d*d));
+    var nD=Math.ceil(n*p.deff);
+    var nFPC = nD;
+    if (p.population && p.population < 1e8) nFPC = Math.ceil(nD / (1 + (nD-1)/p.population));
+    var nF=Math.ceil(nFPC/(1-p.nonResponse/100));
+    return {base:n, withDeff:nD, withFPC:nFPC, final:nF, primary:nF, label:'respondents'};
+  },
+  twoProportions: function(p) {
+    var za=getZ(p.alpha),zb=getZB(p.power),r1=p.p1/100,r2=p.p2/100;
+    var alpha = p.primaryOutcomes > 1 ? p.alpha/p.primaryOutcomes : p.alpha;
+    if (p.primaryOutcomes > 1) za = getZ(alpha);
+    var n1=Math.ceil(Math.pow(za+zb,2)*(r1*(1-r1)+r2*(1-r2)/p.ratio)/Math.pow(r1-r2,2));
+    /* Yates continuity correction */
+    if (p.continuityCorrection && n1 < 30) {
+      n1 = Math.ceil(n1/4 * Math.pow(1 + Math.sqrt(1 + 4/(n1*Math.abs(r1-r2))), 2));
+    }
+    var n2=Math.ceil(n1*p.ratio);
+    var f1=Math.ceil(n1/(1-p.nonResponse/100)),f2=Math.ceil(n2/(1-p.nonResponse/100));
+    return {n1:n1,n2:n2,final1:f1,final2:f2,finalTotal:f1+f2,primary:f1+f2,label:'respondents',bonferroni:p.primaryOutcomes>1?alpha:null};
+  },
+  twoMeans: function(p) {
+    var za=getZ(p.alpha),zb=getZB(p.power);
+    var n1=Math.ceil(Math.pow(za+zb,2)*p.sd*p.sd*(1+1/p.ratio)/(p.delta*p.delta));
+    var n2=Math.ceil(n1*p.ratio);
+    var f1=Math.ceil(n1/(1-p.nonResponse/100)),f2=Math.ceil(n2/(1-p.nonResponse/100));
+    return {n1:n1,n2:n2,final1:f1,final2:f2,finalTotal:f1+f2,primary:f1+f2,label:'respondents'};
+  },
+  clusterRCT: function(p) {
+    var za=getZ(p.alpha),zb=getZB(p.power),r1=p.p1/100,r2=p.p2/100;
+    var nI=Math.ceil(Math.pow(za+zb,2)*(r1*(1-r1)+r2*(1-r2))/Math.pow(r1-r2,2));
+    var deff=1+(p.clusterSize-1)*p.icc;
+    var deffAdj=deff*(1+p.clusterSizeCV*p.clusterSizeCV);
+    var nC=Math.ceil(nI*deffAdj);
+    var cpa=Math.ceil(nC/p.clusterSize);
+    var tpa=cpa*p.clusterSize;
+    var fpa=Math.ceil(tpa/(1-p.nonResponse/100));
+    return {nIndiv:nI,deff:deff.toFixed(2),deffAdj:deffAdj.toFixed(2),clustersPerArm:cpa,totalClusters:cpa*2,perArm:fpa,finalTotal:fpa*2,primary:fpa*2,label:'respondents'};
+  },
+  clusterSurvey: function(p) {
+    var z=getZ(p.alpha),pr=p.proportion/100,d=p.precision/100;
+    var nB=Math.ceil(z*z*pr*(1-pr)/(d*d));
+    var nD=Math.ceil(nB*p.deff);
+    var cl=Math.ceil(nD/p.clusterSize);
+    var tot=cl*p.clusterSize;
+    var fin=Math.ceil(tot/(1-p.nonResponse/100));
+    return {base:nB,withDeff:nD,clusters:cl,final:fin,primary:fin,label:'respondents'};
+  },
+  steppedWedge: function(p) {
+    var za=getZ(p.alpha),zb=getZB(p.power),r1=p.p1/100,r2=p.p2/100;
+    var poolVar=r1*(1-r1)+r2*(1-r2),eff=Math.abs(r1-r2);
+    var T=p.steps+1,K=p.steps;
+    var rho=p.icc,m=p.clusterSize;
+    var num=3*(1-rho)*(1+T*rho*m);
+    var den=T*(T-1/T)*rho*m+1.5*T*(1-rho);
+    var deSW=num/den;
+    var nP=Math.ceil(Math.pow(za+zb,2)*poolVar/(eff*eff));
+    var deff=1+(m-1)*rho;
+    var deffAdj=deff*(1+p.clusterSizeCV*p.clusterSizeCV);
+    var nPC=Math.ceil(nP*deffAdj);
+    var totC=Math.ceil(nPC*deSW/m);
+    var cps=Math.max(1,Math.ceil(totC/K));
+    var ac=cps*K;
+    var totN=ac*m*T;
+    var fin=Math.ceil(totN/(1-p.nonResponse/100));
+    return {deff:deff.toFixed(2),deffAdj:deffAdj.toFixed(2),deSwFactor:deSW.toFixed(3),totalClusters:ac,clustersPerStep:cps,periods:T,final:fin,primary:fin,label:'observations'};
+  },
+  lqas: function(p) {
+    var uT=p.upperThreshold/100,lT=p.lowerThreshold/100;
+    var found=false,bN=0,bD=0,bA=0,bB=0;
+    for(var n=5;n<=Math.min(p.lotSize,200);n++){for(var d=0;d<n;d++){var cu=0;for(var x=0;x<=d;x++)cu+=binP(n,x,uT);var cl=0;for(var x2=0;x2<=d;x2++)cl+=binP(n,x2,lT);if(cu<=p.alpha/100&&(1-cl)<=p.beta/100){bN=n;bD=d;bA=cu;bB=1-cl;found=true;break;}}if(found)break;}
+    if(!found)return {sampleSize:'>200',decisionRule:'-',alphaError:'-',betaError:'-',interpretation:'No valid solution found with n \u2264 200. Widen gap between thresholds or increase error rates.',primary:0,label:'per lot'};
+    return {sampleSize:bN,decisionRule:bD,alphaError:(bA*100).toFixed(1),betaError:(bB*100).toFixed(1),interpretation:'Sample '+bN+' from each lot. If '+bD+' or fewer meet threshold, classify as inadequate.',primary:bN,label:'per lot'};
+  },
+  did: function(p) {
+    var za=getZ(p.alpha),zb=getZB(p.power);
+    var nB=Math.ceil(Math.pow(za+zb,2)*2*p.sd*p.sd/(p.delta*p.delta));
+    var nA=Math.ceil(nB*(1-p.rSquared));
+    var pgp=Math.ceil(nA/p.periods);
+    var tpg=pgp*p.periods;
+    var tot=tpg*2;
+    var fin=Math.ceil(tot/(1-p.nonResponse/100));
+    return {nBase:nB,nAdjusted:nA,perGroupPerPeriod:pgp,total:tot,final:fin,periods:p.periods,primary:fin,label:'respondents'};
+  },
+  its: function(p) {
+    var T1=p.prePoints, T2=p.postPoints, T=T1+T2;
+    var rho=p.autocorrelation;
+    var nEff = T * (1 - rho) / (1 + rho);
+    var seas = p.seasonalTerms || 0;
+    var df = Math.max(1, nEff - 4 - 2*seas);
+    var lambda = p.levelChange * Math.sqrt(nEff * T1 * T2 / T);
+    /* Power from non-central t approximation */
+    var tCrit = getZ(p.alpha);
+    var power = 1 - ntCDF(tCrit, df, lambda);
+    power = Math.max(0, Math.min(1, power));
+    /* MDE at 80% power */
+    var zb80 = zScore(0.80);
+    var mde80 = (tCrit + zb80) / Math.sqrt(nEff * T1 * T2 / T);
+    var zb90 = zScore(0.90);
+    var mde90 = (tCrit + zb90) / Math.sqrt(nEff * T1 * T2 / T);
+    return {power: (power*100).toFixed(1), nEff: nEff.toFixed(1), df: df.toFixed(0), mde80: mde80.toFixed(3), mde90: mde90.toFixed(3), totalPoints: T, primary: T, label: 'data points', isPower: true};
+  }
+};
+
+/* ── Design definitions ───────────────────────────────────────── */
+var DESIGNS = [
+  {id:'singleProportion', name:'Single Proportion', desc:'Estimate prevalence or coverage', use:'Coverage surveys, KAP studies, baseline estimation', category:'survey'},
+  {id:'twoProportions', name:'Two Proportions', desc:'Compare proportions between groups', use:'RCTs, quasi-experimental with binary outcomes', category:'comparison'},
+  {id:'twoMeans', name:'Two Means', desc:'Compare means between groups', use:'RCTs with continuous outcomes', category:'comparison'},
+  {id:'clusterRCT', name:'Cluster RCT', desc:'Cluster-randomised trial', use:'Facility/community-randomised interventions', category:'cluster'},
+  {id:'clusterSurvey', name:'Cluster Survey', desc:'Multi-stage cluster sample', use:'DHS/MICS, SMART nutrition surveys', category:'survey'},
+  {id:'steppedWedge', name:'Stepped-Wedge', desc:'Phased rollout design', use:'Phased implementation evaluations', category:'cluster'},
+  {id:'did', name:'Diff-in-Diff', desc:'Before-after with comparison', use:'Quasi-experimental impact evaluation', category:'comparison'},
+  {id:'its', name:'ITS Power', desc:'Power assessment for time series', use:'Interrupted time series analysis', category:'timeseries'},
+  {id:'lqas', name:'LQAS', desc:'Lot Quality Assurance Sampling', use:'Rapid coverage monitoring', category:'survey'}
 ];
 
-// ── Parameter definitions with presets ───────────────────────────────
-const pDefs = {
-  proportion: { label: "Expected proportion (%)", min: 1, max: 99, step: 1, def: 50, hint: "Expected prevalence/coverage in the population", presets: [{ val: 50, label: "Unknown", rec: true, tip: "Maximally conservative when no prior data" }, { val: 80, label: "High coverage", tip: "Immunisation, ANC4+ in strong systems" }, { val: 30, label: "Low coverage", tip: "Exclusive breastfeeding, facility delivery in weak systems" }, { val: 10, label: "Rare outcome", tip: "GAM prevalence, HIV+ in general population" }] },
-  precision: { label: "Precision (%)", min: 1, max: 20, step: 0.5, def: 5, dec: true, hint: "Margin of error around the estimate", presets: [{ val: 5, label: "5%", rec: true, tip: "Standard for coverage surveys (DHS, MICS)" }, { val: 3, label: "3%", tip: "High precision, larger sample" }, { val: 7, label: "7%", tip: "Acceptable for rapid assessments" }, { val: 10, label: "10%", tip: "Low precision, pilot/screening only" }] },
-  alpha: { label: "Significance level", min: 0.01, max: 0.2, step: 0.005, def: 0.05, dec: true, hint: "Probability of false positive", presets: [{ val: 0.05, label: "0.05", rec: true, tip: "95% confidence, standard" }, { val: 0.01, label: "0.01", tip: "99% confidence, high-stakes" }, { val: 0.10, label: "0.10", tip: "90% confidence, exploratory" }] },
-  power: { label: "Power (%)", min: 50, max: 99, step: 1, def: 80, hint: "Probability of detecting a real effect", presets: [{ val: 80, label: "80%", rec: true, tip: "Standard for most evaluations" }, { val: 90, label: "90%", tip: "Well-funded RCTs" }, { val: 70, label: "70%", tip: "Budget-constrained pilots only" }] },
-  p1: { label: "Control proportion (%)", min: 1, max: 99, step: 1, def: 30, hint: "Expected outcome in control group", presets: [{ val: 30, label: "30%", rec: true, tip: "Moderate baseline" }, { val: 50, label: "50%", tip: "High baseline" }, { val: 15, label: "15%", tip: "Low baseline" }] },
-  p2: { label: "Intervention proportion (%)", min: 1, max: 99, step: 1, def: 45, hint: "Expected outcome with intervention", presets: [{ val: 45, label: "45%", rec: true, tip: "15pp increase, realistic" }, { val: 40, label: "40%", tip: "10pp increase, conservative" }, { val: 55, label: "55%", tip: "25pp increase, ambitious" }] },
-  ratio: { label: "Allocation ratio", min: 0.5, max: 3, step: 0.5, def: 1, dec: true, hint: "n(control) : n(intervention)", presets: [{ val: 1, label: "1:1", rec: true, tip: "Equal allocation, most efficient" }, { val: 2, label: "2:1", tip: "More controls when intervention is expensive" }] },
-  delta: { label: "Min. detectable effect", min: 0.1, max: 50, step: 0.1, def: 5, dec: true, hint: "Smallest meaningful difference (outcome units)", presets: [{ val: 5, label: "5 units", rec: true, tip: "Moderate effect" }, { val: 3, label: "3 units", tip: "Small effect, larger sample" }, { val: 10, label: "10 units", tip: "Large effect, smaller sample" }] },
-  sd: { label: "Standard deviation", min: 0.1, max: 100, step: 0.1, def: 10, dec: true, hint: "Pooled SD of the outcome variable", presets: [{ val: 10, label: "10", rec: true, tip: "Common for psychometric scales" }, { val: 5, label: "5", tip: "Low variability" }, { val: 20, label: "20", tip: "High variability" }, { val: 1, label: "1 (Cohen's d)", tip: "Set SD=1 for standardised effect" }] },
-  clusterSize: { label: "Average cluster size", min: 2, max: 500, step: 1, def: 30, hint: "Individuals per cluster", presets: [{ val: 30, label: "30", rec: true, tip: "Standard 30x30 cluster surveys" }, { val: 7, label: "7", tip: "WHO EPI cluster method" }, { val: 15, label: "15", tip: "Small facility/village" }, { val: 50, label: "50", tip: "Large facility/school" }] },
-  icc: { label: "ICC", min: 0.001, max: 0.5, step: 0.001, def: 0.05, dec: true, hint: "Similarity within clusters", presets: [{ val: 0.05, label: "0.05", rec: true, tip: "Conservative default for health outcomes" }, { val: 0.01, label: "0.01", tip: "Clinical outcomes, low clustering" }, { val: 0.03, label: "0.03", tip: "Health utilisation, moderate" }, { val: 0.10, label: "0.10", tip: "Knowledge/attitudes, high clustering" }] },
-  deff: { label: "Design effect (DEFF)", min: 1, max: 10, step: 0.1, def: 2, dec: true, hint: "DEFF = 1+(m-1)*ICC", presets: [{ val: 2.0, label: "2.0", rec: true, tip: "WHO/UNICEF default for 30-cluster surveys" }, { val: 1.0, label: "1.0 (SRS)", tip: "No clustering" }, { val: 1.5, label: "1.5", tip: "SMART surveys for SAM" }, { val: 2.5, label: "2.5", tip: "SMART for GAM" }] },
-  steps: { label: "Number of steps", min: 2, max: 12, step: 1, def: 4, hint: "Crossover sequences", presets: [{ val: 4, label: "4", rec: true, tip: "Common for district-level rollouts" }, { val: 3, label: "3", tip: "Minimum recommended" }, { val: 6, label: "6", tip: "Better power, longer study" }] },
-  nonResponse: { label: "Non-response (%)", min: 0, max: 50, step: 1, def: 10, hint: "Expected non-response / loss to follow-up", presets: [{ val: 10, label: "10%", rec: true, tip: "Standard for accessible areas" }, { val: 5, label: "5%", tip: "Well-planned, community mobilisation" }, { val: 20, label: "20%", tip: "Longitudinal / conflict-affected" }, { val: 30, label: "30%", tip: "High attrition, insecure areas" }] },
-  lotSize: { label: "Lot size", min: 50, max: 100000, step: 50, def: 5000, hint: "Population in supervision area", presets: [{ val: 5000, label: "5,000", rec: true, tip: "Typical health centre catchment" }, { val: 1000, label: "1,000", tip: "Small community" }, { val: 20000, label: "20,000", tip: "Sub-district" }] },
-  upperThreshold: { label: "Upper threshold (%)", min: 10, max: 99, step: 1, def: 80, hint: "Adequate coverage target", presets: [{ val: 80, label: "80%", rec: true, tip: "Standard for immunisation (WHO/UNICEF)" }, { val: 90, label: "90%", tip: "Measles/polio campaigns" }] },
-  lowerThreshold: { label: "Lower threshold (%)", min: 1, max: 98, step: 1, def: 50, hint: "Inadequate coverage level", presets: [{ val: 50, label: "50%", rec: true, tip: "Standard lower threshold" }, { val: 40, label: "40%", tip: "Wider gap, more discriminating" }] },
-  alphaLQAS: { label: "Producer risk (%)", min: 1, max: 20, step: 1, def: 10, hint: "Misclassify adequate as inadequate", presets: [{ val: 10, label: "10%", rec: true, tip: "Standard LQAS" }, { val: 5, label: "5%", tip: "Conservative" }] },
-  betaLQAS: { label: "Consumer risk (%)", min: 1, max: 20, step: 1, def: 10, hint: "Misclassify inadequate as adequate", presets: [{ val: 10, label: "10%", rec: true, tip: "Standard LQAS" }, { val: 5, label: "5%", tip: "Conservative" }] },
-  rSquared: { label: "R-squared from covariates", min: 0, max: 0.9, step: 0.05, def: 0.2, dec: true, hint: "Variance explained by covariates", presets: [{ val: 0.2, label: "0.20", rec: true, tip: "Conservative default" }, { val: 0.0, label: "0 (none)", tip: "Unadjusted DiD" }, { val: 0.4, label: "0.40", tip: "Good covariates" }] },
-  periods: { label: "Time periods", min: 2, max: 10, step: 1, def: 2, hint: "Pre + post periods", presets: [{ val: 2, label: "2 (pre/post)", rec: true, tip: "Standard DiD" }, { val: 3, label: "3", tip: "Short + medium-term effects" }] }
+/* ── Default params per design ────────────────────────────────── */
+var DEFAULT_PARAMS = {
+  singleProportion: {proportion:50,precision:5,alpha:0.05,deff:2,nonResponse:10,population:1e8},
+  twoProportions: {p1:30,p2:45,alpha:0.05,power:80,ratio:1,nonResponse:10,continuityCorrection:false,primaryOutcomes:1},
+  twoMeans: {delta:5,sd:10,alpha:0.05,power:80,ratio:1,nonResponse:10},
+  clusterRCT: {p1:30,p2:45,alpha:0.05,power:80,icc:0.05,clusterSize:30,clusterSizeCV:0.3,nonResponse:10},
+  clusterSurvey: {proportion:50,precision:5,alpha:0.05,clusterSize:30,deff:2,nonResponse:10},
+  steppedWedge: {p1:30,p2:45,alpha:0.05,power:80,icc:0.05,clusterSize:30,clusterSizeCV:0.3,steps:4,nonResponse:10},
+  lqas: {lotSize:5000,upperThreshold:80,lowerThreshold:50,alpha:10,beta:10},
+  did: {delta:5,sd:10,alpha:0.05,power:80,rSquared:0.2,periods:2,nonResponse:10},
+  its: {prePoints:24,postPoints:12,levelChange:0.5,slopeChange:0,autocorrelation:0.3,seasonalTerms:0,alpha:0.05}
 };
 
-const dParams = {
-  singleProportion: ["proportion", "precision", "alpha", "deff", "nonResponse"],
-  twoProportions: ["p1", "p2", "alpha", "power", "ratio", "nonResponse"],
-  twoMeans: ["delta", "sd", "alpha", "power", "ratio", "nonResponse"],
-  clusterRCT: ["p1", "p2", "alpha", "power", "clusterSize", "icc", "nonResponse"],
-  clusterSurvey: ["proportion", "precision", "alpha", "clusterSize", "deff", "nonResponse"],
-  steppedWedge: ["p1", "p2", "alpha", "power", "clusterSize", "icc", "steps", "nonResponse"],
-  lqas: ["lotSize", "upperThreshold", "lowerThreshold", "alphaLQAS", "betaLQAS"],
-  did: ["delta", "sd", "alpha", "power", "rSquared", "periods", "nonResponse"]
+/* ── Param metadata ───────────────────────────────────────────── */
+var PARAM_META = {
+  proportion: {label:'Expected proportion (%)',min:1,max:99,step:1,type:'slider',hint:'Expected prevalence in population'},
+  precision: {label:'Margin of error (%)',min:1,max:15,step:0.5,type:'slider',hint:'Width of confidence interval'},
+  alpha: {label:'Significance level',type:'radio',options:[{v:0.01,l:'0.01'},{v:0.05,l:'0.05',rec:true},{v:0.10,l:'0.10'}],hint:'Probability of false positive'},
+  power: {label:'Power (%)',min:50,max:99,step:1,type:'slider',hint:'Probability of detecting a real effect'},
+  p1: {label:'Control proportion (%)',min:1,max:99,step:1,type:'slider',hint:'Expected outcome in control group'},
+  p2: {label:'Intervention proportion (%)',min:1,max:99,step:1,type:'slider',hint:'Expected outcome with intervention'},
+  ratio: {label:'Allocation ratio',type:'radio',options:[{v:0.5,l:'1:2'},{v:1,l:'1:1',rec:true},{v:1.5,l:'1:1.5'},{v:2,l:'1:2'},{v:3,l:'1:3'}],hint:'Control-to-intervention ratio'},
+  delta: {label:'Detectable effect',min:0.1,max:50,step:0.1,type:'numeric',hint:'Smallest meaningful difference',presets:[{v:3,l:'3'},{v:5,l:'5',rec:true},{v:10,l:'10'}]},
+  sd: {label:'Standard deviation',min:0.1,max:100,step:0.1,type:'numeric',hint:'Pooled SD of outcome',presets:[{v:5,l:'5'},{v:10,l:'10',rec:true},{v:20,l:'20'}]},
+  icc: {label:'ICC',min:0.001,max:0.5,step:0.001,type:'numeric',hint:'Intra-cluster correlation',presets:[{v:0.01,l:'0.01'},{v:0.03,l:'0.03'},{v:0.05,l:'0.05',rec:true},{v:0.08,l:'0.08'},{v:0.10,l:'0.10'},{v:0.15,l:'0.15'}]},
+  clusterSize: {label:'Avg cluster size',min:5,max:500,step:1,type:'numeric',hint:'Individuals per cluster',presets:[{v:7,l:'7'},{v:15,l:'15'},{v:30,l:'30',rec:true},{v:50,l:'50'},{v:100,l:'100'}]},
+  clusterSizeCV: {label:'Cluster size CV',min:0,max:1,step:0.05,type:'numeric',hint:'Variation in cluster sizes',presets:[{v:0.2,l:'0.2 Uniform'},{v:0.3,l:'0.3 Moderate',rec:true},{v:0.5,l:'0.5 High'}]},
+  deff: {label:'Design effect',min:1,max:10,step:0.1,type:'numeric',hint:'DEFF = 1+(m-1)\u00D7ICC',presets:[{v:1,l:'1.0 SRS'},{v:1.5,l:'1.5'},{v:2,l:'2.0',rec:true},{v:2.5,l:'2.5'}]},
+  steps: {label:'Number of steps',type:'radio',options:[{v:2,l:'2'},{v:3,l:'3'},{v:4,l:'4',rec:true},{v:5,l:'5'},{v:6,l:'6'}],hint:'Crossover sequences'},
+  nonResponse: {label:'Non-response (%)',min:0,max:50,step:1,type:'slider',hint:'Expected non-response rate'},
+  population: {label:'Population size',min:100,max:1e8,step:100,type:'numeric',hint:'For finite population correction',presets:[{v:1000,l:'1,000'},{v:5000,l:'5,000'},{v:10000,l:'10,000'},{v:1e8,l:'Infinite',rec:true}]},
+  lotSize: {label:'Lot size',min:50,max:100000,step:50,type:'numeric',hint:'Population per supervision area',presets:[{v:1000,l:'1,000'},{v:5000,l:'5,000',rec:true},{v:20000,l:'20,000'}]},
+  upperThreshold: {label:'Upper threshold (%)',min:10,max:99,step:1,type:'slider',hint:'Adequate coverage target'},
+  lowerThreshold: {label:'Lower threshold (%)',min:1,max:98,step:1,type:'slider',hint:'Inadequate coverage level'},
+  rSquared: {label:'R\u00B2 from covariates',min:0,max:0.9,step:0.05,type:'numeric',hint:'Variance explained by covariates',presets:[{v:0,l:'0 (none)'},{v:0.2,l:'0.2',rec:true},{v:0.4,l:'0.4'}]},
+  periods: {label:'Time periods',type:'radio',options:[{v:2,l:'2',rec:true},{v:3,l:'3'},{v:4,l:'4'},{v:5,l:'5'}],hint:'Measurement periods'},
+  prePoints: {label:'Pre-intervention points',min:3,max:200,step:1,type:'numeric',hint:'Time points before intervention',presets:[{v:12,l:'12'},{v:24,l:'24',rec:true},{v:36,l:'36'},{v:48,l:'48'}]},
+  postPoints: {label:'Post-intervention points',min:3,max:200,step:1,type:'numeric',hint:'Time points after intervention',presets:[{v:6,l:'6'},{v:12,l:'12',rec:true},{v:24,l:'24'}]},
+  levelChange: {label:'Expected level change (SD units)',min:0.1,max:3,step:0.1,type:'slider',hint:'As proportion of residual SD'},
+  slopeChange: {label:'Expected slope change (SD/time)',min:0,max:1,step:0.05,type:'slider',hint:'Change in trend per time unit'},
+  autocorrelation: {label:'Autocorrelation (\u03C1)',min:0,max:0.95,step:0.05,type:'numeric',hint:'First-order autocorrelation',presets:[{v:0,l:'0'},{v:0.2,l:'0.2'},{v:0.3,l:'0.3',rec:true},{v:0.5,l:'0.5'},{v:0.7,l:'0.7'}]},
+  seasonalTerms: {label:'Seasonal harmonics',type:'radio',options:[{v:0,l:'None',rec:true},{v:1,l:'1'},{v:2,l:'2'},{v:4,l:'4'}],hint:'Seasonal adjustment terms'},
+  continuityCorrection: {label:'Yates correction',type:'toggle',hint:'Recommended when n < 30 per group'},
+  primaryOutcomes: {label:'Primary outcomes',type:'radio',options:[{v:1,l:'1',rec:true},{v:2,l:'2'},{v:3,l:'3'},{v:4,l:'4'},{v:5,l:'5'}],hint:'Adjusts alpha via Bonferroni'}
 };
 
-const notesData = {
-  singleProportion: ["Normal approximation to binomial (Wald). Valid when np >= 5.", "DEFF = 1+(m-1)*ICC. Use 1 for simple random sampling.", "For finite populations apply FPC: n/(1+n/N). Not applied here."],
-  twoProportions: ["Two-sided test, unpooled variance (Fleiss, no continuity correction).", "Ratio k: n2 = k*n1. Unequal allocation increases total n.", "For cluster randomisation, use the Cluster RCT calculator."],
-  twoMeans: ["Two-sided t-test, equal variances (pooled SD).", "Delta = minimum detectable effect in original units.", "For Cohen's d: set SD=1 and delta=d."],
-  clusterRCT: ["Inflates n by DEFF = 1+(m-1)*ICC.", "ICC 0.01-0.05 for health outcomes; 0.05-0.15 for process indicators.", "With <20 clusters/arm: consider small-sample corrections."],
-  clusterSurvey: ["30x30 cluster survey: 30 clusters * 30 HH = 900, DEFF~2.", "SMART nutrition: DEFF 1.5-2.5 for GAM, ~1.5 for SAM.", "EPI cluster: 7/cluster * 30 clusters = 210 (WHO method)."],
-  steppedWedge: ["Hussey & Hughes (2007) design effect.", "Fewer clusters than parallel cRCT, more total observations.", "Assumes equal cluster sizes and complete crossover."],
-  lqas: ["Finds minimum n and decision rule d for alpha/beta constraints.", "Exact binomial probabilities, not normal approximation.", "Standard LQAS immunisation: n=19, threshold=80% (WHO/UNICEF)."],
-  did: ["R-squared adjustment reduces n by factor (1-R2).", "Repeated cross-sections, not panel.", "See Bertrand, Duflo & Mullainathan (2004) on clustering SEs."]
+/* Which params each design uses */
+var DESIGN_PARAMS = {
+  singleProportion: ['proportion','precision','alpha','deff','nonResponse','population'],
+  twoProportions: ['p1','p2','alpha','power','ratio','nonResponse','continuityCorrection','primaryOutcomes'],
+  twoMeans: ['delta','sd','alpha','power','ratio','nonResponse'],
+  clusterRCT: ['p1','p2','alpha','power','icc','clusterSize','clusterSizeCV','nonResponse'],
+  clusterSurvey: ['proportion','precision','alpha','clusterSize','deff','nonResponse','population'],
+  steppedWedge: ['p1','p2','alpha','power','icc','clusterSize','clusterSizeCV','steps','nonResponse'],
+  lqas: ['lotSize','upperThreshold','lowerThreshold'],
+  did: ['delta','sd','alpha','power','rSquared','periods','nonResponse'],
+  its: ['prePoints','postPoints','levelChange','slopeChange','autocorrelation','seasonalTerms','alpha']
 };
 
-const formulaData = {
-  singleProportion: "n = Z^2 * p(1-p) / d^2 * DEFF", twoProportions: "n1 = (Za+Zb)^2 * [p1(1-p1)+p2(1-p2)/k] / (p1-p2)^2",
-  twoMeans: "n1 = (Za+Zb)^2 * s^2 * (1+1/k) / d^2", clusterRCT: "n = n_indiv * [1+(m-1)*rho] | clusters = n/m",
-  clusterSurvey: "n = Z^2 * p(1-p)/d^2 * DEFF | clusters = n/m", steppedWedge: "DE = 3(1-rho)(1+T*rho*m) / [T(T-1/T)*rho*m + 1.5T(1-rho)]",
-  lqas: "Exact binomial: P(X<=d | n, p)", did: "n = (Za+Zb)^2 * 2s^2/d^2 * (1-R^2)"
-};
+/* ── Wizard logic ─────────────────────────────────────────────── */
+var WIZARD_FLOW = [
+  {q: 'What is your primary goal?', opts: [
+    {label: 'Estimate a single indicator', filter: ['singleProportion','clusterSurvey','lqas']},
+    {label: 'Compare groups to measure an effect', next: 1}
+  ]},
+  {q: 'What is your unit of assignment?', opts: [
+    {label: 'Individuals', filter: ['twoProportions','twoMeans']},
+    {label: 'Clusters (facilities, communities)', next: 2}
+  ]},
+  {q: 'How is the intervention rolled out?', opts: [
+    {label: 'Parallel arms', filter: ['clusterRCT']},
+    {label: 'Phased rollout', filter: ['steppedWedge']},
+    {label: 'Before-after with comparison', filter: ['did']},
+    {label: 'Time-series, no comparison', filter: ['its']}
+  ]}
+];
 
-const COL = { navy: "#0B1A2E", navyM: "#1a3050", teal: "#2EC4B6", tealD: "#1a9e92", tealGlow: "rgba(46,196,182,0.12)", tealGlow2: "rgba(46,196,182,0.06)", slate: "#8899AA", slateL: "#A4B3C2", off: "#E8ECF0", warm: "#FAFBFC", surf: "#FFFFFF", amber: "#E8A317", amberBg: "rgba(232,163,23,0.08)", amberBorder: "rgba(232,163,23,0.25)" };
-
-// ── Word export ─────────────────────────────────────────────────────
-function exportToWord(designId, designObj, params, result, paramKeys) {
-  if (!result) return;
-  const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const dLabel = designObj ? designObj.label : designId;
-
-  let paramRows = paramKeys.map(k => {
-    const d = pDefs[k];
-    const v = params[k];
-    const display = d.dec ? Number(v).toFixed(d.step < 0.01 ? 3 : d.step < 0.1 ? 2 : 1) : v;
-    return "<tr><td>" + d.label + "</td><td><b>" + display + "</b></td><td>" + d.hint + "</td></tr>";
-  }).join("");
-
-  let resultRows = "";
-  if (designId === "singleProportion") {
-    resultRows = "<tr><td>Base sample (SRS)</td><td><b>" + result.base + "</b></td></tr><tr><td>With design effect</td><td><b>" + result.withDeff + "</b></td></tr><tr class='highlight'><td>Final sample size</td><td><b>" + result.final + "</b></td></tr>";
-  } else if (designId === "twoProportions" || designId === "twoMeans") {
-    resultRows = "<tr><td>Control group</td><td><b>" + result.final1 + "</b> (base: " + result.n1 + ")</td></tr><tr><td>Intervention group</td><td><b>" + result.final2 + "</b> (base: " + result.n2 + ")</td></tr><tr class='highlight'><td>Total sample size</td><td><b>" + result.finalTotal + "</b></td></tr>";
-  } else if (designId === "clusterRCT") {
-    resultRows = "<tr><td>Individual n (no clustering)</td><td><b>" + result.nIndiv + "</b></td></tr><tr><td>Design effect (DEFF)</td><td><b>" + result.deff + "</b></td></tr><tr><td>Clusters per arm</td><td><b>" + result.clustersPerArm + "</b></td></tr><tr><td>Total clusters</td><td><b>" + result.totalClusters + "</b></td></tr><tr class='highlight'><td>Total sample size</td><td><b>" + result.finalTotal + "</b></td></tr>";
-  } else if (designId === "clusterSurvey") {
-    resultRows = "<tr><td>Base sample (SRS)</td><td><b>" + result.base + "</b></td></tr><tr><td>With design effect</td><td><b>" + result.withDeff + "</b></td></tr><tr><td>Number of clusters</td><td><b>" + result.clusters + "</b></td></tr><tr class='highlight'><td>Final sample size</td><td><b>" + result.final + "</b></td></tr>";
-  } else if (designId === "steppedWedge") {
-    resultRows = "<tr><td>DEFF</td><td><b>" + result.deff + "</b></td></tr><tr><td>Stepped-wedge factor</td><td><b>" + result.deSwFactor + "</b></td></tr><tr><td>Total clusters</td><td><b>" + result.totalClusters + "</b> (" + result.clustersPerStep + " per step)</td></tr><tr><td>Measurement periods</td><td><b>" + result.periods + "</b></td></tr><tr class='highlight'><td>Total observations</td><td><b>" + result.final + "</b></td></tr>";
-  } else if (designId === "lqas") {
-    resultRows = "<tr class='highlight'><td>Sample per lot</td><td><b>" + result.sampleSize + "</b></td></tr><tr><td>Decision rule (d)</td><td><b>" + result.decisionRule + "</b></td></tr><tr><td>Alpha error</td><td>" + result.alphaError + "%</td></tr><tr><td>Beta error</td><td>" + result.betaError + "%</td></tr>";
-  } else if (designId === "did") {
-    resultRows = "<tr><td>Base n (unadjusted)</td><td><b>" + result.nBase + "</b></td></tr><tr><td>R-squared adjusted n</td><td><b>" + result.nAdjusted + "</b></td></tr><tr><td>Per group per period</td><td><b>" + result.perGroupPerPeriod + "</b></td></tr><tr class='highlight'><td>Total sample size</td><td><b>" + result.final + "</b></td></tr>";
+/* ── Feasibility checks ──────────────────────────────────────── */
+function checkFeasibility(designId, result) {
+  var warnings = [];
+  if (designId === 'clusterRCT' && result.clustersPerArm > 30) {
+    warnings.push('This design requires ' + result.clustersPerArm + ' clusters per arm (' + result.totalClusters + ' total). Most health evaluations in LMIC settings have fewer than 30 clusters per arm. Consider: reducing the detectable effect, using a stepped-wedge design, or a quasi-experimental approach.');
   }
-
-  const notes = (notesData[designId] || []).map(n => "<li>" + n + "</li>").join("");
-
-  const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Sample Size Calculation</title><style>@page{size:A4;margin:2.5cm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1a1a1a;line-height:1.6}h1{font-size:18pt;color:#0B1A2E;border-bottom:2pt solid #2EC4B6;padding-bottom:6pt;margin-bottom:12pt}h2{font-size:14pt;color:#0B1A2E;margin-top:18pt;margin-bottom:8pt}table{border-collapse:collapse;width:100%;margin:10pt 0}th{background:#0B1A2E;color:white;padding:8pt 10pt;text-align:left;font-size:10pt}td{border:1px solid #ddd;padding:6pt 10pt;font-size:10pt}tr:nth-child(even) td{background:#f8f9fa}.highlight td{background:#e8f9f7;font-weight:bold}.note{background:#f0f4f8;border-left:3pt solid #2EC4B6;padding:8pt 12pt;margin:10pt 0;font-size:10pt}.footer{margin-top:24pt;padding-top:8pt;border-top:1pt solid #ddd;font-size:9pt;color:#888}</style></head><body>' +
-    "<h1>Sample Size Calculation</h1>" +
-    "<p><b>Design:</b> " + dLabel + "<br><b>Date:</b> " + today + "<br><b>Common use:</b> " + (designObj ? designObj.use : "") + "</p>" +
-    "<h2>Parameters</h2>" +
-    "<table><tr><th>Parameter</th><th>Value</th><th>Justification</th></tr>" + paramRows + "</table>" +
-    "<h2>Results</h2>" +
-    "<table><tr><th>Metric</th><th>Value</th></tr>" + resultRows + "</table>" +
-    (designId === "lqas" && result.interpretation ? '<div class="note"><b>Interpretation:</b> ' + result.interpretation + "</div>" : "") +
-    "<h2>Formula</h2>" +
-    '<div class="note">' + (formulaData[designId] || "") + "</div>" +
-    "<h2>Assumptions and Limitations</h2><ul>" + notes + "</ul>" +
-    '<div class="footer">Generated by PRAXIS Evaluation Toolkit | emmanuelneneodjidja.org/praxis</div>' +
-    "</body></html>";
-
-  const blob = new Blob([html], { type: "application/msword" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "sample-size-" + designId + ".doc";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  if (designId === 'steppedWedge' && (result.totalClusters > 50 || result.periods > 8)) {
+    warnings.push('This design requires ' + result.totalClusters + ' clusters across ' + result.periods + ' periods. This may exceed implementation capacity. Consider reducing steps or increasing cluster size.');
+  }
+  if (designId === 'did' && result.perGroupPerPeriod < 30) {
+    warnings.push('Each group-period cell has only ' + result.perGroupPerPeriod + ' observations. Below 30, asymptotic assumptions may not hold.');
+  }
+  if (designId === 'its' && result.totalPoints) {
+    var pre = parseInt(result.totalPoints) - 12; /* rough check */
+    if (result.totalPoints < 24) {
+      warnings.push('Fewer than 24 total data points limits ability to model trends and seasonal patterns.');
+    }
+  }
+  return warnings;
 }
 
-// ── UI Components ───────────────────────────────────────────────────
-function Slider({ paramKey, value, onChange }) {
-  const d = pDefs[paramKey]; if (!d) return null;
-  const isDec = d.dec || false;
-  const pct = ((value - d.min) / (d.max - d.min)) * 100;
-  const displayVal = isDec ? Number(value).toFixed(d.step < 0.01 ? 3 : d.step < 0.1 ? 2 : 1) : value;
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-        <label style={{ fontSize: 12.5, fontWeight: 600, color: COL.navy }}>{d.label}</label>
-        <span style={{ fontSize: 14, fontWeight: 700, color: COL.tealD, fontFamily: "monospace", background: COL.tealGlow, padding: "2px 8px", borderRadius: 4 }}>{displayVal}</span>
-      </div>
-      <input type="range" min={d.min} max={d.max} step={d.step} value={value} onChange={(e) => onChange(paramKey, parseFloat(e.target.value))}
-        style={{ width: "100%", height: 6, WebkitAppearance: "none", appearance: "none", background: "linear-gradient(to right, " + COL.teal + " 0%, " + COL.teal + " " + pct + "%, " + COL.off + " " + pct + "%, " + COL.off + " 100%)", borderRadius: 3, outline: "none", cursor: "pointer" }} />
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
-        {(d.presets || []).map((pr, i) => {
-          const isActive = Math.abs(value - pr.val) < d.step * 0.6;
-          return (<button key={i} onClick={() => onChange(paramKey, pr.val)} title={pr.tip}
-            style={{ fontSize: 10.5, fontWeight: isActive ? 700 : 500, padding: "3px 8px", borderRadius: 4, cursor: "pointer", transition: "all 0.12s",
-              border: isActive ? "1.5px solid " + COL.teal : pr.rec ? "1.5px solid " + COL.amberBorder : "1px solid " + COL.off,
-              background: isActive ? COL.tealGlow : pr.rec ? COL.amberBg : "transparent",
-              color: isActive ? COL.tealD : pr.rec ? COL.amber : COL.slate }}>
-            {pr.rec && !isActive ? "\u2605 " : ""}{pr.label}
-          </button>);
-        })}
-      </div>
-      <div style={{ fontSize: 10.5, color: COL.slate, marginTop: 4, lineHeight: 1.4 }}>
-        {d.hint}
-        {(d.presets || []).some(pr => Math.abs(value - pr.val) < d.step * 0.6) && (
-          <span style={{ color: COL.tealD, fontWeight: 500 }}>{" \u2014 " + ((d.presets || []).find(pr => Math.abs(value - pr.val) < d.step * 0.6) || {}).tip}</span>
-        )}
-      </div>
-    </div>
+/* ── Qualitative defaults by purpose ──────────────────────────── */
+var QUAL_DEFAULTS = {
+  formative: {fgdPerGroup:3, kiiDepth:'deep', idiRange:[12,16], siteDepth:'deep'},
+  summative: {fgdPerGroup:2, kiiDepth:'moderate', idiRange:[8,12], siteDepth:'broad'},
+  developmental: {fgdPerGroup:1, kiiDepth:'overview', idiRange:[6,10], siteDepth:'targeted'},
+  expost: {fgdPerGroup:3, kiiDepth:'deep', idiRange:[16,24], siteDepth:'comprehensive'}
+};
+var HETERO_MULT = {low:0.8, moderate:1.0, high:1.3};
+var ACCESS_MULT = {easy:1.0, moderate:1.5, difficult:2.0};
+var FGD_SIZE = {low:[8,10], moderate:[6,8], high:[4,6]};
+var KII_PER_CAT = {overview:[1,2], moderate:[2,3], deep:[3,5]};
+var IDI_RANGES = {narrow:[8,12], moderate:[12,16], broad:[16,24]};
+
+/* ════════════════════════════════════════════════════════════════
+   COMPONENTS (all React.createElement)
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Check icon SVG ───────────────────────────────────────────── */
+function CheckIcon(props) {
+  return h('svg',{width:props.size||12,height:props.size||12,viewBox:'0 0 24 24',fill:'none',stroke:props.color||'white',strokeWidth:3,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true'},
+    h('polyline',{points:'20 6 9 17 4 12'})
   );
 }
 
-function RCard({ label, value, sub, hl }) {
-  return (<div style={{ background: hl ? "linear-gradient(135deg, " + COL.navy + ", " + COL.navyM + ")" : COL.warm, borderRadius: 10, padding: "12px 14px", border: hl ? "none" : "1px solid " + COL.off, flex: "1 1 0", minWidth: 100 }}>
-    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: hl ? COL.teal : COL.slate, marginBottom: 3 }}>{label}</div>
-    <div style={{ fontSize: 24, fontWeight: 800, color: hl ? "#fff" : COL.navy, fontFamily: "monospace", lineHeight: 1.1 }}>{typeof value === "number" ? value.toLocaleString() : value}</div>
-    {sub && <div style={{ fontSize: 10.5, color: hl ? COL.slateL : COL.slate, marginTop: 2 }}>{sub}</div>}
-  </div>);
+/* ── Topbar ────────────────────────────────────────────────────── */
+function Topbar() {
+  return h('nav',{className:'topbar',role:'navigation','aria-label':'Site navigation'},
+    h('a',{href:'../'},'\u2190 All Tools'),
+    h('div',{className:'nav-r'},
+      h('span',{className:'brand'},'PRAXIS'),
+      h('a',{href:'../../'},'Home')
+    )
+  );
 }
 
-function Results({ id, r }) {
-  if (!r) return <div style={{ color: COL.slate, fontSize: 13 }}>Adjust parameters...</div>;
-  const W = ({ children }) => <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>{children}</div>;
-  if (id === "singleProportion") return <W><RCard label="Base" value={r.base} sub="Before adjustments" /><RCard label="With DEFF" value={r.withDeff} sub="Design effect" /><RCard label="Final" value={r.final} sub="+ non-response" hl /></W>;
-  if (id === "twoProportions" || id === "twoMeans") return <W><RCard label="Control" value={r.final1} sub={"Base: " + r.n1} /><RCard label="Intervention" value={r.final2} sub={"Base: " + r.n2} /><RCard label="Total" value={r.finalTotal} sub="+ non-response" hl /></W>;
-  if (id === "clusterRCT") return <W><RCard label="Indiv. n" value={r.nIndiv} sub={"DEFF=" + r.deff} /><RCard label="Clusters/arm" value={r.clustersPerArm} sub={r.totalClusters + " total"} /><RCard label="Total" value={r.finalTotal} sub="+ non-response" hl /></W>;
-  if (id === "clusterSurvey") return <W><RCard label="Base (SRS)" value={r.base} /><RCard label="Clusters" value={r.clusters} sub={"DEFF: " + r.withDeff} /><RCard label="Final" value={r.final} sub="+ non-response" hl /></W>;
-  if (id === "steppedWedge") return <W><RCard label="Clusters" value={r.totalClusters} sub={r.clustersPerStep + "/step"} /><RCard label="SW factor" value={r.deSwFactor} sub={"DEFF=" + r.deff} /><RCard label="Total obs." value={r.final} sub="+ non-response" hl /></W>;
-  if (id === "lqas") return (<div><W><RCard label="Sample/lot" value={r.sampleSize} hl /><RCard label="Decision (d)" value={r.decisionRule} sub={"<=" + r.decisionRule + " = inadequate"} /></W><div style={{ display: "flex", gap: 10, marginTop: 10 }}><RCard label="Alpha error" value={r.alphaError + "%"} sub="Misclass. adequate" /><RCard label="Beta error" value={r.betaError + "%"} sub="Misclass. inadequate" /></div><div style={{ marginTop: 10, padding: "10px 12px", background: COL.tealGlow2, borderRadius: 8, fontSize: 12.5, color: COL.navy, borderLeft: "3px solid " + COL.teal }}>{r.interpretation}</div></div>);
-  if (id === "did") return <W><RCard label="Base" value={r.nBase} sub={"R2-adj: " + r.nAdjusted} /><RCard label="Per grp/period" value={r.perGroupPerPeriod} sub={r.periods + " periods"} /><RCard label="Total" value={r.final} sub="+ non-response" hl /></W>;
+/* ── Tier Selector ────────────────────────────────────────────── */
+function TierSelector(props) {
+  var tiers = ['foundation','practitioner','advanced'];
+  return h('div',{className:'tier-bar',role:'radiogroup','aria-label':'Experience level'},
+    tiers.map(function(t){
+      return h('button',{
+        key:t, className:'tier-btn'+(props.tier===t?' active':''),
+        role:'radio', 'aria-checked':props.tier===t?'true':'false',
+        onClick:function(){props.onChange(t);}
+      }, S.tiers[t]);
+    })
+  );
+}
+
+/* ── Param Input (slider, numeric, radio, toggle) ─────────────── */
+function ParamInput(props) {
+  var meta = PARAM_META[props.name];
+  if (!meta) return null;
+  var val = props.value;
+  var tier = props.tier;
+
+  var labelEl = h('div',{className:'param-label'},
+    h('span',null,meta.label),
+    (tier !== 'foundation') ? h('span',{className:'param-hint'},' \u2014 ' + meta.hint) : null
+  );
+
+  var inputEl = null;
+
+  if (meta.type === 'slider') {
+    inputEl = h('div',null,
+      h('div',{className:'param-row'},
+        h('input',{
+          type:'range', className:'param-slider',
+          min:meta.min, max:meta.max, step:meta.step, value:val,
+          'aria-label':meta.label, 'aria-valuemin':meta.min, 'aria-valuemax':meta.max, 'aria-valuenow':val,
+          onChange:function(e){props.onChange(parseFloat(e.target.value));}
+        }),
+        h('input',{
+          type:'number', className:'param-val',
+          min:meta.min, max:meta.max, step:meta.step, value:val,
+          'aria-label':meta.label + ' value',
+          onChange:function(e){var v=parseFloat(e.target.value);if(!isNaN(v))props.onChange(Math.min(meta.max,Math.max(meta.min,v)));}
+        })
+      )
+    );
+  } else if (meta.type === 'numeric') {
+    inputEl = h('div',null,
+      h('div',{className:'param-row'},
+        h('input',{
+          type:'number', className:'param-val', style:{minWidth:'90px'},
+          min:meta.min, max:meta.max, step:meta.step, value:val,
+          'aria-label':meta.label,
+          onChange:function(e){var v=parseFloat(e.target.value);if(!isNaN(v))props.onChange(v);}
+        })
+      ),
+      meta.presets ? h('div',{className:'param-presets'},
+        meta.presets.map(function(p){
+          return h('button',{
+            key:p.v, className:'preset-btn'+(val==p.v?' active':'')+(p.rec?' rec':''),
+            onClick:function(){props.onChange(p.v);},
+            title:p.l
+          }, p.l);
+        })
+      ) : null
+    );
+  } else if (meta.type === 'radio') {
+    inputEl = h('div',{className:'param-presets',role:'radiogroup','aria-label':meta.label},
+      meta.options.map(function(o){
+        return h('button',{
+          key:o.v, className:'preset-btn'+(val==o.v?' active':'')+(o.rec?' rec':''),
+          role:'radio', 'aria-checked':val==o.v?'true':'false',
+          onClick:function(){props.onChange(o.v);}
+        }, o.l);
+      })
+    );
+  } else if (meta.type === 'toggle') {
+    inputEl = h('label',{style:{display:'flex',alignItems:'center',gap:'8px',cursor:'pointer',fontSize:'13px'}},
+      h('input',{type:'checkbox',checked:!!val,onChange:function(e){props.onChange(e.target.checked);},style:{accentColor:'var(--p-teal)'}}),
+      meta.hint
+    );
+  }
+
+  var learnEl = null;
+  if (tier === 'foundation' && props.learn) {
+    learnEl = h('div',{className:'learn-block'},props.learn);
+  }
+
+  return h('div',{className:'param-item'},labelEl,inputEl,learnEl);
+}
+
+/* ── Design Wizard ────────────────────────────────────────────── */
+function DesignWizard(props) {
+  var st = useState(0); var step = st[0]; var setStep = st[1];
+  var st2 = useState(null); var filter = st2[0]; var setFilter = st2[1];
+  var collapsed = useState(props.tier !== 'foundation'); var isCollapsed = collapsed[0]; var setCollapsed = collapsed[1];
+
+  if (filter) {
+    return h('div',{className:'wizard-box'},
+      h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
+        h('div',{className:'wizard-q'},'\u2714 Recommended designs highlighted'),
+        h('button',{className:'reset-btn',onClick:function(){setFilter(null);setStep(0);props.onFilter(null);}},'Clear filter')
+      )
+    );
+  }
+
+  if (isCollapsed) {
+    return h('button',{className:'sens-toggle',onClick:function(){setCollapsed(false);}},'\u2728 Help me choose a design \u203A');
+  }
+
+  var current = WIZARD_FLOW[step];
+  return h('div',{className:'wizard-box'},
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'4px'}},
+      h('div',{style:{fontSize:'11px',color:'var(--p-text3)'}},'Step '+(step+1)+' of 3'),
+      step > 0 ? h('button',{className:'reset-btn',onClick:function(){setStep(step-1);}},'Back') : null
+    ),
+    h('div',{className:'wizard-q'},current.q),
+    h('div',{className:'wizard-opts'},
+      current.opts.map(function(opt,i){
+        return h('button',{key:i,className:'wizard-opt',onClick:function(){
+          if (opt.filter) { setFilter(opt.filter); props.onFilter(opt.filter); }
+          else if (opt.next !== undefined) { setStep(opt.next); }
+        }},opt.label);
+      })
+    )
+  );
+}
+
+/* ── Results Card ─────────────────────────────────────────────── */
+function ResultsCard(props) {
+  var r = props.result;
+  var d = props.design;
+  if (!r) return null;
+
+  if (d === 'its') {
+    var pwr = parseFloat(r.power);
+    var pwrColor = pwr >= 80 ? '#10B981' : pwr >= 60 ? '#F59E0B' : '#EF4444';
+    return h('div',{className:'results-card'},
+      h('div',{className:'rc-label'},'Statistical Power'),
+      h('div',{className:'rc-big',style:{color:pwrColor}},r.power + '%'),
+      h('div',{className:'rc-sub'},pwr >= 80 ? 'Adequate power to detect the specified effect' : pwr >= 60 ? 'Marginal power \u2014 consider more time points or larger effect' : 'Insufficient power \u2014 increase time points or relax effect size'),
+      h('div',{className:'results-row'},
+        h('div',{className:'results-item'}, h('div',{className:'ri-val'},r.totalPoints), h('div',{className:'ri-label'},'Total data points')),
+        h('div',{className:'results-item'}, h('div',{className:'ri-val'},r.nEff), h('div',{className:'ri-label'},'Effective n')),
+        h('div',{className:'results-item'}, h('div',{className:'ri-val'},r.mde80), h('div',{className:'ri-label'},'MDE at 80% (SD units)')),
+        h('div',{className:'results-item'}, h('div',{className:'ri-val'},r.mde90), h('div',{className:'ri-label'},'MDE at 90%'))
+      )
+    );
+  }
+
+  if (d === 'lqas') {
+    return h('div',{className:'results-card'},
+      h('div',{className:'rc-label'},'Sample per Lot'),
+      h('div',{className:'rc-big'},String(r.sampleSize)),
+      h('div',{className:'rc-sub'},r.interpretation),
+      h('div',{className:'results-row'},
+        h('div',{className:'results-item'}, h('div',{className:'ri-val'},'d = '+r.decisionRule), h('div',{className:'ri-label'},'Decision rule')),
+        h('div',{className:'results-item'}, h('div',{className:'ri-val'},r.alphaError+'%'), h('div',{className:'ri-label'},'Alpha error')),
+        h('div',{className:'results-item'}, h('div',{className:'ri-val'},r.betaError+'%'), h('div',{className:'ri-label'},'Beta error'))
+      )
+    );
+  }
+
+  /* Generic results for other designs */
+  var mainVal = r.finalTotal || r.final || r.primary || 0;
+  var mainLabel = r.label || 'respondents';
+
+  var subItems = [];
+  if (d === 'singleProportion') {
+    subItems = [
+      {v:r.base,l:'Base (SRS)'}, {v:r.withDeff,l:'With DEFF'},
+      r.withFPC !== r.withDeff ? {v:r.withFPC,l:'With FPC'} : null
+    ].filter(Boolean);
+  } else if (d === 'twoProportions' || d === 'twoMeans') {
+    subItems = [{v:r.final1,l:'Control'},{v:r.final2,l:'Intervention'}];
+    if (r.bonferroni) subItems.push({v:r.bonferroni.toFixed(4),l:'Adj. \u03B1'});
+  } else if (d === 'clusterRCT') {
+    subItems = [{v:r.clustersPerArm,l:'Clusters/arm'},{v:r.totalClusters,l:'Total clusters'},{v:r.deffAdj,l:'Adj. DEFF'}];
+  } else if (d === 'clusterSurvey') {
+    subItems = [{v:r.base,l:'Base (SRS)'},{v:r.clusters,l:'Clusters'}];
+  } else if (d === 'steppedWedge') {
+    subItems = [{v:r.totalClusters,l:'Total clusters'},{v:r.clustersPerStep,l:'Per step'},{v:r.periods,l:'Periods'},{v:r.deffAdj,l:'Adj. DEFF'}];
+  } else if (d === 'did') {
+    subItems = [{v:r.perGroupPerPeriod,l:'Per group/period'},{v:r.periods,l:'Periods'}];
+  }
+
+  return h('div',{className:'results-card'},
+    h('div',{className:'rc-label'},'Required Sample Size'),
+    h('div',{className:'rc-big'},mainVal.toLocaleString()),
+    h('div',{className:'rc-sub'},'total ' + mainLabel + ' (adjusted for non-response)'),
+    subItems.length > 0 ? h('div',{className:'results-row'},
+      subItems.map(function(s,i){
+        return h('div',{key:i,className:'results-item'},h('div',{className:'ri-val'},String(s.v)),h('div',{className:'ri-label'},s.l));
+      })
+    ) : null
+  );
+}
+
+/* ── Warning Cards ────────────────────────────────────────────── */
+function Warnings(props) {
+  if (!props.warnings || props.warnings.length === 0) return null;
+  return h('div',null,
+    props.warnings.map(function(w,i){
+      return h('div',{key:i,className:'warn-card'},
+        h('span',{className:'warn-icon'},'\u26A0'),
+        h('div',{className:'warn-text'},w)
+      );
+    })
+  );
+}
+
+/* ── Qualitative Method Card ──────────────────────────────────── */
+function QualMethodCard(props) {
+  var method = props.method;
+  var ctx = props.context;
+  var purpose = props.purpose;
+  var hMult = HETERO_MULT[ctx.heterogeneity] || 1;
+  var defaults = QUAL_DEFAULTS[purpose] || QUAL_DEFAULTS.summative;
+
+  if (method === 'fgd') {
+    var groups = ctx.fgdGroups || 3;
+    var genderSplit = ctx.genderSplit ? 2 : 1;
+    var sites = ctx.sites || 1;
+    var perGroup = defaults.fgdPerGroup;
+    var total = Math.max(1, Math.round(groups * perGroup * genderSplit * sites * hMult));
+    var groupSize = FGD_SIZE[ctx.sensitivity] || FGD_SIZE.moderate;
+    var participants = total * Math.round((groupSize[0]+groupSize[1])/2);
+    var accessM = ACCESS_MULT[ctx.access] || 1;
+    var days = Math.ceil(total * accessM);
+
+    return h('div',{className:'qual-card'},
+      h('div',{className:'qual-card-header'},
+        h('div',{className:'qual-card-title'},'Focus Group Discussions'),
+        h('div',{className:'qual-result'},h('span',{className:'qr-big'},String(total)),h('span',{className:'qr-label'},' FGDs'))
+      ),
+      h('div',{className:'ctx-grid'},
+        h('div',{className:'ctx-item'},
+          h('label',null,'Stakeholder groups'),
+          h('input',{type:'number',className:'ctx-select',min:1,max:10,value:ctx.fgdGroups||3,
+            onChange:function(e){props.onCtx('fgdGroups',parseInt(e.target.value)||1);}})
+        ),
+        h('div',{className:'ctx-item'},
+          h('label',null,'Gender-disaggregated'),
+          h('select',{className:'ctx-select',value:ctx.genderSplit?'yes':'no',
+            onChange:function(e){props.onCtx('genderSplit',e.target.value==='yes');}},
+            h('option',{value:'no'},'No'),h('option',{value:'yes'},'Yes'))
+        ),
+        h('div',{className:'ctx-item'},
+          h('label',null,'Number of sites'),
+          h('input',{type:'number',className:'ctx-select',min:1,max:20,value:ctx.sites||1,
+            onChange:function(e){props.onCtx('sites',parseInt(e.target.value)||1);}})
+        )
+      ),
+      h('div',{style:{fontSize:'13px',color:'var(--p-text2)',lineHeight:'1.6'}},
+        'Participants per FGD: ',groupSize[0],'\u2013',groupSize[1],' \u00B7 ',
+        'Total participants: ~',participants,' \u00B7 ',
+        'Est. fieldwork days: ',days
+      )
+    );
+  }
+
+  if (method === 'kii') {
+    var cats = ctx.kiiCategories || 5;
+    var depth = defaults.kiiDepth;
+    var range = KII_PER_CAT[depth] || KII_PER_CAT.moderate;
+    var perCat = Math.round((range[0]+range[1])/2);
+    var total = Math.max(1, Math.round(cats * perCat * hMult));
+    var accessM = ACCESS_MULT[ctx.access] || 1;
+    var perDay = ctx.access === 'difficult' ? 1.5 : ctx.access === 'moderate' ? 2 : 3;
+    var days = Math.ceil(total / perDay * accessM / accessM); /* perDay already accounts for access */
+
+    return h('div',{className:'qual-card'},
+      h('div',{className:'qual-card-header'},
+        h('div',{className:'qual-card-title'},'Key Informant Interviews'),
+        h('div',{className:'qual-result'},h('span',{className:'qr-big'},String(total)),h('span',{className:'qr-label'},' KIIs'))
+      ),
+      h('div',{className:'ctx-grid'},
+        h('div',{className:'ctx-item'},
+          h('label',null,'Respondent categories'),
+          h('input',{type:'number',className:'ctx-select',min:1,max:15,value:ctx.kiiCategories||5,
+            onChange:function(e){props.onCtx('kiiCategories',parseInt(e.target.value)||1);}})
+        )
+      ),
+      h('div',{style:{fontSize:'13px',color:'var(--p-text2)'}},
+        range[0],'\u2013',range[1],' per category (',depth,' depth) \u00B7 ',
+        'Est. fieldwork days: ',Math.ceil(total/perDay)
+      )
+    );
+  }
+
+  if (method === 'idi') {
+    var scope = ctx.scope || 'moderate';
+    var range = IDI_RANGES[scope] || IDI_RANGES.moderate;
+    var mid = Math.round((range[0]+range[1])/2 * hMult);
+    var accessM = ACCESS_MULT[ctx.access] || 1;
+    var days = Math.ceil(mid / 2 * accessM);
+
+    return h('div',{className:'qual-card'},
+      h('div',{className:'qual-card-header'},
+        h('div',{className:'qual-card-title'},'In-Depth Interviews'),
+        h('div',{className:'qual-result'},h('span',{className:'qr-big'},range[0]+'\u2013'+range[1]),h('span',{className:'qr-label'},' IDIs'))
+      ),
+      h('div',{style:{fontSize:'13px',color:'var(--p-text2)'}},
+        'Scope: ',scope,' \u00B7 Adjusted for heterogeneity: ~',mid,' \u00B7 ',
+        'Est. fieldwork days: ',days
+      ),
+      h('div',{style:{fontSize:'11px',color:'var(--p-text3)',marginTop:'6px',fontStyle:'italic'}},
+        'Informed by Vasileiou et al. (2018) and Malterud et al. (2016). Monitor saturation during fieldwork.'
+      )
+    );
+  }
+
+  if (method === 'observation') {
+    var obsSites = ctx.obsSites || 3;
+    var sessPerSite = ctx.obsSessionsPerSite || 2;
+    var total = obsSites * sessPerSite;
+    return h('div',{className:'qual-card'},
+      h('div',{className:'qual-card-header'},
+        h('div',{className:'qual-card-title'},'Direct Observation'),
+        h('div',{className:'qual-result'},h('span',{className:'qr-big'},String(total)),h('span',{className:'qr-label'},' sessions'))
+      ),
+      h('div',{className:'ctx-grid'},
+        h('div',{className:'ctx-item'},
+          h('label',null,'Observation sites'),
+          h('input',{type:'number',className:'ctx-select',min:1,max:20,value:obsSites,
+            onChange:function(e){props.onCtx('obsSites',parseInt(e.target.value)||1);}})
+        ),
+        h('div',{className:'ctx-item'},
+          h('label',null,'Sessions per site'),
+          h('input',{type:'number',className:'ctx-select',min:1,max:5,value:sessPerSite,
+            onChange:function(e){props.onCtx('obsSessionsPerSite',parseInt(e.target.value)||1);}})
+        )
+      )
+    );
+  }
+
   return null;
 }
 
-// ── Main App ────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════════════════════
+   MAIN APP
+   ════════════════════════════════════════════════════════════════ */
 function App() {
-  const [active, setActive] = useState("singleProportion");
-  const [params, setParams] = useState(() => { const o = {}; Object.entries(pDefs).forEach(([k, v]) => { o[k] = v.def; }); return o; });
-  const set = useCallback((k, v) => setParams((prev) => ({ ...prev, [k]: v })), []);
-  const result = useMemo(() => { try { const p = {}; dParams[active].forEach((k) => { if (k === "alphaLQAS") p.alpha = params.alphaLQAS; else if (k === "betaLQAS") p.beta = params.betaLQAS; else p[k] = params[k]; }); return calc[active](p); } catch (e) { return null; } }, [active, params]);
-  const dObj = designs.find((d) => d.id === active);
+  /* ── State ─────────────────────────────────────────────────── */
+  var tierSt = useState('practitioner'); var tier = tierSt[0]; var setTier = tierSt[1];
+  var designSt = useState('singleProportion'); var activeDesign = designSt[0]; var setActiveDesign = designSt[1];
+  var filterSt = useState(null); var wizardFilter = filterSt[0]; var setWizardFilter = filterSt[1];
 
-  return (
-    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", maxWidth: 960, margin: "0 auto", padding: "20px 16px 40px", minHeight: "100vh" }}>
-      <style>{"input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:" + COL.teal + ";cursor:pointer;border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2)}input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:" + COL.teal + ";cursor:pointer;border:3px solid white}*{box-sizing:border-box}"}</style>
+  /* Per-design params */
+  var paramsSt = useState(function(){
+    var init = {};
+    DESIGNS.forEach(function(d){ init[d.id] = Object.assign({}, DEFAULT_PARAMS[d.id]); });
+    return init;
+  });
+  var allParams = paramsSt[0]; var setAllParams = paramsSt[1];
 
-      <div style={{ marginBottom: 22 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-          <div style={{ background: "linear-gradient(135deg, " + COL.navy + ", " + COL.navyM + ")", color: COL.teal, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", padding: "4px 10px", borderRadius: 4, textTransform: "uppercase", fontFamily: "monospace" }}>PRAXIS</div>
-          <span style={{ fontSize: 11, color: COL.slate, fontWeight: 500 }}>EVALUATION TOOLKIT</span>
-        </div>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: COL.navy, margin: 0, lineHeight: 1.15 }}>Sample Size Calculator</h1>
-        <p style={{ fontSize: 13.5, color: COL.slate, margin: "5px 0 0", lineHeight: 1.5 }}>8 evaluation designs with guided parameter selection. Click the <span style={{ color: COL.amber, fontWeight: 600 }}>{"\u2605"} starred presets</span> if unsure which value to use.</p>
-      </div>
+  /* Qualitative state */
+  var purposeSt = useState('summative'); var qualPurpose = purposeSt[0]; var setQualPurpose = purposeSt[1];
+  var methodsSt = useState({fgd:true,kii:true,idi:false,observation:false});
+  var qualMethods = methodsSt[0]; var setQualMethods = methodsSt[1];
+  var ctxSt = useState({
+    scope:'moderate', heterogeneity:'moderate', sensitivity:'low', access:'easy',
+    fgdGroups:3, genderSplit:false, sites:2,
+    kiiCategories:5, obsSites:3, obsSessionsPerSite:2
+  });
+  var qualCtx = ctxSt[0]; var setQualCtx = ctxSt[1];
 
-      <div style={{ marginBottom: 18 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: COL.slate, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Select design</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
-          {designs.map((d) => { const on = d.id === active; return (
-            <button key={d.id} onClick={() => setActive(d.id)} style={{ display: "flex", alignItems: "flex-start", gap: 7, padding: "9px 10px", background: on ? COL.surf : "transparent", border: on ? "2px solid " + COL.teal : "1px solid " + COL.off, borderRadius: 8, cursor: "pointer", textAlign: "left", transition: "all 0.15s", boxShadow: on ? "0 2px 10px " + COL.tealGlow : "none" }}>
-              <div><div style={{ fontSize: 11.5, fontWeight: 700, color: on ? COL.navy : COL.navyM, lineHeight: 1.2 }}>{d.label}</div><div style={{ fontSize: 10, color: COL.slate, marginTop: 1, lineHeight: 1.3 }}>{d.desc}</div></div>
-            </button>); })}
-        </div>
-      </div>
+  /* ── Derived ───────────────────────────────────────────────── */
+  var currentParams = allParams[activeDesign] || {};
 
-      <div style={{ background: COL.tealGlow2, borderLeft: "3px solid " + COL.teal, padding: "7px 12px", borderRadius: "0 6px 6px 0", marginBottom: 16, fontSize: 12, color: COL.navyM }}><strong>Common use: </strong>{dObj ? dObj.use : ""}</div>
+  var result = useMemo(function(){
+    try {
+      if (calc[activeDesign]) return calc[activeDesign](currentParams);
+    } catch(e) { return {error: e.message}; }
+    return null;
+  }, [activeDesign, currentParams]);
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, alignItems: "start" }}>
-        <div style={{ background: COL.surf, borderRadius: 12, padding: "16px 18px", border: "1px solid " + COL.off }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: COL.teal, textTransform: "uppercase", letterSpacing: "0.1em" }}>Parameters</div>
-            <div style={{ fontSize: 10, color: COL.amber, fontWeight: 600 }}>{"\u2605"} = recommended if unsure</div>
-          </div>
-          {dParams[active].map((k) => <Slider key={k} paramKey={k} value={params[k]} onChange={set} />)}
-        </div>
+  var warnings = useMemo(function(){
+    if (!result || result.error) return [];
+    return checkFeasibility(activeDesign, result);
+  }, [activeDesign, result]);
 
-        <div>
-          <div style={{ background: COL.surf, borderRadius: 12, padding: "16px 18px", border: "1px solid " + COL.off, marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: COL.teal, textTransform: "uppercase", letterSpacing: "0.1em" }}>Required Sample Size</div>
-              {result && (
-                <button onClick={() => exportToWord(active, dObj, params, result, dParams[active])}
-                  style={{ fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 6, cursor: "pointer", border: "1.5px solid " + COL.teal, background: COL.tealGlow, color: COL.tealD, transition: "all 0.15s" }}
-                  onMouseOver={(e) => { e.target.style.background = COL.teal; e.target.style.color = "white"; }}
-                  onMouseOut={(e) => { e.target.style.background = COL.tealGlow; e.target.style.color = COL.tealD; }}>
-                  Export to Word
-                </button>
-              )}
-            </div>
-            <Results id={active} r={result} />
-          </div>
+  /* ── Handlers ──────────────────────────────────────────────── */
+  function updateParam(name, val) {
+    setAllParams(function(prev){
+      var next = Object.assign({}, prev);
+      next[activeDesign] = Object.assign({}, prev[activeDesign]);
+      next[activeDesign][name] = val;
+      return next;
+    });
+  }
 
-          <div style={{ background: COL.surf, borderRadius: 12, padding: "12px 16px", border: "1px solid " + COL.off, fontSize: 11.5, color: COL.navyM, lineHeight: 1.65, marginBottom: 10 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: COL.slate, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Assumptions</div>
-            {(notesData[active] || []).map((n, i) => <p key={i} style={{ margin: "0 0 3px" }}>{"\u2022 " + n}</p>)}
-          </div>
+  function resetDesign() {
+    setAllParams(function(prev){
+      var next = Object.assign({}, prev);
+      next[activeDesign] = Object.assign({}, DEFAULT_PARAMS[activeDesign]);
+      return next;
+    });
+  }
 
-          <div style={{ padding: "10px 14px", background: "linear-gradient(135deg, " + COL.navy + ", " + COL.navyM + ")", borderRadius: 8, fontSize: 11, color: COL.slateL, lineHeight: 1.6 }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: COL.teal, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 3 }}>Formula</div>
-            <div style={{ fontFamily: "monospace", fontSize: 11 }}>{formulaData[active]}</div>
-            <div style={{ marginTop: 5, color: COL.slate, fontSize: 9.5 }}>{"Built on PRAXIS methodology \u00B7 "}<span style={{ color: COL.teal }}>emmanuelneneodjidja.org/praxis</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
+  function updateCtx(key, val) {
+    setQualCtx(function(prev){ var n = Object.assign({},prev); n[key]=val; return n; });
+  }
+
+  function toggleMethod(m) {
+    setQualMethods(function(prev){ var n=Object.assign({},prev); n[m]=!n[m]; return n; });
+  }
+
+  /* ── Qual totals ───────────────────────────────────────────── */
+  var qualTotals = useMemo(function(){
+    var hM = HETERO_MULT[qualCtx.heterogeneity]||1;
+    var aM = ACCESS_MULT[qualCtx.access]||1;
+    var defs = QUAL_DEFAULTS[qualPurpose]||QUAL_DEFAULTS.summative;
+    var t = {fgds:0,fgdPart:0,kiis:0,idis:0,obs:0,days:0};
+
+    if (qualMethods.fgd) {
+      var gs = qualCtx.fgdGroups||3, gen=qualCtx.genderSplit?2:1, sites=qualCtx.sites||1;
+      t.fgds = Math.max(1,Math.round(gs*defs.fgdPerGroup*gen*sites*hM));
+      var sz = FGD_SIZE[qualCtx.sensitivity]||FGD_SIZE.moderate;
+      t.fgdPart = t.fgds * Math.round((sz[0]+sz[1])/2);
+      t.days += Math.ceil(t.fgds * aM);
+    }
+    if (qualMethods.kii) {
+      var cats=qualCtx.kiiCategories||5;
+      var r=KII_PER_CAT[defs.kiiDepth]||KII_PER_CAT.moderate;
+      t.kiis = Math.max(1,Math.round(cats*((r[0]+r[1])/2)*hM));
+      var perDay = qualCtx.access==='difficult'?1.5:qualCtx.access==='moderate'?2:3;
+      t.days += Math.ceil(t.kiis/perDay);
+    }
+    if (qualMethods.idi) {
+      var scope = qualCtx.scope||'moderate';
+      var ir = IDI_RANGES[scope]||IDI_RANGES.moderate;
+      t.idis = Math.round((ir[0]+ir[1])/2*hM);
+      t.days += Math.ceil(t.idis/2*aM);
+    }
+    if (qualMethods.observation) {
+      t.obs = (qualCtx.obsSites||3)*(qualCtx.obsSessionsPerSite||2);
+      t.days += Math.ceil(t.obs*0.5*aM);
+    }
+    return t;
+  }, [qualMethods, qualCtx, qualPurpose]);
+
+  var quantN = (result && !result.error) ? (result.primary || 0) : 0;
+  var qualN = qualTotals.fgdPart + qualTotals.kiis + qualTotals.idis;
+
+  /* ── Render ────────────────────────────────────────────────── */
+  return h('div',null,
+    /* Topbar */
+    h(Topbar),
+
+    /* Page Header */
+    h('div',{className:'page-header'},
+      h('h1',null,S.title),
+      h('div',{className:'subtitle'},S.subtitle),
+      h(TierSelector, {tier:tier, onChange:setTier})
+    ),
+
+    /* Main Content */
+    h('div',{className:'main-content'},
+
+      /* ═══ SECTION A: QUANTITATIVE ═══ */
+      h('section',{className:'section','aria-label':S.sections.quant},
+        h('div',{className:'section-title'},
+          h('span',{className:'section-badge badge-quant'},'A'),
+          S.sections.quant
+        ),
+
+        /* Wizard */
+        h(DesignWizard, {tier:tier, onFilter:function(f){
+          setWizardFilter(f);
+          if (f && f.length > 0) setActiveDesign(f[0]);
+        }}),
+
+        /* Design Grid */
+        h('div',{className:'design-grid',role:'radiogroup','aria-label':'Select evaluation design'},
+          DESIGNS.map(function(d){
+            var show = !wizardFilter || wizardFilter.indexOf(d.id) >= 0;
+            if (wizardFilter && !show) return null;
+            return h('div',{
+              key:d.id,
+              className:'design-card'+(activeDesign===d.id?' active':''),
+              role:'radio', 'aria-checked':activeDesign===d.id?'true':'false',
+              tabIndex:0,
+              onClick:function(){setActiveDesign(d.id);},
+              onKeyDown:function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();setActiveDesign(d.id);}}
+            },
+              h('div',{className:'dc-name'},
+                h('div',{className:'dc-check'},h(CheckIcon,{size:10})),
+                d.name
+              ),
+              h('div',{className:'dc-desc'},d.desc)
+            );
+          })
+        ),
+
+        /* Collapsed designs when filtered */
+        wizardFilter ? h('details',{style:{marginBottom:'20px'}},
+          h('summary',{style:{fontSize:'12px',color:'var(--p-text3)',cursor:'pointer'}},'Show all designs'),
+          h('div',{className:'design-grid',style:{marginTop:'10px'}},
+            DESIGNS.filter(function(d){return wizardFilter.indexOf(d.id)<0;}).map(function(d){
+              return h('div',{
+                key:d.id, className:'design-card'+(activeDesign===d.id?' active':''),
+                role:'radio','aria-checked':activeDesign===d.id?'true':'false', tabIndex:0,
+                onClick:function(){setActiveDesign(d.id);},
+                onKeyDown:function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();setActiveDesign(d.id);}}
+              },
+                h('div',{className:'dc-name'},h('div',{className:'dc-check'},h(CheckIcon,{size:10})),d.name),
+                h('div',{className:'dc-desc'},d.desc)
+              );
+            })
+          )
+        ) : null,
+
+        /* Parameters */
+        h('div',{className:'card'},
+          h('div',{className:'flex-between'},
+            h('div',{className:'card-title'},DESIGNS.find(function(d){return d.id===activeDesign;}).name + ' Parameters'),
+            h('button',{className:'reset-btn',onClick:resetDesign},'Reset defaults')
+          ),
+          h('div',{className:'param-grid'},
+            (DESIGN_PARAMS[activeDesign]||[]).map(function(pName){
+              var meta = PARAM_META[pName];
+              if (!meta) return null;
+              /* Hide advanced-only params for foundation */
+              if (tier === 'foundation' && (pName === 'continuityCorrection' || pName === 'primaryOutcomes' || pName === 'clusterSizeCV')) return null;
+              if (tier === 'practitioner' && pName === 'primaryOutcomes') return null;
+              return h(ParamInput, {
+                key:pName, name:pName, value:currentParams[pName],
+                tier:tier, onChange:function(v){updateParam(pName,v);}
+              });
+            })
+          )
+        ),
+
+        /* Results */
+        result && !result.error ? h(ResultsCard, {result:result, design:activeDesign}) : null,
+        result && result.error ? h('div',{className:'warn-card'},
+          h('span',{className:'warn-icon'},'\u26A0'),
+          h('div',{className:'warn-text'},'Calculation error: '+result.error+'. Try adjusting your parameters.')
+        ) : null,
+
+        /* Feasibility warnings */
+        h(Warnings, {warnings:warnings})
+      ),
+
+      /* ═══ SECTION B: QUALITATIVE ═══ */
+      h('section',{className:'section','aria-label':S.sections.qual},
+        h('div',{className:'section-title'},
+          h('span',{className:'section-badge badge-qual'},'B'),
+          S.sections.qual
+        ),
+        h('div',{className:'section-subtitle'},S.qualNote),
+
+        /* Purpose selector */
+        h('div',{style:{marginBottom:'6px',fontSize:'12px',fontWeight:'600',color:'var(--p-text2)'}},'Evaluation Purpose'),
+        h('div',{className:'purpose-grid'},
+          ['formative','summative','developmental','expost'].map(function(p){
+            return h('button',{key:p,className:'purpose-btn'+(qualPurpose===p?' active':''),
+              onClick:function(){setQualPurpose(p);}
+            },S.purposes[p]);
+          })
+        ),
+
+        /* Method selector */
+        h('div',{style:{marginBottom:'6px',fontSize:'12px',fontWeight:'600',color:'var(--p-text2)'}},'Select Methods'),
+        h('div',{className:'method-checks'},
+          [{id:'fgd',label:'FGDs'},{id:'kii',label:'KIIs'},{id:'idi',label:'IDIs'},{id:'observation',label:'Observation'}].map(function(m){
+            return h('label',{key:m.id,className:'method-check'+(qualMethods[m.id]?' active':'')},
+              h('input',{type:'checkbox',checked:!!qualMethods[m.id],onChange:function(){toggleMethod(m.id);}}),
+              m.label
+            );
+          })
+        ),
+
+        /* Context parameters */
+        h('div',{className:'ctx-grid'},
+          h('div',{className:'ctx-item'},
+            h('label',null,'Scope'), h('select',{className:'ctx-select',value:qualCtx.scope,onChange:function(e){updateCtx('scope',e.target.value);}},
+              h('option',{value:'narrow'},'Narrow'),h('option',{value:'moderate'},'Moderate'),h('option',{value:'broad'},'Broad'))
+          ),
+          h('div',{className:'ctx-item'},
+            h('label',null,'Heterogeneity'), h('select',{className:'ctx-select',value:qualCtx.heterogeneity,onChange:function(e){updateCtx('heterogeneity',e.target.value);}},
+              h('option',{value:'low'},'Low (\u00D70.8)'),h('option',{value:'moderate'},'Moderate (\u00D71.0)'),h('option',{value:'high'},'High (\u00D71.3)'))
+          ),
+          h('div',{className:'ctx-item'},
+            h('label',null,'Sensitivity'), h('select',{className:'ctx-select',value:qualCtx.sensitivity,onChange:function(e){updateCtx('sensitivity',e.target.value);}},
+              h('option',{value:'low'},'Low'),h('option',{value:'moderate'},'Moderate'),h('option',{value:'high'},'High'))
+          ),
+          h('div',{className:'ctx-item'},
+            h('label',null,'Field Access'), h('select',{className:'ctx-select',value:qualCtx.access,onChange:function(e){updateCtx('access',e.target.value);}},
+              h('option',{value:'easy'},'Easy (\u00D71.0)'),h('option',{value:'moderate'},'Moderate (\u00D71.5)'),h('option',{value:'difficult'},'Difficult (\u00D72.0)'))
+          )
+        ),
+
+        /* Sensitivity warning */
+        qualCtx.sensitivity === 'high' ? h('div',{className:'warn-card'},
+          h('span',{className:'warn-icon'},'\u26A0'),
+          h('div',{className:'warn-text'},'Sensitive context detected. Consider: anonymised stakeholder categories in reports; separate FGD groups by power dynamics; enhanced informed consent; secure data handling protocols.')
+        ) : null,
+
+        /* Per-method cards */
+        qualMethods.fgd ? h(QualMethodCard,{method:'fgd',context:qualCtx,purpose:qualPurpose,onCtx:updateCtx}) : null,
+        qualMethods.kii ? h(QualMethodCard,{method:'kii',context:qualCtx,purpose:qualPurpose,onCtx:updateCtx}) : null,
+        qualMethods.idi ? h(QualMethodCard,{method:'idi',context:qualCtx,purpose:qualPurpose,onCtx:updateCtx}) : null,
+        qualMethods.observation ? h(QualMethodCard,{method:'observation',context:qualCtx,purpose:qualPurpose,onCtx:updateCtx}) : null
+      ),
+
+      /* ═══ SECTION C: COMBINED SUMMARY ═══ */
+      h('section',{className:'section','aria-label':S.sections.combined},
+        h('div',{className:'section-title'},
+          h('span',{className:'section-badge badge-combined'},'C'),
+          S.sections.combined
+        ),
+
+        h('div',{className:'card'},
+          h('table',{className:'summary-table'},
+            h('thead',null,h('tr',null,
+              h('th',null,'Component'),h('th',null,'Sample'),h('th',null,'Details')
+            )),
+            h('tbody',null,
+              h('tr',{className:'st-section'},h('td',{colSpan:3},'Quantitative')),
+              h('tr',null,
+                h('td',null,DESIGNS.find(function(d){return d.id===activeDesign;}).name),
+                h('td',null,h('strong',null,quantN.toLocaleString())),
+                h('td',null,(result && result.label) || '')
+              ),
+              h('tr',{className:'st-section'},h('td',{colSpan:3},'Qualitative')),
+              qualMethods.fgd ? h('tr',null,h('td',null,'FGDs'),h('td',null,h('strong',null,String(qualTotals.fgds))),h('td',null,'~'+qualTotals.fgdPart+' participants')) : null,
+              qualMethods.kii ? h('tr',null,h('td',null,'KIIs'),h('td',null,h('strong',null,String(qualTotals.kiis))),h('td',null,'across '+(qualCtx.kiiCategories||5)+' categories')) : null,
+              qualMethods.idi ? h('tr',null,h('td',null,'IDIs'),h('td',null,h('strong',null,String(qualTotals.idis))),h('td',null,qualCtx.scope+' scope')) : null,
+              qualMethods.observation ? h('tr',null,h('td',null,'Observation'),h('td',null,h('strong',null,String(qualTotals.obs))),h('td',null,'sessions')) : null,
+              h('tr',{className:'st-total'},
+                h('td',null,'Total Fieldwork'),
+                h('td',null,h('strong',null,String(qualTotals.days)+' days')),
+                h('td',null,'qualitative component')
+              )
+            )
+          ),
+
+          /* Export */
+          h('div',{className:'export-row'},
+            h('button',{className:'export-btn export-btn-primary',onClick:function(){window.print();}},'Export PDF'),
+            h('button',{className:'export-btn export-btn-secondary',onClick:function(){
+              /* JSON export */
+              var data = {station:'sample_size',version:'2.0',timestamp:new Date().toISOString(),
+                tier:tier,
+                quantitative:{design:activeDesign,parameters:currentParams,result:result},
+                qualitative:{purpose:qualPurpose,methods:qualMethods,context:qualCtx,totals:qualTotals},
+                combined:{quantN:quantN,qualN:qualN,fieldDays:qualTotals.days}
+              };
+              var blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');a.href=url;a.download='praxis-sample-plan.json';a.click();URL.revokeObjectURL(url);
+            }},'Export JSON')
+          )
+        ),
+
+        /* Methodology notes */
+        h('details',{style:{marginTop:'16px'}},
+          h('summary',{style:{fontSize:'13px',fontWeight:'500',color:'var(--p-teal-dark)',cursor:'pointer'}},'Methodology & References'),
+          h('div',{style:{padding:'16px',fontSize:'12px',color:'var(--p-text2)',lineHeight:'1.7'}},
+            h('p',null,h('strong',null,'Quantitative: '),'Formulas verified against published references. Fleiss (1981) for proportions; Eldridge et al. (2006) for unequal cluster correction; Hussey & Hughes (2007) for stepped-wedge; Huitema, McKean & Laraway (2007) for ITS power.'),
+            h('p',{style:{marginTop:'8px'}},h('strong',null,'Qualitative: '),'Planning heuristics informed by Guest et al. (2020), Hennink et al. (2017), Vasileiou et al. (2018), and Malterud et al. (2016). These are starting points \u2014 monitor saturation during fieldwork.'),
+            h('p',{style:{marginTop:'8px'}},h('strong',null,'Limitations: '),'All calculations assume standard distributional assumptions. Actual required samples may differ based on local context, data quality, and fieldwork conditions.')
+          )
+        )
+      )
+    ),
+
+    /* Footer */
+    h('div',{className:'page-footer'},
+      'No data leaves your device. No analytics. No cookies. No accounts. All calculations run in your browser.',
+      h('br'),
+      h('a',{href:'https://emmanuelneneodjidja.org/praxis'},'PRAXIS Evaluation Toolkit'),
+      ' \u00B7 Sample Size Calculator v2'
+    ),
+
+    /* Sticky bar */
+    h('div',{className:'sticky-bar',role:'status','aria-live':'polite','aria-label':'Sample plan summary'},
+      h('div',{className:'sb-item'},h('span',{className:'sb-val'},quantN.toLocaleString()),h('span',{className:'sb-label'},' quant')),
+      h('div',{className:'sb-sep'}),
+      qualMethods.fgd ? h('div',{className:'sb-item'},h('span',{className:'sb-val'},String(qualTotals.fgds)),h('span',{className:'sb-label'},' FGDs')) : null,
+      qualMethods.kii ? h('div',{className:'sb-item'},h('span',{className:'sb-val'},String(qualTotals.kiis)),h('span',{className:'sb-label'},' KIIs')) : null,
+      qualMethods.idi ? h('div',{className:'sb-item'},h('span',{className:'sb-val'},String(qualTotals.idis)),h('span',{className:'sb-label'},' IDIs')) : null,
+      h('div',{className:'sb-sep'}),
+      h('div',{className:'sb-item'},h('span',{className:'sb-val'},String(qualTotals.days)),h('span',{className:'sb-label'},' field days'))
+    )
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+/* ── Mount ────────────────────────────────────────────────────── */
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+<script>
+/* Service worker registration */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
 </script>
 </body>
 </html>
