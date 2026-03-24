@@ -100,7 +100,7 @@
 
     /* Loop visual */
     .loop {
-      width: 100px; height: 100px;
+      width: 120px; height: 120px;
       margin: 0 auto 40px;
       position: relative;
     }
@@ -109,22 +109,46 @@
       border-radius: 50%;
       border: 1.5px solid var(--border);
       position: relative;
+      animation: spinSlow 20s linear infinite;
+    }
+    .loop-track {
+      position: absolute; inset: -1.5px;
+      border-radius: 50%;
+      border: 1.5px solid transparent;
+      border-top-color: var(--accent);
+      border-right-color: rgba(88,213,186,0.3);
+      animation: spinSlow 20s linear infinite;
     }
     .loop-dot {
       position: absolute;
-      top: -4px; left: 50%; transform: translateX(-50%);
-      width: 8px; height: 8px;
+      top: -5px; left: 50%; transform: translateX(-50%);
+      width: 10px; height: 10px;
       border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 12px rgba(88,213,186,0.4);
+      box-shadow: 0 0 14px rgba(88,213,186,0.5), 0 0 4px rgba(88,213,186,0.8);
     }
     .loop-center {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 24px; font-weight: 700;
+      font-size: 28px; font-weight: 700;
       color: var(--accent);
       letter-spacing: -0.02em;
+    }
+    /* Outer pulse ring */
+    .loop::before {
+      content: '';
+      position: absolute; inset: -12px;
+      border-radius: 50%;
+      border: 1px solid rgba(88,213,186,0.08);
+      animation: loopPulse 3s ease-in-out infinite;
+    }
+    .loop::after {
+      content: '';
+      position: absolute; inset: -24px;
+      border-radius: 50%;
+      border: 1px solid rgba(88,213,186,0.04);
+      animation: loopPulse 3s ease-in-out infinite 1.5s;
     }
 
     .badge {
@@ -231,6 +255,11 @@
       font-size: 14px; font-weight: 700;
       color: var(--accent);
       padding-top: 2px;
+      opacity: 0.4;
+      transition: opacity 0.6s ease, color 0.6s ease;
+    }
+    .pipe-step.visible .pipe-num {
+      opacity: 1;
     }
     .pipe-title {
       font-size: 16px; font-weight: 600; color: #fff;
@@ -314,6 +343,14 @@
     .footer-right a:hover { color: var(--accent); }
 
     /* ANIMATIONS */
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes loopPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.3; }
+    }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
@@ -389,6 +426,7 @@
       <div class="loop-ring">
         <div class="loop-dot"></div>
       </div>
+      <div class="loop-track"></div>
       <div class="loop-center">360°</div>
     </div>
 
@@ -535,7 +573,7 @@ var observer = new IntersectionObserver(function(entries) {
     }
   });
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+document.querySelectorAll('.reveal, .pipe-step').forEach(function(el) { observer.observe(el); });
 </script>
 
 </body>
