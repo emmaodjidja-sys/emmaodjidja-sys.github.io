@@ -98,9 +98,9 @@
       text-align: center;
     }
 
-    /* Loop visual — SVG based */
+    /* Loop visual */
     .loop {
-      width: 140px; height: 140px;
+      width: 130px; height: 130px;
       margin: 0 auto 44px;
       position: relative;
     }
@@ -114,6 +114,11 @@
       font-size: 26px; font-weight: 700;
       color: var(--accent);
       letter-spacing: -0.02em;
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards 1.8s;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
     }
 
     .badge {
@@ -213,6 +218,14 @@
       padding: 28px 0;
       border-bottom: 1px solid var(--border);
       align-items: start;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pipe-step.visible {
+      opacity: 1;
+      transform: translateX(0);
     }
     .pipe-step:last-child { border-bottom: none; }
     .pipe-num {
@@ -221,17 +234,31 @@
       color: var(--accent);
       padding-top: 2px;
       opacity: 0.4;
-      transition: opacity 0.6s ease, color 0.6s ease;
+      transition: opacity 0.4s ease, color 0.4s ease, transform 0.3s ease;
     }
     .pipe-step.visible .pipe-num {
       opacity: 1;
     }
+    .pipe-step:hover .pipe-num {
+      transform: scale(1.15);
+    }
+    .pipe-step:hover .pipe-title {
+      color: var(--accent);
+    }
     .pipe-title {
       font-size: 16px; font-weight: 600; color: #fff;
       margin-bottom: 4px;
+      transition: color 0.3s ease;
     }
     .pipe-desc {
       font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+    }
+    .pipe-step {
+      cursor: default;
+    }
+    .pipe-step:hover {
+      background: rgba(255,255,255,0.02);
+      border-radius: 6px;
     }
 
     /* THE DIFFERENCE */
@@ -242,6 +269,18 @@
       background: var(--bg-surface);
       border: 1px solid var(--border);
       padding: 32px 28px;
+      opacity: 0;
+      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .diff-card.old-card {
+      transform: translateX(-16px);
+    }
+    .diff-card.new-card {
+      transform: translateX(16px);
+    }
+    .diff-card.visible {
+      opacity: 1;
+      transform: translateX(0);
     }
     .diff-card:first-child { border-radius: 8px 0 0 8px; }
     .diff-card:last-child { border-radius: 0 8px 8px 0; }
@@ -270,6 +309,16 @@
       font-weight: 700; color: #fff;
       letter-spacing: -0.02em;
       margin-bottom: 12px;
+    }
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-scale.visible {
+      opacity: 1;
+      transform: scale(1);
     }
     .cta p {
       font-size: 15px; color: var(--text-secondary);
@@ -321,14 +370,14 @@
 
     .hero-content > * {
       opacity: 0;
-      animation: fadeUp 0.5s ease-out forwards;
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     .hero-content > :nth-child(1) { animation-delay: 0s; }
-    .hero-content > :nth-child(2) { animation-delay: 0.08s; }
-    .hero-content > :nth-child(3) { animation-delay: 0.14s; }
-    .hero-content > :nth-child(4) { animation-delay: 0.2s; }
-    .hero-content > :nth-child(5) { animation-delay: 0.28s; }
-    .hero-content > :nth-child(6) { animation-delay: 0.36s; }
+    .hero-content > :nth-child(2) { animation-delay: 0.15s; }
+    .hero-content > :nth-child(3) { animation-delay: 0.3s; }
+    .hero-content > :nth-child(4) { animation-delay: 0.45s; }
+    .hero-content > :nth-child(5) { animation-delay: 0.55s; }
+    .hero-content > :nth-child(6) { animation-delay: 0.65s; }
 
     /* RESPONSIVE */
     @media (max-width: 640px) {
@@ -336,6 +385,7 @@
       .section { padding: 72px 20px; }
       .cta { padding: 72px 20px; }
       .diff-grid { grid-template-columns: 1fr; }
+      .diff-card.old-card, .diff-card.new-card { transform: translateY(16px); }
       .diff-card:first-child { border-radius: 8px 8px 0 0; }
       .diff-card:last-child { border-radius: 0 0 8px 8px; }
       .pipe-step { grid-template-columns: 36px 1fr; gap: 14px; }
@@ -381,44 +431,13 @@
 
     <div class="loop" aria-hidden="true">
       <svg viewBox="0 0 140 140">
-        <!-- Outer faint ring -->
-        <circle cx="70" cy="70" r="66" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-        <!-- Main ring -->
-        <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
-        <!-- Animated arc that draws and travels around the ring -->
+        <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(88,213,186,0.08)" stroke-width="1"/>
         <circle cx="70" cy="70" r="54" fill="none"
-          stroke="url(#arcGrad)" stroke-width="2"
-          stroke-dasharray="85 254" stroke-linecap="round"
-          transform-origin="70 70">
-          <animateTransform attributeName="transform" type="rotate"
-            from="0 70 70" to="360 70 70" dur="8s" repeatCount="indefinite"/>
+          stroke="#58D5BA" stroke-width="1.5"
+          stroke-dasharray="339.3" stroke-dashoffset="339.3"
+          stroke-linecap="round">
+          <animate attributeName="stroke-dashoffset" from="339.3" to="0" dur="2s" fill="freeze" begin="0.5s" calcMode="spline" keySplines="0.16 1 0.3 1"/>
         </circle>
-        <!-- Six node dots at clock positions (the 6 pipeline stages) -->
-        <circle cx="70" cy="16" r="3" fill="var(--accent)" opacity="0.8">
-          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="4s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="116.7" cy="43" r="2.5" fill="var(--accent)" opacity="0.6">
-          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="4s" begin="0.67s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="116.7" cy="97" r="2.5" fill="var(--accent)" opacity="0.6">
-          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="4s" begin="1.33s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="70" cy="124" r="2.5" fill="var(--accent)" opacity="0.6">
-          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="4s" begin="2s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="23.3" cy="97" r="2.5" fill="var(--accent)" opacity="0.6">
-          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="4s" begin="2.67s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="23.3" cy="43" r="2.5" fill="var(--accent)" opacity="0.6">
-          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="4s" begin="3.33s" repeatCount="indefinite"/>
-        </circle>
-        <defs>
-          <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="var(--accent)" stop-opacity="0"/>
-            <stop offset="50%" stop-color="var(--accent)" stop-opacity="0.8"/>
-            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
       </svg>
       <div class="loop-center">360°</div>
     </div>
@@ -460,42 +479,42 @@
     </p>
 
     <div class="pipeline">
-      <div class="pipe-step reveal">
+      <div class="pipe-step">
         <div class="pipe-num">01</div>
         <div>
           <div class="pipe-title">Theory of Change</div>
           <div class="pipe-desc">Structured causal pathways with assumptions, evidence ratings, and risk flags. The foundation every subsequent step references.</div>
         </div>
       </div>
-      <div class="pipe-step reveal">
+      <div class="pipe-step">
         <div class="pipe-num">02</div>
         <div>
           <div class="pipe-title">Evaluation Matrix</div>
           <div class="pipe-desc">Questions linked to OECD-DAC criteria, indicators, data sources, and methods. Each row traces back to a ToC pathway.</div>
         </div>
       </div>
-      <div class="pipe-step reveal">
+      <div class="pipe-step">
         <div class="pipe-num">03</div>
         <div>
           <div class="pipe-title">Sampling &amp; Design</div>
           <div class="pipe-desc">Sample size calculation, design selection, and power analysis informed by the evaluation questions and context constraints.</div>
         </div>
       </div>
-      <div class="pipe-step reveal">
+      <div class="pipe-step">
         <div class="pipe-num">04</div>
         <div>
           <div class="pipe-title">Instruments</div>
           <div class="pipe-desc">Data collection tools generated from the matrix. Every question on every form maps to an indicator, which maps to a ToC assumption.</div>
         </div>
       </div>
-      <div class="pipe-step reveal">
+      <div class="pipe-step">
         <div class="pipe-num">05</div>
         <div>
           <div class="pipe-title">Analysis Plan</div>
           <div class="pipe-desc">Statistical and qualitative analysis methods pre-registered against each evaluation question. No post-hoc fishing.</div>
         </div>
       </div>
-      <div class="pipe-step reveal">
+      <div class="pipe-step">
         <div class="pipe-num">06</div>
         <div>
           <div class="pipe-title">Findings to Framework</div>
@@ -511,8 +530,8 @@
   <div class="section-inner">
     <div class="overline reveal">// THE DIFFERENCE</div>
     <h2 class="section-title reveal">What breaks today vs. what 360° fixes</h2>
-    <div class="diff-grid reveal">
-      <div class="diff-card">
+    <div class="diff-grid">
+      <div class="diff-card old-card">
         <div class="diff-label old">Current practice</div>
         <div class="diff-item">ToC in PowerPoint, matrix in Excel, instruments in Word, analysis in Stata, report in another Word file</div>
         <div class="diff-item">No traceability between stages</div>
@@ -532,7 +551,7 @@
 
 <!-- CTA -->
 <section class="cta">
-  <h2 class="reveal">Live demo. June 3, 2026.</h2>
+  <h2 class="reveal-scale">Live demo. June 3, 2026.</h2>
   <p class="reveal">Glocal Evaluation Week. Open source. Free forever.</p>
   <div class="cta-actions reveal">
     <a href="https://www.linkedin.com/in/emmanuel-odjidja/" class="btn btn-amber" target="_blank">Follow for Updates</a>
@@ -558,15 +577,61 @@
 </footer>
 
 <script>
-var observer = new IntersectionObserver(function(entries) {
+// General reveals (section titles, descriptions, CTA)
+var revealObserver = new IntersectionObserver(function(entries) {
   entries.forEach(function(entry) {
     if (entry.isIntersecting) {
       entry.target.classList.add('visible');
-      observer.unobserve(entry.target);
+      revealObserver.unobserve(entry.target);
     }
   });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-document.querySelectorAll('.reveal, .pipe-step').forEach(function(el) { observer.observe(el); });
+}, { threshold: 0.25, rootMargin: '0px 0px -60px 0px' });
+document.querySelectorAll('.reveal, .reveal-scale').forEach(function(el) { revealObserver.observe(el); });
+
+// Pipeline steps — staggered cascade
+var pipeSteps = document.querySelectorAll('.pipe-step');
+var pipeObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      // Find this step's index among all pipe-steps
+      var idx = Array.prototype.indexOf.call(pipeSteps, entry.target);
+      // Count how many previous siblings are already visible
+      var visibleBefore = 0;
+      for (var i = 0; i < idx; i++) {
+        if (pipeSteps[i].classList.contains('visible')) visibleBefore++;
+      }
+      var delay = (idx - visibleBefore) * 120;
+      setTimeout(function() {
+        entry.target.classList.add('visible');
+      }, delay);
+      pipeObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.3, rootMargin: '0px 0px -40px 0px' });
+pipeSteps.forEach(function(el) { pipeObserver.observe(el); });
+
+// Diff cards — old card first, new card follows
+var diffCards = document.querySelectorAll('.diff-card');
+var diffObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      var card = entry.target;
+      if (card.classList.contains('old-card')) {
+        card.classList.add('visible');
+        // Reveal the new card 200ms later
+        var newCard = card.parentElement.querySelector('.new-card');
+        if (newCard) {
+          setTimeout(function() { newCard.classList.add('visible'); }, 200);
+          diffObserver.unobserve(newCard);
+        }
+      } else if (!card.classList.contains('visible')) {
+        card.classList.add('visible');
+      }
+      diffObserver.unobserve(card);
+    }
+  });
+}, { threshold: 0.25, rootMargin: '0px 0px -40px 0px' });
+diffCards.forEach(function(el) { diffObserver.observe(el); });
 </script>
 
 </body>
