@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRAXIS EWS | Early Warning System for Violent Extremism Escalation</title>
+  <meta name="description" content="Econometric research and open-source tooling to detect escalation signals in ACLED conflict data and translate them into protection decisions. Built by a P/CVE practitioner working in the Sahel.">
+  <meta property="og:title" content="PRAXIS EWS | Early Warning System">
+  <meta property="og:description" content="Predicting violent extremism escalation in the Central Sahel using stacked event study designs on ACLED geocoded conflict data.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/ews/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/svg+xml" href="../logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1f2e;
+      --bg-surface: #212738;
+      --warm: #c4704b;
+      --warm-dim: rgba(196,112,75,0.12);
+      --cool: #2a7d6e;
+      --text: #e8e4df;
+      --text-secondary: #a09b94;
+      --text-muted: #6b665f;
+      --border: rgba(232,228,223,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+    body {
+      font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.75;
+      font-size: 16px;
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--border);
+      background: rgba(26,31,46,0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-inner {
+      max-width: 920px; margin: 0 auto; padding: 0 28px;
+      height: 56px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px; font-weight: 500; color: var(--text);
+      letter-spacing: 0.06em;
+    }
+    .nav-brand span { color: var(--warm); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a {
+      font-size: 13px; color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--warm); }
+    .nav-github {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      color: var(--bg) !important;
+      background: var(--warm);
+      padding: 5px 14px;
+      transition: opacity 0.2s;
+    }
+    .nav-github:hover { opacity: 0.85; }
+    .hamburger {
+      display: none; background: none; border: none; cursor: pointer; padding: 4px;
+    }
+    .hamburger svg { width: 22px; height: 22px; stroke: var(--text-secondary); stroke-width: 2; fill: none; }
+
+    /* MAIN */
+    .container { max-width: 720px; margin: 0 auto; padding: 0 28px; }
+
+    /* HERO */
+    .hero {
+      padding: 120px 0 80px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(2.8rem, 6vw, 4.2rem);
+      font-weight: 400;
+      line-height: 1.05;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--warm);
+    }
+    .hero-descriptor {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+    .hero-sub {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-width: 600px;
+    }
+
+    /* SECTIONS */
+    .section {
+      padding: 72px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    .section-heading {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      font-weight: 400;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 28px;
+    }
+
+    .prose { color: var(--text-secondary); line-height: 1.8; }
+    .prose p + p { margin-top: 20px; }
+    .prose strong { color: var(--text); font-weight: 500; }
+
+    /* RESEARCH DETAIL */
+    .research-detail {
+      margin-top: 36px;
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+    }
+    .research-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .research-detail p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+    .research-detail + .research-detail {
+      padding-top: 24px;
+    }
+
+    /* FIGURE PLACEHOLDER */
+    .figure-placeholder {
+      margin: 40px 0;
+      padding: 48px 28px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .figure-placeholder p {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* PLATFORM LAYERS */
+    .layer {
+      margin-top: 36px;
+      padding-left: 20px;
+      border-left: 2px solid var(--border);
+    }
+    .layer-active { border-left-color: var(--warm); }
+    .layer-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px; font-weight: 500;
+      color: var(--warm);
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+    .layer p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+    .layer ul {
+      margin-top: 10px;
+      padding-left: 0;
+      list-style: none;
+    }
+    .layer li {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.75;
+      padding-left: 16px;
+      position: relative;
+    }
+    .layer li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 11px;
+      width: 4px; height: 4px;
+      background: var(--text-muted);
+      border-radius: 50%;
+    }
+
+    /* STATUS INLINE */
+    .status-note {
+      margin-top: 28px;
+      padding: 20px 24px;
+      background: var(--warm-dim);
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .status-note strong { color: var(--warm); font-weight: 500; }
+
+    /* CLOSER */
+    .closer {
+      padding: 72px 0 100px;
+    }
+    .closer p {
+      color: var(--text-secondary);
+      font-size: 17px;
+      line-height: 1.8;
+      max-width: 600px;
+    }
+    .closer-heading {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+    }
+    .footer-inner {
+      max-width: 720px; margin: 0 auto; padding: 0 28px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a {
+      font-size: 13px; color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text-secondary); }
+    .footer-copy {
+      font-size: 12px; color: var(--text-muted);
+    }
+
+    /* MOBILE */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 56px; left: 0; right: 0;
+        background: rgba(26,31,46,0.97);
+        padding: 16px 28px; gap: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .hamburger { display: block; }
+      .hero { padding: 80px 0 60px; }
+      .section { padding: 52px 0; }
+      .layer { padding-left: 16px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* SCROLL REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="../" class="nav-brand">PRAXIS <span>EWS</span></a>
+    <button class="hamburger" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+    <div class="nav-links">
+      <a href="../">Lab</a>
+      <a href="./" class="active">EWS</a>
+      <a href="../tools/">Evaluation</a>
+      <a href="../360/">360</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="nav-github">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<div class="container">
+  <section class="hero reveal">
+    <p class="hero-label">PRAXIS Research Track</p>
+    <h1>PRAXIS <em>EWS</em></h1>
+    <p class="hero-descriptor">Early Warning System</p>
+    <p class="hero-sub">Econometric research and open-source tooling to detect escalation signals in ACLED conflict data and translate them into protection decisions.</p>
+  </section>
+</div>
+
+<!-- THE RESEARCH -->
+<div class="container">
+  <section class="section reveal" id="research">
+    <h2 class="section-heading">The research</h2>
+    <div class="prose">
+      <p>The core question is straightforward: can we predict where violent extremism will escalate before it does? Not with machine learning black boxes or satellite imagery, but with the kind of econometric methods that survive peer review and can be explained to a programme manager in Ouagadougou.</p>
+      <p>The current study examines whether district-level spikes in kidnapping-for-recruitment (KFR) predict subsequent surges in violent extremist events across the Central Sahel. Using ACLED geocoded conflict data from 2015 to 2023 at the admin-2 level for Burkina Faso, Mali, and Niger, the analysis applies a stacked event study design with two-way fixed effects to isolate the temporal and spatial dynamics of escalation.</p>
+    </div>
+
+    <div class="research-detail">
+      <p class="research-label">Method</p>
+      <p>Stacked event study with two-way fixed effects (unit and time). The stacking addresses the staggered treatment timing problem identified in recent econometrics literature. Each district-event cohort is estimated separately and then aggregated, avoiding the negative-weighting bias of conventional TWFE estimators.</p>
+    </div>
+
+    <div class="research-detail">
+      <p class="research-label">Key findings</p>
+      <p>KFR spikes are followed by statistically significant increases in VE events within 3 to 6 months at the district level. The effect persists after controlling for district and month fixed effects, pre-existing conflict trends, and spatial clustering. Spatial spillover is detectable at radii of 50km and 100km from the origin district, with attenuation beyond 150km. Placebo permutation tests (randomised treatment timing) produce null results, supporting a causal interpretation. Five robustness checks confirm stability: alternative bandwidths, excluding capital districts, varying the KFR spike threshold, dropping individual countries, and using Conley standard errors for spatial correlation.</p>
+    </div>
+
+    <div class="figure-placeholder">
+      <p>Event study coefficient plot<br>Manuscript figure, in preparation</p>
+    </div>
+
+    <div class="research-detail">
+      <p class="research-label">Status</p>
+      <p>Manuscript in preparation. The methodology and preliminary findings form the analytical foundation of the PRAXIS EWS platform.</p>
+    </div>
+  </section>
+</div>
+
+<!-- THE PLATFORM -->
+<div class="container">
+  <section class="section reveal" id="platform">
+    <h2 class="section-heading">The platform</h2>
+    <div class="prose">
+      <p>The research produces a signal. The platform turns that signal into something a protection officer, a programme manager, or a humanitarian coordinator can act on. Three layers, each with a clear function.</p>
+    </div>
+
+    <div class="layer layer-active">
+      <p class="layer-name">Layer 1: Predict</p>
+      <p>Automated detection of escalation signals from ACLED API data. The stacked event study model runs on rolling windows, producing a risk score at admin-2 level. The input is publicly available conflict event data. The output is a probability that a given district will experience a VE surge in the next 3 to 6 months, based on observed KFR dynamics.</p>
+    </div>
+
+    <div class="layer">
+      <p class="layer-name">Layer 2: Alert</p>
+      <p>Signal translation into structured alerts for defined stakeholder groups. Each alert includes severity classification, geographic targeting to the district level, the underlying data pattern that triggered the signal, and a confidence interval from the model. Alerts are designed to be legible to non-technical users.</p>
+    </div>
+
+    <div class="layer">
+      <p class="layer-name">Layer 3: Respond</p>
+      <p>Decision pathways for different users:</p>
+      <ul>
+        <li>Community protection activation for local civil society actors</li>
+        <li>Programme adaptation guidance for P/CVE implementers</li>
+        <li>Pre-positioning recommendations for humanitarian agencies</li>
+        <li>Threat briefing structure for security coordination bodies</li>
+      </ul>
+    </div>
+
+    <div class="status-note">
+      <strong>Where this stands:</strong> Layer 1 is grounded in completed econometric research. The ACLED data pipeline for automated ingestion is in development. The integrated predict-alert-respond platform is planned for v1 release. This is a research programme being built into infrastructure, not a shipped product with a pricing page.
+    </div>
+  </section>
+</div>
+
+<!-- THE SCIENCE -->
+<div class="container">
+  <section class="section reveal" id="science">
+    <h2 class="section-heading">Methodological foundation</h2>
+    <div class="prose">
+      <p>The current foundation is classical econometrics: interpretable, peer-reviewable, and explainable to the people who will use the outputs. The stacked event study design was chosen because it handles staggered treatment timing correctly, produces coefficient estimates with confidence intervals, and does not require the kind of training data that would bias the model toward historically over-documented conflicts.</p>
+      <p>The planned extension adds machine learning on top of the econometric base. XGBoost on multi-source event features, actor-network analysis from ACLED's actor coding, and temporal sequence modelling to capture escalation dynamics that a linear model cannot. The econometric layer remains the interpretive anchor. The ML layer improves prediction accuracy where the data supports it.</p>
+      <p>Wherever ACLED operates, roughly 230 countries and territories, is the addressable scope. The Central Sahel is the proof of concept because that is where I work and where the data is richest for the KFR-to-VE pathway. It is not the ceiling.</p>
+    </div>
+  </section>
+</div>
+
+<!-- WHO BUILT THIS -->
+<div class="container">
+  <section class="closer reveal">
+    <h2 class="closer-heading">Who built this</h2>
+    <p>This was built by a P/CVE practitioner working in the Sahel. I design and manage evaluations of programmes aimed at preventing violent extremism across Burkina Faso, Mali, and Niger. I have been doing this work for over 12 years, across six countries, and have published 29 peer-reviewed papers on topics ranging from health systems to the climate-conflict nexus. The gap between people who study conflict from university offices and people who work in conflict zones is real, and it shapes what gets built. PRAXIS exists to close that gap. The early warning system comes from the same place as the evaluation tools: someone who needed it, could not find it, and decided to build it.</p>
+  </section>
+</div>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="../">PRAXIS Lab</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>
+    </div>
+    <span class="footer-copy">PRAXIS EWS. Open source. MIT licensed.</span>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+(function() {
+  var els = document.querySelectorAll('.reveal');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    els.forEach(function(el) { el.classList.add('visible'); });
+    return;
+  }
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  els.forEach(function(el) { observer.observe(el); });
+})();
+</script>
+</body>
+</html>
