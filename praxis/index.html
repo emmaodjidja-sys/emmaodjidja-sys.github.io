@@ -881,5 +881,166 @@ document.querySelectorAll('.reveal').forEach(function(el) {
   statEls.forEach(function(s) { statObserver.observe(s); });
 })();
 </script>
+<script>
+(function() {
+  'use strict';
+
+  var canvas = document.querySelector('.hero-canvas');
+  if (!canvas) return;
+
+  var ctx = canvas.getContext('2d');
+  var hero = canvas.closest('.hero');
+  var nodes = [];
+  var animId = null;
+  var lastTime = 0;
+
+  // Config
+  var isMobile = window.matchMedia('(max-width: 767px)').matches;
+  var NODE_COUNT = isMobile ? 28 : 55;
+  var CONNECTION_DIST = 150;
+  var TEAL = { r: 88, g: 213, b: 186 };    // #58D5BA
+  var AMBER = { r: 240, g: 180, b: 41 };   // #F0B429
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  // Reduced motion check
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() {
+    var rect = hero.getBoundingClientRect();
+    canvas.width = rect.width * DPR;
+    canvas.height = rect.height * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function createNode(w, h) {
+    var isAmber = Math.random() < 0.1;
+    var color = isAmber ? AMBER : TEAL;
+    var depth = 0.3 + Math.random() * 0.7; // 0.3 - 1.0
+    var speed = 15 + depth * 30; // 15 - 45 px/sec
+    var angle = Math.random() * Math.PI * 2;
+    return {
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      radius: 1.5 + depth * 2.5,
+      opacity: 0.15 + depth * 0.25,
+      color: color,
+      depth: depth
+    };
+  }
+
+  function init() {
+    resize();
+    var w = canvas.width / DPR;
+    var h = canvas.height / DPR;
+    nodes = [];
+    for (var i = 0; i < NODE_COUNT; i++) {
+      nodes.push(createNode(w, h));
+    }
+  }
+
+  function update(dt) {
+    var w = canvas.width / DPR;
+    var h = canvas.height / DPR;
+    var buffer = CONNECTION_DIST;
+
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      n.x += n.vx * dt;
+      n.y += n.vy * dt;
+
+      // Wrap with buffer
+      if (n.x < -buffer) n.x = w + buffer;
+      if (n.x > w + buffer) n.x = -buffer;
+      if (n.y < -buffer) n.y = h + buffer;
+      if (n.y > h + buffer) n.y = -buffer;
+    }
+  }
+
+  function draw() {
+    var w = canvas.width / DPR;
+    var h = canvas.height / DPR;
+    ctx.clearRect(0, 0, w, h);
+
+    // Draw connections
+    for (var i = 0; i < nodes.length; i++) {
+      for (var j = i + 1; j < nodes.length; j++) {
+        var dx = nodes[i].x - nodes[j].x;
+        var dy = nodes[i].y - nodes[j].y;
+        var distSq = dx * dx + dy * dy;
+        if (distSq < CONNECTION_DIST * CONNECTION_DIST) {
+          var dist = Math.sqrt(distSq);
+          var alpha = 0.08 * (1 - dist / CONNECTION_DIST);
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = 'rgba(' + TEAL.r + ',' + TEAL.g + ',' + TEAL.b + ',' + alpha + ')';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw nodes with glow
+    for (var k = 0; k < nodes.length; k++) {
+      var n = nodes[k];
+      var rgb = n.color.r + ',' + n.color.g + ',' + n.color.b;
+
+      // Glow circle (larger, dimmer)
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius * 3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + rgb + ',' + (n.opacity * 0.15) + ')';
+      ctx.fill();
+
+      // Core circle
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + rgb + ',' + n.opacity + ')';
+      ctx.fill();
+    }
+  }
+
+  function animate(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    var dt = Math.min((timestamp - lastTime) / 1000, 0.1); // cap at 100ms
+    lastTime = timestamp;
+
+    update(dt);
+    draw();
+    animId = requestAnimationFrame(animate);
+  }
+
+  // Visibility pause
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
+    } else {
+      lastTime = 0;
+      if (!prefersReducedMotion) animId = requestAnimationFrame(animate);
+    }
+  });
+
+  // Resize handling
+  if (window.ResizeObserver) {
+    new ResizeObserver(function() { resize(); }).observe(hero);
+  } else {
+    window.addEventListener('resize', resize);
+  }
+
+  // Start
+  init();
+
+  if (prefersReducedMotion) {
+    // Single static frame
+    draw();
+  } else {
+    animId = requestAnimationFrame(animate);
+  }
+
+  // Fade in canvas
+  requestAnimationFrame(function() { canvas.classList.add('visible'); });
+})();
+</script>
 </body>
 </html>
