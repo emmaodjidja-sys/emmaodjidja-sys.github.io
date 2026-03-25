@@ -129,6 +129,12 @@
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
       padding: 140px 32px 100px;
+      background: var(--bg);
+    }
+    .hero::after {
+      content: ''; position: absolute; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse at center, transparent 35%, var(--bg) 80%);
+      pointer-events: none;
     }
     .hero-content {
       position: relative; z-index: 1;
@@ -893,6 +899,7 @@ document.querySelectorAll('.reveal').forEach(function(el) {
   var nodes = [];
   var animId = null;
   var lastTime = 0;
+  var elapsed = 0;
 
   // Config
   var isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -926,7 +933,10 @@ document.querySelectorAll('.reveal').forEach(function(el) {
       radius: 1.5 + depth * 2.5,
       opacity: 0.15 + depth * 0.25,
       color: color,
-      depth: depth
+      depth: depth,
+      wobbleAmp: 0.3 + Math.random() * 0.7,
+      wobbleFreq: 0.4 + Math.random() * 0.6,
+      wobbleOffset: Math.random() * Math.PI * 2
     };
   }
 
@@ -944,11 +954,13 @@ document.querySelectorAll('.reveal').forEach(function(el) {
     var w = canvas.width / DPR;
     var h = canvas.height / DPR;
     var buffer = CONNECTION_DIST;
+    elapsed += dt;
 
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
-      n.x += n.vx * dt;
-      n.y += n.vy * dt;
+      var wobble = Math.sin(elapsed * n.wobbleFreq + n.wobbleOffset) * n.wobbleAmp;
+      n.x += (n.vx + wobble) * dt;
+      n.y += (n.vy + wobble * 0.6) * dt;
 
       // Wrap with buffer
       if (n.x < -buffer) n.x = w + buffer;
@@ -975,7 +987,8 @@ document.querySelectorAll('.reveal').forEach(function(el) {
           ctx.beginPath();
           ctx.moveTo(nodes[i].x, nodes[i].y);
           ctx.lineTo(nodes[j].x, nodes[j].y);
-          ctx.strokeStyle = 'rgba(' + TEAL.r + ',' + TEAL.g + ',' + TEAL.b + ',' + alpha + ')';
+          var lc = nodes[i].depth > nodes[j].depth ? nodes[i].color : nodes[j].color;
+          ctx.strokeStyle = 'rgba(' + lc.r + ',' + lc.g + ',' + lc.b + ',' + alpha + ')';
           ctx.lineWidth = 1;
           ctx.stroke();
         }
