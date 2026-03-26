@@ -36,32 +36,32 @@
 
   var COMPLEXITY = [
     { value: '', label: 'Select...' },
-    { value: 'simple', label: 'Simple (single activity, clear logic)' },
-    { value: 'complicated', label: 'Complicated (multiple components, known pathways)' },
-    { value: 'complex', label: 'Complex (adaptive, emergent outcomes)' }
+    { value: 'simple', label: 'Simple: one main activity with a clear expected result' },
+    { value: 'complicated', label: 'Complicated: several activities, but we understand how they connect' },
+    { value: 'complex', label: 'Complex: many moving parts, results are hard to predict' }
   ];
 
   var DATA_OPTIONS = [
     { value: '', label: 'Select...' },
-    { value: 'baseline_endline', label: 'Baseline and endline data available' },
-    { value: 'timeseries', label: 'Time series / routine monitoring data' },
-    { value: 'routine_only', label: 'Routine programme data only' },
-    { value: 'minimal', label: 'Minimal or no existing data' }
+    { value: 'baseline_endline', label: 'We have data from before and after the programme' },
+    { value: 'timeseries', label: 'We have regular monitoring data over time' },
+    { value: 'routine_only', label: 'We only have programme reports and records' },
+    { value: 'minimal', label: 'We have little or no existing data' }
   ];
 
   var COMPARISON_OPTIONS = [
     { value: '', label: 'Select...' },
-    { value: 'randomisable', label: 'Randomisation is feasible' },
-    { value: 'natural', label: 'Natural comparison group exists' },
-    { value: 'threshold', label: 'Eligibility threshold exists (regression discontinuity)' },
-    { value: 'none', label: 'No comparison group possible' }
+    { value: 'randomisable', label: 'Yes, we can randomly assign who gets the programme' },
+    { value: 'natural', label: 'Yes, there is a similar group that did not receive the programme' },
+    { value: 'threshold', label: 'Yes, there is a clear cutoff for who qualifies' },
+    { value: 'none', label: 'No, everyone in the area received the programme' }
   ];
 
   var CAUSAL_OPTIONS = [
     { value: '', label: 'Select...' },
-    { value: 'attribution', label: 'Attribution (prove the programme caused the change)' },
-    { value: 'contribution', label: 'Contribution (show the programme plausibly contributed)' },
-    { value: 'description', label: 'Description (document what happened and how)' }
+    { value: 'attribution', label: 'We need to prove the programme caused the change' },
+    { value: 'contribution', label: 'We need to show the programme likely contributed to the change' },
+    { value: 'description', label: 'We need to document what happened and how' }
   ];
 
   var CONFLICT_QUESTIONS = [
@@ -232,11 +232,11 @@
     if (currentStep === 1) {
       // Step 2: TOR Constraints
       stepContent = h('div', { className: 'station-form' },
-        h('h3', null, 'Evaluation Parameters'),
-        h(SelectField, { label: 'Causal Inference Level', value: localTor.causal_inference_level, options: CAUSAL_OPTIONS, onChange: function(v) { updateTor('causal_inference_level', v); }, hint: 'What level of evidence does the commissioner need?' }),
-        h(SelectField, { label: 'Comparison Group Feasibility', value: localTor.comparison_feasibility, options: COMPARISON_OPTIONS, onChange: function(v) { updateTor('comparison_feasibility', v); } }),
-        h(SelectField, { label: 'Data Availability', value: localTor.data_available, options: DATA_OPTIONS, onChange: function(v) { updateTor('data_available', v); } }),
-        h(SelectField, { label: 'Programme Complexity', value: localTor.programme_complexity, options: COMPLEXITY, onChange: function(v) { updateTor('programme_complexity', v); } }),
+        h('h3', null, 'What do you need from this evaluation?'),
+        h(SelectField, { label: 'What does the commissioner need to know?', value: localTor.causal_inference_level, options: CAUSAL_OPTIONS, onChange: function(v) { updateTor('causal_inference_level', v); }, hint: 'This determines which evaluation designs are appropriate.' }),
+        h(SelectField, { label: 'Is there a comparison group?', value: localTor.comparison_feasibility, options: COMPARISON_OPTIONS, onChange: function(v) { updateTor('comparison_feasibility', v); }, hint: 'A group that did not receive the programme, to compare results against.' }),
+        h(SelectField, { label: 'What data already exists?', value: localTor.data_available, options: DATA_OPTIONS, onChange: function(v) { updateTor('data_available', v); }, hint: 'Existing data reduces the cost and time needed for the evaluation.' }),
+        h(SelectField, { label: 'How complex is the programme?', value: localTor.programme_complexity, options: COMPLEXITY, onChange: function(v) { updateTor('programme_complexity', v); }, hint: 'Complex programmes need different evaluation approaches than simple ones.' }),
         h('div', { className: 'station-form-row' },
           h('label', { className: 'wb-label' }, 'Evaluation Questions'),
           h('textarea', {
@@ -340,7 +340,7 @@
         h('span', { className: 'wb-badge wb-badge-teal', style: { display: 'inline-block', marginBottom: '8px' } }, 'Pre-Inception'),
         h('h2', { style: { fontSize: '24px', fontWeight: '600', marginTop: '8px' } }, 'Station 0: Evaluability & Scoping'),
         h('p', { style: { fontSize: '14px', color: 'var(--wb-text-secondary)', marginTop: '4px' } },
-          ['Project Information', 'Evaluation Parameters', 'Sensitivity & Conflict', 'Evaluability Results'][currentStep]
+          ['Project Information', 'What do you need from this evaluation?', 'Sensitivity & Safety', 'Evaluability Assessment'][currentStep]
         )
       ),
       h('div', { className: 'station-steps' }, stepIndicators),
