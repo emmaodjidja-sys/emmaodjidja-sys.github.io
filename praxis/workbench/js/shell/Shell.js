@@ -35,7 +35,9 @@
       h('div', { className: 'wb-shell' },
         h(PraxisStationRail, { state: state, dispatch: dispatch }),
         h('main', { className: 'wb-main' },
-          h(StationPlaceholder, { station: activeStation, context: state.context })
+          activeStation === 0
+            ? h(PraxisStation0, { state: state, dispatch: dispatch })
+            : h(StationPlaceholder, { station: activeStation, context: state.context })
         )
       )
     );
