@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PRAXIS Schema Tests</title>
+  <script src="../js/schema.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/staleness.js"></script>
+  <script src="../js/protection.js"></script>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1f2e; color: #e8e4df; }
+    .pass { color: #10B981; }
+    .fail { color: #EF4444; }
+    pre { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <h1>PRAXIS Schema Tests</h1>
+  <div id="results"></div>
+  <script>
+  (function() {
+    var results = document.getElementById('results');
+    var passed = 0;
+    var failed = 0;
+
+    function test(name, fn) {
+      try {
+        fn();
+        results.innerHTML += '<pre class="pass">PASS: ' + name + '</pre>';
+        passed++;
+      } catch (e) {
+        results.innerHTML += '<pre class="fail">FAIL: ' + name + ' — ' + e.message + '</pre>';
+        failed++;
+      }
+    }
+
+    function assert(cond, msg) {
+      if (!cond) throw new Error(msg || 'Assertion failed');
+    }
+
+    // Tests
+    test('createEmptyContext returns valid object', function() {
+      var ctx = PraxisSchema.createEmptyContext();
+      assert(ctx.version === '1.0', 'version should be 1.0');
+      assert(ctx.schema === 'praxis-workbench', 'schema should be praxis-workbench');
+      assert(ctx.project_meta.title === '', 'title should be empty');
+      assert(ctx.protection.sensitivity === 'standard', 'sensitivity should be standard');
+      assert(Array.isArray(ctx.toc.nodes), 'toc.nodes should be array');
+      assert(Array.isArray(ctx.evaluation_matrix.rows), 'matrix.rows should be array');
+      assert(ctx.staleness[0] === false, 'staleness[0] should be false');
+    });
+
+    test('createEmptyContext returns independent copies', function() {
+      var a = PraxisSchema.createEmptyContext();
+      var b = PraxisSchema.createEmptyContext();
+      a.project_meta.title = 'Test';
+      assert(b.project_meta.title === '', 'should not share references');
+    });
+
+    test('STATION_LABELS has 9 entries', function() {
+      assert(PraxisSchema.STATION_LABELS.length === 9, 'should have 9 labels');
+    });
+
+    test('STATION_WRITES covers all stations 0-8', function() {
+      for (var i = 0; i <= 8; i++) {
+        assert(Array.isArray(PraxisSchema.STATION_WRITES[i]), 'station ' + i + ' should have writes');
+      }
+    });
+
+    test('staleness: saving station 0 flags downstream stations', function() {
+      var staleness = { 0:false, 1:false, 2:false, 3:false, 4:false, 5:false, 6:false, 7:false, 8:false };
+      var result = PraxisStaleness.computeStaleness(0, staleness);
+      assert(result[0] === false, 'station 0 should not be stale after save');
+      assert(result[1] === true, 'station 1 reads project_meta, should be stale');
+      assert(result[2] === true, 'station 2 reads project_meta, should be stale');
+      assert(result[3] === true, 'station 3 reads project_meta, should be stale');
+    });
+
+    test('staleness: saving station 2 flags stations 4-8', function() {
+      var staleness = { 0:false, 1:false, 2:false, 3:false, 4:false, 5:false, 6:false, 7:false, 8:false };
+      var result = PraxisStaleness.computeStaleness(2, staleness);
+      assert(result[2] === false, 'station 2 not stale');
+      assert(result[4] === true, 'station 4 reads evaluation_matrix');
+      assert(result[5] === true, 'station 5 reads evaluation_matrix');
+      assert(result[6] === true, 'station 6 reads evaluation_matrix');
+      assert(result[7] === true, 'station 7 reads evaluation_matrix');
+      assert(result[8] === true, 'station 8 reads evaluation_matrix');
+    });
+
+    test('staleness: saving station 4 does not affect station 2', function() {
+      var staleness = { 0:false, 1:false, 2:false, 3:false, 4:false, 5:false, 6:false, 7:false, 8:false };
+      var result = PraxisStaleness.computeStaleness(4, staleness);
+      assert(result[2] === false, 'station 2 should not be stale');
+      assert(result[6] === true, 'station 6 reads sample_parameters');
+    });
+
+    test('staleness: saving station 1 flags station 2 but not station 3', function() {
+      var staleness = { 0:false, 1:false, 2:false, 3:false, 4:false, 5:false, 6:false, 7:false, 8:false };
+      var result = PraxisStaleness.computeStaleness(1, staleness);
+      assert(result[2] === true, 'station 2 reads toc, should be stale');
+      assert(result[3] === false, 'station 3 does not read toc, should not be stale');
+    });
+
+    test('protection: standard is not sensitive', function() {
+      var ctx = PraxisSchema.createEmptyContext();
+      assert(!PraxisProtection.isSensitive(ctx), 'standard should not be sensitive');
+      assert(PraxisProtection.getAiPermission(ctx) === true, 'AI should be permitted');
+    });
+
+    test('protection: sensitive enables AI by default', function() {
+      var ctx = PraxisSchema.createEmptyContext();
+      ctx.protection.sensitivity = 'sensitive';
+      assert(PraxisProtection.isSensitive(ctx), 'should be sensitive');
+      assert(!PraxisProtection.isHighlySensitive(ctx), 'should not be highly sensitive');
+      assert(PraxisProtection.getAiPermission(ctx) === true, 'AI should still be permitted for sensitive');
+    });
+
+    test('protection: highly sensitive disables AI', function() {
+      var ctx = PraxisSchema.createEmptyContext();
+      ctx.protection.sensitivity = 'highly_sensitive';
+      assert(PraxisProtection.isHighlySensitive(ctx), 'should be highly sensitive');
+      assert(PraxisProtection.getAiPermission(ctx) === false, 'AI should be disabled');
+    });
+
+    test('protection: sharing guidance varies by level', function() {
+      var std = PraxisSchema.createEmptyContext();
+      var sens = PraxisSchema.createEmptyContext(); sens.protection.sensitivity = 'sensitive';
+      var high = PraxisSchema.createEmptyContext(); high.protection.sensitivity = 'highly_sensitive';
+      assert(PraxisProtection.getSharingGuidance(std).indexOf('colleagues') > -1, 'standard guidance');
+      assert(PraxisProtection.getSharingGuidance(sens).indexOf('encrypted') > -1, 'sensitive guidance');
+      assert(PraxisProtection.getSharingGuidance(high).indexOf('secure platform') > -1, 'highly sensitive guidance');
+    });
+
+    test('deepMerge preserves nested objects', function() {
+      var target = { a: { b: 1, c: 2 }, d: 3 };
+      var source = { a: { b: 10 } };
+      var result = PraxisUtils.deepMerge(target, source);
+      assert(result.a.b === 10, 'b should be updated');
+      assert(result.a.c === 2, 'c should be preserved');
+      assert(result.d === 3, 'd should be preserved');
+    });
+
+    test('deepMerge does not mutate target', function() {
+      var target = { a: { b: 1 } };
+      var source = { a: { b: 2 } };
+      PraxisUtils.deepMerge(target, source);
+      assert(target.a.b === 1, 'target should not be mutated');
+    });
+
+    test('uid generates unique values', function() {
+      var a = PraxisUtils.uid('test-');
+      var b = PraxisUtils.uid('test-');
+      assert(a !== b, 'should generate unique IDs');
+      assert(a.indexOf('test-') === 0, 'should use prefix');
+    });
+
+    test('JSON round-trip preserves context', function() {
+      var ctx = PraxisSchema.createEmptyContext();
+      ctx.project_meta.title = 'Test Evaluation';
+      ctx.protection.sensitivity = 'sensitive';
+      ctx.toc.nodes.push({ id: 'n1', title: 'Goal' });
+      var json = JSON.stringify(ctx);
+      var restored = JSON.parse(json);
+      assert(restored.project_meta.title === 'Test Evaluation', 'title preserved');
+      assert(restored.protection.sensitivity === 'sensitive', 'sensitivity preserved');
+      assert(restored.toc.nodes.length === 1, 'nodes preserved');
+      assert(restored.toc.nodes[0].title === 'Goal', 'node title preserved');
+    });
+
+    test('all 15 top-level context fields exist', function() {
+      var ctx = PraxisSchema.createEmptyContext();
+      var expected = ['version', 'schema', 'created_at', 'updated_at', 'project_meta',
+        'protection', 'tor_constraints', 'evaluability', 'toc', 'evaluation_matrix',
+        'design_recommendation', 'sample_parameters', 'instruments', 'analysis_plan',
+        'report_structure', 'presentation', 'staleness', 'reviews'];
+      expected.forEach(function(key) {
+        assert(ctx.hasOwnProperty(key), 'missing field: ' + key);
+      });
+    });
+
+    // Summary
+    results.innerHTML += '<hr style="border-color:#333;margin:16px 0"><pre style="font-size:16px">' +
+      passed + ' passed, ' + failed + ' failed</pre>';
+    document.title = (failed > 0 ? 'FAIL' : 'PASS') + ' — PRAXIS Schema Tests';
+  })();
+  </script>
+</body>
+</html>
