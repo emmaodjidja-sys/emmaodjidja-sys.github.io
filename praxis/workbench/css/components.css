@@ -1,0 +1,126 @@
+/* Buttons */
+.wb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wb-space-xs);
+  padding: 6px 14px;
+  font-family: var(--wb-font);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-radius: var(--wb-radius-sm);
+}
+
+.wb-btn-primary {
+  background: var(--wb-teal);
+  color: var(--wb-navy);
+}
+.wb-btn-primary:hover { background: var(--wb-teal-dark); }
+
+.wb-btn-ghost {
+  background: transparent;
+  color: var(--wb-text-muted);
+  border: 1px solid var(--wb-border);
+}
+.wb-btn-ghost:hover { border-color: var(--wb-slate); color: var(--wb-text); }
+
+.wb-btn-navy {
+  background: var(--wb-navy-light);
+  color: #fff;
+}
+.wb-btn-navy:hover { background: var(--wb-navy-lighter); }
+
+.wb-btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* Badges */
+.wb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--wb-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--wb-radius-sm);
+}
+
+.wb-badge-teal { background: var(--wb-teal-dim); color: var(--wb-teal); }
+.wb-badge-stale { background: var(--wb-stale-dim); color: var(--wb-stale); }
+.wb-badge-complete { background: rgba(16,185,129,0.1); color: var(--wb-complete); }
+
+/* Modal */
+.wb-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11,26,46,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.wb-modal {
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+  padding: var(--wb-space-xl);
+  max-width: 520px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.wb-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--wb-space-md);
+}
+
+/* Forms */
+.wb-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-family: var(--wb-font);
+  font-size: 14px;
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-sm);
+  background: var(--wb-surface);
+  color: var(--wb-text);
+  transition: border-color 0.15s;
+}
+.wb-input:focus {
+  outline: none;
+  border-color: var(--wb-teal);
+}
+
+.wb-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wb-text-secondary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* File drop zone */
+.wb-dropzone {
+  border: 2px dashed var(--wb-border);
+  border-radius: var(--wb-radius);
+  padding: var(--wb-space-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.wb-dropzone:hover,
+.wb-dropzone.active {
+  border-color: var(--wb-teal);
+  background: var(--wb-teal-dim);
+}
+.wb-dropzone-label {
+  font-size: 14px;
+  color: var(--wb-text-secondary);
+}
