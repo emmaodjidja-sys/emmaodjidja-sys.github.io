@@ -12,27 +12,26 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="../logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #08090D;
-      --bg-surface: #0E1117;
-      --bg-elevated: #161B22;
-      --accent: #58D5BA;
-      --accent-dim: rgba(88,213,186,0.12);
-      --amber: #F0B429;
-      --amber-dim: rgba(240,180,41,0.12);
-      --text: #E6EDF3;
-      --text-secondary: #8B949E;
-      --text-muted: #484F58;
-      --border: rgba(255,255,255,0.06);
+      --bg: #1a1f2e;
+      --bg-surface: #212738;
+      --warm: #c4704b;
+      --warm-dim: rgba(196,112,75,0.10);
+      --cool: #2a7d6e;
+      --cool-dim: rgba(42,125,110,0.10);
+      --text: #e8e4df;
+      --text-secondary: #a09b94;
+      --text-muted: #6b665f;
+      --border: rgba(232,228,223,0.08);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: 'IBM Plex Sans', -apple-system, sans-serif;
       color: var(--text);
       background: var(--bg);
       -webkit-font-smoothing: antialiased;
@@ -40,20 +39,18 @@
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
-      background-size: 40px 40px;
     }
 
     a { text-decoration: none; color: inherit; }
 
-    .skip { position: absolute; top: -100px; left: 8px; padding: 8px 16px; background: var(--accent); color: var(--bg); font-weight: 700; font-size: 13px; border-radius: 0 0 6px 6px; z-index: 200; }
+    .skip { position: absolute; top: -100px; left: 8px; padding: 8px 16px; background: var(--cool); color: var(--bg); font-weight: 700; font-size: 13px; border-radius: 0; z-index: 200; }
     .skip:focus { top: 0; }
 
     /* NAV */
     nav {
       position: sticky; top: 0; z-index: 100;
       border-bottom: 1px solid var(--border);
-      background: rgba(8,9,13,0.8);
+      background: rgba(26,31,46,0.8);
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
     .nav-inner {
@@ -65,24 +62,28 @@
       font-weight: 700; font-size: 14px; color: #fff;
       letter-spacing: 0.06em;
     }
-    .nav-brand img { width: 24px; height: 24px; border-radius: 5px; }
+    .nav-brand img { width: 24px; height: 24px; border-radius: 0; }
     .nav-360 {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 600;
-      color: var(--accent);
-      background: var(--accent-dim);
-      padding: 2px 8px; border-radius: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: var(--cool);
+      background: var(--cool-dim);
+      padding: 2px 8px;
       letter-spacing: 0.04em;
     }
     .nav-links { display: flex; gap: 20px; align-items: center; }
     .nav-links a { font-size: 13px; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
-    .nav-links a:hover { color: var(--accent); }
-    .nav-cta {
-      background: var(--amber) !important; color: var(--bg) !important;
-      padding: 6px 16px; border-radius: 6px; font-weight: 700 !important;
-      font-size: 12px !important; letter-spacing: 0.02em;
+    .nav-links a:hover { color: var(--cool); }
+    .nav-links a.active { color: var(--text); }
+    .nav-github {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--bg) !important;
+      background: var(--warm);
+      padding: 5px 14px;
     }
-    .nav-cta:hover { filter: brightness(1.1); }
+    .nav-github:hover { filter: brightness(1.1); }
 
     /* HERO */
     .hero {
@@ -110,9 +111,9 @@
     .loop-center {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 26px; font-weight: 700;
-      color: var(--accent);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 26px; font-weight: 500;
+      color: var(--cool);
       letter-spacing: -0.02em;
       opacity: 0;
       animation: fadeIn 0.6s ease forwards 1.8s;
@@ -122,35 +123,29 @@
     }
 
     .badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--accent);
-      padding: 5px 16px; border-radius: 20px;
-      background: var(--accent-dim);
-      border: 1px solid rgba(88,213,186,0.15);
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      padding: 5px 14px;
       margin-bottom: 32px;
-    }
-    .badge-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #34D399;
-      box-shadow: 0 0 6px rgba(52,211,153,0.5);
     }
 
     .hero h1 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-weight: 400;
       font-size: clamp(32px, 5.5vw, 56px);
-      font-weight: 800;
-      letter-spacing: -0.03em;
       line-height: 1.1;
       color: #fff;
       margin-bottom: 24px;
     }
 
     .hero-date {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px; font-weight: 600;
-      color: var(--amber);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px; font-weight: 500;
+      color: var(--warm);
       margin-bottom: 32px;
       letter-spacing: 0.02em;
     }
@@ -169,14 +164,14 @@
     }
     .btn {
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 11px 24px; border-radius: 6px;
+      padding: 11px 24px; border-radius: 0;
       font-size: 13px; font-weight: 600;
       transition: all 0.2s; cursor: pointer; border: none;
     }
-    .btn-amber { background: var(--amber); color: var(--bg); }
+    .btn-amber { background: var(--warm); color: var(--bg); }
     .btn-amber:hover { filter: brightness(1.1); }
     .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-ghost:hover { border-color: var(--cool); color: var(--cool); }
     .btn-text { background: transparent; color: var(--text-muted); font-size: 13px; padding: 11px 16px; }
     .btn-text:hover { color: var(--text-secondary); }
 
@@ -189,16 +184,17 @@
       max-width: 800px; margin: 0 auto;
     }
     .overline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 600;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 500;
       letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--accent);
+      color: var(--text-muted);
       margin-bottom: 16px;
     }
     .section-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-weight: 400;
       font-size: clamp(24px, 3.5vw, 36px);
-      font-weight: 700; color: #fff;
-      letter-spacing: -0.02em;
+      color: #fff;
       margin-bottom: 24px;
       line-height: 1.2;
     }
@@ -229,9 +225,9 @@
     }
     .pipe-step:last-child { border-bottom: none; }
     .pipe-num {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px; font-weight: 700;
-      color: var(--accent);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px; font-weight: 500;
+      color: var(--cool);
       padding-top: 2px;
       opacity: 0.4;
       transition: opacity 0.4s ease, color 0.4s ease, transform 0.3s ease;
@@ -243,7 +239,7 @@
       transform: scale(1.15);
     }
     .pipe-step:hover .pipe-title {
-      color: var(--accent);
+      color: var(--cool);
     }
     .pipe-title {
       font-size: 16px; font-weight: 600; color: #fff;
@@ -258,7 +254,6 @@
     }
     .pipe-step:hover {
       background: rgba(255,255,255,0.02);
-      border-radius: 6px;
     }
 
     /* THE DIFFERENCE */
@@ -282,16 +277,14 @@
       opacity: 1;
       transform: translateX(0);
     }
-    .diff-card:first-child { border-radius: 8px 0 0 8px; }
-    .diff-card:last-child { border-radius: 0 8px 8px 0; }
     .diff-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; font-weight: 600;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 500;
       letter-spacing: 0.12em; text-transform: uppercase;
       margin-bottom: 16px;
     }
     .diff-label.old { color: var(--text-muted); }
-    .diff-label.new { color: var(--accent); }
+    .diff-label.new { color: var(--cool); }
     .diff-item {
       font-size: 14px; color: var(--text-secondary); line-height: 1.7;
       padding: 6px 0;
@@ -305,9 +298,10 @@
       text-align: center;
     }
     .cta h2 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-weight: 400;
       font-size: clamp(24px, 3.5vw, 36px);
-      font-weight: 700; color: #fff;
-      letter-spacing: -0.02em;
+      color: #fff;
       margin-bottom: 12px;
     }
     .reveal-scale {
@@ -342,19 +336,19 @@
       display: flex; align-items: center; gap: 12px;
     }
     .footer-left a { color: var(--text-secondary); transition: color 0.2s; }
-    .footer-left a:hover { color: var(--accent); }
+    .footer-left a:hover { color: var(--cool); }
     .footer-badges { display: flex; gap: 6px; }
     .footer-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px; font-weight: 600;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; font-weight: 500;
       letter-spacing: 0.04em; text-transform: uppercase;
-      padding: 3px 7px; border-radius: 3px;
+      padding: 3px 7px;
     }
-    .fb-free { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(88,213,186,0.15); }
-    .fb-oss { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(240,180,41,0.15); }
+    .fb-free { color: var(--text-muted); border: 1px solid var(--border); }
+    .fb-oss { color: var(--text-muted); border: 1px solid var(--border); }
     .footer-right { display: flex; gap: 16px; }
     .footer-right a { font-size: 12px; color: var(--text-muted); transition: color 0.2s; }
-    .footer-right a:hover { color: var(--accent); }
+    .footer-right a:hover { color: var(--cool); }
 
     /* ANIMATIONS */
     @keyframes fadeUp {
@@ -386,8 +380,6 @@
       .cta { padding: 72px 20px; }
       .diff-grid { grid-template-columns: 1fr; }
       .diff-card.old-card, .diff-card.new-card { transform: translateY(16px); }
-      .diff-card:first-child { border-radius: 8px 8px 0 0; }
-      .diff-card:last-child { border-radius: 0 0 8px 8px; }
       .pipe-step { grid-template-columns: 36px 1fr; gap: 14px; }
       .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
       .footer-left { flex-direction: column; gap: 8px; }
@@ -419,9 +411,11 @@
     </a>
     <div class="nav-links">
       <a href="../">Lab</a>
+      <a href="../ews/">EWS</a>
+      <a href="../tools/">Evaluation</a>
       <a href="../tools/">Tools</a>
-      <a href="https://www.emmanuelneneodjidja.org/">About</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" class="nav-cta">GitHub</a>
+      <a href="./" class="active">360</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" class="nav-github">GitHub</a>
     </div>
   </div>
 </nav>
@@ -431,9 +425,9 @@
 
     <div class="loop" aria-hidden="true">
       <svg viewBox="0 0 140 140">
-        <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(88,213,186,0.08)" stroke-width="1"/>
+        <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(42,125,110,0.12)" stroke-width="1"/>
         <circle cx="70" cy="70" r="54" fill="none"
-          stroke="#58D5BA" stroke-width="1.5"
+          stroke="#2a7d6e" stroke-width="1.5"
           stroke-dasharray="339.3" stroke-dashoffset="339.3"
           stroke-linecap="round">
           <animate attributeName="stroke-dashoffset" from="339.3" to="0" dur="2s" fill="freeze" begin="0.5s" calcMode="spline" keySplines="0.16 1 0.3 1"/>
@@ -442,7 +436,7 @@
       <div class="loop-center">360°</div>
     </div>
 
-    <div class="badge"><span class="badge-dot"></span> Launching at Glocal 2026</div>
+    <div class="badge">Launching at Glocal 2026</div>
 
     <h1>The evaluation loop<br>that never breaks</h1>
 
@@ -469,10 +463,9 @@
   </div>
 </section>
 
-<!-- THE PIPELINE -->
 <section class="section">
   <div class="section-inner">
-    <div class="overline reveal">// THE PIPELINE</div>
+    <div class="overline reveal">The Pipeline</div>
     <h2 class="section-title reveal">What 360° connects</h2>
     <p class="section-desc reveal">
       Six stages. One file. Every output feeds the next. Every finding traces back to the question that generated it.
@@ -525,10 +518,9 @@
   </div>
 </section>
 
-<!-- THE DIFFERENCE -->
 <section class="section">
   <div class="section-inner">
-    <div class="overline reveal">// THE DIFFERENCE</div>
+    <div class="overline reveal">The Difference</div>
     <h2 class="section-title reveal">What breaks today vs. what 360° fixes</h2>
     <div class="diff-grid">
       <div class="diff-card old-card">
