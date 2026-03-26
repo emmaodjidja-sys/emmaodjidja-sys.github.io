@@ -173,7 +173,7 @@ The visual language for completed/current/upcoming must be consistent across all
 **Fields (2-column grid):**
 - Programme Name (text input)
 - Organisation (text input)
-- Sector (multi-select pill chips with checkmarks on selected items, "Select all that apply — most programmes span multiple sectors." Cap visible pills at ~8 most common sectors. If 4+ selected, surface gentle analytical prompt: "Programmes spanning many sectors may benefit from narrowing the primary focus for evaluation design.")
+- Sector (multi-select pill chips with checkmarks on selected items, "Select all that apply — most programmes span multiple sectors." Cap visible pills at ~8 most common sectors. If 5+ selected, surface a gentle prompt: "Would you like to designate a primary sector for evaluation design? This helps the tool suggest more targeted indicators and evaluation questions." This is an invitation to refine, not a suggestion they're wrong — multi-sector programmes are legitimate.)
 - Country / Region (text input)
 - Budget Range (3-option card selector: Low <$200K / Medium $200K-$1M / High >$1M. Inline helper: "Often not in the ToR — skip if unknown")
 - Operating Context (3-option card selector: Stable / Fragile / Humanitarian. Selected state: amber border for Fragile, red for Humanitarian)
@@ -242,7 +242,22 @@ Each row shows: dimension name, progress bar (color-coded: green >75%, amber 50-
   "completed_at": null
 }
 ```
-This supports both the numeric scoring and the professional override audit trail. `stakeholder_access` from the blueprint schema is absorbed into the scoring rubric (affects Data and Context dimensions) rather than being a standalone field.
+This supports both the numeric scoring and the professional override audit trail. `stakeholder_access` from the blueprint schema is absorbed into the scoring rubric (affects Data and Context dimensions) rather than being a standalone field. **The evaluability schema in the architecture blueprint Section 3 is superseded by the schema defined here.**
+
+**Scoring rubric (reference pattern — all five dimensions follow this structure):**
+
+The rubric for **Comparison Feasibility** (20 points) as a complete worked example:
+
+| Input (`tor_constraints.comparison_feasibility`) | Base score | Modifier |
+|---|---|---|
+| `randomisable` | 20/20 | -3 if `operating_context = humanitarian` (randomisation rarely feasible in crisis) |
+| `natural` | 14/20 | -2 if `operating_context = fragile` AND multi-country (comparison groups harder to defend) |
+| `threshold` | 10/20 | +2 if `data_available = baseline_endline` (strengthens RDD validity) |
+| `none` | 3/20 | +2 if `causal_inference_level = description` (comparison not needed for descriptive evaluation) |
+
+The modifier rules encode cross-dimension interactions: an input in one field affects scoring in another dimension when there's a methodological dependency. Each dimension follows this pattern: base score from the primary input field, ±modifiers from interacting fields, clamped to [0, max].
+
+The remaining four rubrics (Data Availability, ToC Clarity, Timeline Adequacy, Operating Context) follow the same structure. The blueprint's `EvaluabilityScorer.js` description (§8) provides the starting base scores; this spec adds the cross-dimension modifier pattern.
 
 **Expanded row shows:**
 - "What drove this score" — plain language explanation referencing the user's actual inputs (e.g., "You selected 'natural comparison' for comparison feasibility in a fragile operating context across 3 countries.")
@@ -334,7 +349,15 @@ Opens below the selected table row. Two-column grid on `#F8FAFC` background, bor
 Modal overlay. Two paths:
 
 **Auto-suggested questions (prominent at Foundation tier):**
-- Suggestions derived from ToC nodes × DAC criteria
+
+The suggestion engine is a **client-side rule engine** (no LLM, no API calls — consistent with zero data transmission constraint in §14). It works as follows:
+1. For each ToC outcome node, generate one evaluation question per uncovered DAC criterion using templates. Template pattern: `"To what extent has the programme [VERB_FOR_CRITERION] [OUTCOME_NODE_TEXT]?"` where VERB_FOR_CRITERION maps from: Relevance → "addressed the needs identified in", Effectiveness → "contributed to achieving", Efficiency → "efficiently delivered resources toward", Sustainability → "built lasting capacity for", Impact → "had broader effects beyond", Coherence → "aligned with existing efforts on".
+2. Filter out questions that overlap with existing matrix rows (simple keyword matching on outcome text + criterion).
+3. Add normative cross-cutting questions (Gender/Equity, Do No Harm) that are hard-coded, not derived from ToC nodes.
+4. Rank suggestions by: uncovered criteria first, then by ToC node level (outcomes before outputs).
+
+This reuses the pattern from the existing `generateEvaluationQuestions()` function in `eval-matrix-builder/index.html` (lines 550-600), extended with the ToC node traversal.
+
 - Each suggestion shows: criterion badge, "Not yet covered in matrix" label, question text, linked ToC outcomes
 - "Recommended" tag for normative questions (e.g., Gender/Equity) that aren't derived from the ToC but from normative commitments
 - Multi-select: user can add multiple suggestions at once
@@ -369,6 +392,10 @@ Summary: "8 of 10 questions pre-filled from your evaluability assessment." Read-
 - `project_meta.budget → answers.budget`
 - `project_meta.timeline → answers.timeline`
 - `project_meta.programme_maturity → answers.maturity`
+
+The two questions that cannot be auto-derived and require user input are:
+- **`complexity`** ("Programme complexity?"): Simple / Complicated / Complex. Requires human judgment about programme design — cannot be inferred from ToR text or project meta fields.
+- **`unit`** ("Intervention level?"): Individual / Cluster / System. While `tor_constraints.unit_of_intervention` exists in the schema, it's not populated in Phase 2 of Station 0 (it's a design-level decision, not a ToR constraint). The user provides it here.
 
 The user reviews all pre-filled answers and can override any before the advisor scores designs.
 
@@ -446,7 +473,7 @@ Clearly framed as a platform concern, not an evaluation methodology concern. The
 
 ### 11.5 Export
 **Note:** This supersedes the blueprint's `InstrumentExport.js` formats (Word, KoboJSON, CSV). XLSForm is the primary output.
-- **XLSForm** (primary): Valid XLS file with `survey`, `choices`, and `settings` sheets. Correct `type`, `name`, `label`, `required` columns. Empty `relevant` and `constraint` columns for Kobo configuration. Choice lists for Likert scales, multiple choice options. This is the format KoboToolbox and ODK import natively.
+- **XLSForm** (primary): Valid `.xlsx` file (Excel 2007+ format, not legacy `.xls`) with `survey`, `choices`, and `settings` sheets. Generated using SheetJS (already in the tech stack for Station 2 exports). Correct `type`, `name`, `label`, `required` columns. Empty `relevant` and `constraint` columns for Kobo configuration. Choice lists for Likert scales, multiple choice options. This is the format KoboToolbox and ODK import natively.
 - **Word:** Formatted instrument document suitable for printing or sharing. Section headers, question numbers, response options displayed visually.
 - **PDF:** Print-ready version of the Word output (via browser print dialog).
 
@@ -490,10 +517,18 @@ Sensitivity is set in Station 0 or via the top bar. It affects all stations.
 - **Help text:** Foundation gets more contextual guidance. Advanced gets methodological references.
 - **Auto-suggestions:** Foundation gets more prominent suggestions (e.g., pre-generated evaluation questions as default). Advanced gets suggestions as secondary options with "Write your own" as primary.
 
-**What does NOT change:** Layout, colors, component structure, station flow, data model. A screenshot from Foundation tier and Advanced tier should be immediately recognizable as the same tool.
+**What does NOT change (HARD CONSTRAINT — not a guideline):** Layout, colors, component structure, station flow, data model. A screenshot from Foundation tier and Advanced tier should be immediately recognizable as the same tool. During implementation, the temptation will be to add tier-specific layout tweaks for "polish." Resist this. Tier-invariant chrome is a design decision, not an oversight.
 
 ### 13.4 Internationalization
-All UI strings in `lang/en.json` keyed by `component.key` (e.g., `"shell.topbar.title": "PRAXIS Workbench"`). French translations (`lang/fr.json`) can start partial. `t(key, vars)` translation function with English fallback.
+All UI strings in `lang/en.json` keyed by `component.key` (e.g., `"shell.topbar.title": "PRAXIS Workbench"`). `t(key, vars)` translation function with English fallback.
+
+French translations (`lang/fr.json`) start partial. **Minimum viable French coverage** for the Sahel/GCERF audience:
+- Shell chrome: all navigation labels, buttons, status indicators
+- Entry Landing: all text and action cards
+- Station 0: all field labels, guidance text, phase names, review card text, evaluability score labels
+- Common components: modal titles, toast messages, save/export buttons, tier names
+
+Stations 1-8 field-level French translations are deferred to a later pass. The shell + Station 0 in French ensures the entry point is fully accessible to Francophone practitioners.
 
 ### 13.5 Offline / PWA
 Service worker caches all local assets (cache-first) and CDN resources (network-first with cache fallback). PWA manifest enables installability. Specific CDN URLs (versioned, e.g., `react@18.3.1`) in precache list. Fallback offline warning if CDN fetch fails and no cache exists.
@@ -534,8 +569,11 @@ These are inherited from the architecture blueprint and remain unchanged:
 | 14 | Review cards with early signals between phases | Connects phases intellectually. Shows analytical value before intake is complete. Builds trust in the tool's intelligence. |
 | 15 | EQ overlap detection in Add EQ flow | Prevents redundancy, which is a common problem in real evaluation matrices. |
 | 16 | Rail 48px, topbar 44px (override blueprint) | Validated in mockups. Blueprint specified 64px/48px. The 48px rail is more compact and proportional to the Hybrid Authority layout with 32×32px station buttons. |
-| 17 | Station 5 exports: XLSForm/Word/PDF (override blueprint) | Blueprint specified Word/KoboJSON/CSV. XLSForm (.xls) is what KoboToolbox/ODK actually imports. PDF replaces CSV (print-ready instruments are more useful than flat CSV). |
-| 18 | EntryLanding as full-page replacement | Blueprint names the file `EntryModal.js` but the component replaces the shell entirely, not overlays it. Implementation should rename to `EntryLanding.js`. |
+| 17 | Station 5 exports: XLSForm/Word/PDF (override blueprint) | Blueprint specified Word/KoboJSON/CSV. XLSForm (`.xlsx`) is what KoboToolbox/ODK actually imports. PDF replaces CSV (print-ready instruments are more useful than flat CSV). |
+| 18 | EntryLanding as full-page replacement | Blueprint names the file `EntryModal.js` but the component replaces the shell entirely, not overlays it. Implementation should rename to `EntryLanding.js`. Blueprint file tree in §4 should be updated accordingly. |
+| 19 | EQ suggestion engine is rule-based, not LLM | Client-side template engine using ToC nodes × DAC criteria. Consistent with zero data transmission constraint. Extends existing `generateEvaluationQuestions()` pattern. |
+| 20 | Tier-invariant layout is a hard constraint | Layout, colors, component structure must not change by tier. Prevents "polish" drift during implementation that would break shared reference frame between team members using different tiers. |
+| 21 | Evaluability schema supersedes blueprint §3 | Numeric dimensions array with override audit trail replaces blueprint's flat qualitative fields. Cross-dimension scoring modifiers encode methodological dependencies. |
 
 ---
 
@@ -546,7 +584,7 @@ These are inherited from the architecture blueprint and remain unchanged:
 - **Station 2 pure function ports** — the architecture blueprint §7 details exactly which functions to extract from `eval-matrix-builder/index.html` and how.
 - **postMessage bridge implementation details** — the architecture blueprint §7 specifies the exact message types, handlers, and line counts.
 - **Build sequence** — the architecture blueprint §9 has the phased build order. The implementation plan (next step) will adapt this into an actionable task list.
-- **Evaluability scoring rubric** — The exact mapping from Phase 1/2 inputs to dimension scores (e.g., "Minimal" data availability → X/25 points) is deferred to implementation. The rubric in the architecture blueprint's `EvaluabilityScorer.js` description (§8) provides the starting point; this spec defines the UI for displaying and overriding the scores.
+- **Complete evaluability scoring rubrics for all five dimensions** — Section 6.6 defines the Comparison Feasibility rubric end-to-end as a reference pattern. The remaining four dimensions follow the same structure (base score from primary input + cross-dimension modifiers). The blueprint's `EvaluabilityScorer.js` description (§8) provides the base scores; implementers should follow the §6.6 pattern.
 
 ---
 
