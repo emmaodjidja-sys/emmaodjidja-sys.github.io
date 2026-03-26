@@ -20,6 +20,7 @@
       --bg-surface: #212738;
       --warm: #c4704b;
       --warm-dim: rgba(196,112,75,0.12);
+      --bg-accent: #1e2435;
       --cool: #2a7d6e;
       --text: #e8e4df;
       --text-secondary: #a09b94;
@@ -81,11 +82,13 @@
     .hamburger svg { width: 22px; height: 22px; stroke: var(--text-secondary); stroke-width: 2; fill: none; }
 
     /* MAIN */
-    .container { max-width: 720px; margin: 0 auto; padding: 0 28px; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+    .container-wide { max-width: 1040px; margin: 0 auto; padding: 0 32px; }
 
     /* HERO */
     .hero {
       padding: 120px 0 80px;
+      background: var(--bg-accent);
       border-bottom: 1px solid var(--border);
     }
     .hero-label {
@@ -98,9 +101,9 @@
     }
     .hero h1 {
       font-family: 'Instrument Serif', Georgia, serif;
-      font-size: clamp(2.8rem, 6vw, 4.2rem);
+      font-size: clamp(3rem, 6.5vw, 4.8rem);
       font-weight: 400;
-      line-height: 1.05;
+      line-height: 1.02;
       color: var(--text);
       margin-bottom: 12px;
     }
@@ -121,12 +124,53 @@
       max-width: 600px;
     }
 
+    /* PULL QUOTE */
+    .pull-quote {
+      padding: 56px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .pull-quote blockquote {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+      font-style: italic; font-weight: 400;
+      line-height: 1.4; color: var(--text);
+      max-width: 600px; margin-bottom: 16px;
+    }
+    .pull-quote cite {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-style: normal; font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      padding: 40px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-accent);
+    }
+    .stats-grid {
+      display: flex; flex-wrap: wrap;
+      justify-content: center; gap: 48px;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 28px; font-weight: 500;
+      color: var(--warm); line-height: 1;
+    }
+    .stat-label {
+      font-size: 12px; color: var(--text-muted);
+      margin-top: 6px; letter-spacing: 0.02em;
+    }
+
     /* SECTIONS */
     .section {
-      padding: 72px 0;
+      padding: 80px 0;
       border-bottom: 1px solid var(--border);
     }
     .section:last-of-type { border-bottom: none; }
+    .section-alt { background: var(--bg-accent); }
 
     .section-heading {
       font-family: 'Instrument Serif', Georgia, serif;
@@ -389,13 +433,35 @@
 <main>
 
 <!-- HERO -->
-<div class="container">
-  <section class="hero reveal">
+<section class="hero">
+  <div class="container reveal">
     <p class="hero-label">PRAXIS Research Track</p>
     <h1>PRAXIS <em>EWS</em></h1>
     <p class="hero-descriptor">Early Warning System</p>
-    <p class="hero-sub">Econometric research and open-source tooling to detect escalation signals in ACLED conflict data and translate them into protection decisions.</p>
-  </section>
+    <p class="hero-sub">Econometric research and open-source tooling to detect escalation signals in ACLED conflict data and translate them into protection decisions. Built by someone who works in the places where the escalation happens.</p>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stats-grid reveal">
+    <div class="stat">
+      <div class="stat-num">230+</div>
+      <div class="stat-label">Countries (ACLED coverage)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Sahel countries studied</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Robustness checks</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">p&lt;.001</div>
+      <div class="stat-label">All coefficients</div>
+    </div>
+  </div>
 </div>
 
 <!-- THE RESEARCH -->
@@ -586,6 +652,14 @@
   </section>
 </div>
 
+<!-- PULL QUOTE -->
+<section class="pull-quote">
+  <div class="container reveal">
+    <blockquote>"I needed to know where violent extremism was going to escalate before it did. Not a forecast from a university model, but something I could hand to a programme manager and say: pay attention to this district next quarter."</blockquote>
+    <cite>Emmanuel Nene Odjidja</cite>
+  </div>
+</section>
+
 <!-- THE PLATFORM -->
 <div class="container">
   <section class="section reveal" id="platform">
@@ -647,6 +721,7 @@
   <div class="footer-inner">
     <div class="footer-links">
       <a href="../">PRAXIS Lab</a>
+      <a href="../evaluation/">Evaluation</a>
       <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener">GitHub</a>
       <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>
     </div>
