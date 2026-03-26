@@ -37,7 +37,7 @@ The Experience Tier system (Foundation / Practitioner / Advanced) is a language 
 The evaluation matrix (Station 2) and instruments (Station 5) produce professional artifacts that drop directly into inception reports and ToR annexes. What the user sees on screen is what exports. If it needs reformatting after export, the design has failed.
 
 ### 2.4 The tool that makes users smarter
-Features like the XLSForm preview, structured judgement criteria templates, and AI-suggested evaluation questions don't just save time — they teach methodology. A Foundation user who spends a month with this tool should understand evaluation design better than when they started.
+Features like the XLSForm preview, structured judgement criteria templates, and auto-suggested evaluation questions don't just save time — they teach methodology. A Foundation user who spends a month with this tool should understand evaluation design better than when they started.
 
 ### 2.5 Honest boundaries
 Where the tool chooses not to implement something (e.g., skip logic), it says so clearly and explains why. A well-framed boundary builds more trust than a half-built feature.
@@ -533,6 +533,9 @@ These are inherited from the architecture blueprint and remain unchanged:
 | 13 | Coverage matrix for EQ-to-instrument mapping | Solves many-to-many visualization as a truth table, not a wiring diagram. Uncovered EQs highlighted to catch gaps. |
 | 14 | Review cards with early signals between phases | Connects phases intellectually. Shows analytical value before intake is complete. Builds trust in the tool's intelligence. |
 | 15 | EQ overlap detection in Add EQ flow | Prevents redundancy, which is a common problem in real evaluation matrices. |
+| 16 | Rail 48px, topbar 44px (override blueprint) | Validated in mockups. Blueprint specified 64px/48px. The 48px rail is more compact and proportional to the Hybrid Authority layout with 32×32px station buttons. |
+| 17 | Station 5 exports: XLSForm/Word/PDF (override blueprint) | Blueprint specified Word/KoboJSON/CSV. XLSForm (.xls) is what KoboToolbox/ODK actually imports. PDF replaces CSV (print-ready instruments are more useful than flat CSV). |
+| 18 | EntryLanding as full-page replacement | Blueprint names the file `EntryModal.js` but the component replaces the shell entirely, not overlays it. Implementation should rename to `EntryLanding.js`. |
 
 ---
 
@@ -543,6 +546,7 @@ These are inherited from the architecture blueprint and remain unchanged:
 - **Station 2 pure function ports** — the architecture blueprint §7 details exactly which functions to extract from `eval-matrix-builder/index.html` and how.
 - **postMessage bridge implementation details** — the architecture blueprint §7 specifies the exact message types, handlers, and line counts.
 - **Build sequence** — the architecture blueprint §9 has the phased build order. The implementation plan (next step) will adapt this into an actionable task list.
+- **Evaluability scoring rubric** — The exact mapping from Phase 1/2 inputs to dimension scores (e.g., "Minimal" data availability → X/25 points) is deferred to implementation. The rubric in the architecture blueprint's `EvaluabilityScorer.js` description (§8) provides the starting point; this spec defines the UI for displaying and overriding the scores.
 
 ---
 
