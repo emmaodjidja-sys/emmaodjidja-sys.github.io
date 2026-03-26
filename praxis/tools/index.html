@@ -12,27 +12,26 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="../logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #08090D;
-  --bg-surface: #0E1117;
-  --bg-elevated: #161B22;
-  --accent: #58D5BA;
-  --accent-dim: rgba(88,213,186,0.12);
-  --amber: #F0B429;
-  --amber-dim: rgba(240,180,41,0.12);
-  --text: #E6EDF3;
-  --text-secondary: #8B949E;
-  --text-muted: #484F58;
-  --border: rgba(255,255,255,0.06);
+  --bg: #1a1f2e;
+  --bg-surface: #212738;
+  --warm: #c4704b;
+  --warm-dim: rgba(196,112,75,0.10);
+  --cool: #2a7d6e;
+  --cool-dim: rgba(42,125,110,0.10);
+  --text: #e8e4df;
+  --text-secondary: #a09b94;
+  --text-muted: #6b665f;
+  --border: rgba(232,228,223,0.08);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
@@ -40,20 +39,18 @@ body {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
-  background-size: 40px 40px;
 }
 
 a { text-decoration: none; color: inherit; }
 
-.skip { position: absolute; top: -100px; left: 8px; padding: 8px 16px; background: var(--accent); color: var(--bg); font-weight: 700; font-size: 13px; border-radius: 0 0 6px 6px; z-index: 200; }
+.skip { position: absolute; top: -100px; left: 8px; padding: 8px 16px; background: var(--cool); color: var(--bg); font-weight: 600; font-size: 13px; z-index: 200; }
 .skip:focus { top: 0; }
 
 /* ── Nav ──────────────────────────────────────────── */
 nav {
   position: sticky; top: 0; z-index: 100;
   border-bottom: 1px solid var(--border);
-  background: rgba(8,9,13,0.8);
+  background: rgba(26,31,46,0.88);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }
 .nav-inner {
@@ -70,13 +67,13 @@ nav {
 .nav-page { color: var(--text-secondary); font-size: 14px; font-weight: 500; }
 .nav-links { display: flex; gap: 20px; align-items: center; }
 .nav-links a { font-size: 13px; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
-.nav-links a:hover { color: var(--accent); }
-.nav-cta {
-  background: var(--amber) !important; color: var(--bg) !important;
-  padding: 6px 16px; border-radius: 6px; font-weight: 700 !important;
-  font-size: 12px !important; letter-spacing: 0.02em;
+.nav-links a:hover { color: var(--cool); }
+.nav-github {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; font-weight: 500; color: var(--bg) !important;
+  background: var(--warm); padding: 5px 14px;
 }
-.nav-cta:hover { filter: brightness(1.1); }
+.nav-github:hover { filter: brightness(1.1); }
 
 /* ── Hero ─────────────────────────────────────────── */
 .hero {
@@ -88,31 +85,31 @@ nav {
 }
 .hero-label {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 500;
   letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--accent);
-  padding: 5px 16px; border-radius: 20px;
-  background: var(--accent-dim);
-  border: 1px solid rgba(88,213,186,0.15);
+  color: var(--cool);
+  padding: 5px 16px;
+  background: var(--cool-dim);
+  border: 1px solid rgba(42,125,110,0.20);
   margin-bottom: 32px;
 }
 .hero-label-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: #34D399;
-  box-shadow: 0 0 6px rgba(52,211,153,0.5);
+  background: var(--cool);
 }
 .hero h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
   font-size: clamp(32px, 5.5vw, 52px);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 400;
+  letter-spacing: -0.01em;
   line-height: 1.1;
   color: #fff;
   margin-bottom: 24px;
 }
 .hero h1 em {
-  font-style: normal;
-  color: var(--accent);
+  font-style: italic;
+  color: var(--warm);
 }
 .hero-desc {
   font-size: 16px; line-height: 1.8;
@@ -124,8 +121,8 @@ nav {
 }
 .hero-stat { text-align: center; }
 .hero-stat-num {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 28px; font-weight: 800; color: var(--accent);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 28px; font-weight: 500; color: var(--cool);
   line-height: 1;
 }
 .hero-stat-label {
@@ -142,16 +139,17 @@ nav {
   max-width: 1000px; margin: 0 auto;
 }
 .overline {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 500;
   letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-muted);
   margin-bottom: 16px;
 }
 .section-title {
+  font-family: 'Instrument Serif', Georgia, serif;
   font-size: clamp(24px, 3.5vw, 36px);
-  font-weight: 700; color: #fff;
-  letter-spacing: -0.02em;
+  font-weight: 400; color: #fff;
+  letter-spacing: -0.01em;
   margin-bottom: 12px;
   line-height: 1.2;
 }
@@ -173,24 +171,22 @@ nav {
 .tool-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 28px 24px;
   text-decoration: none;
   color: inherit;
   display: flex; flex-direction: column;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  transition: border-color 0.2s ease;
 }
 .tool-card:hover {
-  border-color: rgba(88,213,186,0.3);
-  box-shadow: 0 4px 24px rgba(88,213,186,0.08);
-  transform: translateY(-2px);
+  border-color: var(--cool);
 }
 .tool-card.live::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--accent);
+  background: var(--cool);
 }
 .tool-card.coming {
   opacity: 0.6;
@@ -208,24 +204,25 @@ nav {
 .tool-icon {
   width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 8px;
-  color: var(--accent);
-  background: var(--accent-dim);
+  border-radius: 0;
+  color: var(--cool);
+  background: var(--cool-dim);
 }
 .tool-status {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .tool-status.live {
-  background: var(--accent-dim); color: var(--accent);
+  color: var(--cool);
 }
 .tool-status.soon {
-  background: rgba(255,255,255,0.04); color: var(--text-muted);
+  color: var(--text-muted);
 }
 
 .tool-card h3 {
-  font-size: 17px; font-weight: 700; color: #fff;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 17px; font-weight: 400; color: #fff;
   margin-bottom: 8px; line-height: 1.2;
 }
 .tool-card .tool-desc {
@@ -237,21 +234,18 @@ nav {
   display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px;
 }
 .tool-feature {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 10px; font-weight: 500;
-  padding: 3px 8px; border-radius: 4px;
-  background: var(--bg-elevated); color: var(--text-secondary);
+  padding: 3px 8px; border-radius: 0;
+  background: rgba(255,255,255,0.04); color: var(--text-secondary);
   border: 1px solid var(--border);
 }
 
 .tool-cta {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600; color: var(--accent);
-  transition: gap 0.2s;
+  font-size: 13px; font-weight: 500; color: var(--cool);
 }
-.tool-card:hover .tool-cta { gap: 10px; }
-.tool-cta-arrow { transition: transform 0.2s; }
-.tool-card:hover .tool-cta-arrow { transform: translateX(3px); }
+.tool-cta-arrow { }
 .tool-card.coming .tool-cta { color: var(--text-muted); }
 
 /* ── Use cases ────────────────────────────────────── */
@@ -262,17 +256,18 @@ nav {
 .use-case-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 10px; padding: 24px 20px;
-  transition: border-color 0.3s;
+  border-radius: 0; padding: 24px 20px;
+  transition: border-color 0.2s;
 }
 .use-case-card:hover {
-  border-color: rgba(88,213,186,0.2);
+  border-color: var(--cool);
 }
 .use-case-icon {
   margin-bottom: 12px; display: flex; align-items: center; height: 28px;
 }
 .use-case-card h4 {
-  font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 8px;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 15px; font-weight: 400; color: #fff; margin-bottom: 8px;
 }
 .use-case-card p {
   font-size: 13px; color: var(--text-secondary); line-height: 1.65;
@@ -285,9 +280,10 @@ nav {
   text-align: center;
 }
 .cta h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
   font-size: clamp(24px, 3.5vw, 36px);
-  font-weight: 700; color: #fff;
-  letter-spacing: -0.02em;
+  font-weight: 400; color: #fff;
+  letter-spacing: -0.01em;
   margin-bottom: 12px;
 }
 .cta p {
@@ -300,14 +296,14 @@ nav {
 }
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 24px; border-radius: 6px;
-  font-size: 13px; font-weight: 600;
+  padding: 11px 24px; border-radius: 0;
+  font-size: 13px; font-weight: 500;
   transition: all 0.2s; cursor: pointer; border: none;
 }
-.btn-amber { background: var(--amber); color: var(--bg); }
+.btn-amber { background: var(--warm); color: var(--bg); }
 .btn-amber:hover { filter: brightness(1.1); }
 .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-ghost:hover { border-color: var(--cool); color: var(--cool); }
 
 /* ── Footer ───────────────────────────────────────── */
 footer {
@@ -323,19 +319,19 @@ footer {
   display: flex; align-items: center; gap: 12px;
 }
 .footer-left a { color: var(--text-secondary); transition: color 0.2s; }
-.footer-left a:hover { color: var(--accent); }
+.footer-left a:hover { color: var(--cool); }
 .footer-badges { display: flex; gap: 6px; }
 .footer-badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; font-weight: 500;
   letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 3px 7px; border-radius: 3px;
+  padding: 3px 7px; border-radius: 0;
 }
-.fb-free { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(88,213,186,0.15); }
-.fb-oss { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(240,180,41,0.15); }
+.fb-free { background: var(--cool-dim); color: var(--cool); border: 1px solid rgba(42,125,110,0.20); }
+.fb-oss { background: var(--warm-dim); color: var(--warm); border: 1px solid rgba(196,112,75,0.20); }
 .footer-right { display: flex; gap: 16px; }
 .footer-right a { font-size: 12px; color: var(--text-muted); transition: color 0.2s; }
-.footer-right a:hover { color: var(--accent); }
+.footer-right a:hover { color: var(--cool); }
 
 /* ── Animations ───────────────────────────────────── */
 .reveal {
@@ -365,7 +361,7 @@ footer {
   transform: translateY(12px);
   transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.3s ease, box-shadow 0.3s ease;
+              border-color 0.2s ease;
 }
 .tool-card.visible {
   opacity: 1;
@@ -425,9 +421,11 @@ footer {
     </a>
     <div class="nav-links">
       <a href="../">Lab</a>
-      <a href="../360/">360&deg;</a>
-      <a href="https://www.emmanuelneneodjidja.org/">About</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" class="nav-cta">GitHub</a>
+      <a href="../ews/">EWS</a>
+      <a href="./">Evaluation</a>
+      <a href="./" aria-current="page">Tools</a>
+      <a href="../360/">360</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" class="nav-github">GitHub</a>
     </div>
   </div>
 </nav>
@@ -467,7 +465,7 @@ footer {
 <!-- Tools Grid -->
 <section class="section">
   <div class="section-inner">
-    <div class="overline reveal">// TOOLKIT</div>
+    <div class="overline reveal">Toolkit</div>
     <h2 class="section-title reveal">Evaluation Toolkit</h2>
     <p class="section-desc reveal">
       Each tool is designed for real-world field conditions &mdash; not just textbook scenarios.
@@ -641,42 +639,42 @@ footer {
 <!-- Use cases -->
 <section class="section">
   <div class="section-inner">
-    <div class="overline reveal">// USE CASES</div>
+    <div class="overline reveal">Use Cases</div>
     <h2 class="section-title reveal">How evaluators use these tools</h2>
 
     <div class="use-case-grid">
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
         <h4>Writing a TOR</h4>
         <p>Use the Design Advisor to justify your methodology choice. Run the Sample Size Calculator to include a defensible sample size in the TOR &mdash; not just &ldquo;approximately 400 households.&rdquo;</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
         <h4>Designing a SMART Survey</h4>
         <p>Calculate exact sample size for GAM/SAM with the right DEFF. Select between 30&times;30 cluster design or adapted EPI method based on your context.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg></span>
         <h4>Analysing endline data</h4>
         <p>Upload your .xlsx straight from KoBoToolbox. Get instant frequency tables, Likert scale breakdowns, cross-tabulations, and export a formatted Word report.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
         <h4>Choosing an evaluation approach</h4>
         <p>Input your context &mdash; budget, timeline, comparison group feasibility, programme complexity &mdash; and get a ranked list of designs with trade-offs.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
         <h4>Reviewing a consultant&rsquo;s proposal</h4>
         <p>Cross-check their proposed sample size against your own calculation. Verify the evaluation design fits the stated purpose. Catch methodological gaps early.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
         <h4>Planning in FCV settings</h4>
         <p>The Design Advisor specifically accounts for fragile and conflict-affected contexts &mdash; downranking designs that require stable access.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></span>
         <h4>Training junior M&amp;E staff</h4>
         <p>Every parameter has guided presets with contextual explanations. Junior staff can produce a defensible sample size calculation without understanding the underlying statistics.</p>
       </div>
