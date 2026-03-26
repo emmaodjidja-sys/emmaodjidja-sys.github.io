@@ -1,810 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Programme Evaluation — PRAXIS AI for Good Lab</title>
-<meta name="description" content="PRAXIS evaluation track: open-source browser tools encoding 12 years of field evaluation experience. Six tools, 298 indicators, 11 sectors. Everything runs client-side.">
-<meta property="og:title" content="Programme Evaluation — PRAXIS">
-<meta property="og:description" content="Open-source evaluation infrastructure built on 12 years of field experience. Six live tools, 298 indicators, zero data transmission.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/tools/">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/svg+xml" href="../logo.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #1a1f2e;
-  --bg-surface: #212738;
-  --warm: #c4704b;
-  --warm-dim: rgba(196,112,75,0.10);
-  --cool: #2a7d6e;
-  --cool-dim: rgba(42,125,110,0.10);
-  --text: #e8e4df;
-  --text-secondary: #a09b94;
-  --text-muted: #6b665f;
-  --border: rgba(232,228,223,0.08);
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programme Evaluation — PRAXIS AI for Good Lab</title>
+  <meta name="description" content="PRAXIS evaluation track: open-source browser tools encoding 12 years of field evaluation experience. Six tools, 298 indicators, 11 sectors. Everything runs client-side.">
+  <meta property="og:title" content="Programme Evaluation — PRAXIS">
+  <meta property="og:description" content="Open-source evaluation infrastructure built on 12 years of field experience. Six live tools, 298 indicators, zero data transmission.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/evaluation/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/svg+xml" href="../logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1f2e;
+      --bg-surface: #212738;
+      --warm: #c4704b;
+      --warm-dim: rgba(196,112,75,0.10);
+      --cool: #2a7d6e;
+      --cool-dim: rgba(42,125,110,0.10);
+      --text: #e8e4df;
+      --text-secondary: #a09b94;
+      --text-muted: #6b665f;
+      --border: rgba(232,228,223,0.08);
+    }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 
-body {
-  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
-  color: var(--text);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-}
+    body {
+      font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.75;
+      font-size: 16px;
+      overflow-x: hidden;
+    }
 
-a { text-decoration: none; color: inherit; }
+    a { text-decoration: none; color: inherit; }
 
-.skip { position: absolute; top: -100px; left: 8px; padding: 8px 16px; background: var(--cool); color: var(--bg); font-weight: 600; font-size: 13px; z-index: 200; }
-.skip:focus { top: 0; }
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--border);
+      background: rgba(26,31,46,0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-inner {
+      max-width: 920px; margin: 0 auto; padding: 0 28px;
+      height: 56px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px; font-weight: 500; color: var(--text);
+      letter-spacing: 0.06em;
+      display: flex; align-items: center;
+    }
+    .nav-brand img { width: 22px; height: 22px; margin-right: 8px; }
+    .nav-brand span { color: var(--text-muted); font-weight: 300; margin: 0 6px; }
+    .nav-page { color: var(--text-secondary); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { font-size: 13px; color: var(--text-secondary); transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--cool); }
+    .nav-github {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      color: var(--bg) !important; background: var(--warm);
+      padding: 5px 14px; transition: opacity 0.2s;
+    }
+    .nav-github:hover { opacity: 0.85; }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+    .hamburger svg { width: 22px; height: 22px; stroke: var(--text-secondary); stroke-width: 2; fill: none; }
 
-/* ── Nav ──────────────────────────────────────────── */
-nav {
-  position: sticky; top: 0; z-index: 100;
-  border-bottom: 1px solid var(--border);
-  background: rgba(26,31,46,0.88);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-}
-.nav-inner {
-  max-width: 1000px; margin: 0 auto; padding: 0 32px;
-  height: 56px; display: flex; align-items: center; justify-content: space-between;
-}
-.nav-brand {
-  display: flex; align-items: center; gap: 10px;
-  font-weight: 700; font-size: 14px; color: #fff;
-  letter-spacing: 0.06em;
-}
-.nav-brand img { width: 24px; height: 24px; border-radius: 5px; }
-.nav-sep { color: var(--text-muted); font-weight: 300; margin: 0 2px; }
-.nav-page { color: var(--text-secondary); font-size: 14px; font-weight: 500; }
-.nav-links { display: flex; gap: 20px; align-items: center; }
-.nav-links a { font-size: 13px; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
-.nav-links a:hover { color: var(--cool); }
-.nav-github {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px; font-weight: 500; color: var(--bg) !important;
-  background: var(--warm); padding: 5px 14px;
-}
-.nav-github:hover { filter: brightness(1.1); }
+    /* MAIN */
+    .container { max-width: 720px; margin: 0 auto; padding: 0 28px; }
 
-/* ── Hero ─────────────────────────────────────────── */
-.hero {
-  padding: 80px 32px 72px;
-  text-align: center;
-}
-.hero-inner {
-  max-width: 680px; margin: 0 auto;
-}
-.hero-label {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--cool);
-  padding: 5px 16px;
-  background: var(--cool-dim);
-  border: 1px solid rgba(42,125,110,0.20);
-  margin-bottom: 32px;
-}
-.hero-label-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--cool);
-}
-.hero h1 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: clamp(32px, 5.5vw, 52px);
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
-  color: #fff;
-  margin-bottom: 24px;
-}
-.hero h1 em {
-  font-style: italic;
-  color: var(--warm);
-}
-.hero-desc {
-  font-size: 16px; line-height: 1.8;
-  color: var(--text-secondary);
-  max-width: 540px; margin: 0 auto 40px;
-}
-.hero-stats {
-  display: flex; justify-content: center; gap: 48px;
-}
-.hero-stat { text-align: center; }
-.hero-stat-num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 28px; font-weight: 500; color: var(--cool);
-  line-height: 1;
-}
-.hero-stat-label {
-  font-size: 11px; color: var(--text-muted); margin-top: 6px;
-  font-weight: 500; letter-spacing: 0.02em;
-}
+    /* HERO */
+    .hero { padding: 100px 0 72px; border-bottom: 1px solid var(--border); }
+    .hero-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      color: var(--cool);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(2.6rem, 5.5vw, 3.8rem);
+      font-weight: 400; line-height: 1.08;
+      color: var(--text); margin-bottom: 24px;
+    }
+    .hero h1 em { font-style: italic; color: var(--cool); }
+    .hero-sub {
+      font-size: 17px; line-height: 1.75;
+      color: var(--text-secondary);
+      max-width: 560px;
+    }
 
-/* ── Section ──────────────────────────────────────── */
-.section {
-  padding: 80px 32px;
-  border-top: 1px solid var(--border);
-}
-.section-inner {
-  max-width: 1000px; margin: 0 auto;
-}
-.overline {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 16px;
-}
-.section-title {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: clamp(24px, 3.5vw, 36px);
-  font-weight: 400; color: #fff;
-  letter-spacing: -0.01em;
-  margin-bottom: 12px;
-  line-height: 1.2;
-}
-.section-desc {
-  font-size: 15px; line-height: 1.8;
-  color: var(--text-secondary);
-  max-width: 600px;
-  margin-bottom: 48px;
-}
+    /* SECTIONS */
+    .section { padding: 72px 0; border-bottom: 1px solid var(--border); }
+    .section:last-of-type { border-bottom: none; }
+    .section-heading {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 400; line-height: 1.15;
+      color: var(--text); margin-bottom: 24px;
+    }
+    .prose { color: var(--text-secondary); line-height: 1.8; }
+    .prose p + p { margin-top: 18px; }
+    .prose strong { color: var(--text); font-weight: 500; }
 
-/* ── Tools grid ───────────────────────────────────── */
-.tools-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
+    /* TOOL LIST */
+    .tool-list { margin-top: 32px; }
+    .tool-item {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .tool-item:first-child { border-top: 1px solid var(--border); }
+    .tool-item:hover { background: var(--cool-dim); margin: 0 -12px; padding-left: 12px; padding-right: 12px; }
+    .tool-name {
+      font-size: 16px; font-weight: 500; color: var(--text);
+      transition: color 0.2s;
+    }
+    .tool-item:hover .tool-name { color: var(--cool); }
+    .tool-desc {
+      font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+    }
 
-/* ── Tool card ────────────────────────────────────── */
-.tool-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 0;
-  padding: 28px 24px;
-  text-decoration: none;
-  color: inherit;
-  display: flex; flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.2s ease;
-}
-.tool-card:hover {
-  border-color: var(--cool);
-}
-.tool-card.live::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--cool);
-}
-.tool-card.coming {
-  opacity: 0.6;
-}
-.tool-card.coming::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--text-muted);
-}
+    /* ECOSYSTEM */
+    .ecosystem {
+      margin-top: 32px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .eco-item {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .eco-item:first-child { border-top: 1px solid var(--border); }
+    .eco-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: var(--cool); letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .eco-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.2rem; font-weight: 400;
+      color: var(--text); margin-bottom: 8px;
+    }
+    .eco-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.75; }
 
-.tool-card-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 16px;
-}
-.tool-icon {
-  width: 40px; height: 40px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 0;
-  color: var(--cool);
-  background: var(--cool-dim);
-}
-.tool-status {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.tool-status.live {
-  color: var(--cool);
-}
-.tool-status.soon {
-  color: var(--text-muted);
-}
+    /* CTA */
+    .cta-link {
+      display: inline-block; margin-top: 24px;
+      font-size: 14px; font-weight: 500;
+      color: var(--cool); transition: color 0.2s;
+    }
+    .cta-link:hover { color: var(--text); }
 
-.tool-card h3 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 17px; font-weight: 400; color: #fff;
-  margin-bottom: 8px; line-height: 1.2;
-}
-.tool-card .tool-desc {
-  font-size: 13.5px; color: var(--text-secondary); line-height: 1.65;
-  margin-bottom: 16px; flex: 1;
-}
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 28px 0; }
+    .footer-inner {
+      max-width: 720px; margin: 0 auto; padding: 0 28px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 13px; color: var(--text-muted); transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text-secondary); }
+    .footer-copy { font-size: 12px; color: var(--text-muted); }
 
-.tool-features {
-  display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px;
-}
-.tool-feature {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px; font-weight: 500;
-  padding: 3px 8px; border-radius: 0;
-  background: rgba(255,255,255,0.04); color: var(--text-secondary);
-  border: 1px solid var(--border);
-}
+    /* MOBILE */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 56px; left: 0; right: 0;
+        background: rgba(26,31,46,0.97);
+        padding: 16px 28px; gap: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .hamburger { display: block; }
+      .hero { padding: 80px 0 56px; }
+      .section { padding: 52px 0; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
 
-.tool-cta {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 500; color: var(--cool);
-}
-.tool-cta-arrow { }
-.tool-card.coming .tool-cta { color: var(--text-muted); }
-
-/* ── Use cases ────────────────────────────────────── */
-.use-case-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-.use-case-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 0; padding: 24px 20px;
-  transition: border-color 0.2s;
-}
-.use-case-card:hover {
-  border-color: var(--cool);
-}
-.use-case-icon {
-  margin-bottom: 12px; display: flex; align-items: center; height: 28px;
-}
-.use-case-card h4 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 15px; font-weight: 400; color: #fff; margin-bottom: 8px;
-}
-.use-case-card p {
-  font-size: 13px; color: var(--text-secondary); line-height: 1.65;
-}
-
-/* ── CTA ──────────────────────────────────────────── */
-.cta {
-  padding: 80px 32px;
-  border-top: 1px solid var(--border);
-  text-align: center;
-}
-.cta h2 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: clamp(24px, 3.5vw, 36px);
-  font-weight: 400; color: #fff;
-  letter-spacing: -0.01em;
-  margin-bottom: 12px;
-}
-.cta p {
-  font-size: 15px; color: var(--text-secondary);
-  max-width: 480px; margin: 0 auto 32px;
-  line-height: 1.7;
-}
-.cta-actions {
-  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-}
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 24px; border-radius: 0;
-  font-size: 13px; font-weight: 500;
-  transition: all 0.2s; cursor: pointer; border: none;
-}
-.btn-amber { background: var(--warm); color: var(--bg); }
-.btn-amber:hover { filter: brightness(1.1); }
-.btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-.btn-ghost:hover { border-color: var(--cool); color: var(--cool); }
-
-/* ── Footer ───────────────────────────────────────── */
-footer {
-  border-top: 1px solid var(--border);
-  padding: 24px 32px;
-}
-.footer-inner {
-  max-width: 1000px; margin: 0 auto;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.footer-left {
-  font-size: 11px; color: var(--text-muted);
-  display: flex; align-items: center; gap: 12px;
-}
-.footer-left a { color: var(--text-secondary); transition: color 0.2s; }
-.footer-left a:hover { color: var(--cool); }
-.footer-badges { display: flex; gap: 6px; }
-.footer-badge {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px; font-weight: 500;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 3px 7px; border-radius: 0;
-}
-.fb-free { background: var(--cool-dim); color: var(--cool); border: 1px solid rgba(42,125,110,0.20); }
-.fb-oss { background: var(--warm-dim); color: var(--warm); border: 1px solid rgba(196,112,75,0.20); }
-.footer-right { display: flex; gap: 16px; }
-.footer-right a { font-size: 12px; color: var(--text-muted); transition: color 0.2s; }
-.footer-right a:hover { color: var(--cool); }
-
-/* ── Animations ───────────────────────────────────── */
-.reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.reveal.visible { opacity: 1; transform: translateY(0); }
-
-.hero-inner > * {
-  opacity: 0;
-  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.hero-inner > :nth-child(1) { animation-delay: 0s; }
-.hero-inner > :nth-child(2) { animation-delay: 0.15s; }
-.hero-inner > :nth-child(3) { animation-delay: 0.3s; }
-.hero-inner > :nth-child(4) { animation-delay: 0.45s; }
-
-/* Tool cards stagger */
-.tool-card {
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.2s ease;
-}
-.tool-card.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.tool-card.coming.visible {
-  opacity: 0.6;
-}
-
-/* Use case cards */
-.use-case-card {
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.3s;
-}
-.use-case-card.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── Responsive ───────────────────────────────────── */
-@media (max-width: 768px) {
-  .tools-grid { grid-template-columns: 1fr; }
-  .use-case-grid { grid-template-columns: 1fr; }
-  .hero-stats { gap: 24px; flex-wrap: wrap; }
-  .hero { padding: 60px 20px 56px; }
-  .section { padding: 60px 20px; }
-  .cta { padding: 60px 20px; }
-  .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
-  .footer-left { flex-direction: column; gap: 8px; }
-  .footer-right { justify-content: center; }
-  .nav-links a:not(.nav-cta) { display: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-</style>
+    /* REVEAL */
+    .reveal {
+      opacity: 0; transform: translateY(12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
 </head>
 <body>
 
-<a href="#main" class="skip">Skip to content</a>
-
-<nav aria-label="Main navigation">
+<nav>
   <div class="nav-inner">
     <a href="../" class="nav-brand">
-      <img src="../logo.svg" alt="PRAXIS logo">
-      PRAXIS
-      <span class="nav-sep">/</span>
-      <span class="nav-page">Evaluation</span>
+      <img src="../logo.svg" alt="">
+      PRAXIS <span>/</span> <span class="nav-page">Evaluation</span>
     </a>
+    <button class="hamburger" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
     <div class="nav-links">
       <a href="../">Lab</a>
       <a href="../ews/">EWS</a>
-      <a href="./" aria-current="page" style="color:var(--cool)">Evaluation</a>
+      <a href="./" class="active">Evaluation</a>
       <a href="../tools/">Tools</a>
       <a href="../360/">360</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" class="nav-github">GitHub</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="nav-github">GitHub</a>
     </div>
   </div>
 </nav>
 
-<section class="hero" id="main" role="main">
-  <div class="hero-inner">
-    <div class="hero-label">
-      <span class="hero-label-dot"></span> PRAXIS Evaluation Track
-    </div>
+<main>
+
+<!-- HERO -->
+<div class="container">
+  <section class="hero reveal">
+    <p class="hero-label">PRAXIS Evaluation Track</p>
     <h1>Programme <em>Evaluation</em> Infrastructure</h1>
-    <p class="hero-desc">
-      Twelve years of field evaluation experience encoded into free, open-source browser tools.
-      Six live tools covering the full evaluation lifecycle. Everything runs on your machine.
-      Part of the <a href="../" style="color:var(--cool)">PRAXIS AI for Good Lab</a>,
-      alongside the <a href="../ews/" style="color:var(--warm)">Early Warning System</a>.
-    </p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat-num" data-target="8" data-suffix="">0</div>
-        <div class="hero-stat-label">Sample Size Designs</div>
+    <p class="hero-sub">I spent years looking for evaluation tools built by someone who had actually run an evaluation in a conflict zone. I could not find them. So I built them.</p>
+  </section>
+</div>
+
+<!-- WHY -->
+<div class="container">
+  <section class="section reveal">
+    <h2 class="section-heading">The problem</h2>
+    <div class="prose">
+      <p>Evaluation in fragile and conflict-affected settings demands methodological rigour under conditions that make rigour difficult. The tools available to evaluators were built for offices with reliable internet, not for field visits where connectivity drops and platforms change their pricing. I kept losing access to my own work.</p>
+      <p>PRAXIS runs entirely in your browser. Everything stays on your machine. No server calls, no accounts, no tracking. If the wifi cuts out in Juba or Ouagadougou, the tools still work. If PRAXIS disappears tomorrow, you still have your files. MIT licensed, permanently free, fully yours.</p>
+    </div>
+  </section>
+</div>
+
+<!-- THE ECOSYSTEM -->
+<div class="container">
+  <section class="section reveal">
+    <h2 class="section-heading">The ecosystem</h2>
+
+    <div class="ecosystem">
+      <div class="eco-item">
+        <p class="eco-label">01</p>
+        <h3 class="eco-title">AI Evaluation Skills</h3>
+        <p class="eco-desc">Claude Project knowledge modules. Six core modules plus sector-specific extensions. Over 20 evaluation designs and 16 validated scales, encoded as structured methodology that an AI can apply to your specific context.</p>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num" data-target="16" data-suffix="">0</div>
-        <div class="hero-stat-label">Evaluation Approaches</div>
+      <div class="eco-item">
+        <p class="eco-label">02</p>
+        <h3 class="eco-title">Practitioner Tools</h3>
+        <p class="eco-desc">Six browser-based tools covering the full evaluation lifecycle. Sample size calculation, evaluation design advising, data exploration, Theory of Change building, evaluation matrix construction, and an indicator bank with 298 indicators across 11 sectors. Zero data transmission.</p>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num" data-target="11" data-suffix="">0</div>
-        <div class="hero-stat-label">Analysis Types</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num" data-target="100" data-suffix="%">0%</div>
-        <div class="hero-stat-label">Free to Use</div>
+      <div class="eco-item">
+        <p class="eco-label">03</p>
+        <h3 class="eco-title">PRAXIS 360</h3>
+        <p class="eco-desc">The integrated end-to-end evaluation workflow built on the .praxis file format. Theory of Change through to reporting, with every finding traceable back to the evaluation framework. Launching at Glocal Evaluation Week 2026.</p>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+</div>
 
-<!-- Tools Grid -->
-<section class="section">
-  <div class="section-inner">
-    <div class="overline reveal">Toolkit</div>
-    <h2 class="section-title reveal">Evaluation Toolkit</h2>
-    <p class="section-desc reveal">
-      Each tool is designed for real-world field conditions &mdash; not just textbook scenarios.
-      Guided parameter selection for evaluators at any experience level.
-    </p>
+<!-- TOOLS -->
+<div class="container">
+  <section class="section reveal">
+    <h2 class="section-heading">Live tools</h2>
 
-    <div class="tools-grid">
-
-      <!-- Tool 1: Sample Size Calculator -->
-      <a href="../tools/sample-size-calculator/" class="tool-card live">
-        <div class="tool-card-header">
-          <div class="tool-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg></div>
-          <span class="tool-status live">Live</span>
-        </div>
-        <h3>Sample Size Calculator</h3>
-        <p class="tool-desc">
-          Rigorous sample size estimation for 8 evaluation designs. Real-time calculation
-          with guided parameter selection &mdash; click the recommended presets if you're
-          unsure which values to use.
-        </p>
-        <div class="tool-features">
-          <span class="tool-feature">Single Proportion</span>
-          <span class="tool-feature">Two Proportions</span>
-          <span class="tool-feature">Cluster RCT</span>
-          <span class="tool-feature">Cluster Survey</span>
-          <span class="tool-feature">Stepped-Wedge</span>
-          <span class="tool-feature">LQAS</span>
-          <span class="tool-feature">DiD</span>
-          <span class="tool-feature">Two Means</span>
-        </div>
-        <span class="tool-cta">Open calculator <span class="tool-cta-arrow">&rarr;</span></span>
+    <div class="tool-list">
+      <a href="../tools/sample-size-calculator/" class="tool-item">
+        <div class="tool-name">Sample Size Calculator</div>
+        <div class="tool-desc">Rigorous sample size estimation for 8 evaluation designs. RCT, cluster, stepped-wedge, DiD, LQAS.</div>
       </a>
-
-      <!-- Tool 2: Evaluation Design Advisor -->
-      <a href="../tools/evaluation-design-advisor/" class="tool-card live">
-        <div class="tool-card-header">
-          <div class="tool-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L2 8l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12.5l10 5 10-5"/></svg></div>
-          <span class="tool-status live">Live</span>
-        </div>
-        <h3>Evaluation Design Advisor</h3>
-        <p class="tool-desc">
-          Answer 10 context questions about your programme and get scored recommendations
-          across 16 evaluation designs &mdash; with trade-offs, validity threats, and
-          justification for each.
-        </p>
-        <div class="tool-features">
-          <span class="tool-feature">Experimental</span>
-          <span class="tool-feature">Quasi-Experimental</span>
-          <span class="tool-feature">Theory-Based</span>
-          <span class="tool-feature">Complexity-Responsive</span>
-          <span class="tool-feature">Participatory</span>
-          <span class="tool-feature">Non-Experimental</span>
-        </div>
-        <span class="tool-cta">Get recommendations <span class="tool-cta-arrow">&rarr;</span></span>
+      <a href="../tools/evaluation-design-advisor/" class="tool-item">
+        <div class="tool-name">Evaluation Design Advisor</div>
+        <div class="tool-desc">Answer 10 context questions, get scored recommendations across 16 designs with trade-offs.</div>
       </a>
-
-      <!-- Tool 3: Data Explorer -->
-      <a href="../tools/data-explorer/" class="tool-card live">
-        <div class="tool-card-header">
-          <div class="tool-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg></div>
-          <span class="tool-status live">Live</span>
-        </div>
-        <h3>Data Explorer</h3>
-        <p class="tool-desc">
-          Upload any .xlsx or .csv and get instant descriptive statistics, frequency
-          distributions, Likert scale analysis, time series, OLS &amp; logistic regression,
-          cross-tabulations, and a formatted Word report. Zero data transmission.
-        </p>
-        <div class="tool-features">
-          <span class="tool-feature">Frequencies</span>
-          <span class="tool-feature">Likert Analysis</span>
-          <span class="tool-feature">Time Series</span>
-          <span class="tool-feature">Regression</span>
-          <span class="tool-feature">Cross-tabs</span>
-          <span class="tool-feature">Word Export</span>
-        </div>
-        <span class="tool-cta">Explore your data <span class="tool-cta-arrow">&rarr;</span></span>
+      <a href="../tools/data-explorer/" class="tool-item">
+        <div class="tool-name">Data Explorer</div>
+        <div class="tool-desc">Upload CSV or XLSX for instant descriptive stats, regression, Likert analysis, and Word export.</div>
       </a>
-
-      <!-- Tool 4: Indicator Bank & Selector -->
-      <a href="../tools/indicator-bank/" class="tool-card live">
-        <div class="tool-card-header">
-          <div class="tool-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10H3M21 6H3M21 14H3M21 18H3"/></svg></div>
-          <span class="tool-status live">Live</span>
-        </div>
-        <h3>Indicator Bank &amp; Selector</h3>
-        <p class="tool-desc">
-          298 indicators across 11 sectors with guided selector wizard, deep filtering,
-          and results framework generator. Covers PEPFAR MER, Global Fund, Gavi,
-          WHO 100 Core, SDG, SPHERE, and 8 more frameworks.
-        </p>
-        <div class="tool-features">
-          <span class="tool-feature">298 Indicators</span>
-          <span class="tool-feature">Guided Selector</span>
-          <span class="tool-feature">Results Framework</span>
-          <span class="tool-feature">CSV Export</span>
-          <span class="tool-feature">11 Sectors</span>
-        </div>
-        <span class="tool-cta">Browse indicators <span class="tool-cta-arrow">&rarr;</span></span>
+      <a href="../tools/toc-builder/" class="tool-item">
+        <div class="tool-name">Theory of Change Builder</div>
+        <div class="tool-desc">Build structured Theories of Change with assumptions mapping and causal pathway visualisation.</div>
       </a>
-
-      <!-- Tool 5: Theory of Change Builder -->
-      <a href="../tools/toc-builder/" class="tool-card live">
-        <div class="tool-card-header">
-          <div class="tool-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4"/><path d="M12 11l-7 6"/><path d="M12 11l7 6"/></svg></div>
-          <span class="tool-status live">Live</span>
-        </div>
-        <h3>Theory of Change Builder</h3>
-        <p class="tool-desc">
-          Interactive canvas for building evidence-mapped causal diagrams. Three-level
-          assumption architecture, evidence taxonomy with strength/type/transferability,
-          feedback loops, timeframes, and narrative theory documentation.
-        </p>
-        <div class="tool-features">
-          <span class="tool-feature">Drag &amp; Drop Canvas</span>
-          <span class="tool-feature">Evidence Taxonomy</span>
-          <span class="tool-feature">Feedback Loops</span>
-          <span class="tool-feature">3-Level Assumptions</span>
-          <span class="tool-feature">SVG/PNG Export</span>
-        </div>
-        <span class="tool-cta">Build your ToC <span class="tool-cta-arrow">&rarr;</span></span>
+      <a href="../tools/eval-matrix-builder/" class="tool-item">
+        <div class="tool-name">Evaluation Matrix Builder</div>
+        <div class="tool-desc">Link evaluation questions to criteria, indicators, data sources, and methods. Export to Word.</div>
       </a>
-
-      <!-- Tool 6: Evaluation Matrix Builder -->
-      <a href="../tools/eval-matrix-builder/" class="tool-card live">
-        <div class="tool-card-header">
-          <div class="tool-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
-          <span class="tool-status live">Live</span>
-        </div>
-        <h3>Evaluation Matrix Builder</h3>
-        <p class="tool-desc">
-          Input your Theory of Change. Get evaluation questions mapped to OECD-DAC criteria,
-          with 155 indicators from PEPFAR MER, Global Fund, Gavi, WHO, and DHS/MICS.
-          Export as formatted Excel, Word, or JSON.
-        </p>
-        <div class="tool-features">
-          <span class="tool-feature">OECD-DAC 2019</span>
-          <span class="tool-feature">155 Indicators</span>
-          <span class="tool-feature">Outcome-Specific EQs</span>
-          <span class="tool-feature">Excel Export</span>
-          <span class="tool-feature">Word Export</span>
-        </div>
-        <span class="tool-cta">Build your matrix <span class="tool-cta-arrow">&rarr;</span></span>
+      <a href="../tools/indicator-bank/" class="tool-item">
+        <div class="tool-name">Indicator Bank</div>
+        <div class="tool-desc">298 indicators across 11 sectors. PEPFAR MER codes, validated instruments. CSV export.</div>
       </a>
-
-      <!-- Tool 7: Evaluability Assessment Scorecard (Coming) -->
-      <div class="tool-card coming">
-        <div class="tool-card-header">
-          <div class="tool-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-          <span class="tool-status soon">Coming Soon</span>
-        </div>
-        <h3>Evaluability Assessment Scorecard</h3>
-        <p class="tool-desc">
-          Structured walk-through of programme logic clarity, data availability,
-          stakeholder readiness, and attribution feasibility. Outputs a scored
-          assessment with actionable recommendations before you commission.
-        </p>
-        <div class="tool-features">
-          <span class="tool-feature">Davies/DFID Framework</span>
-          <span class="tool-feature">Data Readiness</span>
-          <span class="tool-feature">Stakeholder Mapping</span>
-          <span class="tool-feature">Design Feasibility</span>
-        </div>
-        <span class="tool-cta">Notify me when available <span class="tool-cta-arrow">&rarr;</span></span>
-      </div>
-
     </div>
-  </div>
-</section>
+  </section>
+</div>
 
-<!-- Use cases -->
-<section class="section">
-  <div class="section-inner">
-    <div class="overline reveal">Use Cases</div>
-    <h2 class="section-title reveal">How evaluators use these tools</h2>
-
-    <div class="use-case-grid">
-      <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
-        <h4>Writing a TOR</h4>
-        <p>Use the Design Advisor to justify your methodology choice. Run the Sample Size Calculator to include a defensible sample size in the TOR &mdash; not just &ldquo;approximately 400 households.&rdquo;</p>
-      </div>
-      <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-        <h4>Designing a SMART Survey</h4>
-        <p>Calculate exact sample size for GAM/SAM with the right DEFF. Select between 30&times;30 cluster design or adapted EPI method based on your context.</p>
-      </div>
-      <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg></span>
-        <h4>Analysing endline data</h4>
-        <p>Upload your .xlsx straight from KoBoToolbox. Get instant frequency tables, Likert scale breakdowns, cross-tabulations, and export a formatted Word report.</p>
-      </div>
-      <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
-        <h4>Choosing an evaluation approach</h4>
-        <p>Input your context &mdash; budget, timeline, comparison group feasibility, programme complexity &mdash; and get a ranked list of designs with trade-offs.</p>
-      </div>
-      <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-        <h4>Reviewing a consultant&rsquo;s proposal</h4>
-        <p>Cross-check their proposed sample size against your own calculation. Verify the evaluation design fits the stated purpose. Catch methodological gaps early.</p>
-      </div>
-      <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-        <h4>Planning in FCV settings</h4>
-        <p>The Design Advisor specifically accounts for fragile and conflict-affected contexts &mdash; downranking designs that require stable access.</p>
-      </div>
-      <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></span>
-        <h4>Training junior M&amp;E staff</h4>
-        <p>Every parameter has guided presets with contextual explanations. Junior staff can produce a defensible sample size calculation without understanding the underlying statistics.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta">
-  <h2 class="reveal">Built on PRAXIS Methodology</h2>
-  <p class="reveal">
-    These tools are powered by the same methodological framework behind PRAXIS &mdash;
-    the open-source evaluation system used by M&amp;E professionals worldwide.
-  </p>
-  <div class="cta-actions reveal">
-    <a href="https://github.com/emmaodjidja-sys/praxis" class="btn btn-amber">Get PRAXIS on GitHub &rarr;</a>
-    <a href="../" class="btn btn-ghost">Learn more about PRAXIS</a>
-  </div>
-</section>
+</main>
 
 <footer>
   <div class="footer-inner">
-    <div class="footer-left">
-      <span>PRAXIS &middot; Built by <a href="https://www.emmanuelneneodjidja.org/">Emmanuel Nene Odjidja</a></span>
-      <div class="footer-badges">
-        <span class="footer-badge fb-free">MIT License</span>
-        <span class="footer-badge fb-oss">Open Source</span>
-      </div>
+    <div class="footer-links">
+      <a href="../">PRAXIS Lab</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>
     </div>
-    <div class="footer-right">
-      <a href="https://github.com/emmaodjidja-sys/praxis">GitHub</a>
-      <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en">Publications</a>
-      <a href="../">PRAXIS</a>
-    </div>
+    <span class="footer-copy">PRAXIS. Open source. MIT licensed.</span>
   </div>
 </footer>
 
 <script>
-/* ── Reveals ──────────────────────────────────────────── */
-var revealObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.25, rootMargin: '0px 0px -60px 0px' });
-document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
-
-/* ── Tool cards — staggered ───────────────────────────── */
-var toolCards = document.querySelectorAll('.tool-card');
-var toolObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      var idx = Array.prototype.indexOf.call(toolCards, entry.target);
-      var visibleBefore = 0;
-      for (var i = 0; i < idx; i++) {
-        if (toolCards[i].classList.contains('visible')) visibleBefore++;
-      }
-      var delay = (idx - visibleBefore) * 100;
-      setTimeout(function() {
+(function() {
+  var els = document.querySelectorAll('.reveal');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    els.forEach(function(el) { el.classList.add('visible'); });
+    return;
+  }
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-      }, delay);
-      toolObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-toolCards.forEach(function(el) { toolObserver.observe(el); });
-
-/* ── Use case cards — staggered ───────────────────────── */
-var useCases = document.querySelectorAll('.use-case-card');
-var ucObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      var idx = Array.prototype.indexOf.call(useCases, entry.target);
-      var visibleBefore = 0;
-      for (var i = 0; i < idx; i++) {
-        if (useCases[i].classList.contains('visible')) visibleBefore++;
+        observer.unobserve(entry.target);
       }
-      var delay = (idx - visibleBefore) * 80;
-      setTimeout(function() {
-        entry.target.classList.add('visible');
-      }, delay);
-      ucObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-useCases.forEach(function(el) { ucObserver.observe(el); });
-
-/* ── Animated count-up for hero stats ─────────────────── */
-(function () {
-  var counters = document.querySelectorAll('.hero-stat-num[data-target]');
-  var duration = 1800;
-  var started = false;
-
-  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-
-  function animateCounters() {
-    if (started) return;
-    started = true;
-    counters.forEach(function (el) {
-      var target = parseInt(el.getAttribute('data-target'), 10);
-      var suffix = el.getAttribute('data-suffix') || '';
-      var start = performance.now();
-      function step(now) {
-        var elapsed = now - start;
-        var progress = Math.min(elapsed / duration, 1);
-        var value = Math.round(easeOutCubic(progress) * target);
-        el.textContent = value + suffix;
-        if (progress < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
     });
-  }
-
-  if ('IntersectionObserver' in window) {
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          animateCounters();
-          observer.disconnect();
-        }
-      });
-    }, { threshold: 0.4 });
-    var statsBlock = document.querySelector('.hero-stats');
-    if (statsBlock) observer.observe(statsBlock);
-  } else {
-    animateCounters();
-  }
+  }, { threshold: 0.15 });
+  els.forEach(function(el) { observer.observe(el); });
 })();
 </script>
 </body>
