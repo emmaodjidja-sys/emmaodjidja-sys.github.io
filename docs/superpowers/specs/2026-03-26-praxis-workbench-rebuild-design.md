@@ -63,8 +63,8 @@ Dark compact rail (48px, navy #0a1525) + white content panels. The dark rail pro
 
 **Workbench additions:**
 - `--wb-rail-bg: #0a1525` — rail background (darker than navy)
-- `--wb-rail-width: 48px`
-- `--wb-topbar-height: 44px`
+- `--wb-rail-width: 48px` (overrides blueprint's 64px — validated in mockups as more compact and proportional)
+- `--wb-topbar-height: 44px` (overrides blueprint's 48px — validated in mockups)
 - `--wb-drawer-width: 44px` (collapsed), `320px` (expanded)
 - Tier tokens: `--tier-foundation: #10B981`, `--tier-practitioner: #3B82F6`, `--tier-advanced: #8B5CF6`
 - Staleness: `--stale-color: #F59E0B`
@@ -93,7 +93,7 @@ Each station button in the rail has four possible states:
 ## 4. Entry Experience: Full Landing Page
 
 ### 4.1 Layout
-Full-page dark landing that replaces the shell entirely on first load. Two-panel layout:
+Full-page dark landing that replaces the shell entirely on first load. This is a full-page replacement component (not a modal overlay on top of the shell). The blueprint file tree places this at `shell/EntryModal.js` but the component renders *instead of* the Shell, not on top of it. When the user selects an entry mode, the full landing unmounts and the Shell mounts. Two-panel layout:
 - **Left (55%):** PRAXIS logo + "Evaluation Workbench" title, introductory text, preview of all 9 station names with numbers (fading from visible to muted, showing the journey ahead).
 - **Right (45%):** Action cards on dark background.
 
@@ -226,6 +226,24 @@ Same phase indicator, review card, and bottom bar pattern as Phase 1.
 
 Each row shows: dimension name, progress bar (color-coded: green >75%, amber 50-75%, red <50%), score as "N/M".
 
+**Schema note:** The blueprint's `evaluability` schema uses flat fields (`data_readiness`, `toc_clarity`, `stakeholder_access`, `timeline_adequate`) with qualitative enums. This spec's five numeric dimensions replace that structure. The `evaluability` schema field should be extended to:
+```
+"evaluability": {
+  "score": 68,
+  "dimensions": [
+    {"id": "data", "label": "Data Availability", "max": 25, "system_score": 15, "adjusted_score": null, "justification": null},
+    {"id": "toc", "label": "ToC Clarity", "max": 20, "system_score": 18, "adjusted_score": null, "justification": null},
+    {"id": "timeline", "label": "Timeline Adequacy", "max": 20, "system_score": 15, "adjusted_score": null, "justification": null},
+    {"id": "context", "label": "Operating Context", "max": 15, "system_score": 10, "adjusted_score": null, "justification": null},
+    {"id": "comparison", "label": "Comparison Feasibility", "max": 20, "system_score": 10, "adjusted_score": 16, "justification": "Natural experiment: 2/3 provinces received intervention in Phase 1"}
+  ],
+  "blockers": [],
+  "recommendations": [],
+  "completed_at": null
+}
+```
+This supports both the numeric scoring and the professional override audit trail. `stakeholder_access` from the blueprint schema is absorbed into the scoring rubric (affects Data and Context dimensions) rather than being a standalone field.
+
 **Expanded row shows:**
 - "What drove this score" — plain language explanation referencing the user's actual inputs (e.g., "You selected 'natural comparison' for comparison feasibility in a fragile operating context across 3 countries.")
 - "What would improve it" — actionable guidance
@@ -315,7 +333,7 @@ Opens below the selected table row. Two-column grid on `#F8FAFC` background, bor
 ### 8.3 + Add EQ flow
 Modal overlay. Two paths:
 
-**AI-suggested questions (prominent at Foundation tier):**
+**Auto-suggested questions (prominent at Foundation tier):**
 - Suggestions derived from ToC nodes × DAC criteria
 - Each suggestion shows: criterion badge, "Not yet covered in matrix" label, question text, linked ToC outcomes
 - "Recommended" tag for normative questions (e.g., Gender/Equity) that aren't derived from the ToC but from normative commitments
@@ -402,7 +420,7 @@ Shows instrument cards and a coverage matrix.
 **Right panel (question editor):**
 - EQ context banner: Shows the evaluation question this section addresses and the linked indicator
 - Question text (editable text field)
-- **Response type selector with AI suggestion:** "Suggested: Likert — perception indicator → scale response." The suggestion explains its reasoning based on indicator type:
+- **Response type selector with Auto-suggestion:** "Suggested: Likert — perception indicator → scale response." The suggestion explains its reasoning based on indicator type:
   - Percentage/count indicators → categorical or numeric response
   - Perception/attitude indicators → Likert scale
   - Binary/yes-no indicators → multiple choice
@@ -427,9 +445,10 @@ Clearly framed as a platform concern, not an evaluation methodology concern. The
 - **XLSForm column note:** "When you export the XLSForm, skip logic columns (relevant, constraint) will be included as empty columns, ready for you to populate in Kobo."
 
 ### 11.5 Export
-- **XLSForm** (primary): Valid XLS file with `survey`, `choices`, and `settings` sheets. Correct `type`, `name`, `label`, `required` columns. Empty `relevant` and `constraint` columns for Kobo configuration. Choice lists for Likert scales, multiple choice options.
+**Note:** This supersedes the blueprint's `InstrumentExport.js` formats (Word, KoboJSON, CSV). XLSForm is the primary output.
+- **XLSForm** (primary): Valid XLS file with `survey`, `choices`, and `settings` sheets. Correct `type`, `name`, `label`, `required` columns. Empty `relevant` and `constraint` columns for Kobo configuration. Choice lists for Likert scales, multiple choice options. This is the format KoboToolbox and ODK import natively.
 - **Word:** Formatted instrument document suitable for printing or sharing. Section headers, question numbers, response options displayed visually.
-- **PDF:** Print-ready version of the Word output.
+- **PDF:** Print-ready version of the Word output (via browser print dialog).
 
 ---
 
@@ -469,7 +488,7 @@ Sensitivity is set in Station 0 or via the top bar. It affects all stations.
 - **Field labels:** Foundation uses plain language ("How sure are you that you can compare a group that received the programme with one that didn't?"), Practitioner uses standard M&E terminology ("Comparison feasibility"), Advanced uses technical terms ("Counterfactual identification strategy").
 - **Field visibility:** Foundation hides advanced fields behind "Show more detail" inline expanders. All fields are always accessible — nothing is locked by tier.
 - **Help text:** Foundation gets more contextual guidance. Advanced gets methodological references.
-- **AI suggestions:** Foundation gets more prominent suggestions (e.g., pre-generated evaluation questions as default). Advanced gets suggestions as secondary options with "Write your own" as primary.
+- **Auto-suggestions:** Foundation gets more prominent suggestions (e.g., pre-generated evaluation questions as default). Advanced gets suggestions as secondary options with "Write your own" as primary.
 
 **What does NOT change:** Layout, colors, component structure, station flow, data model. A screenshot from Foundation tier and Advanced tier should be immediately recognizable as the same tool.
 
@@ -507,7 +526,7 @@ These are inherited from the architecture blueprint and remain unchanged:
 | 6 | Progressive disclosure within tiers | "Show more detail" inline expanders supplement the tier toggle. Users can go deeper on specific topics without switching their whole tier. |
 | 7 | Table-first for Station 2 | The evaluation matrix is the most recognizable artifact in the profession. Table = instant recognition + export-ready deliverable. Card view is the editor, not the home. |
 | 8 | Structured judgement criteria templates | Threshold/Rubric/Binary/Free-text templates elevate evaluation quality. Most evaluators default to vague criteria because they've never been offered structure. |
-| 9 | AI-suggested EQs from ToC × DAC criteria | Closes the integration loop between stations. Demonstrates workbench value (not just sequential tools). Foundation tier gets suggestions as primary path. |
+| 9 | Auto-suggested EQs from ToC × DAC criteria | Closes the integration loop between stations. Demonstrates workbench value (not just sequential tools). Foundation tier gets suggestions as primary path. |
 | 10 | Structured configurator for Station 5 | Constrains choices to ensure methodological quality. Response type suggestions based on indicator type teach methodology. XLSForm-native from the start. |
 | 11 | XLSForm preview in question editor | Builds trust with technical users, teaches XLSForm structure to others. The tool makes users smarter. |
 | 12 | Honest skip logic boundary | Better than a half-built logic editor. Clearly frames what the builder does (methodology) vs. what Kobo does (data collection platform). Empty XLSForm columns included for continuity. |
