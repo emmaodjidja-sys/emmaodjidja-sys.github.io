@@ -34,7 +34,12 @@
   }
 
   // Mount
-  var root = ReactDOM.createRoot(document.getElementById('root'));
-  root.render(h(App));
+  try {
+    var root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(h(App));
+  } catch (e) {
+    document.getElementById('root').innerHTML = '<pre style="color:red;padding:20px;font-family:monospace">' +
+      'PRAXIS Workbench failed to load:\n' + e.message + '\n\n' + e.stack + '</pre>';
+  }
 
 })();
