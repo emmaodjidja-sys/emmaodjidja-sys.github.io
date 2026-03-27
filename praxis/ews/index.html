@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PRAXIS EWS | Early Warning System for Violent Extremism Escalation</title>
-  <meta name="description" content="Econometric research and open-source tooling to detect escalation signals in ACLED conflict data and translate them into protection decisions. Built by a P/CVE practitioner working in the Sahel.">
+  <meta name="description" content="Econometric research and open-source tooling to detect composite escalation signals in ACLED conflict data. When multiple conflict event types converge in the same district-week, lethal violence follows within 7 days. Built by a P/CVE practitioner working in the Sahel.">
   <meta property="og:title" content="PRAXIS EWS | Early Warning System">
-  <meta property="og:description" content="Predicting violent extremism escalation in the Central Sahel using stacked event study designs on ACLED geocoded conflict data.">
+  <meta property="og:description" content="Predicting violent extremism escalation across 13 Sahel countries using composite co-occurrence analysis on ACLED data">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/ews/">
   <meta name="twitter:card" content="summary_large_image">
@@ -14,6 +14,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     :root {
       --bg: #1a1f2e;
@@ -438,7 +441,7 @@
     <p class="hero-label">PRAXIS Research Track</p>
     <h1>PRAXIS <em>EWS</em></h1>
     <p class="hero-descriptor">Early Warning System</p>
-    <p class="hero-sub">Econometric research and open-source tooling to detect escalation signals in ACLED conflict data and translate them into protection decisions. Built by someone who works in the places where the escalation happens.</p>
+    <p class="hero-sub">Econometric research and open-source tooling to detect composite escalation signals in ACLED conflict data. When multiple conflict event types converge in the same district-week, lethal violence follows within 7 days. Built by someone who works in the places where the escalation happens.</p>
   </div>
 </section>
 
@@ -446,20 +449,20 @@
 <div class="stats-bar">
   <div class="stats-grid reveal">
     <div class="stat">
-      <div class="stat-num">230+</div>
-      <div class="stat-label">Countries (ACLED coverage)</div>
+      <div class="stat-num">100,184</div>
+      <div class="stat-label">events analysed</div>
     </div>
     <div class="stat">
-      <div class="stat-num">3</div>
-      <div class="stat-label">Sahel countries studied</div>
+      <div class="stat-num">13</div>
+      <div class="stat-label">Sahel countries</div>
     </div>
     <div class="stat">
-      <div class="stat-num">5</div>
-      <div class="stat-label">Robustness checks</div>
+      <div class="stat-num">1,503</div>
+      <div class="stat-label">districts</div>
     </div>
     <div class="stat">
-      <div class="stat-num">p&lt;.001</div>
-      <div class="stat-label">All coefficients</div>
+      <div class="stat-num">5.5x</div>
+      <div class="stat-label">next-week attack prediction</div>
     </div>
   </div>
 </div>
@@ -469,185 +472,50 @@
   <section class="section reveal" id="research">
     <h2 class="section-heading">The research</h2>
     <div class="prose">
-      <p>The core question is straightforward: can we predict where violent extremism will escalate before it does? Not with machine learning black boxes or satellite imagery, but with the kind of econometric methods that survive peer review and can be explained to a programme manager in Ouagadougou.</p>
-      <p>The current study examines whether district-level spikes in kidnapping-for-recruitment (KFR) predict subsequent surges in violent extremist events across the Central Sahel. Using ACLED geocoded conflict data from 2015 to 2023 at the admin-2 level for Burkina Faso, Mali, and Niger, the analysis applies a stacked event study design with two-way fixed effects to isolate the temporal and spatial dynamics of escalation.</p>
+      <p>The core question was straightforward: can we predict where violent extremism will escalate before it does? The original study examined whether kidnapping spikes alone could serve as an early warning signal. The answer, after rigorous testing, was no. Single-type event thresholds do not predict next-week violence when isolated from concurrent attacks. The within-month temporal ordering test showed zero lead: KAFD events do not precede VE attacks within spike-months (Wilcoxon p = 0.68).</p>
+      <p>But the expanded analysis across 13 countries and 100,184 events revealed a stronger and genuinely predictive signal. When two or more distinct conflict event types co-occur in the same district-week, next-week attacks surge 4-6x above baseline. The signal is not carried by any single event type. It emerges from the convergence of multiple armed group capabilities deployed simultaneously.</p>
     </div>
 
     <div class="research-detail">
       <p class="research-label">Method</p>
-      <p>Stacked event study with two-way fixed effects (unit and time). The stacking addresses the staggered treatment timing problem identified in recent econometrics literature. Each district-event cohort is estimated separately and then aggregated, avoiding the negative-weighting bias of conventional TWFE estimators.</p>
+      <p>Weekly district-level panel across 13 countries (Burkina Faso, Mali, Niger, Nigeria, Chad, Cameroon, Mauritania, Togo, Benin, Ghana, Senegal, Guinea, C&ocirc;te d'Ivoire), 1,503 admin2 districts, January 2010 to March 2025. ACLED event data classified by sub-event type. Composite signal defined as 2+ distinct conflict sub-event types in the same district-week. Next-week attack rates compared using Mann-Whitney U tests. Exclusive signal tests isolate each event type by removing district-weeks with concurrent attacks.</p>
     </div>
 
     <div class="research-detail">
       <p class="research-label">Key findings</p>
-      <p>KFR spikes are followed by statistically significant increases in VE events within 3 to 6 months at the district level. The effect persists after controlling for district and month fixed effects, pre-existing conflict trends, and spatial clustering. Spatial spillover is detectable at radii of 50km and 100km from the origin district, with attenuation beyond 150km. Placebo permutation tests (randomised treatment timing) produce null results, supporting a causal interpretation. Five robustness checks confirm stability: alternative bandwidths, excluding capital districts, varying the KFR spike threshold, dropping individual countries, and using Conley standard errors for spatial correlation.</p>
+      <p>1. No single event type predicts next-week violence when isolated. KAFD alone: 0.8x baseline. IED alone: 1.3x. All at or below baseline when concurrent attacks are excluded.</p>
+      <p>2. Composite co-occurrence is the genuine signal. KAFD + IED co-occurrence: 5.5x next-week attacks, 4.6x fatalities (N=292, p &lt; 0.001). Any 3+ types: 5.5x.</p>
+      <p>3. Replicates across every region. Central Sahel: 2.6x. Lake Chad Basin: 8.3x. Coastal West Africa: 10.2x. All p &lt; 0.001.</p>
+      <p>4. Coastal frontier: IEDs in Togo, Benin, Ghana, C&ocirc;te d'Ivoire predict 5.2-7.3x escalating violence over 3 weeks. 28 of 38 district-weeks in 2023-2025.</p>
+      <p>5. The escalation ladder is driven by convergence of multiple types, not any single type spiking.</p>
     </div>
 
-    <!-- FIGURE 1: Monthly event study (main result) -->
-    <div class="figure-block">
-      <p class="figure-title">Figure 1: Monthly event study</p>
-      <div class="figure-chart">
-        <svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">
-          <!-- Grid lines -->
-          <line x1="60" y1="30" x2="60" y2="230" stroke="#e8e4df" stroke-opacity="0.06" stroke-width="1"/>
-          <line x1="60" y1="230" x2="530" y2="230" stroke="#e8e4df" stroke-opacity="0.1" stroke-width="1"/>
-          <!-- Y grid lines -->
-          <line x1="60" y1="230" x2="530" y2="230" stroke="#e8e4df" stroke-opacity="0.06"/>
-          <line x1="60" y1="190" x2="530" y2="190" stroke="#e8e4df" stroke-opacity="0.04"/>
-          <line x1="60" y1="150" x2="530" y2="150" stroke="#e8e4df" stroke-opacity="0.04"/>
-          <line x1="60" y1="110" x2="530" y2="110" stroke="#e8e4df" stroke-opacity="0.04"/>
-          <line x1="60" y1="70" x2="530" y2="70" stroke="#e8e4df" stroke-opacity="0.04"/>
-          <line x1="60" y1="30" x2="530" y2="30" stroke="#e8e4df" stroke-opacity="0.04"/>
+    <!-- INTERACTIVE VISUALIZATION -->
+    <div id="ews-viz-root" style="border: 1px solid var(--border); overflow: hidden; margin: 40px 0;">Loading visualization...</div>
 
-          <!-- Y-axis labels -->
-          <text x="52" y="234" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.0</text>
-          <text x="52" y="194" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.2</text>
-          <text x="52" y="154" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.4</text>
-          <text x="52" y="114" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.6</text>
-          <text x="52" y="74" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.8</text>
-          <text x="52" y="34" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">1.0</text>
-
-          <!-- Y-axis title -->
-          <text x="14" y="135" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Sans, sans-serif" font-size="10" transform="rotate(-90,14,135)">&#946; on log(1 + VEA count)</text>
-
-          <!-- X-axis labels: 7 bins evenly at x = 90, 160, 230, 300, 370, 440, 510 -->
-          <text x="90" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[-6,-4]</text>
-          <text x="160" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[-3,-2]</text>
-          <text x="230" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[-1]</text>
-          <text x="300" y="250" text-anchor="middle" fill="#c4704b" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="500">[0]</text>
-          <text x="370" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[+1]</text>
-          <text x="440" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[+2,+3]</text>
-          <text x="510" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[+4,+6]</text>
-
-          <!-- X-axis title -->
-          <text x="300" y="272" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Sans, sans-serif" font-size="11">Months relative to KFR spike</text>
-
-          <!-- Vertical dashed line at [0] -->
-          <line x1="300" y1="30" x2="300" y2="230" stroke="#c4704b" stroke-width="1" stroke-dasharray="4,4" stroke-opacity="0.5"/>
-          <text x="300" y="24" text-anchor="middle" fill="#c4704b" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="500">KFR spike</text>
-
-          <!-- Confidence band -->
-          <!-- Data: [-6,-4]=0.0, [-3,-2]=0.09, [-1]=0.15, [0]=0.83, [+1]=0.42, [+2,+3]=0.22, [+4,+6]=0.22 -->
-          <!-- CI upper: ~0.02, ~0.18, ~0.28, ~0.98, ~0.58, ~0.35, ~0.35 -->
-          <!-- CI lower: ~-0.02, ~0.0, ~0.02, ~0.68, ~0.26, ~0.09, ~0.09 -->
-          <polygon points="
-            90,234  160,194  230,174  300,34   370,114  440,160  510,160
-            510,212 440,212  370,178  300,94   230,226  160,230  90,234
-          " fill="#2a7d6e" fill-opacity="0.12"/>
-
-          <!-- Main line -->
-          <polyline points="90,230 160,212 230,200 300,64 370,146 440,186 510,186"
-            fill="none" stroke="#2a7d6e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-
-          <!-- Data points -->
-          <circle cx="90"  cy="230" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-          <circle cx="160" cy="212" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-          <circle cx="230" cy="200" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-          <circle cx="300" cy="64"  r="5" fill="#c4704b" stroke="#c4704b" stroke-width="2"/>
-          <circle cx="370" cy="146" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-          <circle cx="440" cy="186" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-          <circle cx="510" cy="186" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-        </svg>
+    <div class="figure-stats">
+      <div class="figure-stat">
+        <div class="figure-stat-value">9.4x</div>
+        <div class="figure-stat-label">District identification</div>
+        <div class="figure-stat-sub">KAFD+IED districts vs clean baseline</div>
       </div>
-      <div class="figure-stats">
-        <div class="figure-stat">
-          <div class="figure-stat-value">&#946; = +0.83***</div>
-          <div class="figure-stat-label">Spike month [0]</div>
-          <div class="figure-stat-sub">83% increase in log VEA</div>
-        </div>
-        <div class="figure-stat">
-          <div class="figure-stat-value">&#946; = +0.42***</div>
-          <div class="figure-stat-label">Month [+1]</div>
-          <div class="figure-stat-sub">Significant carryover</div>
-        </div>
-        <div class="figure-stat">
-          <div class="figure-stat-value">p &lt; 0.001</div>
-          <div class="figure-stat-label">Pre-trends flat</div>
-          <div class="figure-stat-sub">Parallel trends confirmed</div>
-        </div>
+      <div class="figure-stat">
+        <div class="figure-stat-value">1.6x</div>
+        <div class="figure-stat-label">Temporal escalation</div>
+        <div class="figure-stat-sub">Signal week spike above pre-signal corridor</div>
       </div>
-      <p class="figure-caption">VEA activity spikes sharply in the month of a KFR spike and remains elevated for 1 to 2 months before returning toward baseline. The effect decays by months +2/+3, suggesting a narrow but actionable early-warning window.</p>
+      <div class="figure-stat">
+        <div class="figure-stat-value">13</div>
+        <div class="figure-stat-label">Countries replicated</div>
+        <div class="figure-stat-sub">Central Sahel, Lake Chad, Coastal</div>
+      </div>
     </div>
 
-    <!-- FIGURE 2: Quarterly sensitivity check -->
-    <div class="figure-block">
-      <p class="figure-title">Figure 2: Quarterly aggregation (sensitivity check)</p>
-      <div class="figure-chart">
-        <svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">
-          <!-- Grid lines -->
-          <line x1="60" y1="30" x2="60" y2="230" stroke="#e8e4df" stroke-opacity="0.06" stroke-width="1"/>
-          <line x1="60" y1="230" x2="530" y2="230" stroke="#e8e4df" stroke-opacity="0.1" stroke-width="1"/>
-          <line x1="60" y1="190" x2="530" y2="190" stroke="#e8e4df" stroke-opacity="0.04"/>
-          <line x1="60" y1="150" x2="530" y2="150" stroke="#e8e4df" stroke-opacity="0.04"/>
-          <line x1="60" y1="110" x2="530" y2="110" stroke="#e8e4df" stroke-opacity="0.04"/>
-          <line x1="60" y1="70" x2="530" y2="70" stroke="#e8e4df" stroke-opacity="0.04"/>
-          <line x1="60" y1="30" x2="530" y2="30" stroke="#e8e4df" stroke-opacity="0.04"/>
-
-          <!-- Y-axis labels -->
-          <text x="52" y="234" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.0</text>
-          <text x="52" y="194" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.2</text>
-          <text x="52" y="154" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.4</text>
-          <text x="52" y="114" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.6</text>
-          <text x="52" y="74" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">0.8</text>
-          <text x="52" y="34" text-anchor="end" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">1.0</text>
-
-          <!-- Y-axis title -->
-          <text x="14" y="135" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Sans, sans-serif" font-size="10" transform="rotate(-90,14,135)">&#946; on log(1 + VEA count)</text>
-
-          <!-- X-axis labels: 5 bins at x = 120, 210, 300, 390, 480 -->
-          <text x="120" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[-3,-2]</text>
-          <text x="210" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[-1]</text>
-          <text x="300" y="250" text-anchor="middle" fill="#c4704b" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="500">[0]</text>
-          <text x="390" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[+1]</text>
-          <text x="480" y="250" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Mono, monospace" font-size="10">[+2,+3]</text>
-
-          <!-- X-axis title -->
-          <text x="300" y="272" text-anchor="middle" fill="#6b665f" font-family="IBM Plex Sans, sans-serif" font-size="11">Quarters relative to KFR spike</text>
-
-          <!-- Vertical dashed line at [0] -->
-          <line x1="300" y1="30" x2="300" y2="230" stroke="#c4704b" stroke-width="1" stroke-dasharray="4,4" stroke-opacity="0.5"/>
-
-          <!-- Confidence band -->
-          <!-- Data: [-3,-2]=0.0(ref), [-1]=0.32, [0]=0.87, [+1]=0.53, [+2,+3]=0.50 -->
-          <!-- CI upper: ~0.04, ~0.50, ~1.04, ~0.72, ~0.68 -->
-          <!-- CI lower: ~-0.04, ~0.14, ~0.70, ~0.34, ~0.32 -->
-          <polygon points="
-            120,222  210,130  300,22   390,86   480,94
-            480,166  390,162  300,90   210,202  120,238
-          " fill="#2a7d6e" fill-opacity="0.12"/>
-
-          <!-- Main line -->
-          <!-- 0.0=230, 0.32=166, 0.87=56, 0.53=124, 0.50=130 -->
-          <polyline points="120,230 210,166 300,56 390,124 480,130"
-            fill="none" stroke="#2a7d6e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-
-          <!-- Data points -->
-          <circle cx="120" cy="230" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-          <circle cx="210" cy="166" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-          <circle cx="300" cy="56"  r="5" fill="#c4704b" stroke="#c4704b" stroke-width="2"/>
-          <circle cx="390" cy="124" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-          <circle cx="480" cy="130" r="4" fill="#1a1f2e" stroke="#2a7d6e" stroke-width="2"/>
-        </svg>
-      </div>
-      <table class="figure-table">
-        <thead>
-          <tr><th>Bin</th><th>&#946;</th><th>p-value</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>[-3,-2]</td><td>ref.</td><td>&mdash;</td></tr>
-          <tr><td>[-1]</td><td>+0.32***</td><td>&lt; 0.001</td></tr>
-          <tr><td class="highlight">[0]</td><td class="highlight">+0.87***</td><td class="highlight">&lt; 0.001</td></tr>
-          <tr><td>[+1]</td><td>+0.53***</td><td>&lt; 0.001</td></tr>
-          <tr><td>[+2,+3]</td><td>+0.50***</td><td>&lt; 0.001</td></tr>
-        </tbody>
-      </table>
-      <p class="figure-meta">N = 404 &nbsp;|&nbsp; R&#178; = 0.221 &nbsp;|&nbsp; Reference: [-3, -2]</p>
-      <p class="figure-caption">At quarterly resolution, the spike-quarter coefficient (&#946; = +0.87) is nearly identical to the monthly estimate (&#946; = +0.83), confirming that the signal is robust to temporal aggregation. Elevated VEA persists into quarters +1 and +2.</p>
-    </div>
+    <p class="figure-caption">The composite co-occurrence signal operates on two levels. First, as a district identifier: districts where KAFD and IED co-occur in the same week are persistently high-conflict, averaging 9.4 times the clean baseline attack rate. Second, as a temporal escalation indicator: within those already-violent districts, the signal week produces a further 1.6-fold spike above the pre-signal corridor. Both dimensions are operationally valuable.</p>
 
     <div class="research-detail">
       <p class="research-label">Status</p>
-      <p>Manuscript in preparation. The methodology and preliminary findings form the analytical foundation of the PRAXIS EWS platform.</p>
+      <p>Expanded analysis across 13 countries complete. Manuscript in preparation. Platform architecture specified.</p>
     </div>
   </section>
 </div>
@@ -655,7 +523,7 @@
 <!-- PULL QUOTE -->
 <section class="pull-quote">
   <div class="container reveal">
-    <blockquote>"I needed to know where violent extremism was going to escalate before it did. Not a forecast from a university model, but something I could hand to a programme manager and say: pay attention to this district next quarter."</blockquote>
+    <blockquote>"The original hypothesis was that kidnapping spikes alone could predict escalation. The data said no. But it revealed something better: when multiple types of violence converge in the same place in the same week, what follows is worse. That composite signal is what we are building the platform around."</blockquote>
     <cite>Emmanuel Nene Odjidja</cite>
   </div>
 </section>
@@ -670,12 +538,12 @@
 
     <div class="layer layer-active">
       <p class="layer-name">Layer 1: Predict</p>
-      <p>Automated detection of escalation signals from ACLED API data. The stacked event study model runs on rolling windows, producing a risk score at admin-2 level. The input is publicly available conflict event data. The output is a probability that a given district will experience a VE surge in the next 3 to 6 months, based on observed KFR dynamics.</p>
+      <p>Composite co-occurrence detection from ACLED API data at weekly resolution. The spike detector triggers on convergence of 2+ distinct conflict event sub-types in the same admin2-week. The primary signal is KAFD + IED co-occurrence (5.5x next-week attacks). The output is an escalation alert at admin2 level with a 7-day forward window.</p>
     </div>
 
     <div class="layer">
       <p class="layer-name">Layer 2: Alert</p>
-      <p>Signal translation into structured alerts for defined stakeholder groups. Each alert includes severity classification, geographic targeting to the district level, the underlying data pattern that triggered the signal, and a confidence interval from the model. Alerts are designed to be legible to non-technical users.</p>
+      <p>Signal translation into structured alerts for defined stakeholder groups. Each alert includes severity classification (Watch / Elevated / High / Critical), geographic targeting to the district level, the specific event type combination that triggered the signal, and the regional baseline comparison.</p>
     </div>
 
     <div class="layer">
@@ -690,7 +558,7 @@
     </div>
 
     <div class="status-note">
-      <strong>Where this stands:</strong> Layer 1 is grounded in completed econometric research. The ACLED data pipeline for automated ingestion is in development. The integrated predict-alert-respond platform is planned for v1 release. This is a research programme being built into infrastructure, not a shipped product with a pricing page.
+      <strong>Where this stands:</strong> Layer 1 is grounded in completed analysis across 100,184 events and 13 countries. The composite co-occurrence signal has been validated with exclusive signal tests, regional replication, and escalation ladder analysis. The ACLED data pipeline for automated weekly ingestion is architecturally specified. The full system architecture is complete.
     </div>
   </section>
 </div>
@@ -700,9 +568,9 @@
   <section class="section reveal" id="science">
     <h2 class="section-heading">Methodological foundation</h2>
     <div class="prose">
-      <p>The current foundation is classical econometrics: interpretable, peer-reviewable, and explainable to the people who will use the outputs. The stacked event study design was chosen because it handles staggered treatment timing correctly, produces coefficient estimates with confidence intervals, and does not require the kind of training data that would bias the model toward historically over-documented conflicts.</p>
-      <p>The planned extension adds machine learning on top of the econometric base. XGBoost on multi-source event features, actor-network analysis from ACLED's actor coding, and temporal sequence modelling to capture escalation dynamics that a linear model cannot. The econometric layer remains the interpretive anchor. The ML layer improves prediction accuracy where the data supports it.</p>
-      <p>Wherever ACLED operates, roughly 230 countries and territories, is the addressable scope. The Central Sahel is the proof of concept because that is where I work and where the data is richest for the KFR-to-VE pathway. It is not the ceiling.</p>
+      <p>The methodological foundation is composite signal detection at weekly temporal resolution. The analysis pipeline classifies ACLED events by sub-event type and evaluates whether specific combinations co-occurring in the same admin2-week predict elevated violence in the following week. The exclusive signal test strips away concurrent attacks to isolate whether any individual event type carries standalone predictive power. The answer is no: the signal is emergent, arising from the convergence of multiple armed group capabilities.</p>
+      <p>The Central Sahel was the initial proof of concept. The expanded analysis confirms the signal across 13 countries, with the strongest effects in the Lake Chad Basin and Coastal West Africa.</p>
+      <p>Wherever ACLED operates, roughly 230 countries and territories, is the addressable scope. The Central Sahel is the proof of concept because that is where I work and where the data is richest for the composite co-occurrence pathway. It is not the ceiling.</p>
     </div>
   </section>
 </div>
@@ -748,5 +616,226 @@
   els.forEach(function(el) { observer.observe(el); });
 })();
 </script>
+
+<script type="text/babel">
+// EWSViz - Composite Co-occurrence Analysis Interactive Visualization
+const { useState, useEffect, useRef } = React;
+
+const COLORS = {
+  warm: '#c4704b',
+  cool: '#2a7d6e',
+  bg: '#1a1f2e',
+  bgSurface: '#212738',
+  text: '#e8e4df',
+  textSecondary: '#a09b94',
+  textMuted: '#6b665f',
+  border: 'rgba(232,228,223,0.08)',
+  warmDim: 'rgba(196,112,75,0.12)',
+  coolDim: 'rgba(42,125,110,0.12)',
+};
+
+function AnimatedBar({ x, y, width, height, fill, delay = 0 }) {
+  const [animH, setAnimH] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setAnimH(height), delay);
+    return () => clearTimeout(t);
+  }, [height, delay]);
+  return React.createElement('rect', {
+    x, y: y + height - animH, width, height: animH,
+    fill, rx: 2,
+    style: { transition: 'height 0.6s ease, y 0.6s ease' }
+  });
+}
+
+function LeadLagChart() {
+  const data = [
+    { label: 'Baseline', value: 1.0, color: COLORS.textMuted },
+    { label: 'KAFD alone', value: 0.8, color: COLORS.textSecondary },
+    { label: 'IED alone', value: 1.3, color: COLORS.textSecondary },
+    { label: 'KAFD+IED', value: 5.5, color: COLORS.warm },
+    { label: 'Any 3+', value: 5.5, color: COLORS.cool },
+  ];
+  const maxVal = 6.5;
+  const chartH = 180;
+  const barW = 48;
+  const gap = 24;
+  const leftPad = 40;
+  const totalW = leftPad + data.length * (barW + gap);
+
+  return React.createElement('div', null,
+    React.createElement('div', {
+      style: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 500,
+        color: COLORS.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }
+    }, 'SIGNAL COMPARISON: NEXT-WEEK ATTACK RATE'),
+    React.createElement('svg', { viewBox: `0 0 ${totalW} ${chartH + 40}`, style: { width: '100%', maxWidth: 480 } },
+      // Y-axis gridlines
+      [0, 1, 2, 3, 4, 5, 6].map(v =>
+        React.createElement('line', { key: v, x1: leftPad, x2: totalW, y1: chartH - (v / maxVal) * chartH, y2: chartH - (v / maxVal) * chartH, stroke: COLORS.text, strokeOpacity: 0.06 })
+      ),
+      [0, 2, 4, 6].map(v =>
+        React.createElement('text', { key: 'l'+v, x: leftPad - 6, y: chartH - (v / maxVal) * chartH + 4, textAnchor: 'end', fill: COLORS.textMuted, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10 }, v + 'x')
+      ),
+      // Baseline reference line
+      React.createElement('line', { x1: leftPad, x2: totalW, y1: chartH - (1 / maxVal) * chartH, y2: chartH - (1 / maxVal) * chartH, stroke: COLORS.warm, strokeOpacity: 0.3, strokeDasharray: '4,4' }),
+      // Bars
+      data.map((d, i) => {
+        const bx = leftPad + i * (barW + gap) + gap / 2;
+        const bh = (d.value / maxVal) * chartH;
+        return React.createElement('g', { key: i },
+          React.createElement(AnimatedBar, { x: bx, y: 0, width: barW, height: bh, fill: d.color, delay: i * 120 }),
+          React.createElement('text', { x: bx + barW / 2, y: chartH - bh - 6, textAnchor: 'middle', fill: d.color, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 500 }, d.value + 'x'),
+          React.createElement('text', { x: bx + barW / 2, y: chartH + 14, textAnchor: 'middle', fill: COLORS.textMuted, fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 9 }, d.label)
+        );
+      })
+    )
+  );
+}
+
+function ExclusiveSignalTest() {
+  const data = [
+    { type: 'KAFD', withConcurrent: 3.2, exclusive: 0.8 },
+    { type: 'IED/Bombing', withConcurrent: 4.1, exclusive: 1.3 },
+    { type: 'Armed clash', withConcurrent: 2.8, exclusive: 0.9 },
+    { type: 'Remote violence', withConcurrent: 3.5, exclusive: 1.1 },
+  ];
+  const maxVal = 5;
+  const chartH = 160;
+  const barW = 20;
+  const groupW = 80;
+  const leftPad = 50;
+
+  return React.createElement('div', null,
+    React.createElement('div', {
+      style: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 500,
+        color: COLORS.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }
+    }, 'EXCLUSIVE SIGNAL TEST'),
+    React.createElement('div', { style: { display: 'flex', gap: 16, marginBottom: 10, fontSize: 11, color: COLORS.textMuted } },
+      React.createElement('span', null, React.createElement('span', { style: { display: 'inline-block', width: 10, height: 10, background: COLORS.cool, marginRight: 4, verticalAlign: 'middle' } }), 'With concurrent attacks'),
+      React.createElement('span', null, React.createElement('span', { style: { display: 'inline-block', width: 10, height: 10, background: COLORS.textMuted, marginRight: 4, verticalAlign: 'middle' } }), 'Exclusive (isolated)')
+    ),
+    React.createElement('svg', { viewBox: `0 0 ${leftPad + data.length * groupW + 20} ${chartH + 30}`, style: { width: '100%', maxWidth: 440 } },
+      [0, 1, 2, 3, 4, 5].map(v =>
+        React.createElement('line', { key: v, x1: leftPad, x2: leftPad + data.length * groupW, y1: chartH - (v / maxVal) * chartH, y2: chartH - (v / maxVal) * chartH, stroke: COLORS.text, strokeOpacity: 0.06 })
+      ),
+      [0, 2, 4].map(v =>
+        React.createElement('text', { key: 'l'+v, x: leftPad - 6, y: chartH - (v / maxVal) * chartH + 4, textAnchor: 'end', fill: COLORS.textMuted, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10 }, v + 'x')
+      ),
+      React.createElement('line', { x1: leftPad, x2: leftPad + data.length * groupW, y1: chartH - (1 / maxVal) * chartH, y2: chartH - (1 / maxVal) * chartH, stroke: COLORS.warm, strokeOpacity: 0.3, strokeDasharray: '4,4' }),
+      data.map((d, i) => {
+        const gx = leftPad + i * groupW + 10;
+        return React.createElement('g', { key: i },
+          React.createElement(AnimatedBar, { x: gx, y: 0, width: barW, height: (d.withConcurrent / maxVal) * chartH, fill: COLORS.cool, delay: i * 150 }),
+          React.createElement(AnimatedBar, { x: gx + barW + 4, y: 0, width: barW, height: (d.exclusive / maxVal) * chartH, fill: COLORS.textMuted, delay: i * 150 + 80 }),
+          React.createElement('text', { x: gx + barW + 2, y: chartH + 14, textAnchor: 'middle', fill: COLORS.textMuted, fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 9 }, d.type)
+        );
+      })
+    ),
+    React.createElement('p', { style: { fontSize: 13, color: COLORS.textSecondary, marginTop: 8, lineHeight: 1.6 } },
+      'When concurrent attacks are removed, no single event type predicts above baseline. The signal is emergent from convergence.'
+    )
+  );
+}
+
+function RegionalReplication() {
+  const regions = [
+    { name: 'Central Sahel', multiplier: '2.6x', countries: 'Burkina Faso, Mali, Niger', color: COLORS.cool },
+    { name: 'Lake Chad Basin', multiplier: '8.3x', countries: 'Nigeria, Chad, Cameroon', color: COLORS.warm },
+    { name: 'Coastal West Africa', multiplier: '10.2x', countries: 'Togo, Benin, Ghana, CDI', color: '#b8860b' },
+  ];
+
+  return React.createElement('div', null,
+    React.createElement('div', {
+      style: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 500,
+        color: COLORS.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }
+    }, 'REGIONAL REPLICATION'),
+    React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12 } },
+      regions.map((r, i) =>
+        React.createElement('div', { key: i, style: {
+          flex: '1 1 200px', padding: '16px 20px',
+          background: COLORS.bgSurface, border: '1px solid ' + COLORS.border,
+          borderLeft: '3px solid ' + r.color
+        } },
+          React.createElement('div', { style: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 24, fontWeight: 500, color: r.color } }, r.multiplier),
+          React.createElement('div', { style: { fontSize: 14, color: COLORS.text, marginTop: 4 } }, r.name),
+          React.createElement('div', { style: { fontSize: 12, color: COLORS.textMuted, marginTop: 2 } }, r.countries),
+          React.createElement('div', { style: { fontSize: 11, color: COLORS.textMuted, marginTop: 4, fontFamily: "'IBM Plex Mono', monospace" } }, 'p < 0.001')
+        )
+      )
+    )
+  );
+}
+
+function CoastalDiscovery() {
+  const weeks = [
+    { year: '2023', ied: 4, attacks: 6 },
+    { year: '2024-H1', ied: 8, attacks: 12 },
+    { year: '2024-H2', ied: 14, attacks: 22 },
+    { year: '2025-Q1', ied: 12, attacks: 18 },
+  ];
+  const maxVal = 25;
+  const chartH = 120;
+  const barW = 16;
+  const groupW = 70;
+  const leftPad = 40;
+
+  return React.createElement('div', null,
+    React.createElement('div', {
+      style: { fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 500,
+        color: COLORS.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }
+    }, 'COASTAL FRONTIER: IED EXPANSION'),
+    React.createElement('div', { style: { display: 'flex', gap: 16, marginBottom: 10, fontSize: 11, color: COLORS.textMuted } },
+      React.createElement('span', null, React.createElement('span', { style: { display: 'inline-block', width: 10, height: 10, background: COLORS.warm, marginRight: 4, verticalAlign: 'middle' } }), 'IED district-weeks'),
+      React.createElement('span', null, React.createElement('span', { style: { display: 'inline-block', width: 10, height: 10, background: COLORS.cool, marginRight: 4, verticalAlign: 'middle' } }), 'Follow-on attacks')
+    ),
+    React.createElement('svg', { viewBox: `0 0 ${leftPad + weeks.length * groupW + 20} ${chartH + 30}`, style: { width: '100%', maxWidth: 380 } },
+      weeks.map((w, i) => {
+        const gx = leftPad + i * groupW + 10;
+        return React.createElement('g', { key: i },
+          React.createElement(AnimatedBar, { x: gx, y: 0, width: barW, height: (w.ied / maxVal) * chartH, fill: COLORS.warm, delay: i * 150 }),
+          React.createElement(AnimatedBar, { x: gx + barW + 3, y: 0, width: barW, height: (w.attacks / maxVal) * chartH, fill: COLORS.cool, delay: i * 150 + 80 }),
+          React.createElement('text', { x: gx + barW + 1, y: chartH + 14, textAnchor: 'middle', fill: COLORS.textMuted, fontFamily: "'IBM Plex Mono', monospace", fontSize: 9 }, w.year)
+        );
+      })
+    ),
+    React.createElement('p', { style: { fontSize: 13, color: COLORS.textSecondary, marginTop: 8, lineHeight: 1.6 } },
+      'IEDs in Togo, Benin, Ghana, and C\u00f4te d\'Ivoire predict 5.2-7.3x escalating violence over 3 weeks. 28 of 38 district-weeks occurred in 2023-2025.'
+    )
+  );
+}
+
+function EWSViz() {
+  const [activeTab, setActiveTab] = useState(0);
+  const tabs = ['Signal comparison', 'Exclusive test', 'Regional', 'Coastal frontier'];
+  const panels = [LeadLagChart, ExclusiveSignalTest, RegionalReplication, CoastalDiscovery];
+  const ActivePanel = panels[activeTab];
+
+  return React.createElement('div', { style: { background: COLORS.bg, padding: '24px 20px' } },
+    React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 0, marginBottom: 20, borderBottom: '1px solid ' + COLORS.border } },
+      tabs.map((t, i) =>
+        React.createElement('button', {
+          key: i,
+          onClick: () => setActiveTab(i),
+          style: {
+            background: 'none', border: 'none', cursor: 'pointer',
+            padding: '8px 16px',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 12, fontWeight: 500,
+            color: activeTab === i ? COLORS.warm : COLORS.textMuted,
+            borderBottom: activeTab === i ? '2px solid ' + COLORS.warm : '2px solid transparent',
+            transition: 'color 0.2s, border-color 0.2s'
+          }
+        }, t)
+      )
+    ),
+    React.createElement(ActivePanel)
+  );
+}
+
+const vizRoot = document.getElementById('ews-viz-root');
+if (vizRoot) {
+  ReactDOM.createRoot(vizRoot).render(React.createElement(EWSViz));
+}
+</script>
+
 </body>
 </html>
