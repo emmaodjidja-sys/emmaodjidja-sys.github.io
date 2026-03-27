@@ -16,7 +16,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     :root {
       --bg: #1a1f2e;
@@ -617,496 +616,1356 @@
 })();
 </script>
 
-<script type="text/babel">
-const { useState, useEffect, useMemo, useRef, useCallback } = React;
+<script>
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+const {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback
+} = React;
 
 // ═══════════════════════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════════════════════
-const LAGS=[-4,-3,-2,-1,0,1,2,3,4,5];
-const XLAB=['\u22124','\u22123','\u22122','\u22121','0','+1','+2','+3','+4','+5'];
-
-const FLAT_BASE=0.252;
-const BASE_LINE=Array(10).fill([FLAT_BASE, FLAT_BASE*0.94, FLAT_BASE*1.06]);
-
-const KI=[[2.192,1.905,2.479],[2.277,1.969,2.586],[2.305,2.010,2.600],[2.370,2.063,2.677],[3.603,3.280,3.925],[2.455,2.160,2.751],[2.182,1.910,2.453],[2.216,1.923,2.509],[2.195,1.905,2.486],[2.175,1.873,2.477]];
-const KI_PRE=2.286;
-const THREE=[[1.632,1.567,1.697],[1.646,1.580,1.711],[1.662,1.597,1.727],[1.776,1.709,1.842],[2.733,2.668,2.798],[1.784,1.717,1.851],[1.692,1.626,1.757],[1.652,1.587,1.717],[1.630,1.565,1.695],[1.621,1.555,1.687]];
-const THREE_PRE=1.679;
-const KAFD_ALONE=[[.358,.330,.386],[.343,.317,.368],[.342,.315,.368],[.351,.326,.377],[0,0,0],[.367,.340,.394],[.389,.360,.419],[.362,.334,.389],[.358,.332,.385],[.344,.317,.372]];
-const KAFD_PRE=0.348;
-
-const SENS={
-  threshold:{
-    series:[
-      {label:'\u22652 types',n:13984,color:'#9c9a92',pts:[[.748,.728,.768],[.75,.729,.771],[.78,.759,.801],[.844,.822,.866],[1.577,1.555,1.599],[1.022,1.0,1.044],[.949,.927,.971],[.927,.906,.948],[.91,.889,.931],[.899,.878,.92]]},
-      {label:'\u22653 types',n:4312,color:'#2a7d6e',pts:THREE},
-      {label:'\u22654 types',n:1477,color:'#B85042',pts:[[2.279,2.138,2.42],[2.272,2.14,2.404],[2.379,2.243,2.515],[2.509,2.368,2.65],[3.576,3.435,3.717],[2.55,2.41,2.69],[2.39,2.25,2.53],[2.352,2.21,2.494],[2.327,2.188,2.466],[2.318,2.175,2.461]]},
-      {label:'\u22655 types',n:482,color:'#8b5a9e',pts:[[2.963,2.68,3.246],[3.083,2.79,3.376],[3.135,2.838,3.432],[3.255,2.95,3.56],[4.502,4.195,4.809],[3.359,3.06,3.658],[3.141,2.85,3.432],[3.0,2.71,3.29],[3.039,2.75,3.328],[2.967,2.68,3.254]]}
-    ],
-    verdict:'Monotonic dose-response. Signal strengthens with convergence density.',
-    note:'As the threshold rises from 2 to 5 co-occurring types, the t+1 multiplier climbs from 2.3x to 7.5x.'
+const LAGS = [-4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
+const XLAB = ['\u22124', '\u22123', '\u22122', '\u22121', '0', '+1', '+2', '+3', '+4', '+5'];
+const FLAT_BASE = 0.252;
+const BASE_LINE = Array(10).fill([FLAT_BASE, FLAT_BASE * 0.94, FLAT_BASE * 1.06]);
+const KI = [[2.192, 1.905, 2.479], [2.277, 1.969, 2.586], [2.305, 2.010, 2.600], [2.370, 2.063, 2.677], [3.603, 3.280, 3.925], [2.455, 2.160, 2.751], [2.182, 1.910, 2.453], [2.216, 1.923, 2.509], [2.195, 1.905, 2.486], [2.175, 1.873, 2.477]];
+const KI_PRE = 2.286;
+const THREE = [[1.632, 1.567, 1.697], [1.646, 1.580, 1.711], [1.662, 1.597, 1.727], [1.776, 1.709, 1.842], [2.733, 2.668, 2.798], [1.784, 1.717, 1.851], [1.692, 1.626, 1.757], [1.652, 1.587, 1.717], [1.630, 1.565, 1.695], [1.621, 1.555, 1.687]];
+const THREE_PRE = 1.679;
+const KAFD_ALONE = [[.358, .330, .386], [.343, .317, .368], [.342, .315, .368], [.351, .326, .377], [0, 0, 0], [.367, .340, .394], [.389, .360, .419], [.362, .334, .389], [.358, .332, .385], [.344, .317, .372]];
+const KAFD_PRE = 0.348;
+const SENS = {
+  threshold: {
+    series: [{
+      label: '\u22652 types',
+      n: 13984,
+      color: '#9c9a92',
+      pts: [[.748, .728, .768], [.75, .729, .771], [.78, .759, .801], [.844, .822, .866], [1.577, 1.555, 1.599], [1.022, 1.0, 1.044], [.949, .927, .971], [.927, .906, .948], [.91, .889, .931], [.899, .878, .92]]
+    }, {
+      label: '\u22653 types',
+      n: 4312,
+      color: '#2a7d6e',
+      pts: THREE
+    }, {
+      label: '\u22654 types',
+      n: 1477,
+      color: '#B85042',
+      pts: [[2.279, 2.138, 2.42], [2.272, 2.14, 2.404], [2.379, 2.243, 2.515], [2.509, 2.368, 2.65], [3.576, 3.435, 3.717], [2.55, 2.41, 2.69], [2.39, 2.25, 2.53], [2.352, 2.21, 2.494], [2.327, 2.188, 2.466], [2.318, 2.175, 2.461]]
+    }, {
+      label: '\u22655 types',
+      n: 482,
+      color: '#8b5a9e',
+      pts: [[2.963, 2.68, 3.246], [3.083, 2.79, 3.376], [3.135, 2.838, 3.432], [3.255, 2.95, 3.56], [4.502, 4.195, 4.809], [3.359, 3.06, 3.658], [3.141, 2.85, 3.432], [3.0, 2.71, 3.29], [3.039, 2.75, 3.328], [2.967, 2.68, 3.254]]
+    }],
+    verdict: 'Monotonic dose-response. Signal strengthens with convergence density.',
+    note: 'As the threshold rises from 2 to 5 co-occurring types, the t+1 multiplier climbs from 2.3x to 7.5x.'
   },
-  region:{
-    series:[
-      {label:'Central Sahel',n:156,color:'#2a7d6e',pts:[[1.577,1.23,1.924],[1.596,1.26,1.932],[1.654,1.31,1.998],[1.75,1.4,2.1],[2.628,2.28,2.976],[1.712,1.37,2.054],[1.628,1.3,1.956],[1.596,1.26,1.932],[1.571,1.24,1.902],[1.609,1.27,1.948]]},
-      {label:'Lake Chad Basin',n:125,color:'#5b8a9a',pts:[[3.0,2.52,3.48],[3.2,2.68,3.72],[3.12,2.62,3.62],[3.18,2.68,3.68],[5.0,4.49,5.51],[3.496,2.99,4.0],[2.912,2.44,3.384],[3.04,2.54,3.54],[3.0,2.52,3.48],[2.944,2.45,3.438]]},
-      {label:'Coastal (N=11)',n:11,color:'#d4a04a',dashed:true,pts:[[.636,0,1.59],[.818,0,1.82],[.727,0,1.67],[.909,0,2.05],[2.091,.63,3.55],[1.182,0,2.49],[1.091,0,2.35],[.909,0,2.05],[.818,0,1.82],[.727,0,1.67]]}
-    ],
-    verdict:'Replicates in all regions. Coastal N=11 is indicative only.',
-    note:'Lake Chad Basin shows strongest raw multiplier (8.3x). Coastal CIs include the null at most lags.'
+  region: {
+    series: [{
+      label: 'Central Sahel',
+      n: 156,
+      color: '#2a7d6e',
+      pts: [[1.577, 1.23, 1.924], [1.596, 1.26, 1.932], [1.654, 1.31, 1.998], [1.75, 1.4, 2.1], [2.628, 2.28, 2.976], [1.712, 1.37, 2.054], [1.628, 1.3, 1.956], [1.596, 1.26, 1.932], [1.571, 1.24, 1.902], [1.609, 1.27, 1.948]]
+    }, {
+      label: 'Lake Chad Basin',
+      n: 125,
+      color: '#5b8a9a',
+      pts: [[3.0, 2.52, 3.48], [3.2, 2.68, 3.72], [3.12, 2.62, 3.62], [3.18, 2.68, 3.68], [5.0, 4.49, 5.51], [3.496, 2.99, 4.0], [2.912, 2.44, 3.384], [3.04, 2.54, 3.54], [3.0, 2.52, 3.48], [2.944, 2.45, 3.438]]
+    }, {
+      label: 'Coastal (N=11)',
+      n: 11,
+      color: '#d4a04a',
+      dashed: true,
+      pts: [[.636, 0, 1.59], [.818, 0, 1.82], [.727, 0, 1.67], [.909, 0, 2.05], [2.091, .63, 3.55], [1.182, 0, 2.49], [1.091, 0, 2.35], [.909, 0, 2.05], [.818, 0, 1.82], [.727, 0, 1.67]]
+    }],
+    verdict: 'Replicates in all regions. Coastal N=11 is indicative only.',
+    note: 'Lake Chad Basin shows strongest raw multiplier (8.3x). Coastal CIs include the null at most lags.'
   },
-  period:{
-    series:[
-      {label:'2016-19',n:24,color:'#5b8a9a',pts:[[1.792,.7,2.884],[1.625,.54,2.71],[1.667,.56,2.774],[1.917,.76,3.074],[3.375,2.16,4.59],[2.5,1.3,3.7],[2.083,.92,3.246],[1.833,.72,2.946],[1.958,.8,3.116],[2.042,.85,3.234]]},
-      {label:'2020-22',n:127,color:'#2a7d6e',pts:[[1.89,1.54,2.24],[1.937,1.58,2.294],[1.969,1.61,2.328],[2.071,1.71,2.432],[3.165,2.8,3.53],[2.063,1.71,2.416],[1.835,1.5,2.17],[1.866,1.52,2.212],[1.858,1.51,2.206],[1.803,1.46,2.146]]},
-      {label:'2023-25',n:140,color:'#B85042',pts:[[2.536,2.17,2.902],[2.621,2.25,2.992],[2.664,2.3,3.028],[2.714,2.34,3.088],[4.0,3.62,4.38],[2.814,2.44,3.188],[2.536,2.18,2.892],[2.55,2.18,2.92],[2.521,2.16,2.882],[2.55,2.18,2.92]]}
-    ],
-    verdict:'Stable across 2016-2025. Incremental signal = 1.5-1.6x in every era.',
-    note:'Absolute baseline levels have risen over time but the escalation pattern is consistent across all periods.'
+  period: {
+    series: [{
+      label: '2016-19',
+      n: 24,
+      color: '#5b8a9a',
+      pts: [[1.792, .7, 2.884], [1.625, .54, 2.71], [1.667, .56, 2.774], [1.917, .76, 3.074], [3.375, 2.16, 4.59], [2.5, 1.3, 3.7], [2.083, .92, 3.246], [1.833, .72, 2.946], [1.958, .8, 3.116], [2.042, .85, 3.234]]
+    }, {
+      label: '2020-22',
+      n: 127,
+      color: '#2a7d6e',
+      pts: [[1.89, 1.54, 2.24], [1.937, 1.58, 2.294], [1.969, 1.61, 2.328], [2.071, 1.71, 2.432], [3.165, 2.8, 3.53], [2.063, 1.71, 2.416], [1.835, 1.5, 2.17], [1.866, 1.52, 2.212], [1.858, 1.51, 2.206], [1.803, 1.46, 2.146]]
+    }, {
+      label: '2023-25',
+      n: 140,
+      color: '#B85042',
+      pts: [[2.536, 2.17, 2.902], [2.621, 2.25, 2.992], [2.664, 2.3, 3.028], [2.714, 2.34, 3.088], [4.0, 3.62, 4.38], [2.814, 2.44, 3.188], [2.536, 2.18, 2.892], [2.55, 2.18, 2.92], [2.521, 2.16, 2.882], [2.55, 2.18, 2.92]]
+    }],
+    verdict: 'Stable across 2016-2025. Incremental signal = 1.5-1.6x in every era.',
+    note: 'Absolute baseline levels have risen over time but the escalation pattern is consistent across all periods.'
   },
-  combo:{
-    series:[
-      {label:'KAFD+IED',n:292,color:'#B85042',pts:KI},
-      {label:'KAFD+Clash',n:1662,color:'#2a7d6e',pts:[[1.729,1.64,1.818],[1.752,1.662,1.842],[1.794,1.704,1.884],[1.901,1.809,1.993],[3.167,3.074,3.26],[2.111,2.018,2.204],[2.005,1.914,2.096],[1.966,1.876,2.056],[1.929,1.839,2.019],[1.904,1.814,1.994]]},
-      {label:'IED+Clash',n:866,color:'#5b8a9a',pts:[[1.633,1.5,1.766],[1.682,1.545,1.819],[1.696,1.562,1.83],[1.811,1.672,1.95],[3.038,2.895,3.181],[1.908,1.77,2.046],[1.775,1.64,1.91],[1.724,1.59,1.858],[1.698,1.566,1.83],[1.702,1.568,1.836]]},
-      {label:'KAFD+Loot',n:980,color:'#d4a04a',pts:[[1.828,1.7,1.956],[1.886,1.754,2.018],[1.903,1.772,2.034],[2.052,1.918,2.186],[3.327,3.19,3.464],[2.316,2.182,2.45],[2.134,2.004,2.264],[2.086,1.956,2.216],[2.053,1.924,2.182],[2.07,1.94,2.2]]}
-    ],
-    verdict:'All pair types produce the same pattern. Mechanism is convergence, not specific types.',
-    note:'Incremental temporal signal (1.6-1.8x at t=0) consistent across all combinations.'
+  combo: {
+    series: [{
+      label: 'KAFD+IED',
+      n: 292,
+      color: '#B85042',
+      pts: KI
+    }, {
+      label: 'KAFD+Clash',
+      n: 1662,
+      color: '#2a7d6e',
+      pts: [[1.729, 1.64, 1.818], [1.752, 1.662, 1.842], [1.794, 1.704, 1.884], [1.901, 1.809, 1.993], [3.167, 3.074, 3.26], [2.111, 2.018, 2.204], [2.005, 1.914, 2.096], [1.966, 1.876, 2.056], [1.929, 1.839, 2.019], [1.904, 1.814, 1.994]]
+    }, {
+      label: 'IED+Clash',
+      n: 866,
+      color: '#5b8a9a',
+      pts: [[1.633, 1.5, 1.766], [1.682, 1.545, 1.819], [1.696, 1.562, 1.83], [1.811, 1.672, 1.95], [3.038, 2.895, 3.181], [1.908, 1.77, 2.046], [1.775, 1.64, 1.91], [1.724, 1.59, 1.858], [1.698, 1.566, 1.83], [1.702, 1.568, 1.836]]
+    }, {
+      label: 'KAFD+Loot',
+      n: 980,
+      color: '#d4a04a',
+      pts: [[1.828, 1.7, 1.956], [1.886, 1.754, 2.018], [1.903, 1.772, 2.034], [2.052, 1.918, 2.186], [3.327, 3.19, 3.464], [2.316, 2.182, 2.45], [2.134, 2.004, 2.264], [2.086, 1.956, 2.216], [2.053, 1.924, 2.182], [2.07, 1.94, 2.2]]
+    }],
+    verdict: 'All pair types produce the same pattern. Mechanism is convergence, not specific types.',
+    note: 'Incremental temporal signal (1.6-1.8x at t=0) consistent across all combinations.'
   }
 };
-
-const EXCL=[{t:"Abductions",excl:0.8,conc:3.8,nE:3881,nC:2765},{t:"IED",excl:1.3,conc:3.8,nE:1458,nC:1269},{t:"Clashes",excl:1.1,conc:3.8,nE:12485,nC:4510},{t:"Attack",excl:1.0,conc:3.8,nE:13103,nC:4336},{t:"Sexual viol.",excl:0.6,conc:4.7,nE:164,nC:142},{t:"Looting",excl:1.0,conc:4.2,nE:2416,nC:2668},{t:"Territory",excl:0.7,conc:2.4,nE:74,nC:67},{t:"Suicide bomb",excl:1.0,conc:3.4,nE:219,nC:146}];
-
-const COUNTRIES=[{c:"Nigeria",r:"Lake Chad",e:38997,k:3267,i:709,cr:1.8},{c:"Cameroon",r:"Lake Chad",e:17062,k:2363,i:386,cr:1.6},{c:"Burkina Faso",r:"Central",e:12173,k:807,i:644,cr:1.5},{c:"Mali",r:"Central",e:12441,k:903,i:1108,cr:1.6},{c:"Niger",r:"Central",e:4615,k:565,i:194,cr:1.8},{c:"Benin",r:"Coastal",e:1685,k:186,i:39,cr:2.8},{c:"Togo",r:"Coastal",e:531,k:4,i:14,cr:2.8},{c:"Chad",r:"Lake Chad",e:1532,k:63,i:28,cr:1.5},{c:"Ghana",r:"Coastal",e:2614,k:7,i:0,cr:3.2},{c:"C\u00f4te d'Ivoire",r:"Coastal",e:2332,k:32,i:7,cr:3.0}];
-
-const COASTAL_IED=[{w:"Baseline",v:0.116,m:1.0},{w:"+1 week",v:0.632,m:5.2},{w:"+2 weeks",v:0.632,m:5.8},{w:"+3 weeks",v:0.737,m:7.3}];
-
-const C={bg:"#212738",bgA:"#1e2435",bgC:"#1a1f2e",bdr:"#2a3148",cool:"#2a7d6e",warm:"#c4704b",warmLight:"#d4835f",blue:"#5b8a9a",gold:"#d4a04a",purple:"#8b5a9e",grey:"#3a3d4a",txM:"#6b7280",txS:"#9ca3af",tx:"#d1d5db",txW:"#f3f4f6"};
+const EXCL = [{
+  t: "Abductions",
+  excl: 0.8,
+  conc: 3.8,
+  nE: 3881,
+  nC: 2765
+}, {
+  t: "IED",
+  excl: 1.3,
+  conc: 3.8,
+  nE: 1458,
+  nC: 1269
+}, {
+  t: "Clashes",
+  excl: 1.1,
+  conc: 3.8,
+  nE: 12485,
+  nC: 4510
+}, {
+  t: "Attack",
+  excl: 1.0,
+  conc: 3.8,
+  nE: 13103,
+  nC: 4336
+}, {
+  t: "Sexual viol.",
+  excl: 0.6,
+  conc: 4.7,
+  nE: 164,
+  nC: 142
+}, {
+  t: "Looting",
+  excl: 1.0,
+  conc: 4.2,
+  nE: 2416,
+  nC: 2668
+}, {
+  t: "Territory",
+  excl: 0.7,
+  conc: 2.4,
+  nE: 74,
+  nC: 67
+}, {
+  t: "Suicide bomb",
+  excl: 1.0,
+  conc: 3.4,
+  nE: 219,
+  nC: 146
+}];
+const COUNTRIES = [{
+  c: "Nigeria",
+  r: "Lake Chad",
+  e: 38997,
+  k: 3267,
+  i: 709,
+  cr: 1.8
+}, {
+  c: "Cameroon",
+  r: "Lake Chad",
+  e: 17062,
+  k: 2363,
+  i: 386,
+  cr: 1.6
+}, {
+  c: "Burkina Faso",
+  r: "Central",
+  e: 12173,
+  k: 807,
+  i: 644,
+  cr: 1.5
+}, {
+  c: "Mali",
+  r: "Central",
+  e: 12441,
+  k: 903,
+  i: 1108,
+  cr: 1.6
+}, {
+  c: "Niger",
+  r: "Central",
+  e: 4615,
+  k: 565,
+  i: 194,
+  cr: 1.8
+}, {
+  c: "Benin",
+  r: "Coastal",
+  e: 1685,
+  k: 186,
+  i: 39,
+  cr: 2.8
+}, {
+  c: "Togo",
+  r: "Coastal",
+  e: 531,
+  k: 4,
+  i: 14,
+  cr: 2.8
+}, {
+  c: "Chad",
+  r: "Lake Chad",
+  e: 1532,
+  k: 63,
+  i: 28,
+  cr: 1.5
+}, {
+  c: "Ghana",
+  r: "Coastal",
+  e: 2614,
+  k: 7,
+  i: 0,
+  cr: 3.2
+}, {
+  c: "C\u00f4te d'Ivoire",
+  r: "Coastal",
+  e: 2332,
+  k: 32,
+  i: 7,
+  cr: 3.0
+}];
+const COASTAL_IED = [{
+  w: "Baseline",
+  v: 0.116,
+  m: 1.0
+}, {
+  w: "+1 week",
+  v: 0.632,
+  m: 5.2
+}, {
+  w: "+2 weeks",
+  v: 0.632,
+  m: 5.8
+}, {
+  w: "+3 weeks",
+  v: 0.737,
+  m: 7.3
+}];
+const C = {
+  bg: "#212738",
+  bgA: "#1e2435",
+  bgC: "#1a1f2e",
+  bdr: "#2a3148",
+  cool: "#2a7d6e",
+  warm: "#c4704b",
+  warmLight: "#d4835f",
+  blue: "#5b8a9a",
+  gold: "#d4a04a",
+  purple: "#8b5a9e",
+  grey: "#3a3d4a",
+  txM: "#6b7280",
+  txS: "#9ca3af",
+  tx: "#d1d5db",
+  txW: "#f3f4f6"
+};
 
 // ═══════════════════════════════════════════════════════════════
 // PlotSVG — lead-lag chart with hover crosshair
 // ═══════════════════════════════════════════════════════════════
-const PlotSVG=React.memo(function PlotSVG({series,yMax,showBase=true,showArea=false,isRatio=false,w=380,h=220}){
-  const P={t:18,r:14,b:36,l:42};
-  const cw=w-P.l-P.r,ch=h-P.t-P.b;
-  const xS=i=>P.l+(i/(LAGS.length-1))*cw;
-  const yS=v=>P.t+ch-((v)/yMax)*ch;
-  const [hoverIdx,setHoverIdx]=useState(null);
-  const svgRef=useRef(null);
-
-  const handleMove=useCallback((e)=>{
-    const svg=svgRef.current;if(!svg)return;
-    const rect=svg.getBoundingClientRect();
-    const clientX=e.touches?e.touches[0].clientX:e.clientX;
-    const svgX=(clientX-rect.left)/rect.width*w;
-    let closest=0,minD=Infinity;
-    LAGS.forEach((_,i)=>{const d=Math.abs(xS(i)-svgX);if(d<minD){minD=d;closest=i;}});
+const PlotSVG = React.memo(function PlotSVG({
+  series,
+  yMax,
+  showBase = true,
+  showArea = false,
+  isRatio = false,
+  w = 380,
+  h = 220
+}) {
+  const P = {
+    t: 18,
+    r: 14,
+    b: 36,
+    l: 42
+  };
+  const cw = w - P.l - P.r,
+    ch = h - P.t - P.b;
+  const xS = i => P.l + i / (LAGS.length - 1) * cw;
+  const yS = v => P.t + ch - v / yMax * ch;
+  const [hoverIdx, setHoverIdx] = useState(null);
+  const svgRef = useRef(null);
+  const handleMove = useCallback(e => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const svgX = (clientX - rect.left) / rect.width * w;
+    let closest = 0,
+      minD = Infinity;
+    LAGS.forEach((_, i) => {
+      const d = Math.abs(xS(i) - svgX);
+      if (d < minD) {
+        minD = d;
+        closest = i;
+      }
+    });
     setHoverIdx(closest);
-  },[w]);
-  const handleLeave=useCallback(()=>setHoverIdx(null),[]);
-
-  const grid=useMemo(()=>{
-    const g=[];
-    for(let i=0;i<=4;i++){const v=yMax*i/4;g.push({y:yS(v),label:v>=10?Math.round(v):v.toFixed(1)});}
+  }, [w]);
+  const handleLeave = useCallback(() => setHoverIdx(null), []);
+  const grid = useMemo(() => {
+    const g = [];
+    for (let i = 0; i <= 4; i++) {
+      const v = yMax * i / 4;
+      g.push({
+        y: yS(v),
+        label: v >= 10 ? Math.round(v) : v.toFixed(1)
+      });
+    }
     return g;
-  },[yMax]);
-
-  const areaPath=useMemo(()=>{
-    if(!showArea||series.length!==1)return null;
-    const s=series[0].pts;
-    let d='M';
-    s.forEach((p,i)=>{if(p[0]===0&&i===4)return;d+=(d.length>1?'L':'')+xS(i)+','+yS(p[0]);});
-    for(let i=s.length-1;i>=0;i--){if(s[i][0]===0&&i===4)continue;d+='L'+xS(i)+','+yS(FLAT_BASE);}
-    return d+'Z';
-  },[series,showArea,yMax]);
-
-  return(
-    <svg ref={svgRef} viewBox={"0 0 "+w+" "+h} style={{width:"100%",display:"block"}}
-      onMouseMove={handleMove} onTouchMove={handleMove} onMouseLeave={handleLeave} onTouchEnd={handleLeave}>
-      {grid.map((g,i)=>(
-        <g key={i}>
-          <line x1={P.l} y1={g.y} x2={w-P.r} y2={g.y} stroke={C.bdr} strokeWidth={0.5}/>
-          <text x={P.l-5} y={g.y+3} fill={C.txM} fontSize={9} fontFamily="'IBM Plex Mono',monospace" textAnchor="end">{g.label}</text>
-        </g>
-      ))}
-      {LAGS.map((l,i)=>(
-        <g key={"x"+i}>
-          <text x={xS(i)} y={h-16} fill={l===0?C.txW:C.txM} fontSize={l===0?10:9} fontWeight={l===0?600:400} fontFamily="'IBM Plex Mono',monospace" textAnchor="middle">{XLAB[i]}</text>
-          {l===0&&<line x1={xS(i)} y1={P.t} x2={xS(i)} y2={h-P.b} stroke={C.txM} strokeWidth={0.5} strokeDasharray="3,2"/>}
-        </g>
-      ))}
-      <text x={10} y={P.t+ch/2} fill={C.txM} fontSize={8} fontFamily="'IBM Plex Sans',sans-serif" textAnchor="middle" transform={"rotate(-90,10,"+(P.t+ch/2)+")"}>{isRatio?"Ratio to baseline":"Attacks per district-week"}</text>
-      <text x={P.l+cw/2} y={h-2} fill={C.txM} fontSize={8} fontFamily="'IBM Plex Sans',sans-serif" textAnchor="middle">Weeks relative to signal</text>
-
-      {isRatio&&<>
-        <line x1={P.l} y1={yS(1)} x2={w-P.r} y2={yS(1)} stroke={C.txM} strokeWidth={0.8} strokeDasharray="4,3"/>
-        <text x={w-P.r+2} y={yS(1)+3} fill={C.txM} fontSize={8} fontFamily="'IBM Plex Mono',monospace">1.0x</text>
-      </>}
-
-      {showBase&&<>
-        <rect x={P.l} y={yS(FLAT_BASE*1.06)} width={cw} height={yS(FLAT_BASE*0.94)-yS(FLAT_BASE*1.06)} fill={C.txM} opacity={0.06}/>
-        <line x1={P.l} y1={yS(FLAT_BASE)} x2={w-P.r} y2={yS(FLAT_BASE)} stroke={C.txM} strokeWidth={0.8} strokeDasharray="3,2"/>
-      </>}
-
-      {areaPath&&<path d={areaPath} fill={series[0].color} opacity={0.20}/>}
-
-      {series.map((sr,si)=>(
-        <g key={si}>
-          <path d={"M"+sr.pts.map((p,i)=>xS(i)+","+yS(p[2])).join("L")+"L"+[...sr.pts].reverse().map((p,i)=>xS(sr.pts.length-1-i)+","+yS(p[1])).join("L")+"Z"} fill={sr.color} opacity={0.14}/>
-          <path d={"M"+sr.pts.filter((p,i)=>p[0]>0||i!==4||!sr.skipZero).map((p)=>xS(sr.pts.indexOf(p))+","+yS(p[0])).join("L")} fill="none" stroke={sr.color} strokeWidth={1.5} strokeDasharray={sr.dashed?"4,3":"none"}/>
-          {sr.pts.map((p,i)=>(p[0]>0||(!sr.skipZero&&i!==4))&&<circle key={i} cx={xS(i)} cy={yS(p[0])} r={2.5} fill={sr.color} stroke={C.bgA} strokeWidth={1}/>)}
-        </g>
-      ))}
-
-      {hoverIdx!==null&&(
-        <g>
-          <line x1={xS(hoverIdx)} y1={P.t} x2={xS(hoverIdx)} y2={h-P.b} stroke={C.txS} strokeWidth={0.5} opacity={0.5}/>
-          {series.map((sr,si)=>{
-            const v=sr.pts[hoverIdx]?.[0];
-            if(!v&&v!==0)return null;
-            if(v===0&&hoverIdx===4&&sr.skipZero)return null;
-            return <circle key={si} cx={xS(hoverIdx)} cy={yS(v)} r={4} fill="none" stroke={sr.color} strokeWidth={1.5}/>;
-          })}
-          <rect x={xS(hoverIdx)+8} y={P.t+4} width={72} height={series.length*14+8} rx={3} fill={C.bg} stroke={C.bdr} strokeWidth={0.5} opacity={0.95}/>
-          <text x={xS(hoverIdx)+14} y={P.t+16} fill={C.txS} fontSize={8} fontFamily="'IBM Plex Mono',monospace">{"t"+(LAGS[hoverIdx]>=0?"+":"")+LAGS[hoverIdx]}</text>
-          {series.map((sr,si)=>{
-            const v=sr.pts[hoverIdx]?.[0];
-            const display=(v===0&&hoverIdx===4&&sr.skipZero)?'--':v?.toFixed(2);
-            return <text key={si} x={xS(hoverIdx)+14} y={P.t+28+si*14} fill={sr.color} fontSize={9} fontWeight={600} fontFamily="'IBM Plex Mono',monospace">{display}</text>;
-          })}
-        </g>
-      )}
-      <rect x={P.l} y={P.t} width={cw} height={ch} fill="transparent"/>
-    </svg>
-  );
+  }, [yMax]);
+  const areaPath = useMemo(() => {
+    if (!showArea || series.length !== 1) return null;
+    const s = series[0].pts;
+    let d = 'M';
+    s.forEach((p, i) => {
+      if (p[0] === 0 && i === 4) return;
+      d += (d.length > 1 ? 'L' : '') + xS(i) + ',' + yS(p[0]);
+    });
+    for (let i = s.length - 1; i >= 0; i--) {
+      if (s[i][0] === 0 && i === 4) continue;
+      d += 'L' + xS(i) + ',' + yS(FLAT_BASE);
+    }
+    return d + 'Z';
+  }, [series, showArea, yMax]);
+  return /*#__PURE__*/React.createElement("svg", {
+    ref: svgRef,
+    viewBox: "0 0 " + w + " " + h,
+    style: {
+      width: "100%",
+      display: "block"
+    },
+    onMouseMove: handleMove,
+    onTouchMove: handleMove,
+    onMouseLeave: handleLeave,
+    onTouchEnd: handleLeave
+  }, grid.map((g, i) => /*#__PURE__*/React.createElement("g", {
+    key: i
+  }, /*#__PURE__*/React.createElement("line", {
+    x1: P.l,
+    y1: g.y,
+    x2: w - P.r,
+    y2: g.y,
+    stroke: C.bdr,
+    strokeWidth: 0.5
+  }), /*#__PURE__*/React.createElement("text", {
+    x: P.l - 5,
+    y: g.y + 3,
+    fill: C.txM,
+    fontSize: 9,
+    fontFamily: "'IBM Plex Mono',monospace",
+    textAnchor: "end"
+  }, g.label))), LAGS.map((l, i) => /*#__PURE__*/React.createElement("g", {
+    key: "x" + i
+  }, /*#__PURE__*/React.createElement("text", {
+    x: xS(i),
+    y: h - 16,
+    fill: l === 0 ? C.txW : C.txM,
+    fontSize: l === 0 ? 10 : 9,
+    fontWeight: l === 0 ? 600 : 400,
+    fontFamily: "'IBM Plex Mono',monospace",
+    textAnchor: "middle"
+  }, XLAB[i]), l === 0 && /*#__PURE__*/React.createElement("line", {
+    x1: xS(i),
+    y1: P.t,
+    x2: xS(i),
+    y2: h - P.b,
+    stroke: C.txM,
+    strokeWidth: 0.5,
+    strokeDasharray: "3,2"
+  }))), /*#__PURE__*/React.createElement("text", {
+    x: 10,
+    y: P.t + ch / 2,
+    fill: C.txM,
+    fontSize: 8,
+    fontFamily: "'IBM Plex Sans',sans-serif",
+    textAnchor: "middle",
+    transform: "rotate(-90,10," + (P.t + ch / 2) + ")"
+  }, isRatio ? "Ratio to baseline" : "Attacks per district-week"), /*#__PURE__*/React.createElement("text", {
+    x: P.l + cw / 2,
+    y: h - 2,
+    fill: C.txM,
+    fontSize: 8,
+    fontFamily: "'IBM Plex Sans',sans-serif",
+    textAnchor: "middle"
+  }, "Weeks relative to signal"), isRatio && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("line", {
+    x1: P.l,
+    y1: yS(1),
+    x2: w - P.r,
+    y2: yS(1),
+    stroke: C.txM,
+    strokeWidth: 0.8,
+    strokeDasharray: "4,3"
+  }), /*#__PURE__*/React.createElement("text", {
+    x: w - P.r + 2,
+    y: yS(1) + 3,
+    fill: C.txM,
+    fontSize: 8,
+    fontFamily: "'IBM Plex Mono',monospace"
+  }, "1.0x")), showBase && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("rect", {
+    x: P.l,
+    y: yS(FLAT_BASE * 1.06),
+    width: cw,
+    height: yS(FLAT_BASE * 0.94) - yS(FLAT_BASE * 1.06),
+    fill: C.txM,
+    opacity: 0.06
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: P.l,
+    y1: yS(FLAT_BASE),
+    x2: w - P.r,
+    y2: yS(FLAT_BASE),
+    stroke: C.txM,
+    strokeWidth: 0.8,
+    strokeDasharray: "3,2"
+  })), areaPath && /*#__PURE__*/React.createElement("path", {
+    d: areaPath,
+    fill: series[0].color,
+    opacity: 0.20
+  }), series.map((sr, si) => /*#__PURE__*/React.createElement("g", {
+    key: si
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M" + sr.pts.map((p, i) => xS(i) + "," + yS(p[2])).join("L") + "L" + _toConsumableArray(sr.pts).reverse().map((p, i) => xS(sr.pts.length - 1 - i) + "," + yS(p[1])).join("L") + "Z",
+    fill: sr.color,
+    opacity: 0.14
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M" + sr.pts.filter((p, i) => p[0] > 0 || i !== 4 || !sr.skipZero).map(p => xS(sr.pts.indexOf(p)) + "," + yS(p[0])).join("L"),
+    fill: "none",
+    stroke: sr.color,
+    strokeWidth: 1.5,
+    strokeDasharray: sr.dashed ? "4,3" : "none"
+  }), sr.pts.map((p, i) => (p[0] > 0 || !sr.skipZero && i !== 4) && /*#__PURE__*/React.createElement("circle", {
+    key: i,
+    cx: xS(i),
+    cy: yS(p[0]),
+    r: 2.5,
+    fill: sr.color,
+    stroke: C.bgA,
+    strokeWidth: 1
+  })))), hoverIdx !== null && /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("line", {
+    x1: xS(hoverIdx),
+    y1: P.t,
+    x2: xS(hoverIdx),
+    y2: h - P.b,
+    stroke: C.txS,
+    strokeWidth: 0.5,
+    opacity: 0.5
+  }), series.map((sr, si) => {
+    const v = sr.pts[hoverIdx]?.[0];
+    if (!v && v !== 0) return null;
+    if (v === 0 && hoverIdx === 4 && sr.skipZero) return null;
+    return /*#__PURE__*/React.createElement("circle", {
+      key: si,
+      cx: xS(hoverIdx),
+      cy: yS(v),
+      r: 4,
+      fill: "none",
+      stroke: sr.color,
+      strokeWidth: 1.5
+    });
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: xS(hoverIdx) + 8,
+    y: P.t + 4,
+    width: 72,
+    height: series.length * 14 + 8,
+    rx: 3,
+    fill: C.bg,
+    stroke: C.bdr,
+    strokeWidth: 0.5,
+    opacity: 0.95
+  }), /*#__PURE__*/React.createElement("text", {
+    x: xS(hoverIdx) + 14,
+    y: P.t + 16,
+    fill: C.txS,
+    fontSize: 8,
+    fontFamily: "'IBM Plex Mono',monospace"
+  }, "t" + (LAGS[hoverIdx] >= 0 ? "+" : "") + LAGS[hoverIdx]), series.map((sr, si) => {
+    const v = sr.pts[hoverIdx]?.[0];
+    const display = v === 0 && hoverIdx === 4 && sr.skipZero ? '--' : v?.toFixed(2);
+    return /*#__PURE__*/React.createElement("text", {
+      key: si,
+      x: xS(hoverIdx) + 14,
+      y: P.t + 28 + si * 14,
+      fill: sr.color,
+      fontSize: 9,
+      fontWeight: 600,
+      fontFamily: "'IBM Plex Mono',monospace"
+    }, display);
+  })), /*#__PURE__*/React.createElement("rect", {
+    x: P.l,
+    y: P.t,
+    width: cw,
+    height: ch,
+    fill: "transparent"
+  }));
 });
 
 // ═══════════════════════════════════════════════════════════════
 // Button with focus ring
 // ═══════════════════════════════════════════════════════════════
-function Btn({children,onClick,style}){
-  return <button onClick={onClick} style={{...style,outline:"none"}}
-    onFocus={e=>{e.target.style.boxShadow="0 0 0 2px "+C.blue;}}
-    onBlur={e=>{e.target.style.boxShadow="none";}}>{children}</button>;
+function Btn({
+  children,
+  onClick,
+  style
+}) {
+  return /*#__PURE__*/React.createElement("button", {
+    onClick: onClick,
+    style: {
+      ...style,
+      outline: "none"
+    },
+    onFocus: e => {
+      e.target.style.boxShadow = "0 0 0 2px " + C.blue;
+    },
+    onBlur: e => {
+      e.target.style.boxShadow = "none";
+    }
+  }, children);
 }
 
 // ═══════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════
-function EWSViz(){
-  const [sensTab,setSensTab]=useState("threshold");
-  const [mainSeries,setMainSeries]=useState("ki");
-  const [showMethodology,setShowMethodology]=useState(false);
-  const [methTab,setMethTab]=useState("exclusive");
-  const [animStep,setAnimStep]=useState(0);
-  const [showRatio,setShowRatio]=useState(false);
-  const expandRef=useRef(null);
-
-  useEffect(()=>{
-    if(methTab==="exclusive"&&showMethodology){
+function EWSViz() {
+  const [sensTab, setSensTab] = useState("threshold");
+  const [mainSeries, setMainSeries] = useState("ki");
+  const [showMethodology, setShowMethodology] = useState(false);
+  const [methTab, setMethTab] = useState("exclusive");
+  const [animStep, setAnimStep] = useState(0);
+  const [showRatio, setShowRatio] = useState(false);
+  const expandRef = useRef(null);
+  useEffect(() => {
+    if (methTab === "exclusive" && showMethodology) {
       setAnimStep(0);
-      requestAnimationFrame(()=>{setTimeout(()=>setAnimStep(1),50);});
+      requestAnimationFrame(() => {
+        setTimeout(() => setAnimStep(1), 50);
+      });
     }
-  },[methTab,showMethodology]);
-
-  useEffect(()=>{
-    if(showMethodology&&expandRef.current){
-      setTimeout(()=>expandRef.current?.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+  }, [methTab, showMethodology]);
+  useEffect(() => {
+    if (showMethodology && expandRef.current) {
+      setTimeout(() => expandRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      }), 100);
     }
-  },[showMethodology]);
-
-  const FIXED_YMAX=4.5;
-  const curSens=SENS[sensTab];
-  const sensYMax=Math.ceil(Math.max(...curSens.series.flatMap(sr=>sr.pts.flatMap(p=>[p[2]])))*1.15*10)/10;
-
-  const makeRatioSeries=(series,id)=>{
+  }, [showMethodology]);
+  const FIXED_YMAX = 4.5;
+  const curSens = SENS[sensTab];
+  const sensYMax = Math.ceil(Math.max.apply(Math, _toConsumableArray(curSens.series.flatMap(sr => sr.pts.flatMap(p => [p[2]])))) * 1.15 * 10) / 10;
+  const makeRatioSeries = (series, id) => {
     return [{
       ...series[0],
-      skipZero: id==="kafd",
-      pts: series[0].pts.map((p,i)=>{
-        if(id==="kafd"&&i===4) return [0,0,0];
-        const b=FLAT_BASE;
-        return [p[0]/b, p[1]/b, p[2]/b];
+      skipZero: id === "kafd",
+      pts: series[0].pts.map((p, i) => {
+        if (id === "kafd" && i === 4) return [0, 0, 0];
+        const b = FLAT_BASE;
+        return [p[0] / b, p[1] / b, p[2] / b];
       })
     }];
   };
-
-  const mainOptions=[
-    {id:"ki",label:"KAFD + IED",series:[{label:"KAFD + IED",n:292,color:C.warm,pts:KI}],
-      metrics:"9.4x baseline \u00b7 1.6x escalation at t=0",
-      note:"These districts average 9.4 times the Sahel-wide baseline. Within them, the signal week marks a further 58% spike above their own pre-signal corridor."},
-    {id:"three",label:"3+ types",series:[{label:"3+ types",n:4312,color:C.cool,pts:THREE}],
-      metrics:"6.8x baseline \u00b7 1.6x escalation at t=0",
-      note:"Broadest signal with tightest CIs (N=4,312). Incremental temporal spike of 1.63x at t=0 above pre-signal mean of 1.68 attacks."},
-    {id:"kafd",label:"KAFD alone (null)",series:[{label:"KAFD alone",n:3881,color:C.grey,pts:KAFD_ALONE,skipZero:true}],
-      metrics:"1.3x baseline \u00b7 No temporal signal",
-      note:"KAFD-exclusive districts sit at 1.3x the clean baseline. No elevation at any post-signal lag. Wilcoxon p=0.68 for within-month ordering. Flat line = no predictive power."},
-  ];
-
-  const curMain=mainOptions.find(o=>o.id===mainSeries);
-
-  const pill=(active)=>({fontSize:10,padding:"3px 8px",cursor:"pointer",borderRadius:3,border:"none",background:active?C.bgC:"transparent",color:active?C.txW:C.txM,fontWeight:active?600:400,fontFamily:"'IBM Plex Mono',monospace",transition:"all 0.15s"});
-  const mono9={fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:1,color:C.txM,textTransform:"uppercase"};
-  const panelTitle={fontFamily:"'IBM Plex Sans',sans-serif",fontSize:13,fontWeight:600,color:C.tx,marginTop:2};
-  const noteStyle={fontSize:11,color:C.txS,lineHeight:1.6,padding:"4px 14px 12px"};
-  const legend={display:"flex",flexWrap:"wrap",gap:8,padding:"6px 14px",fontSize:9,color:C.txM};
-  const panel={background:C.bgA,border:"1px solid "+C.bdr,overflow:"hidden"};
-
-  return(
-    <div style={{background:C.bg,border:"1px solid "+C.bdr,maxWidth:760,margin:"0 auto",fontFamily:"'IBM Plex Sans',sans-serif"}}>
-
-      {/* HEADER */}
-      <div style={{padding:"20px 24px 14px",borderBottom:"1px solid "+C.bdr}}>
-        <div style={{...mono9,color:C.cool,marginBottom:6}}>Methodology</div>
-        <h3 style={{fontFamily:"'Instrument Serif',serif",fontSize:20,fontWeight:400,color:C.txW,margin:0,lineHeight:1.3}}>
-          Single events say nothing. Convergence says everything.
-        </h3>
-        <p style={{fontSize:11,color:C.txS,margin:"6px 0 0",lineHeight:1.5}}>
-          When multiple types of violence converge in the same district in the same week, what follows in the next 7 days is significantly worse. Below: the evidence from 100,184 ACLED events across 13 Sahel countries (2010-2025). These comparisons are descriptive; the formal analysis applies additional statistical controls.
-        </p>
-      </div>
-
-      {/* TIER 1: LEAD STRUCTURE */}
-      <div style={{padding:"12px 14px 0"}}>
-        <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)",gap:12}} className="ews-lg">
-
-          {/* LEFT: Main result */}
-          <div style={panel}>
-            <div style={{padding:"10px 14px 6px",borderBottom:"1px solid "+C.bdr}}>
-              <div style={mono9}>Main result</div>
-              <div style={panelTitle}>{showRatio?"Ratio to baseline":"Lead-lag structure"}</div>
-            </div>
-            <div style={{display:"flex",gap:2,padding:"8px 10px 0",flexWrap:"wrap",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{display:"flex",gap:2}}>
-                {mainOptions.map(o=>(<Btn key={o.id} onClick={()=>setMainSeries(o.id)} style={pill(mainSeries===o.id)}>{o.label}</Btn>))}
-              </div>
-              <div style={{display:"flex",gap:2}}>
-                <Btn onClick={()=>setShowRatio(false)} style={{...pill(!showRatio),fontSize:8,padding:"2px 6px"}}>Raw</Btn>
-                <Btn onClick={()=>setShowRatio(true)} style={{...pill(showRatio),fontSize:8,padding:"2px 6px"}}>Ratio</Btn>
-              </div>
-            </div>
-            <div style={{padding:"4px 6px"}}>
-              {showRatio?(
-                <PlotSVG series={makeRatioSeries(curMain.series,curMain.id)} yMax={curMain.id==="kafd"?3:curMain.id==="ki"?18:14} showBase={false} isRatio={true}/>
-              ):(
-                <PlotSVG series={curMain.series} yMax={FIXED_YMAX} showBase={true} showArea={curMain.id!=="kafd"}/>
-              )}
-            </div>
-            <div style={legend}>
-              <span style={{display:"flex",alignItems:"center",gap:4}}>
-                <span style={{width:12,height:2,background:curMain.series[0].color,borderRadius:1}}/>
-                N={curMain.series[0].n.toLocaleString()} {"\u00b7"} 95% CI
-              </span>
-              {!showRatio&&<span style={{display:"flex",alignItems:"center",gap:4}}>
-                <span style={{width:12,height:2,background:C.txM,opacity:0.5,borderRadius:1}}/>Baseline
-              </span>}
-            </div>
-            <div style={{padding:"0 14px",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:curMain.series[0].color}}>
-              {curMain.metrics}
-            </div>
-            <div style={noteStyle}>{curMain.note}</div>
-          </div>
-
-          {/* RIGHT: Sensitivity */}
-          <div style={panel}>
-            <div style={{padding:"10px 14px 6px",borderBottom:"1px solid "+C.bdr}}>
-              <div style={mono9}>Sensitivity</div>
-              <div style={panelTitle}>Does it survive perturbation?</div>
-            </div>
-            <div style={{display:"flex",gap:2,padding:"8px 10px 0",flexWrap:"wrap"}}>
-              {[["threshold","Threshold"],["region","Region"],["period","Period"],["combo","Pair type"]].map(([id,label])=>(
-                <Btn key={id} onClick={()=>setSensTab(id)} style={pill(sensTab===id)}>{label}</Btn>
-              ))}
-            </div>
-            <div style={{padding:"4px 6px"}}>
-              <PlotSVG series={curSens.series} yMax={sensYMax} showBase={sensTab==="combo"}/>
-            </div>
-            <div style={legend}>
-              {curSens.series.map(sr=>(
-                <span key={sr.label} style={{display:"flex",alignItems:"center",gap:4}}>
-                  <span style={{width:12,height:2,background:sr.color,borderRadius:1}}/>
-                  {sr.label}
-                </span>
-              ))}
-            </div>
-            <div style={{padding:"0 14px",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:500,color:C.cool}}>
-              {curSens.verdict}
-            </div>
-            <div style={noteStyle}>{curSens.note}</div>
-          </div>
-        </div>
-
-        {/* FINDING CARDS */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:10,marginTop:14,marginBottom:14}}>
-          {[
-            {val:"9.4x",sub:"Where to look",detail:"KAFD+IED co-occurrence districts are 9.4 times more violent than the Sahel average",color:C.warm},
-            {val:"1.6x",sub:"When to act",detail:"Within those districts, the signal week marks a further 60% escalation above their already-elevated baseline",color:C.cool},
-            {val:"13",sub:"Where it works",detail:"The pattern holds across Central Sahel, Lake Chad Basin, and Coastal West Africa",color:C.blue},
-          ].map((card,i)=>(
-            <div key={i} style={{background:C.bgA,border:"1px solid "+C.bdr,borderLeft:"3px solid "+card.color,padding:"12px 14px"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:22,fontWeight:700,color:card.color}}>{card.val}</div>
-              <div style={{fontSize:11,fontWeight:600,color:C.tx,marginTop:2}}>{card.sub}</div>
-              <div style={{fontSize:10,color:C.txS,marginTop:4,lineHeight:1.4}}>{card.detail}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* TIER 2: EXPANDABLE METHODOLOGY */}
-      <div style={{borderTop:"1px solid "+C.bdr}}>
-        <button ref={expandRef} onClick={()=>setShowMethodology(!showMethodology)} style={{
-          width:"100%",padding:"12px 24px",background:"none",border:"none",cursor:"pointer",
-          display:"flex",justifyContent:"space-between",alignItems:"center",
-          fontFamily:"'IBM Plex Sans',sans-serif",fontSize:12,fontWeight:500,color:C.txS,outline:"none"
-        }}>
-          <span>{showMethodology?"Hide":"Show"} methodology detail</span>
-          <span style={{fontSize:14,color:C.txM,transition:"transform 0.2s",transform:showMethodology?"rotate(180deg)":"rotate(0)"}}>{"\u25BC"}</span>
-        </button>
-
-        {showMethodology&&(
-          <div>
-            <div style={{display:"flex",borderBottom:"1px solid "+C.bdr,padding:"0 20px"}}>
-              {[["exclusive","Exclusive signal test"],["countries","Country breakdown"],["coastal","Coastal discovery"]].map(([id,label])=>(
-                <Btn key={id} onClick={()=>setMethTab(id)} style={{
-                  padding:"8px 12px",background:"none",border:"none",cursor:"pointer",
-                  fontFamily:"'IBM Plex Sans',sans-serif",fontSize:11,fontWeight:methTab===id?600:400,
-                  color:methTab===id?C.txW:C.txM,
-                  borderBottom:methTab===id?"2px solid "+C.warm:"2px solid transparent",
-                  transition:"all 0.2s"
-                }}>{label}</Btn>
-              ))}
-            </div>
-
-            {/* EXCLUSIVE SIGNAL TEST */}
-            {methTab==="exclusive"&&(
-              <div style={{padding:"16px 20px 20px"}}>
-                <p style={{fontSize:11,color:C.txS,marginBottom:14,lineHeight:1.5}}>
-                  For each event type: next-week attacks when it occurs <b style={{color:C.tx}}>alone</b> vs <b style={{color:C.tx}}>with concurrent</b> violence. If "alone" is at or below baseline, no standalone predictive power.
-                </p>
-                <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <div style={{display:"flex",gap:4,padding:"4px 0",borderBottom:"1px solid "+C.bdr}}>
-                    <div style={{width:90,fontSize:9,fontWeight:600,color:C.txM}}>Event type</div>
-                    <div style={{flex:1,fontSize:9,fontWeight:600,color:C.txM,textAlign:"center"}}>Alone (exclusive)</div>
-                    <div style={{flex:1,fontSize:9,fontWeight:600,color:C.txM,textAlign:"center"}}>With concurrent</div>
-                  </div>
-                  {EXCL.map((d,i)=>{
-                    const show=animStep>=1;
-                    return(
-                      <div key={i} style={{display:"flex",gap:4,alignItems:"center",padding:"3px 0"}}>
-                        <div style={{width:90,fontSize:11,color:C.tx,fontWeight:500}}>{d.t}</div>
-                        <div style={{flex:1,display:"flex",alignItems:"center",gap:6}}>
-                          <div style={{flex:1,height:16,background:C.bgC,borderRadius:3,overflow:"hidden",position:"relative"}}>
-                            <div style={{width:show?Math.max(2,(d.excl/5)*100)+"%":"0%",height:"100%",background:d.excl<=1.0?C.grey:C.blue,borderRadius:3,transition:"width 0.6s ease",transitionDelay:i*50+"ms"}}/>
-                            <div style={{position:"absolute",left:"20%",top:0,bottom:0,width:1,background:C.gold,opacity:0.4}}/>
-                          </div>
-                          <span style={{width:32,fontSize:10,fontFamily:"'IBM Plex Mono',monospace",fontWeight:600,color:d.excl<=1.0?C.txM:C.cool,textAlign:"right"}}>{show?d.excl+"x":""}</span>
-                        </div>
-                        <div style={{flex:1,display:"flex",alignItems:"center",gap:6}}>
-                          <div style={{flex:1,height:16,background:C.bgC,borderRadius:3,overflow:"hidden"}}>
-                            <div style={{width:show?Math.max(2,(d.conc/5)*100)+"%":"0%",height:"100%",background:C.warm,borderRadius:3,transition:"width 0.6s ease",transitionDelay:i*50+200+"ms"}}/>
-                          </div>
-                          <span style={{width:32,fontSize:10,fontFamily:"'IBM Plex Mono',monospace",fontWeight:600,color:C.warmLight,textAlign:"right"}}>{show?d.conc+"x":""}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div style={{marginTop:10,fontSize:10,color:C.txM}}>
-                  <span style={{display:"inline-block",width:8,height:2,background:C.gold,marginRight:4,verticalAlign:"middle"}}/>
-                  1.0x baseline. Every "alone" rate is at or below. The signal requires co-occurrence.
-                </div>
-              </div>
-            )}
-
-            {/* COUNTRY BREAKDOWN */}
-            {methTab==="countries"&&(
-              <div style={{padding:"16px 20px 20px"}}>
-                <p style={{fontSize:11,color:C.txS,marginBottom:14,lineHeight:1.5}}>
-                  Event volumes and composite signal by country. Higher multipliers in lower-conflict countries reflect signal-to-noise properties, not higher overall risk.
-                </p>
-                <div style={{overflowX:"auto"}}>
-                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-                    <thead><tr style={{borderBottom:"1px solid "+C.bdr}}>
-                      {["Country","Region","Events","KAFD","IED","Signal"].map(h=>(
-                        <th key={h} style={{padding:"5px 6px",textAlign:h==="Country"||h==="Region"?"left":"right",color:C.txM,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:0.5}}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>{COUNTRIES.map((d,i)=>{
-                      const rc=d.r==="Central"?C.cool:d.r==="Lake Chad"?C.blue:C.gold;
-                      return(<tr key={i} style={{borderBottom:"1px solid "+C.bdr+"22"}}>
-                        <td style={{padding:"5px 6px",color:C.tx,fontWeight:500}}>{d.c}</td>
-                        <td style={{padding:"5px 6px",color:rc,fontSize:10}}>{d.r}</td>
-                        <td style={{padding:"5px 6px",textAlign:"right",color:C.txS,fontFamily:"'IBM Plex Mono',monospace",fontSize:10}}>{d.e.toLocaleString()}</td>
-                        <td style={{padding:"5px 6px",textAlign:"right",color:C.txS,fontFamily:"'IBM Plex Mono',monospace",fontSize:10}}>{d.k.toLocaleString()}</td>
-                        <td style={{padding:"5px 6px",textAlign:"right",color:C.txS,fontFamily:"'IBM Plex Mono',monospace",fontSize:10}}>{d.i.toLocaleString()}</td>
-                        <td style={{padding:"5px 6px",textAlign:"right"}}><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,fontWeight:700,color:d.cr>=2.5?C.warm:d.cr>=1.5?C.cool:C.txM}}>{d.cr}x</span></td>
-                      </tr>);
-                    })}</tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* COASTAL DISCOVERY */}
-            {methTab==="coastal"&&(
-              <div style={{padding:"16px 20px 20px"}}>
-                <p style={{fontSize:11,color:C.txS,marginBottom:14,lineHeight:1.5}}>
-                  IEDs in Togo, Benin, Ghana, and C{"\u00f4"}te d'Ivoire without concurrent attacks predict violence that <em style={{color:C.tx}}>grows</em> over three weeks. 28 of 38 district-weeks occurred in 2023-2025.
-                </p>
-                <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap"}}>
-                  {COASTAL_IED.map((d,i)=>(
-                    <div key={i} style={{flex:"1 1 70px",minWidth:70,background:C.bgA,borderRadius:4,padding:"12px 8px",textAlign:"center",
-                      border:i===0?"none":"1px solid "+C.bdr,borderTop:i>0?"3px solid "+(i===3?C.warm:C.gold):"none"}}>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:i===0?16:22,fontWeight:700,color:i===0?C.txM:i===3?C.warm:C.gold}}>{d.m}x</div>
-                      <div style={{fontSize:10,color:C.txS,marginTop:4}}>{d.w}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{marginTop:14,padding:12,background:C.bgC,borderRadius:4,borderLeft:"3px solid "+C.warm}}>
-                  <div style={{fontSize:12,fontWeight:600,color:C.warmLight,marginBottom:4}}>Why this matters</div>
-                  <div style={{fontSize:11,color:C.tx,lineHeight:1.6}}>
-                    In coastal countries, IEDs appear in relative isolation, marking the arrival of VE operational capability. The growing signal (5.2x to 7.3x) suggests emplacement followed by territorial consolidation. N=38 district-weeks. p {"<"} 0.001 at all lags.
-                  </div>
-                </div>
-                <div style={{marginTop:10,display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {["Togo","Benin","Ghana","C\u00f4te d'Ivoire"].map(c=>(
-                    <span key={c} style={{padding:"3px 10px",background:C.bgA,borderRadius:12,fontSize:10,color:C.gold,border:"1px solid "+C.bdr}}>{c}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div style={{padding:"8px 20px 12px",textAlign:"center"}}>
-              <Btn onClick={()=>setShowMethodology(false)} style={{fontSize:11,color:C.txM,background:"none",border:"none",cursor:"pointer",fontFamily:"'IBM Plex Sans',sans-serif"}}>
-                Collapse methodology {"\u25B2"}
-              </Btn>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* FOOTER */}
-      <div style={{padding:"10px 20px",borderTop:"1px solid "+C.bdr,fontSize:9,color:C.txM,lineHeight:1.5}}>
-        <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:4}}>
-          <span>100,184 events {"\u00b7"} 13 countries {"\u00b7"} 2010-2025 {"\u00b7"} ACLED</span>
-          <span>All comparisons p {"<"} 0.001</span>
-        </div>
-        <div style={{marginTop:4}}>Bonferroni-corrected at 0.05 family-wise (44 tests, threshold=0.0011). Baseline excludes composite district-weeks.</div>
-      </div>
-
-      <style dangerouslySetInnerHTML={{__html:
-        "@media(max-width:640px){.ews-lg{grid-template-columns:1fr !important;}}"+
-        "@media print{*{background:#fff !important;color:#222 !important;border-color:#ccc !important;}svg line,svg path{stroke:#666 !important;}svg text{fill:#222 !important;}}"
-      }}/>
-    </div>
-  );
+  const mainOptions = [{
+    id: "ki",
+    label: "KAFD + IED",
+    series: [{
+      label: "KAFD + IED",
+      n: 292,
+      color: C.warm,
+      pts: KI
+    }],
+    metrics: "9.4x baseline \u00b7 1.6x escalation at t=0",
+    note: "These districts average 9.4 times the Sahel-wide baseline. Within them, the signal week marks a further 58% spike above their own pre-signal corridor."
+  }, {
+    id: "three",
+    label: "3+ types",
+    series: [{
+      label: "3+ types",
+      n: 4312,
+      color: C.cool,
+      pts: THREE
+    }],
+    metrics: "6.8x baseline \u00b7 1.6x escalation at t=0",
+    note: "Broadest signal with tightest CIs (N=4,312). Incremental temporal spike of 1.63x at t=0 above pre-signal mean of 1.68 attacks."
+  }, {
+    id: "kafd",
+    label: "KAFD alone (null)",
+    series: [{
+      label: "KAFD alone",
+      n: 3881,
+      color: C.grey,
+      pts: KAFD_ALONE,
+      skipZero: true
+    }],
+    metrics: "1.3x baseline \u00b7 No temporal signal",
+    note: "KAFD-exclusive districts sit at 1.3x the clean baseline. No elevation at any post-signal lag. Wilcoxon p=0.68 for within-month ordering. Flat line = no predictive power."
+  }];
+  const curMain = mainOptions.find(o => o.id === mainSeries);
+  const pill = active => ({
+    fontSize: 10,
+    padding: "3px 8px",
+    cursor: "pointer",
+    borderRadius: 3,
+    border: "none",
+    background: active ? C.bgC : "transparent",
+    color: active ? C.txW : C.txM,
+    fontWeight: active ? 600 : 400,
+    fontFamily: "'IBM Plex Mono',monospace",
+    transition: "all 0.15s"
+  });
+  const mono9 = {
+    fontFamily: "'IBM Plex Mono',monospace",
+    fontSize: 9,
+    fontWeight: 600,
+    letterSpacing: 1,
+    color: C.txM,
+    textTransform: "uppercase"
+  };
+  const panelTitle = {
+    fontFamily: "'IBM Plex Sans',sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    color: C.tx,
+    marginTop: 2
+  };
+  const noteStyle = {
+    fontSize: 11,
+    color: C.txS,
+    lineHeight: 1.6,
+    padding: "4px 14px 12px"
+  };
+  const legend = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    padding: "6px 14px",
+    fontSize: 9,
+    color: C.txM
+  };
+  const panel = {
+    background: C.bgA,
+    border: "1px solid " + C.bdr,
+    overflow: "hidden"
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg,
+      border: "1px solid " + C.bdr,
+      maxWidth: 760,
+      margin: "0 auto",
+      fontFamily: "'IBM Plex Sans',sans-serif"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "20px 24px 14px",
+      borderBottom: "1px solid " + C.bdr
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...mono9,
+      color: C.cool,
+      marginBottom: 6
+    }
+  }, "Methodology"), /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: "'Instrument Serif',serif",
+      fontSize: 20,
+      fontWeight: 400,
+      color: C.txW,
+      margin: 0,
+      lineHeight: 1.3
+    }
+  }, "Single events say nothing. Convergence says everything."), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 11,
+      color: C.txS,
+      margin: "6px 0 0",
+      lineHeight: 1.5
+    }
+  }, "When multiple types of violence converge in the same district in the same week, what follows in the next 7 days is significantly worse. Below: the evidence from 100,184 ACLED events across 13 Sahel countries (2010-2025). These comparisons are descriptive; the formal analysis applies additional statistical controls.")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "12px 14px 0"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
+      gap: 12
+    },
+    className: "ews-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: panel
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "10px 14px 6px",
+      borderBottom: "1px solid " + C.bdr
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: mono9
+  }, "Main result"), /*#__PURE__*/React.createElement("div", {
+    style: panelTitle
+  }, showRatio ? "Ratio to baseline" : "Lead-lag structure")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 2,
+      padding: "8px 10px 0",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 2
+    }
+  }, mainOptions.map(o => /*#__PURE__*/React.createElement(Btn, {
+    key: o.id,
+    onClick: () => setMainSeries(o.id),
+    style: pill(mainSeries === o.id)
+  }, o.label))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 2
+    }
+  }, /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => setShowRatio(false),
+    style: {
+      ...pill(!showRatio),
+      fontSize: 8,
+      padding: "2px 6px"
+    }
+  }, "Raw"), /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => setShowRatio(true),
+    style: {
+      ...pill(showRatio),
+      fontSize: 8,
+      padding: "2px 6px"
+    }
+  }, "Ratio"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "4px 6px"
+    }
+  }, showRatio ? /*#__PURE__*/React.createElement(PlotSVG, {
+    series: makeRatioSeries(curMain.series, curMain.id),
+    yMax: curMain.id === "kafd" ? 3 : curMain.id === "ki" ? 18 : 14,
+    showBase: false,
+    isRatio: true
+  }) : /*#__PURE__*/React.createElement(PlotSVG, {
+    series: curMain.series,
+    yMax: FIXED_YMAX,
+    showBase: true,
+    showArea: curMain.id !== "kafd"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: legend
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: 12,
+      height: 2,
+      background: curMain.series[0].color,
+      borderRadius: 1
+    }
+  }), "N=", curMain.series[0].n.toLocaleString(), " ", "\u00b7", " 95% CI"), !showRatio && /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: 12,
+      height: 2,
+      background: C.txM,
+      opacity: 0.5,
+      borderRadius: 1
+    }
+  }), "Baseline")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "0 14px",
+      fontFamily: "'IBM Plex Mono',monospace",
+      fontSize: 11,
+      fontWeight: 600,
+      color: curMain.series[0].color
+    }
+  }, curMain.metrics), /*#__PURE__*/React.createElement("div", {
+    style: noteStyle
+  }, curMain.note)), /*#__PURE__*/React.createElement("div", {
+    style: panel
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "10px 14px 6px",
+      borderBottom: "1px solid " + C.bdr
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: mono9
+  }, "Sensitivity"), /*#__PURE__*/React.createElement("div", {
+    style: panelTitle
+  }, "Does it survive perturbation?")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 2,
+      padding: "8px 10px 0",
+      flexWrap: "wrap"
+    }
+  }, [["threshold", "Threshold"], ["region", "Region"], ["period", "Period"], ["combo", "Pair type"]].map(([id, label]) => /*#__PURE__*/React.createElement(Btn, {
+    key: id,
+    onClick: () => setSensTab(id),
+    style: pill(sensTab === id)
+  }, label))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "4px 6px"
+    }
+  }, /*#__PURE__*/React.createElement(PlotSVG, {
+    series: curSens.series,
+    yMax: sensYMax,
+    showBase: sensTab === "combo"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: legend
+  }, curSens.series.map(sr => /*#__PURE__*/React.createElement("span", {
+    key: sr.label,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: 12,
+      height: 2,
+      background: sr.color,
+      borderRadius: 1
+    }
+  }), sr.label))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "0 14px",
+      fontFamily: "'IBM Plex Mono',monospace",
+      fontSize: 10,
+      fontWeight: 500,
+      color: C.cool
+    }
+  }, curSens.verdict), /*#__PURE__*/React.createElement("div", {
+    style: noteStyle
+  }, curSens.note))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))",
+      gap: 10,
+      marginTop: 14,
+      marginBottom: 14
+    }
+  }, [{
+    val: "9.4x",
+    sub: "Where to look",
+    detail: "KAFD+IED co-occurrence districts are 9.4 times more violent than the Sahel average",
+    color: C.warm
+  }, {
+    val: "1.6x",
+    sub: "When to act",
+    detail: "Within those districts, the signal week marks a further 60% escalation above their already-elevated baseline",
+    color: C.cool
+  }, {
+    val: "13",
+    sub: "Where it works",
+    detail: "The pattern holds across Central Sahel, Lake Chad Basin, and Coastal West Africa",
+    color: C.blue
+  }].map((card, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: C.bgA,
+      border: "1px solid " + C.bdr,
+      borderLeft: "3px solid " + card.color,
+      padding: "12px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono',monospace",
+      fontSize: 22,
+      fontWeight: 700,
+      color: card.color
+    }
+  }, card.val), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: C.tx,
+      marginTop: 2
+    }
+  }, card.sub), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.txS,
+      marginTop: 4,
+      lineHeight: 1.4
+    }
+  }, card.detail))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderTop: "1px solid " + C.bdr
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    ref: expandRef,
+    onClick: () => setShowMethodology(!showMethodology),
+    style: {
+      width: "100%",
+      padding: "12px 24px",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontFamily: "'IBM Plex Sans',sans-serif",
+      fontSize: 12,
+      fontWeight: 500,
+      color: C.txS,
+      outline: "none"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, showMethodology ? "Hide" : "Show", " methodology detail"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 14,
+      color: C.txM,
+      transition: "transform 0.2s",
+      transform: showMethodology ? "rotate(180deg)" : "rotate(0)"
+    }
+  }, "\u25BC")), showMethodology && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      borderBottom: "1px solid " + C.bdr,
+      padding: "0 20px"
+    }
+  }, [["exclusive", "Exclusive signal test"], ["countries", "Country breakdown"], ["coastal", "Coastal discovery"]].map(([id, label]) => /*#__PURE__*/React.createElement(Btn, {
+    key: id,
+    onClick: () => setMethTab(id),
+    style: {
+      padding: "8px 12px",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontFamily: "'IBM Plex Sans',sans-serif",
+      fontSize: 11,
+      fontWeight: methTab === id ? 600 : 400,
+      color: methTab === id ? C.txW : C.txM,
+      borderBottom: methTab === id ? "2px solid " + C.warm : "2px solid transparent",
+      transition: "all 0.2s"
+    }
+  }, label))), methTab === "exclusive" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "16px 20px 20px"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 11,
+      color: C.txS,
+      marginBottom: 14,
+      lineHeight: 1.5
+    }
+  }, "For each event type: next-week attacks when it occurs ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: C.tx
+    }
+  }, "alone"), " vs ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: C.tx
+    }
+  }, "with concurrent"), " violence. If \"alone\" is at or below baseline, no standalone predictive power."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      padding: "4px 0",
+      borderBottom: "1px solid " + C.bdr
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 90,
+      fontSize: 9,
+      fontWeight: 600,
+      color: C.txM
+    }
+  }, "Event type"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      fontSize: 9,
+      fontWeight: 600,
+      color: C.txM,
+      textAlign: "center"
+    }
+  }, "Alone (exclusive)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      fontSize: 9,
+      fontWeight: 600,
+      color: C.txM,
+      textAlign: "center"
+    }
+  }, "With concurrent")), EXCL.map((d, i) => {
+    const show = animStep >= 1;
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: {
+        display: "flex",
+        gap: 4,
+        alignItems: "center",
+        padding: "3px 0"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 90,
+        fontSize: 11,
+        color: C.tx,
+        fontWeight: 500
+      }
+    }, d.t), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        height: 16,
+        background: C.bgC,
+        borderRadius: 3,
+        overflow: "hidden",
+        position: "relative"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: show ? Math.max(2, d.excl / 5 * 100) + "%" : "0%",
+        height: "100%",
+        background: d.excl <= 1.0 ? C.grey : C.blue,
+        borderRadius: 3,
+        transition: "width 0.6s ease",
+        transitionDelay: i * 50 + "ms"
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "absolute",
+        left: "20%",
+        top: 0,
+        bottom: 0,
+        width: 1,
+        background: C.gold,
+        opacity: 0.4
+      }
+    })), /*#__PURE__*/React.createElement("span", {
+      style: {
+        width: 32,
+        fontSize: 10,
+        fontFamily: "'IBM Plex Mono',monospace",
+        fontWeight: 600,
+        color: d.excl <= 1.0 ? C.txM : C.cool,
+        textAlign: "right"
+      }
+    }, show ? d.excl + "x" : "")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        height: 16,
+        background: C.bgC,
+        borderRadius: 3,
+        overflow: "hidden"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: show ? Math.max(2, d.conc / 5 * 100) + "%" : "0%",
+        height: "100%",
+        background: C.warm,
+        borderRadius: 3,
+        transition: "width 0.6s ease",
+        transitionDelay: i * 50 + 200 + "ms"
+      }
+    })), /*#__PURE__*/React.createElement("span", {
+      style: {
+        width: 32,
+        fontSize: 10,
+        fontFamily: "'IBM Plex Mono',monospace",
+        fontWeight: 600,
+        color: C.warmLight,
+        textAlign: "right"
+      }
+    }, show ? d.conc + "x" : "")));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      fontSize: 10,
+      color: C.txM
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-block",
+      width: 8,
+      height: 2,
+      background: C.gold,
+      marginRight: 4,
+      verticalAlign: "middle"
+    }
+  }), "1.0x baseline. Every \"alone\" rate is at or below. The signal requires co-occurrence.")), methTab === "countries" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "16px 20px 20px"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 11,
+      color: C.txS,
+      marginBottom: 14,
+      lineHeight: 1.5
+    }
+  }, "Event volumes and composite signal by country. Higher multipliers in lower-conflict countries reflect signal-to-noise properties, not higher overall risk."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 11
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      borderBottom: "1px solid " + C.bdr
+    }
+  }, ["Country", "Region", "Events", "KAFD", "IED", "Signal"].map(h => /*#__PURE__*/React.createElement("th", {
+    key: h,
+    style: {
+      padding: "5px 6px",
+      textAlign: h === "Country" || h === "Region" ? "left" : "right",
+      color: C.txM,
+      fontWeight: 600,
+      fontSize: 9,
+      textTransform: "uppercase",
+      letterSpacing: 0.5
+    }
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, COUNTRIES.map((d, i) => {
+    const rc = d.r === "Central" ? C.cool : d.r === "Lake Chad" ? C.blue : C.gold;
+    return /*#__PURE__*/React.createElement("tr", {
+      key: i,
+      style: {
+        borderBottom: "1px solid " + C.bdr + "22"
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "5px 6px",
+        color: C.tx,
+        fontWeight: 500
+      }
+    }, d.c), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "5px 6px",
+        color: rc,
+        fontSize: 10
+      }
+    }, d.r), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "5px 6px",
+        textAlign: "right",
+        color: C.txS,
+        fontFamily: "'IBM Plex Mono',monospace",
+        fontSize: 10
+      }
+    }, d.e.toLocaleString()), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "5px 6px",
+        textAlign: "right",
+        color: C.txS,
+        fontFamily: "'IBM Plex Mono',monospace",
+        fontSize: 10
+      }
+    }, d.k.toLocaleString()), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "5px 6px",
+        textAlign: "right",
+        color: C.txS,
+        fontFamily: "'IBM Plex Mono',monospace",
+        fontSize: 10
+      }
+    }, d.i.toLocaleString()), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "5px 6px",
+        textAlign: "right"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: "'IBM Plex Mono',monospace",
+        fontSize: 12,
+        fontWeight: 700,
+        color: d.cr >= 2.5 ? C.warm : d.cr >= 1.5 ? C.cool : C.txM
+      }
+    }, d.cr, "x")));
+  }))))), methTab === "coastal" && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "16px 20px 20px"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 11,
+      color: C.txS,
+      marginBottom: 14,
+      lineHeight: 1.5
+    }
+  }, "IEDs in Togo, Benin, Ghana, and C", "\u00f4", "te d'Ivoire without concurrent attacks predict violence that ", /*#__PURE__*/React.createElement("em", {
+    style: {
+      color: C.tx
+    }
+  }, "grows"), " over three weeks. 28 of 38 district-weeks occurred in 2023-2025."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      marginTop: 8,
+      flexWrap: "wrap"
+    }
+  }, COASTAL_IED.map((d, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      flex: "1 1 70px",
+      minWidth: 70,
+      background: C.bgA,
+      borderRadius: 4,
+      padding: "12px 8px",
+      textAlign: "center",
+      border: i === 0 ? "none" : "1px solid " + C.bdr,
+      borderTop: i > 0 ? "3px solid " + (i === 3 ? C.warm : C.gold) : "none"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'IBM Plex Mono',monospace",
+      fontSize: i === 0 ? 16 : 22,
+      fontWeight: 700,
+      color: i === 0 ? C.txM : i === 3 ? C.warm : C.gold
+    }
+  }, d.m, "x"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.txS,
+      marginTop: 4
+    }
+  }, d.w)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      padding: 12,
+      background: C.bgC,
+      borderRadius: 4,
+      borderLeft: "3px solid " + C.warm
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.warmLight,
+      marginBottom: 4
+    }
+  }, "Why this matters"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.tx,
+      lineHeight: 1.6
+    }
+  }, "In coastal countries, IEDs appear in relative isolation, marking the arrival of VE operational capability. The growing signal (5.2x to 7.3x) suggests emplacement followed by territorial consolidation. N=38 district-weeks. p ", "<", " 0.001 at all lags.")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      display: "flex",
+      gap: 6,
+      flexWrap: "wrap"
+    }
+  }, ["Togo", "Benin", "Ghana", "C\u00f4te d'Ivoire"].map(c => /*#__PURE__*/React.createElement("span", {
+    key: c,
+    style: {
+      padding: "3px 10px",
+      background: C.bgA,
+      borderRadius: 12,
+      fontSize: 10,
+      color: C.gold,
+      border: "1px solid " + C.bdr
+    }
+  }, c)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "8px 20px 12px",
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement(Btn, {
+    onClick: () => setShowMethodology(false),
+    style: {
+      fontSize: 11,
+      color: C.txM,
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontFamily: "'IBM Plex Sans',sans-serif"
+    }
+  }, "Collapse methodology ", "\u25B2")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "10px 20px",
+      borderTop: "1px solid " + C.bdr,
+      fontSize: 9,
+      color: C.txM,
+      lineHeight: 1.5
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      flexWrap: "wrap",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "100,184 events ", "\u00b7", " 13 countries ", "\u00b7", " 2010-2025 ", "\u00b7", " ACLED"), /*#__PURE__*/React.createElement("span", null, "All comparisons p ", "<", " 0.001")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 4
+    }
+  }, "Bonferroni-corrected at 0.05 family-wise (44 tests, threshold=0.0011). Baseline excludes composite district-weeks.")), /*#__PURE__*/React.createElement("style", {
+    dangerouslySetInnerHTML: {
+      __html: "@media(max-width:640px){.ews-lg{grid-template-columns:1fr !important;}}" + "@media print{*{background:#fff !important;color:#222 !important;border-color:#ccc !important;}svg line,svg path{stroke:#666 !important;}svg text{fill:#222 !important;}}"
+    }
+  }));
 }
-
-document.addEventListener('DOMContentLoaded',function(){
-  var el=document.getElementById('ews-viz-root');
-  if(el)ReactDOM.createRoot(el).render(<EWSViz/>);
+document.addEventListener('DOMContentLoaded', function () {
+  var el = document.getElementById('ews-viz-root');
+  if (el) ReactDOM.createRoot(el).render(/*#__PURE__*/React.createElement(EWSViz, null));
 });
 </script>
 
