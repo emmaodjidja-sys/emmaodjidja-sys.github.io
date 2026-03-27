@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRAXIS Evaluation Workbench</title>
+<meta name="description" content="Design a complete evaluation from scoping to reporting. Nine integrated stations guide you through the full evaluation lifecycle.">
+<link rel="icon" type="image/svg+xml" href="../logo.svg">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- React 18 (specific versions for SW caching) -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+
+<!-- SheetJS for Excel/XLSForm export (Station 2 + Station 5) -->
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- Workbench CSS -->
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/stations.css">
+<link rel="stylesheet" href="css/sensitivity.css">
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Foundation JS (dependency order) -->
+<script src="js/schema.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/staleness.js"></script>
+<script src="js/protection.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/router.js"></script>
+
+<!-- State management -->
+<script src="js/context.js"></script>
+
+<!-- Shell components (React.createElement, no JSX) -->
+<script src="js/components/Modal.js"></script>
+<script src="js/components/FileDropZone.js"></script>
+<script src="js/components/ToastNotification.js"></script>
+<script src="js/components/ProgressRing.js"></script>
+<script src="js/components/StationHeader.js"></script>
+<script src="js/components/StalenessWarning.js"></script>
+<script src="js/components/SensitivityBanner.js"></script>
+<script src="js/shell/TopBar.js"></script>
+<script src="js/shell/StationRail.js"></script>
+<script src="js/shell/ContextDrawer.js"></script>
+<script src="js/shell/Shell.js"></script>
+<script src="js/shell/EntryLanding.js"></script>
+
+<!-- Station scripts (added in Plan B/C) -->
+<!-- <script src="js/stations/station0/EvaluabilityScorer.js"></script> -->
+<!-- <script src="js/stations/station0/Station0.js"></script> -->
+
+<!-- Root app (must be last) -->
+<script src="js/app.js"></script>
+</body>
+</html>
