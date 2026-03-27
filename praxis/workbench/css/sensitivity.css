@@ -1,0 +1,20 @@
+.wb-sensitivity-banner {
+  padding: 6px 14px; font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.wb-sensitivity-banner--sensitive {
+  background: var(--sens-sensitive-bg); border-bottom: 1px solid var(--sens-sensitive-border);
+  color: #92400E;
+}
+.wb-sensitivity-banner--highly {
+  background: var(--sens-highly-bg); border-bottom: 1px solid var(--sens-highly-border);
+  color: #991B1B; animation: wb-sens-pulse 3s ease-in-out infinite;
+}
+@keyframes wb-sens-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+.wb-sensitivity-overlay {
+  border: 2px solid var(--red); border-radius: var(--radius-md);
+}

@@ -1,0 +1,200 @@
+/* ── Buttons ── */
+.wb-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600; border: none;
+  transition: all 0.15s; white-space: nowrap;
+}
+.wb-btn-primary { background: var(--navy); color: white; }
+.wb-btn-primary:hover { background: var(--navy-light); }
+.wb-btn-teal { background: var(--teal); color: white; }
+.wb-btn-teal:hover { background: var(--teal-dark); }
+.wb-btn-outline { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.wb-btn-outline:hover { border-color: var(--navy); background: #F5F5F5; }
+.wb-btn-ghost { background: transparent; color: var(--slate); }
+.wb-btn-ghost:hover { background: rgba(0,0,0,0.04); }
+.wb-btn-sm { padding: 5px 12px; font-size: 11px; }
+.wb-btn-danger { background: var(--red-light); color: var(--red); border: 1px solid #FECACA; }
+
+/* ── Badges & Pills ── */
+.wb-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 10px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+}
+.wb-badge-navy { background: var(--navy); color: white; }
+.wb-badge-teal { background: var(--teal-glow); color: var(--teal); }
+.wb-badge-green { background: var(--green-light); color: var(--green); }
+.wb-badge-amber { background: var(--amber-light); color: #92400E; }
+.wb-badge-red { background: var(--red-light); color: var(--red); }
+
+.wb-pill {
+  padding: 3px 8px; border-radius: 5px;
+  background: var(--bg); border: 1px solid var(--border);
+  font-size: 9px;
+}
+
+/* ── Tier pill ── */
+.wb-tier-pill {
+  padding: 3px 8px; border-radius: 8px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+}
+.wb-tier-pill[data-tier="foundation"] { background: var(--tier-foundation-bg); color: var(--tier-foundation); }
+.wb-tier-pill[data-tier="practitioner"] { background: var(--tier-practitioner-bg); color: var(--tier-practitioner); }
+.wb-tier-pill[data-tier="advanced"] { background: var(--tier-advanced-bg); color: var(--tier-advanced); }
+
+/* ── Form elements ── */
+.wb-label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--slate); margin-bottom: 6px;
+  letter-spacing: 0.03em; text-transform: uppercase;
+}
+.wb-input {
+  width: 100%; padding: 8px 12px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); font-size: 13px;
+  background: #F8FAFC; color: var(--text); transition: border-color 0.15s;
+}
+.wb-input:focus { outline: none; border-color: var(--teal); }
+.wb-textarea { resize: vertical; min-height: 60px; }
+.wb-helper { font-size: 10px; color: var(--slate-light); margin-top: 4px; }
+
+/* ── Chip (multi-select pills) ── */
+.wb-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border-radius: 16px;
+  font-size: 11px; font-weight: 500;
+  border: 1.5px solid var(--border); background: var(--surface);
+  cursor: pointer; transition: all 0.15s; user-select: none;
+}
+.wb-chip:hover { border-color: var(--teal); background: var(--teal-light); }
+.wb-chip.wb-chip--selected {
+  background: var(--navy); color: white; border-color: var(--navy); font-weight: 600;
+}
+
+/* ── Cards ── */
+.wb-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  border: 1px solid var(--border); padding: 14px 16px;
+  transition: all 0.15s;
+}
+.wb-card--interactive { cursor: pointer; }
+.wb-card--interactive:hover { border-color: var(--navy); box-shadow: var(--shadow-sm); }
+.wb-card--selected { border: 2px solid var(--navy); background: var(--bg); }
+
+/* ── Option card selector ── */
+.wb-option-card {
+  flex: 1; padding: 10px; border-radius: var(--radius-md);
+  border: 1.5px solid var(--border); text-align: center;
+  cursor: pointer; transition: all 0.15s;
+}
+.wb-option-card:hover { border-color: var(--navy); }
+.wb-option-card--selected { border: 2px solid var(--navy); background: var(--bg); }
+.wb-option-card--amber { border-color: var(--amber); background: #FFFBEB; }
+.wb-option-card--red { border-color: var(--red); background: var(--red-light); }
+
+/* ── Modal ── */
+.wb-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+}
+.wb-modal {
+  background: var(--surface); border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl); max-width: 90vw; max-height: 90vh;
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.wb-modal-header {
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  background: #F8FAFC; display: flex; align-items: center;
+  justify-content: space-between;
+}
+.wb-modal-body { padding: 18px; overflow-y: auto; flex: 1; }
+.wb-modal-footer {
+  padding: 12px 18px; border-top: 1px solid var(--border);
+  background: #FAFBFC; display: flex; justify-content: flex-end; gap: 8px;
+}
+
+/* ── Toast ── */
+.wb-toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+.wb-toast {
+  padding: 10px 16px; border-radius: var(--radius-md);
+  background: var(--navy); color: white; font-size: 12px; font-weight: 500;
+  box-shadow: var(--shadow-lg); animation: wb-toast-in 0.2s ease;
+}
+@keyframes wb-toast-in { from { opacity: 0; transform: translateY(10px); } }
+
+/* ── Progress ring ── */
+.wb-progress-ring { display: inline-flex; align-items: center; justify-content: center; position: relative; }
+.wb-progress-ring svg { transform: rotate(-90deg); }
+.wb-progress-ring-text {
+  position: absolute; font-size: 9px; font-weight: 700; color: var(--teal);
+}
+
+/* ── Station rail button ── */
+.wb-rail-btn {
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: transparent; position: relative;
+  font-size: 10px; font-weight: 600; color: #475569;
+  cursor: pointer; transition: all 0.15s;
+}
+.wb-rail-btn:hover { background: rgba(255,255,255,0.04); }
+.wb-rail-btn--active {
+  background: rgba(46,196,182,0.12);
+  border-left: 2px solid var(--teal);
+  color: var(--teal); font-weight: 700;
+}
+.wb-rail-btn--completed .wb-rail-check {
+  position: absolute; top: 1px; right: 1px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+}
+.wb-rail-btn--stale .wb-rail-stale-dot {
+  position: absolute; top: 2px; right: 2px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--stale-color);
+}
+
+/* ── Upstream context badges ── */
+.wb-context-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.wb-context-badge {
+  padding: 3px 8px; border-radius: 5px;
+  background: var(--bg); border: 1px solid var(--border);
+  font-size: 9px;
+}
+
+/* ── Guidance banner ── */
+.wb-guidance {
+  background: #F0FDF9; border: 1px solid #BBF7D0;
+  border-radius: var(--radius-md); padding: 8px 14px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+.wb-guidance-text { flex: 1; font-size: 11px; color: #166534; line-height: 1.4; }
+.wb-guidance-dismiss { font-size: 9px; color: #6EE7B7; cursor: pointer; white-space: nowrap; }
+.wb-guidance-close { color: #86EFAC; cursor: pointer; font-size: 14px; line-height: 1; background: none; border: none; }
+
+/* ── Phase indicator bar ── */
+.wb-phases { display: flex; align-items: center; margin-bottom: 16px; }
+.wb-phase {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; font-size: 11px;
+}
+.wb-phase:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.wb-phase:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.wb-phase--current { background: var(--navy); color: white; font-weight: 600; }
+.wb-phase--completed { background: var(--green-light); color: #059669; font-weight: 600; cursor: pointer; }
+.wb-phase--upcoming {
+  background: var(--bg); color: #CBD5E1;
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.wb-phase:last-child.wb-phase--upcoming { border-right: 1px solid var(--border); }
+.wb-phase-num {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 800;
+}
+.wb-phase--current .wb-phase-num { background: var(--teal); color: var(--navy); }
+.wb-phase--completed .wb-phase-num { background: var(--green); color: white; }
+.wb-phase--upcoming .wb-phase-num { border: 1.5px solid #CBD5E1; color: #CBD5E1; }

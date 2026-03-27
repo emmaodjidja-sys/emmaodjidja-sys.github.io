@@ -1,0 +1,73 @@
+:root {
+  /* ── Inherited from PRAXIS tools (must match exactly) ── */
+  --navy: #0B1A2E;
+  --navy-mid: #122240;
+  --navy-light: #1a3050;
+  --teal: #2EC4B6;
+  --teal-dark: #1a9e92;
+  --teal-light: #d0f0ed;
+  --teal-glow: rgba(46,196,182,0.15);
+  --slate: #64748B;
+  --slate-light: #94A3B8;
+  --bg: #F1F5F9;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --amber: #F59E0B;
+  --amber-light: #FEF3C7;
+  --red: #EF4444;
+  --red-light: #FEE2E2;
+  --green: #10B981;
+  --green-light: #D1FAE5;
+  --blue: #3B82F6;
+  --blue-light: #DBEAFE;
+  --purple: #8B5CF6;
+  --purple-light: #EDE9FE;
+
+  /* ── Workbench-specific tokens ── */
+  --wb-rail-bg: #0a1525;
+  --wb-rail-width: 48px;
+  --wb-topbar-height: 44px;
+  --wb-topbar-bg: #081420;
+  --wb-drawer-width-collapsed: 44px;
+  --wb-drawer-width-expanded: 320px;
+
+  /* Tier colors */
+  --tier-foundation: #10B981;
+  --tier-foundation-bg: rgba(16,185,129,0.12);
+  --tier-practitioner: #3B82F6;
+  --tier-practitioner-bg: rgba(59,130,246,0.12);
+  --tier-advanced: #8B5CF6;
+  --tier-advanced-bg: rgba(139,92,246,0.12);
+
+  /* Status */
+  --stale-color: #F59E0B;
+  --stale-bg: #FEF3C7;
+
+  /* Sensitivity */
+  --sens-sensitive-bg: #FEF3C7;
+  --sens-sensitive-border: #FDE68A;
+  --sens-highly-bg: #FEE2E2;
+  --sens-highly-border: #FECACA;
+
+  /* Selection/editing */
+  --edit-color: #3B82F6;
+  --edit-bg: #EFF6FF;
+
+  /* Typography */
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(11,26,46,0.06);
+  --shadow-md: 0 2px 8px rgba(11,26,46,0.08);
+  --shadow-lg: 0 4px 20px rgba(11,26,46,0.12);
+  --shadow-xl: 0 24px 80px rgba(0,0,0,0.4);
+}
