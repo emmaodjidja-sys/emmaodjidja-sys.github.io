@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Workbench Foundation Tests</title>
+<style>
+body { font-family: monospace; padding: 20px; background: #0B1A2E; color: #2EC4B6; }
+.pass { color: #10B981; } .fail { color: #EF4444; }
+h2 { color: white; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>PRAXIS Workbench — Foundation Tests</h1>
+<div id="results"></div>
+<script src="../js/schema.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/staleness.js"></script>
+<script src="../js/protection.js"></script>
+<script>
+var results = document.getElementById('results');
+var pass = 0, fail = 0;
+
+function assert(name, condition) {
+  if (condition) { pass++; log(name, true); }
+  else { fail++; log(name, false); }
+}
+
+function log(name, ok) {
+  var el = document.createElement('div');
+  el.className = ok ? 'pass' : 'fail';
+  el.textContent = (ok ? '✓ ' : '✗ ') + name;
+  results.appendChild(el);
+}
+
+function section(name) {
+  var el = document.createElement('h2');
+  el.textContent = name;
+  results.appendChild(el);
+}
+
+// ── Schema tests ──
+section('Schema');
+var ctx = PraxisSchema.createEmptyContext();
+assert('createEmptyContext returns object', typeof ctx === 'object');
+assert('version is 1.0', ctx.version === '1.0');
+assert('has project_meta', typeof ctx.project_meta === 'object');
+assert('has evaluability with dimensions array', Array.isArray(ctx.evaluability.dimensions));
+assert('evaluability has 5 dimensions', ctx.evaluability.dimensions.length === 5);
+assert('comparison dimension max is 20', ctx.evaluability.dimensions[4].max === 20);
+assert('staleness object has 9 stations', Object.keys(ctx.staleness).length === 9);
+assert('STATION_LABELS has 9 entries', PraxisSchema.STATION_LABELS.length === 9);
+assert('STATION_FIELDS[0] includes project_meta', PraxisSchema.STATION_FIELDS[0].indexOf('project_meta') !== -1);
+assert('STATION_FIELDS[2] includes evaluation_matrix', PraxisSchema.STATION_FIELDS[2].indexOf('evaluation_matrix') !== -1);
+
+var ctx2 = PraxisSchema.createEmptyContext();
+ctx2.project_meta.title = 'Test';
+assert('createEmptyContext returns independent objects', ctx.project_meta.title === '');
+
+// ── Utils tests ──
+section('Utils');
+assert('uid generates unique strings', PraxisUtils.uid('t_') !== PraxisUtils.uid('t_'));
+assert('uid has prefix', PraxisUtils.uid('test_').indexOf('test_') === 0);
+assert('clamp low', PraxisUtils.clamp(-5, 0, 100) === 0);
+assert('clamp high', PraxisUtils.clamp(150, 0, 100) === 100);
+assert('clamp normal', PraxisUtils.clamp(50, 0, 100) === 50);
+assert('deepMerge shallow', PraxisUtils.deepMerge({a: 1}, {b: 2}).b === 2);
+assert('deepMerge preserves', PraxisUtils.deepMerge({a: 1}, {b: 2}).a === 1);
+assert('deepMerge nested', PraxisUtils.deepMerge({a: {x: 1, y: 2}}, {a: {y: 3}}).a.x === 1);
+assert('deepMerge nested override', PraxisUtils.deepMerge({a: {x: 1, y: 2}}, {a: {y: 3}}).a.y === 3);
+assert('deepMerge does not mutate', function() { var o = {a: 1}; PraxisUtils.deepMerge(o, {b: 2}); return o.b === undefined; }());
+assert('formatDate handles null', PraxisUtils.formatDate(null) === '');
+
+// ── Staleness tests ──
+section('Staleness');
+var fresh = { 0:false, 1:false, 2:false, 3:false, 4:false, 5:false, 6:false, 7:false, 8:false };
+
+var after0 = PraxisStaleness.computeStaleness(0, fresh);
+assert('Station 0 save: Station 0 not stale', after0[0] === false);
+assert('Station 0 save: Station 1 stale (reads project_meta)', after0[1] === true);
+assert('Station 0 save: Station 2 stale (reads project_meta, tor_constraints, evaluability)', after0[2] === true);
+assert('Station 0 save: Station 3 stale (reads tor_constraints, project_meta)', after0[3] === true);
+assert('Station 0 save: Station 5 not stale (reads evaluation_matrix only)', after0[5] === false);
+
+var after2 = PraxisStaleness.computeStaleness(2, fresh);
+assert('Station 2 save: Station 4 stale (reads evaluation_matrix)', after2[4] === true);
+assert('Station 2 save: Station 5 stale (reads evaluation_matrix)', after2[5] === true);
+assert('Station 2 save: Station 1 not stale', after2[1] === false);
+
+// ── Protection tests ──
+section('Protection');
+var stdCtx = PraxisSchema.createEmptyContext();
+assert('standard context is not sensitive', PraxisProtection.isSensitive(stdCtx) === false);
+assert('standard context is not highly sensitive', PraxisProtection.isHighlySensitive(stdCtx) === false);
+assert('standard context allows AI', PraxisProtection.getAiPermission(stdCtx) === true);
+assert('standard guidance is empty', PraxisProtection.getSharingGuidance(stdCtx) === '');
+
+var sensCtx = PraxisSchema.createEmptyContext();
+sensCtx.protection.sensitivity = 'sensitive';
+assert('sensitive context is sensitive', PraxisProtection.isSensitive(sensCtx) === true);
+assert('sensitive context is not highly sensitive', PraxisProtection.isHighlySensitive(sensCtx) === false);
+assert('sensitive guidance is non-empty', PraxisProtection.getSharingGuidance(sensCtx).length > 0);
+
+var highCtx = PraxisSchema.createEmptyContext();
+highCtx.protection.sensitivity = 'highly_sensitive';
+assert('highly sensitive context is sensitive', PraxisProtection.isSensitive(highCtx) === true);
+assert('highly sensitive context is highly sensitive', PraxisProtection.isHighlySensitive(highCtx) === true);
+
+// ── Summary ──
+section('Summary');
+var summary = document.createElement('div');
+summary.style.fontSize = '16px';
+summary.style.marginTop = '10px';
+summary.innerHTML = '<span class="pass">' + pass + ' passed</span> / <span class="fail">' + fail + ' failed</span> / ' + (pass + fail) + ' total';
+results.appendChild(summary);
+</script>
+</body>
+</html>
