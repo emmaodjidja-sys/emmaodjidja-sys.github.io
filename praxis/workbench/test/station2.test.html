@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Station 2 — MatrixGenerator Tests</title>
+<style>
+body { font-family: monospace; padding: 20px; background: #0B1A2E; color: #2EC4B6; }
+.pass { color: #10B981; } .fail { color: #EF4444; }
+h2 { color: white; margin-top: 20px; }
+.summary { margin-top: 24px; padding: 12px 16px; border-radius: 6px; font-size: 16px; font-weight: bold; }
+.summary.all-pass { background: #065F46; color: #A7F3D0; }
+.summary.has-fail { background: #7F1D1D; color: #FCA5A5; }
+</style>
+</head>
+<body>
+<h1>PRAXIS Workbench — Station 2 MatrixGenerator Tests</h1>
+<div id="results"></div>
+<script src="../data/indicator_bank.js"></script>
+<script src="../js/schema.js"></script>
+<script src="../js/stations/station2/MatrixGenerator.js"></script>
+<script>
+var results = document.getElementById('results');
+var pass = 0, fail = 0;
+
+function assert(name, condition) {
+  if (condition) { pass++; log(name, true); }
+  else { fail++; log(name, false); }
+}
+
+function log(name, ok) {
+  var el = document.createElement('div');
+  el.className = ok ? 'pass' : 'fail';
+  el.textContent = (ok ? '\u2713 ' : '\u2717 ') + name;
+  results.appendChild(el);
+}
+
+function section(name) {
+  var el = document.createElement('h2');
+  el.textContent = name;
+  results.appendChild(el);
+}
+
+// ── Test data ──
+var samplePraxisToc = {
+  title: 'Sample ToC',
+  narrative: { description: '', context: '', theory: '', systemAssumptions: ['Services remain funded'] },
+  nodes: [
+    { id: 'g1', type: 'goal', label: 'Reduced HIV incidence in target districts' },
+    { id: 'oc1', type: 'outcome', label: 'Increased ART adherence among PLHIV' },
+    { id: 'oc2', type: 'outcome', label: 'Improved community-based testing uptake' },
+    { id: 'op1', type: 'output', label: 'Training of 200 community health workers' },
+    { id: 'op2', type: 'output', label: 'Distribution of HIV self-test kits' },
+    { id: 'a1', type: 'assumption', label: 'CHWs remain motivated and retained' }
+  ],
+  connections: [
+    { source: 'op1', target: 'oc1' },
+    { source: 'op2', target: 'oc2' },
+    { source: 'oc1', target: 'g1' },
+    { source: 'oc2', target: 'g1' }
+  ],
+  knowledge_sources: {},
+  completed_at: null
+};
+
+var samplePraxisContext = {
+  project_meta: {
+    title: 'HIV Prevention Evaluation',
+    programme_name: 'Test Programme',
+    organisation: 'Test Org',
+    country: 'Ghana',
+    health_areas: ['hiv', 'hss', 'cross_cutting'],
+    frameworks: ['pepfar', 'global_fund'],
+    evaluation_type: 'outcome',
+    operating_context: 'stable'
+  },
+  tor_constraints: {
+    raw_text: '',
+    evaluation_purpose: ['accountability'],
+    data_available: 'routine'
+  }
+};
+
+// ============================================================================
+// 1. praxisTocToMatrixToc
+// ============================================================================
+section('praxisTocToMatrixToc');
+
+var matrixToc = MatrixGenerator.praxisTocToMatrixToc(samplePraxisToc);
+assert('Returns an object', typeof matrixToc === 'object');
+assert('Extracts goal text', matrixToc.goal === 'Reduced HIV incidence in target districts');
+assert('Finds 2 outcomes', matrixToc.outcomes.length === 2);
+assert('First outcome text matches', matrixToc.outcomes[0].text === 'Increased ART adherence among PLHIV');
+assert('Second outcome text matches', matrixToc.outcomes[1].text === 'Improved community-based testing uptake');
+assert('First outcome has 1 output (from connections)', matrixToc.outcomes[0].outputs.length === 1);
+assert('First outcome output is CHW training', matrixToc.outcomes[0].outputs[0] === 'Training of 200 community health workers');
+assert('Second outcome output is self-test kits', matrixToc.outcomes[1].outputs[0] === 'Distribution of HIV self-test kits');
+assert('Extracts assumptions from nodes + narrative', matrixToc.assumptions.length === 2);
+assert('Includes node assumption', matrixToc.assumptions[0] === 'CHWs remain motivated and retained');
+assert('Includes narrative assumption', matrixToc.assumptions[1] === 'Services remain funded');
+
+// Edge case: null input
+var emptyToc = MatrixGenerator.praxisTocToMatrixToc(null);
+assert('Null input returns empty goal', emptyToc.goal === '');
+assert('Null input returns empty outcomes', emptyToc.outcomes.length === 0);
+
+// Edge case: no connections
+var noConnToc = MatrixGenerator.praxisTocToMatrixToc({
+  nodes: [
+    { id: 'g1', type: 'goal', label: 'Some goal' },
+    { id: 'oc1', type: 'outcome', label: 'Some outcome' }
+  ],
+  connections: []
+});
+assert('No connections still finds outcomes', noConnToc.outcomes.length === 1);
+assert('No connections outcome has no outputs', noConnToc.outcomes[0].outputs.length === 0);
+
+// ============================================================================
+// 2. praxisContextToMatrixContext
+// ============================================================================
+section('praxisContextToMatrixContext');
+
+var matrixCtx = MatrixGenerator.praxisContextToMatrixContext(samplePraxisContext);
+assert('Returns an object', typeof matrixCtx === 'object');
+assert('healthAreas has 3 items', matrixCtx.healthAreas.length === 3);
+assert('healthAreas includes hiv', matrixCtx.healthAreas.indexOf('hiv') >= 0);
+assert('frameworks has 2 items', matrixCtx.frameworks.length === 2);
+assert('frameworks includes pepfar', matrixCtx.frameworks.indexOf('pepfar') >= 0);
+assert('evaluationType is outcome', matrixCtx.evaluationType === 'outcome');
+assert('operatingContext is stable', matrixCtx.operatingContext === 'stable');
+assert('dacCriteria defaults to all 6', matrixCtx.dacCriteria.length === 6);
+
+// Edge case: null input
+var emptyCtx = MatrixGenerator.praxisContextToMatrixContext(null);
+assert('Null input returns empty healthAreas', emptyCtx.healthAreas.length === 0);
+assert('Null input returns empty frameworks', emptyCtx.frameworks.length === 0);
+
+// ============================================================================
+// 3. generateEQSuggestions
+// ============================================================================
+section('generateEQSuggestions');
+
+// With no existing rows, should get suggestions for all DAC criteria x all outcomes + normative
+var suggestions = MatrixGenerator.generateEQSuggestions(samplePraxisToc, matrixCtx, []);
+assert('Returns an array', Array.isArray(suggestions));
+assert('Has suggestions (> 0)', suggestions.length > 0);
+
+// 2 outcomes x 6 DAC criteria = 12 + 2 normative = 14
+assert('Correct count: 2 outcomes x 6 criteria + 2 normative = 14', suggestions.length === 14);
+
+// Check that all are marked recommended
+var allRecommended = suggestions.every(function(s) { return s.recommended === true; });
+assert('All suggestions are marked recommended', allRecommended);
+
+// Check normative questions are present
+var normative = suggestions.filter(function(s) { return s.isNormative; });
+assert('Has 2 normative questions', normative.length === 2);
+assert('Gender/equity normative question present', normative.some(function(s) {
+  return s.question.indexOf('gender') >= 0;
+}));
+assert('Do No Harm normative question present', normative.some(function(s) {
+  return s.question.indexOf('unintended negative') >= 0;
+}));
+
+// Check that suggestions have correct structure
+var first = suggestions[0];
+assert('Suggestion has criterion field', typeof first.criterion === 'string');
+assert('Suggestion has question field', typeof first.question === 'string');
+assert('Suggestion has linkedOutcome field', first.linkedOutcome !== undefined);
+assert('Suggestion has isNormative field', typeof first.isNormative === 'boolean');
+
+// Non-normative suggestions should have linkedOutcome
+var nonNormative = suggestions.filter(function(s) { return !s.isNormative; });
+assert('Non-normative suggestions have linkedOutcome', nonNormative.every(function(s) {
+  return typeof s.linkedOutcome === 'string' && s.linkedOutcome.length > 0;
+}));
+
+// Test filtering: if effectiveness is already covered for outcome 1, should be excluded
+var existingRows = [
+  { criterion: 'effectiveness', question: 'To what extent has the programme contributed to achieving Increased ART adherence among PLHIV?' }
+];
+var filtered = MatrixGenerator.generateEQSuggestions(samplePraxisToc, matrixCtx, existingRows);
+assert('Filtered suggestions have fewer items', filtered.length < suggestions.length);
+assert('Effectiveness for outcome 1 is filtered out', !filtered.some(function(s) {
+  return s.criterion === 'effectiveness' && s.linkedOutcome === 'Increased ART adherence among PLHIV';
+}));
+
+// Test with empty ToC
+var emptySuggestions = MatrixGenerator.generateEQSuggestions({ nodes: [], connections: [] }, matrixCtx, []);
+assert('Empty ToC returns only normative questions', emptySuggestions.length === 2);
+
+// ============================================================================
+// 4. generateMatrix
+// ============================================================================
+section('generateMatrix');
+
+var matrix = MatrixGenerator.generateMatrix(matrixToc, matrixCtx);
+assert('generateMatrix returns an array', Array.isArray(matrix));
+assert('Matrix has rows (> 0)', matrix.length > 0);
+
+// Check row structure
+var row = matrix[0];
+assert('Row has id', typeof row.id === 'string');
+assert('Row has criterion', typeof row.criterion === 'string');
+assert('Row has question', typeof row.question === 'string');
+assert('Row has subQuestions array', Array.isArray(row.subQuestions));
+assert('Row has indicators array', Array.isArray(row.indicators));
+assert('Row has dataSources array', Array.isArray(row.dataSources));
+assert('Row has disaggregation array', Array.isArray(row.disaggregation));
+assert('Row has judgementCriteria', typeof row.judgementCriteria === 'string');
+assert('Row has rationale', typeof row.rationale === 'string');
+
+// Check we have multiple criteria represented
+var criteria = {};
+matrix.forEach(function(r) { criteria[r.criterion] = true; });
+var criteriaKeys = Object.keys(criteria);
+assert('Matrix covers multiple DAC criteria', criteriaKeys.length >= 4);
+assert('Matrix includes relevance', criteria.relevance === true);
+assert('Matrix includes effectiveness', criteria.effectiveness === true);
+
+// Check effectiveness has outcome-specific questions
+var effRows = matrix.filter(function(r) { return r.criterion === 'effectiveness'; });
+assert('Has multiple effectiveness rows', effRows.length >= 3);
+
+// Test flattenMatrixForExport
+var flat = MatrixGenerator.flattenMatrixForExport(matrix);
+assert('flattenMatrixForExport returns array', Array.isArray(flat));
+assert('Flat row count matches matrix', flat.length === matrix.length);
+var flatRow = flat[0];
+assert('Flat row has EQ # field', typeof flatRow['EQ #'] === 'string');
+assert('Flat row has OECD-DAC Criterion', typeof flatRow['OECD-DAC Criterion'] === 'string');
+assert('Flat row has Evaluation Question', typeof flatRow['Evaluation Question'] === 'string');
+assert('Flat row has Sub-Questions', typeof flatRow['Sub-Questions'] === 'string');
+assert('Flat row has Indicators', typeof flatRow['Indicators'] === 'string');
+
+// ============================================================================
+// 5. matchIndicators
+// ============================================================================
+section('matchIndicators');
+
+var bankLoaded = window.PRAXIS_INDICATOR_BANK && window.PRAXIS_INDICATOR_BANK.INDICATOR_BANK && window.PRAXIS_INDICATOR_BANK.INDICATOR_BANK.length > 0;
+assert('INDICATOR_BANK is loaded with indicators', bankLoaded);
+
+if (bankLoaded) {
+  var testEq = {
+    criterion: 'effectiveness',
+    question: 'To what extent has the programme contributed to achieving increased ART adherence among PLHIV?',
+    _outcomeText: 'Increased ART adherence among PLHIV'
+  };
+  var matched = MatrixGenerator.matchIndicators(testEq, matrixCtx);
+  assert('matchIndicators returns an array', Array.isArray(matched));
+  assert('Matched indicators have matchScore', matched.length === 0 || typeof matched[0].matchScore === 'number');
+  assert('Matched indicators are sorted by score (desc)', matched.length < 2 || matched[0].matchScore >= matched[1].matchScore);
+  assert('Matched indicators have source=auto', matched.length === 0 || matched[0].source === 'auto');
+  assert('Returns at most 10 indicators', matched.length <= 10);
+  assert('All scores > 20', matched.every(function(m) { return m.matchScore > 20; }));
+
+  // HIV-specific: should find HIV indicators
+  var hasHivIndicator = matched.some(function(m) {
+    return m.healthAreas && m.healthAreas.indexOf('hiv') >= 0;
+  });
+  assert('Finds HIV-related indicators for HIV question', hasHivIndicator);
+
+  // Test with relevance criterion
+  var relEq = { criterion: 'relevance', question: 'Is the programme relevant?' };
+  var relMatched = MatrixGenerator.matchIndicators(relEq, matrixCtx);
+  assert('matchIndicators works for relevance criterion', Array.isArray(relMatched));
+}
+
+// ============================================================================
+// Integration: adapter pipeline
+// ============================================================================
+section('Integration: Adapter Pipeline');
+
+var adaptedToc = MatrixGenerator.praxisTocToMatrixToc(samplePraxisToc);
+var adaptedCtx = MatrixGenerator.praxisContextToMatrixContext(samplePraxisContext);
+var fullMatrix = MatrixGenerator.generateMatrix(adaptedToc, adaptedCtx);
+assert('Full pipeline: adapted inputs produce matrix', fullMatrix.length > 0);
+assert('Full pipeline: matrix rows have indicators', fullMatrix.some(function(r) { return r.indicators.length > 0; }));
+
+// EQ suggestions should filter matrix rows
+var eqSuggestions = MatrixGenerator.generateEQSuggestions(samplePraxisToc, adaptedCtx, fullMatrix);
+assert('EQ suggestions filter existing matrix rows', eqSuggestions.length < 14);
+
+// ── Summary ──
+var summaryEl = document.createElement('div');
+summaryEl.className = 'summary ' + (fail === 0 ? 'all-pass' : 'has-fail');
+summaryEl.textContent = pass + ' passed, ' + fail + ' failed — ' + (fail === 0 ? 'ALL TESTS PASS' : fail + ' FAILURE(S)');
+results.appendChild(summaryEl);
+</script>
+</body>
+</html>
