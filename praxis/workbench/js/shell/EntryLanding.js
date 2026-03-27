@@ -52,12 +52,12 @@
       return PraxisContext.hasSavedProject();
     }, []);
 
-    // Station preview for left panel
+    // Station preview for left panel — uniform color, opacity fade for depth-of-field
     var stationPreview = LABELS.map(function(name, i) {
-      var opacity = i < 4 ? 1 : Math.max(0.25, 1 - (i - 3) * 0.18);
+      var opacity = Math.max(0.25, 1 - i * 0.09);
       return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', opacity: opacity } },
-        h('span', { style: { fontSize: '11px', fontWeight: 700, color: i < 4 ? '#2EC4B6' : '#475569', minWidth: '16px' } }, i),
-        h('span', { style: { fontSize: '12px', color: i < 4 ? '#E2E8F0' : '#64748B' } }, name)
+        h('span', { style: { fontSize: '11px', fontWeight: 700, color: '#2EC4B6', minWidth: '16px' } }, i),
+        h('span', { style: { fontSize: '12px', color: '#CBD5E1' } }, name)
       );
     });
 
@@ -131,25 +131,29 @@
       );
 
     } else {
-      // Default: action cards
+      // Default: action cards — accent colors mapped to design system tokens
       var cards = [
         h(ActionCard, { key: 'new', title: '+ ' + t('landing.new'), desc: t('landing.new_desc'), accent: '#2EC4B6', onClick: function() { setMode('tier'); } }),
         h(ActionCard, { key: 'open', title: t('landing.open'), desc: t('landing.open_desc'), accent: '#3B82F6', onClick: function() { setMode('open'); } }),
-        h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: '#A855F7', onClick: function() { setMode('quick'); } })
+        h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: '#8B5CF6', onClick: function() { setMode('quick'); } })
       ];
 
-      // Continue card (only if saved data exists)
+      // Continue card (only if saved project has actual data)
       if (hasSaved) {
+        var meta = PraxisContext.getSavedProjectMeta();
+        var metaLine = meta
+          ? meta.name + ' \u00B7 Station ' + meta.station + ' (' + meta.stationName + ')' + (meta.updatedAt ? ' \u00B7 ' + PraxisUtils.formatDate(meta.updatedAt) : '')
+          : 'Resume saved project';
         cards.push(h(ActionCard, {
-          key: 'continue', title: t('landing.continue'), accent: '#22C55E',
+          key: 'continue', title: t('landing.continue'), accent: '#10B981',
           onClick: function() {
             var saved = PraxisContext.loadSavedProject();
             if (saved) dispatch({ type: AT.LOAD_FILE, context: saved });
           }
         },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' } },
-            h('span', { style: { width: 6, height: 6, borderRadius: '50%', background: '#22C55E', display: 'inline-block' } }),
-            h('span', { style: { fontSize: '11px', color: '#CBD5E1' } }, 'Resume saved project')
+            h('span', { style: { width: 6, height: 6, borderRadius: '50%', background: '#10B981', display: 'inline-block' } }),
+            h('span', { style: { fontSize: '11px', color: '#CBD5E1' } }, metaLine)
           )
         ));
       }

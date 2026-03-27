@@ -106,10 +106,41 @@
       var saved = localStorage.getItem('praxis-workbench');
       if (saved) {
         var parsed = JSON.parse(saved);
-        return parsed && parsed.schema === 'praxis-workbench';
+        // Must have valid schema AND actual project data (not just an empty context)
+        return parsed && parsed.schema === 'praxis-workbench' && parsed.project_meta && parsed.project_meta.programme_name !== '';
       }
     } catch (e) {}
     return false;
+  }
+
+  function getSavedProjectMeta() {
+    try {
+      var saved = localStorage.getItem('praxis-workbench');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (parsed && parsed.schema === 'praxis-workbench' && parsed.project_meta && parsed.project_meta.programme_name) {
+          // Find last active station (highest completed or first incomplete)
+          var lastStation = 0;
+          for (var i = 8; i >= 0; i--) {
+            var fields = PraxisSchema.STATION_FIELDS[i];
+            for (var j = 0; j < fields.length; j++) {
+              if (parsed[fields[j]] && parsed[fields[j]].completed_at) {
+                lastStation = Math.min(i + 1, 8);
+                break;
+              }
+            }
+            if (lastStation > 0) break;
+          }
+          return {
+            name: parsed.project_meta.programme_name || parsed.project_meta.title || 'Untitled',
+            station: lastStation,
+            stationName: PraxisSchema.STATION_LABELS[lastStation],
+            updatedAt: parsed.updated_at
+          };
+        }
+      }
+    } catch (e) {}
+    return null;
   }
 
   function loadSavedProject() {
@@ -128,6 +159,7 @@
     reducer: reducer,
     getInitialState: getInitialState,
     hasSavedProject: hasSavedProject,
+    getSavedProjectMeta: getSavedProjectMeta,
     loadSavedProject: loadSavedProject,
     defaultUI: defaultUI
   };
