@@ -132,8 +132,8 @@
         h('span', { style: { fontSize: '11px', color: '#64748B' } }, 'Phase 1 of 3 \u00B7 Programme Details'),
         h('div', { style: { display: 'flex', gap: '8px' } },
           h('button', { className: 'wb-btn wb-btn-outline', onClick: function() {
-            // Save draft to localStorage
-            try { localStorage.setItem('praxis-wb-draft-p1', JSON.stringify(data)); } catch(e) {}
+            // Draft is auto-saved by app.js — this is informational
+            if (props.onShowToast) props.onShowToast('Draft saved automatically');
           } }, 'Save Draft'),
           h('button', { className: 'wb-btn wb-btn-primary', onClick: onContinue }, 'Review & Continue \u2192')
         )

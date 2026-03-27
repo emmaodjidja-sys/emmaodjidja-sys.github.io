@@ -97,7 +97,7 @@
         onAdd: function(nr) { setRows(function(p) { return p.concat(nr); }); setShowAddModal(false); },
         onClose: function() { setShowAddModal(false); } }) : null,
       indBankEqId ? h(IndicatorSelector, { eqId: indBankEqId, context: context,
-        currentIndicators: selRow ? selRow.indicators : [],
+        currentIndicators: (function() { var bankRow = indBankEqId ? rows.filter(function(r) { return r.id === indBankEqId; })[0] : null; return bankRow ? bankRow.indicators : []; })(),
         onAdd: addIndicator, onClose: function() { setIndBankEqId(null); } }) : null);
   }
 

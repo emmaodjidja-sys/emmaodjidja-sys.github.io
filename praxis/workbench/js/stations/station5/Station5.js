@@ -108,7 +108,7 @@
         h('table', { style: { width: '100%', fontSize: 12, borderCollapse: 'collapse' } },
           h('thead', null, h('tr', null,
             h('th', { style: { textAlign: 'left', padding: '6px 8px', borderBottom: '2px solid #E2E8F0', fontSize: 11, color: '#6B7280' } }, 'EQ'),
-            localInst.map(function(inst) { return h('th', { key: inst.id, style: { textAlign: 'center', padding: '6px 8px', borderBottom: '2px solid #E2E8F0', fontSize: 11, color: '#6B7280' } }, inst.type.toUpperCase()); }))),
+            localInst.map(function(inst) { return h('th', { key: inst.id, style: { textAlign: 'center', padding: '6px 8px', borderBottom: '2px solid #E2E8F0', fontSize: 11, color: '#6B7280' } }, (inst.type || 'survey').toUpperCase()); }))),
           h('tbody', null, eqCoverage.map(function(ec) {
             var noCoverage = Object.keys(ec.covered).length === 0;
             return h('tr', { key: ec.row.id, style: { background: noCoverage ? '#FFFBEB' : 'transparent' } },

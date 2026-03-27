@@ -188,6 +188,7 @@
     }
     if (rt === 'select_one' || rt === 'select_multiple') {
       var opts = cfg.options || [];
+      if (opts.length === 0) return 'text'; // fallback for empty options
       var ln = getListName(q, customLists);
       if (STANDARD_CHOICES[ln]) usedStandardLists[ln] = true;
       return (rt === 'select_one' ? 'select_one ' : 'select_multiple ') + ln;

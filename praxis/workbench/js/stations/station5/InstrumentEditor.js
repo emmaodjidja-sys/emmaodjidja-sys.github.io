@@ -23,12 +23,18 @@
         break;
       }
     }
-    // Auto-select first question if none active
+
+    // Auto-select first question if none active (effect must be at top level — no conditional)
+    React.useEffect(function() {
+      if (!activeQId && allQuestions.length) {
+        setActiveQId(allQuestions[0].q.id);
+      }
+    }, [allQuestions.length]);
+
     if (!activeQuestion && allQuestions.length) {
       activeQuestion = allQuestions[0].q;
       activeSection = allQuestions[0].sec;
       if (allQuestions.length > 1) nextQuestion = allQuestions[1].q;
-      React.useEffect(function() { setActiveQId(allQuestions[0].q.id); }, []);
     }
 
     function toggleSection(secId) {

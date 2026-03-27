@@ -9,7 +9,7 @@
   // Response type suggestion — matches indicator text to question types
   // ============================================================================
   function suggestResponseType(indicator) {
-    var text = (typeof indicator === 'string' ? indicator : (indicator && indicator.text) || '').toLowerCase();
+    var text = (typeof indicator === 'string' ? indicator : (indicator && (indicator.name || indicator.text)) || '').toLowerCase();
 
     if (/%|rate|proportion|number of|count|index|ratio/.test(text)) {
       return { type: 'numeric', config: { min: 0 }, reason: 'count/rate indicator \u2192 numeric' };
@@ -73,7 +73,7 @@
     var limit = Math.min(indicators.length, 3);
     for (var i = 0; i < limit; i++) {
       var ind = indicators[i];
-      var indText = ind.text || ind.label || '';
+      var indText = ind.name || ind.text || ind.label || '';
       var suggested = suggestResponseType(ind);
 
       var qText;
