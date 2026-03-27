@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Station 0 Tests — Evaluability Scorer</title>
+<style>
+body { font-family: monospace; padding: 20px; background: #0B1A2E; color: #2EC4B6; }
+.pass { color: #10B981; }
+.fail { color: #EF4444; }
+h2 { color: white; margin-top: 20px; }
+#summary { margin-top: 24px; font-size: 1.1em; }
+</style>
+</head>
+<body>
+<h1>Station 0 Tests — Evaluability Scorer</h1>
+<div id="results"></div>
+<div id="summary"></div>
+
+<script src="../js/schema.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/staleness.js"></script>
+<script src="../js/stations/station0/EvaluabilityScorer.js"></script>
+<script>
+'use strict';
+
+// ── Test harness ──────────────────────────────────────────────────────────────
+
+var results = document.getElementById('results');
+var pass = 0, fail = 0;
+
+function assert(name, condition) {
+  if (condition) { pass++; log(name, true); }
+  else           { fail++; log(name, false); }
+}
+
+function log(name, ok) {
+  var el = document.createElement('div');
+  el.className = ok ? 'pass' : 'fail';
+  el.textContent = (ok ? '\u2713 ' : '\u2717 ') + name;
+  results.appendChild(el);
+}
+
+function section(name) {
+  var el = document.createElement('h2');
+  el.textContent = name;
+  results.appendChild(el);
+}
+
+// Deep-clone a plain object so we can override fields without mutation
+function extend(base, overrides) {
+  var copy = JSON.parse(JSON.stringify(base));
+  Object.keys(overrides).forEach(function(k) { copy[k] = overrides[k]; });
+  return copy;
+}
+
+// ── Base fixtures ─────────────────────────────────────────────────────────────
+
+var baseTor = {
+  comparison_feasibility: 'randomisable',
+  data_available: 'baseline_endline',
+  causal_inference_level: 'attribution',
+  evaluation_purpose: ['impact'],
+  programme_complexity: '',
+  unit_of_intervention: '',
+  geographic_scope: '',
+  target_population: '',
+  evaluation_questions_raw: [],
+  raw_text: ''
+};
+
+var baseMeta = {
+  operating_context: 'stable',
+  budget: 'medium',
+  timeline: 'medium',
+  programme_maturity: 'scaling',
+  sectors: [],
+  country: '',
+  programme_name: '',
+  organisation: '',
+  title: '',
+  primary_sector: null,
+  health_areas: [],
+  frameworks: [],
+  evaluation_type: '',
+  sector_template: '',
+  languages: ['en']
+};
+
+var sd = EvaluabilityScorer.scoreDimension;
+
+// ── 1. Comparison Feasibility — base scores ───────────────────────────────────
+
+section('1. Comparison Feasibility — base scores');
+
+assert('randomisable → 20',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'randomisable' }), baseMeta) === 20);
+
+assert('natural → 14',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'natural' }), baseMeta) === 14);
+
+assert('threshold → 10 (no baseline_endline)',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'threshold', data_available: 'timeseries' }), baseMeta) === 10);
+
+assert('none → 3 (causal not description)',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'none', causal_inference_level: 'attribution' }), baseMeta) === 3);
+
+// ── 2. Comparison Feasibility — cross-dimension modifiers ─────────────────────
+
+section('2. Comparison Feasibility — cross-dimension modifiers');
+
+assert('randomisable + humanitarian → 17 (20 - 3)',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'randomisable' }),
+     extend(baseMeta, { operating_context: 'humanitarian' })) === 17);
+
+assert('natural + fragile + multi-country → 12 (14 - 2)',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'natural' }),
+     extend(baseMeta, { operating_context: 'fragile', country: 'Burkina Faso, Mali, Niger' })) === 12);
+
+assert('natural + fragile + single-country → 14 (no modifier)',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'natural' }),
+     extend(baseMeta, { operating_context: 'fragile', country: 'Burkina Faso' })) === 14);
+
+assert('threshold + baseline_endline → 12 (10 + 2)',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'threshold', data_available: 'baseline_endline' }),
+     baseMeta) === 12);
+
+assert('none + causal description → 5 (3 + 2)',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'none', causal_inference_level: 'description' }),
+     baseMeta) === 5);
+
+assert('none + causal attribution → 3 (no +2 modifier)',
+  sd('comparison', extend(baseTor, { comparison_feasibility: 'none', causal_inference_level: 'attribution' }),
+     baseMeta) === 3);
+
+// ── 3. Data Availability — base scores ───────────────────────────────────────
+
+section('3. Data Availability — base scores');
+
+assert('baseline_endline → 25',
+  sd('data', extend(baseTor, { data_available: 'baseline_endline' }), baseMeta) === 25);
+
+assert('timeseries → 18',
+  sd('data', extend(baseTor, { data_available: 'timeseries' }), baseMeta) === 18);
+
+assert('routine_only → 10 (non-mature)',
+  sd('data', extend(baseTor, { data_available: 'routine_only' }),
+     extend(baseMeta, { programme_maturity: 'scaling' })) === 10);
+
+assert('minimal → 5 (non-humanitarian)',
+  sd('data', extend(baseTor, { data_available: 'minimal' }),
+     extend(baseMeta, { operating_context: 'stable' })) === 5);
+
+// ── 4. Data Availability — cross-dimension modifiers ─────────────────────────
+
+section('4. Data Availability — cross-dimension modifiers');
+
+assert('routine_only + mature → 13 (10 + 3)',
+  sd('data', extend(baseTor, { data_available: 'routine_only' }),
+     extend(baseMeta, { programme_maturity: 'mature' })) === 13);
+
+assert('minimal + humanitarian → 7 (5 + 2)',
+  sd('data', extend(baseTor, { data_available: 'minimal' }),
+     extend(baseMeta, { operating_context: 'humanitarian' })) === 7);
+
+assert('routine_only + non-mature + non-humanitarian → 10 (no modifier)',
+  sd('data', extend(baseTor, { data_available: 'routine_only' }),
+     extend(baseMeta, { programme_maturity: 'pilot', operating_context: 'stable' })) === 10);
+
+// ── 5. Timeline Adequacy — base scores and modifiers ─────────────────────────
+
+section('5. Timeline Adequacy — base scores and modifiers');
+
+assert('long → 20',
+  sd('timeline', baseTor, extend(baseMeta, { timeline: 'long' })) === 20);
+
+assert('medium → 15',
+  sd('timeline', baseTor, extend(baseMeta, { timeline: 'medium' })) === 15);
+
+assert('short → 8 (no randomisable)',
+  sd('timeline', extend(baseTor, { comparison_feasibility: 'natural' }),
+     extend(baseMeta, { timeline: 'short' })) === 8);
+
+assert('short + randomisable → 4 (8 - 4)',
+  sd('timeline', extend(baseTor, { comparison_feasibility: 'randomisable' }),
+     extend(baseMeta, { timeline: 'short' })) === 4);
+
+assert('long + pilot → clamped to 20 (20 + 2 = 22)',
+  sd('timeline', baseTor, extend(baseMeta, { timeline: 'long', programme_maturity: 'pilot' })) === 20);
+
+// ── 6. Operating Context — base scores and modifiers ─────────────────────────
+
+section('6. Operating Context — base scores and modifiers');
+
+assert('stable → 15',
+  sd('context', baseTor, extend(baseMeta, { operating_context: 'stable' })) === 15);
+
+assert('fragile → 8 (no randomisable)',
+  sd('context', extend(baseTor, { comparison_feasibility: 'natural' }),
+     extend(baseMeta, { operating_context: 'fragile' })) === 8);
+
+assert('humanitarian → 4 (no short timeline)',
+  sd('context', baseTor, extend(baseMeta, { operating_context: 'humanitarian', timeline: 'medium' })) === 4);
+
+assert('fragile + randomisable → 6 (8 - 2)',
+  sd('context', extend(baseTor, { comparison_feasibility: 'randomisable' }),
+     extend(baseMeta, { operating_context: 'fragile' })) === 6);
+
+assert('humanitarian + short → 3 (4 - 1)',
+  sd('context', baseTor,
+     extend(baseMeta, { operating_context: 'humanitarian', timeline: 'short' })) === 3);
+
+// ── 7. ToC Clarity — proxy scoring ────────────────────────────────────────────
+
+section('7. ToC Clarity — proxy scoring');
+
+assert('base only (no purpose, no causal, scaling) → 12',
+  sd('toc',
+     extend(baseTor, { evaluation_purpose: [], causal_inference_level: 'description' }),
+     extend(baseMeta, { programme_maturity: 'scaling' })) === 12);
+
+assert('base + evaluation_purpose → 15 (12 + 3)',
+  sd('toc',
+     extend(baseTor, { evaluation_purpose: ['impact'], causal_inference_level: 'description' }),
+     extend(baseMeta, { programme_maturity: 'scaling' })) === 15);
+
+assert('base + attribution causal → 15 (12 + 3)',
+  sd('toc',
+     extend(baseTor, { evaluation_purpose: [], causal_inference_level: 'attribution' }),
+     extend(baseMeta, { programme_maturity: 'scaling' })) === 15);
+
+assert('base + contribution causal → 15 (12 + 3)',
+  sd('toc',
+     extend(baseTor, { evaluation_purpose: [], causal_inference_level: 'contribution' }),
+     extend(baseMeta, { programme_maturity: 'scaling' })) === 15);
+
+assert('base + mature maturity → 14 (12 + 2)',
+  sd('toc',
+     extend(baseTor, { evaluation_purpose: [], causal_inference_level: 'description' }),
+     extend(baseMeta, { programme_maturity: 'mature' })) === 14);
+
+assert('base + completed maturity → 14 (12 + 2)',
+  sd('toc',
+     extend(baseTor, { evaluation_purpose: [], causal_inference_level: 'description' }),
+     extend(baseMeta, { programme_maturity: 'completed' })) === 14);
+
+assert('all toc modifiers → 20 (12 + 3 + 3 + 2)',
+  sd('toc',
+     extend(baseTor, { evaluation_purpose: ['impact'], causal_inference_level: 'attribution' }),
+     extend(baseMeta, { programme_maturity: 'mature' })) === 20);
+
+// ── 8. Full scorer — structure ────────────────────────────────────────────────
+
+section('8. Full scorer — return structure');
+
+var result = EvaluabilityScorer.score(baseTor, baseMeta);
+
+assert('returns object', typeof result === 'object');
+assert('has score property', typeof result.score === 'number');
+assert('has dimensions array', Array.isArray(result.dimensions));
+assert('dimensions length is 5', result.dimensions.length === 5);
+assert('has blockers array', Array.isArray(result.blockers));
+assert('has recommendations array', Array.isArray(result.recommendations));
+
+assert('each dimension has id', result.dimensions.every(function(d) { return typeof d.id === 'string'; }));
+assert('each dimension has label', result.dimensions.every(function(d) { return typeof d.label === 'string'; }));
+assert('each dimension has max', result.dimensions.every(function(d) { return typeof d.max === 'number'; }));
+assert('each dimension has system_score', result.dimensions.every(function(d) { return typeof d.system_score === 'number'; }));
+assert('each dimension has adjusted_score null by default', result.dimensions.every(function(d) { return d.adjusted_score === null; }));
+assert('each dimension has justification null by default', result.dimensions.every(function(d) { return d.justification === null; }));
+
+assert('DIMENSION_META exposed on window.EvaluabilityScorer', Array.isArray(EvaluabilityScorer.DIMENSION_META));
+assert('DIMENSION_META length is 5', EvaluabilityScorer.DIMENSION_META.length === 5);
+
+// ── 9. Score equals sum of dimensions ────────────────────────────────────────
+
+section('9. Score equals sum of dimensions');
+
+function checkSumInvariant(tor, meta, label) {
+  var r = EvaluabilityScorer.score(tor, meta);
+  var sum = r.dimensions.reduce(function(acc, d) { return acc + d.system_score; }, 0);
+  assert(label + ': score === sum of dimensions', r.score === sum);
+}
+
+checkSumInvariant(baseTor, baseMeta, 'base fixture');
+checkSumInvariant(
+  extend(baseTor, { data_available: 'minimal', comparison_feasibility: 'none', causal_inference_level: 'attribution' }),
+  extend(baseMeta, { operating_context: 'humanitarian', timeline: 'short' }),
+  'minimal scenario'
+);
+checkSumInvariant(
+  extend(baseTor, { data_available: 'baseline_endline', comparison_feasibility: 'randomisable', causal_inference_level: 'attribution', evaluation_purpose: ['impact'] }),
+  extend(baseMeta, { operating_context: 'stable', timeline: 'long', programme_maturity: 'mature' }),
+  'optimal scenario'
+);
+
+// ── 10. Minimal inputs — low score with blockers ──────────────────────────────
+// humanitarian + minimal data + none comparison + short timeline + attribution causal
+
+section('10. Minimal inputs — humanitarian crisis scenario');
+
+var minTor = extend(baseTor, {
+  comparison_feasibility: 'none',
+  data_available: 'minimal',
+  causal_inference_level: 'attribution',
+  evaluation_purpose: []
+});
+var minMeta = extend(baseMeta, {
+  operating_context: 'humanitarian',
+  timeline: 'short',
+  programme_maturity: 'scaling'
+});
+var minResult = EvaluabilityScorer.score(minTor, minMeta);
+
+// data: minimal + humanitarian = 5 + 2 = 7  (7 / 25 = 0.28 < 0.4 → blocker)
+assert('data score is 7 (5 + 2 humanitarian)', (function() {
+  var d = minResult.dimensions.filter(function(x) { return x.id === 'data'; })[0];
+  return d.system_score === 7;
+})());
+
+// comparison: none + attribution (not description) = 3  (3 / 20 = 0.15 < 0.4 → blocker)
+assert('comparison score is 3 (none, no description modifier)', (function() {
+  var d = minResult.dimensions.filter(function(x) { return x.id === 'comparison'; })[0];
+  return d.system_score === 3;
+})());
+
+// context: humanitarian + short = 4 - 1 = 3  (3 / 15 = 0.2 < 0.4 → blocker)
+assert('context score is 3 (humanitarian + short)', (function() {
+  var d = minResult.dimensions.filter(function(x) { return x.id === 'context'; })[0];
+  return d.system_score === 3;
+})());
+
+// timeline: short, comparison=none → 8 (not -4 since not randomisable)
+// 8 / 20 = 0.4 — exactly 0.4, NOT a blocker (condition is strictly < 0.4)
+assert('timeline score is 8 (short, no randomisable modifier)', (function() {
+  var d = minResult.dimensions.filter(function(x) { return x.id === 'timeline'; })[0];
+  return d.system_score === 8;
+})());
+
+// toc: base 12, no purpose, attribution → 12 + 3 = 15  (15/20 = 0.75, not a blocker)
+assert('toc score is 15 (base 12 + attribution 3)', (function() {
+  var d = minResult.dimensions.filter(function(x) { return x.id === 'toc'; })[0];
+  return d.system_score === 15;
+})());
+
+assert('minimal scenario has at least 3 blockers', minResult.blockers.length >= 3);
+assert('data dimension is a blocker', minResult.blockers.some(function(b) { return b.dimension === 'data'; }));
+assert('comparison dimension is a blocker', minResult.blockers.some(function(b) { return b.dimension === 'comparison'; }));
+assert('context dimension is a blocker', minResult.blockers.some(function(b) { return b.dimension === 'context'; }));
+assert('timeline is NOT a blocker (8/20 = 0.4, not strictly < 0.4)', !minResult.blockers.some(function(b) { return b.dimension === 'timeline'; }));
+
+assert('minimal score < 50', minResult.score < 50);
+
+// ── 11. Optimal inputs — high score, no blockers ──────────────────────────────
+
+section('11. Optimal inputs — best-case scenario');
+
+var optTor = extend(baseTor, {
+  comparison_feasibility: 'randomisable',
+  data_available: 'baseline_endline',
+  causal_inference_level: 'attribution',
+  evaluation_purpose: ['impact']
+});
+var optMeta = extend(baseMeta, {
+  operating_context: 'stable',
+  timeline: 'long',
+  programme_maturity: 'mature'
+});
+var optResult = EvaluabilityScorer.score(optTor, optMeta);
+
+// data: 25, toc: 20, timeline: 20, context: 15, comparison: 20 → total 100
+assert('optimal data score is 25', (function() {
+  var d = optResult.dimensions.filter(function(x) { return x.id === 'data'; })[0];
+  return d.system_score === 25;
+})());
+assert('optimal toc score is 20 (12+3+3+2)', (function() {
+  var d = optResult.dimensions.filter(function(x) { return x.id === 'toc'; })[0];
+  return d.system_score === 20;
+})());
+assert('optimal timeline score is 20', (function() {
+  var d = optResult.dimensions.filter(function(x) { return x.id === 'timeline'; })[0];
+  return d.system_score === 20;
+})());
+assert('optimal context score is 15', (function() {
+  var d = optResult.dimensions.filter(function(x) { return x.id === 'context'; })[0];
+  return d.system_score === 15;
+})());
+assert('optimal comparison score is 20', (function() {
+  var d = optResult.dimensions.filter(function(x) { return x.id === 'comparison'; })[0];
+  return d.system_score === 20;
+})());
+assert('optimal total score is 100', optResult.score === 100);
+assert('optimal scenario has no blockers', optResult.blockers.length === 0);
+
+// ── 12. Blockers fire at <40% threshold ──────────────────────────────────────
+
+section('12. Blockers — 40% threshold boundary');
+
+// comparison: none = 3, max 20, 3/20 = 0.15 → blocker
+var r_blocker_comparison = EvaluabilityScorer.score(
+  extend(baseTor, { comparison_feasibility: 'none', causal_inference_level: 'attribution' }), baseMeta);
+assert('comparison=none (3/20=0.15) fires blocker',
+  r_blocker_comparison.blockers.some(function(b) { return b.dimension === 'comparison'; }));
+
+// comparison: threshold = 10, max 20, 10/20 = 0.5 → not a blocker
+var r_no_blocker = EvaluabilityScorer.score(
+  extend(baseTor, { comparison_feasibility: 'threshold', data_available: 'timeseries' }), baseMeta);
+assert('comparison=threshold (10/20=0.5) does not fire blocker',
+  !r_no_blocker.blockers.some(function(b) { return b.dimension === 'comparison'; }));
+
+// data: minimal stable = 5, max 25, 5/25 = 0.2 → blocker
+var r_blocker_data = EvaluabilityScorer.score(
+  extend(baseTor, { data_available: 'minimal' }),
+  extend(baseMeta, { operating_context: 'stable' }));
+assert('data=minimal stable (5/25=0.2) fires blocker',
+  r_blocker_data.blockers.some(function(b) { return b.dimension === 'data'; }));
+
+// data: routine_only = 10, max 25, 10/25 = 0.4 → NOT a blocker (exactly at threshold)
+var r_boundary_data = EvaluabilityScorer.score(
+  extend(baseTor, { data_available: 'routine_only' }),
+  extend(baseMeta, { programme_maturity: 'scaling', operating_context: 'stable' }));
+assert('data=routine_only (10/25=0.4) is NOT a blocker (boundary is strictly <)',
+  !r_boundary_data.blockers.some(function(b) { return b.dimension === 'data'; }));
+
+// context: humanitarian + short = 3, max 15, 3/15 = 0.2 → blocker
+var r_blocker_context = EvaluabilityScorer.score(
+  baseTor,
+  extend(baseMeta, { operating_context: 'humanitarian', timeline: 'short' }));
+assert('context=humanitarian+short (3/15=0.2) fires blocker',
+  r_blocker_context.blockers.some(function(b) { return b.dimension === 'context'; }));
+
+// blocker object has required fields
+var b = r_blocker_comparison.blockers.filter(function(x) { return x.dimension === 'comparison'; })[0];
+assert('blocker has dimension field', typeof b.dimension === 'string');
+assert('blocker has label field', typeof b.label === 'string');
+assert('blocker has score field', typeof b.score === 'number');
+assert('blocker has max field', typeof b.max === 'number');
+
+// ── 13. Recommendations fire for correct conditions ───────────────────────────
+
+section('13. Recommendations — rule firing');
+
+// Rule 1: data minimal or routine_only
+var r_data_rec = EvaluabilityScorer.score(extend(baseTor, { data_available: 'minimal' }), baseMeta);
+assert('data=minimal fires data readiness recommendation',
+  r_data_rec.recommendations.some(function(r) { return r.indexOf('Strengthen data readiness') !== -1; }));
+
+var r_routine_rec = EvaluabilityScorer.score(extend(baseTor, { data_available: 'routine_only' }), baseMeta);
+assert('data=routine_only fires data readiness recommendation',
+  r_routine_rec.recommendations.some(function(r) { return r.indexOf('Strengthen data readiness') !== -1; }));
+
+var r_no_data_rec = EvaluabilityScorer.score(extend(baseTor, { data_available: 'baseline_endline' }), baseMeta);
+assert('data=baseline_endline does NOT fire data readiness recommendation',
+  !r_no_data_rec.recommendations.some(function(r) { return r.indexOf('Strengthen data readiness') !== -1; }));
+
+// Rule 2: comparison none + causal not description
+var r_none_attr = EvaluabilityScorer.score(
+  extend(baseTor, { comparison_feasibility: 'none', causal_inference_level: 'attribution' }), baseMeta);
+assert('comparison=none + attribution fires contribution analysis recommendation',
+  r_none_attr.recommendations.some(function(r) { return r.indexOf('contribution analysis') !== -1; }));
+
+var r_none_desc = EvaluabilityScorer.score(
+  extend(baseTor, { comparison_feasibility: 'none', causal_inference_level: 'description' }), baseMeta);
+assert('comparison=none + description does NOT fire contribution analysis recommendation',
+  !r_none_desc.recommendations.some(function(r) { return r.indexOf('contribution analysis') !== -1; }));
+
+// Rule 3: context fragile or humanitarian
+var r_fragile = EvaluabilityScorer.score(baseTor, extend(baseMeta, { operating_context: 'fragile' }));
+assert('context=fragile fires remote data collection recommendation',
+  r_fragile.recommendations.some(function(r) { return r.indexOf('remote data collection') !== -1; }));
+
+var r_humanitarian = EvaluabilityScorer.score(baseTor, extend(baseMeta, { operating_context: 'humanitarian' }));
+assert('context=humanitarian fires remote data collection recommendation',
+  r_humanitarian.recommendations.some(function(r) { return r.indexOf('remote data collection') !== -1; }));
+
+var r_stable_no_rec = EvaluabilityScorer.score(baseTor, extend(baseMeta, { operating_context: 'stable' }));
+assert('context=stable does NOT fire remote data collection recommendation',
+  !r_stable_no_rec.recommendations.some(function(r) { return r.indexOf('remote data collection') !== -1; }));
+
+// Rule 4: timeline short + comparison randomisable
+var r_short_rand = EvaluabilityScorer.score(
+  extend(baseTor, { comparison_feasibility: 'randomisable' }),
+  extend(baseMeta, { timeline: 'short' }));
+assert('short + randomisable fires quasi-experimental recommendation',
+  r_short_rand.recommendations.some(function(r) { return r.indexOf('quasi-experimental') !== -1; }));
+
+var r_short_natural = EvaluabilityScorer.score(
+  extend(baseTor, { comparison_feasibility: 'natural' }),
+  extend(baseMeta, { timeline: 'short' }));
+assert('short + natural does NOT fire quasi-experimental recommendation',
+  !r_short_natural.recommendations.some(function(r) { return r.indexOf('quasi-experimental') !== -1; }));
+
+var r_long_rand = EvaluabilityScorer.score(
+  extend(baseTor, { comparison_feasibility: 'randomisable' }),
+  extend(baseMeta, { timeline: 'long' }));
+assert('long + randomisable does NOT fire quasi-experimental recommendation',
+  !r_long_rand.recommendations.some(function(r) { return r.indexOf('quasi-experimental') !== -1; }));
+
+// ── Summary ────────────────────────────────────────────────────────────────────
+
+var summary = document.getElementById('summary');
+var total = pass + fail;
+var colour = fail === 0 ? '#10B981' : '#EF4444';
+summary.innerHTML = '<h2 style="color:' + colour + '">Results: ' + pass + ' / ' + total + ' passed'
+  + (fail > 0 ? ' (' + fail + ' failed)' : ' — all tests pass') + '</h2>';
+</script>
+</body>
+</html>

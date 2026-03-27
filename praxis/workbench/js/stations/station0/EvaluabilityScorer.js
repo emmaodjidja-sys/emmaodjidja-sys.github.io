@@ -1,0 +1,179 @@
+(function() {
+  'use strict';
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+
+  function isMultiCountry(meta) {
+    return (meta.country || '').split(',').filter(function(s) { return s.trim(); }).length > 1;
+  }
+
+  // ── Dimension rubrics ────────────────────────────────────────────────────────
+  // Each rubric is a pure function: (tor, meta) → raw numeric score (before clamp)
+
+  var RUBRICS = {
+
+    comparison: function(tor, meta) {
+      var base = { randomisable: 20, natural: 14, threshold: 10, none: 3 };
+      var score = base[tor.comparison_feasibility] !== undefined ? base[tor.comparison_feasibility] : 3;
+
+      // Cross-dimension modifiers
+      if (tor.comparison_feasibility === 'randomisable' && meta.operating_context === 'humanitarian') score -= 3;
+      if (tor.comparison_feasibility === 'natural' && meta.operating_context === 'fragile' && isMultiCountry(meta)) score -= 2;
+      if (tor.comparison_feasibility === 'threshold' && tor.data_available === 'baseline_endline') score += 2;
+      if (tor.comparison_feasibility === 'none' && tor.causal_inference_level === 'description') score += 2;
+
+      return PraxisUtils.clamp(score, 0, 20);
+    },
+
+    data: function(tor, meta) {
+      var base = { baseline_endline: 25, timeseries: 18, routine_only: 10, minimal: 5 };
+      var score = base[tor.data_available] !== undefined ? base[tor.data_available] : 5;
+
+      // Cross-dimension modifiers
+      if (tor.data_available === 'routine_only' && meta.programme_maturity === 'mature') score += 3;
+      if (tor.data_available === 'minimal' && meta.operating_context === 'humanitarian') score += 2;
+
+      return PraxisUtils.clamp(score, 0, 25);
+    },
+
+    toc: function(tor, meta) {
+      // Proxy score — full ToC assessment happens in Station 1
+      var score = 12; // base: partial clarity assumed
+
+      if (tor.evaluation_purpose && tor.evaluation_purpose.length > 0) score += 3;
+      if (tor.causal_inference_level === 'attribution' || tor.causal_inference_level === 'contribution') score += 3;
+      if (meta.programme_maturity === 'mature' || meta.programme_maturity === 'completed') score += 2;
+
+      return PraxisUtils.clamp(score, 0, 20);
+    },
+
+    timeline: function(tor, meta) {
+      var base = { long: 20, medium: 15, short: 8 };
+      var score = base[meta.timeline] !== undefined ? base[meta.timeline] : 12;
+
+      // Cross-dimension modifiers
+      if (meta.timeline === 'short' && tor.comparison_feasibility === 'randomisable') score -= 4;
+      if (meta.timeline === 'long' && meta.programme_maturity === 'pilot') score += 2;
+
+      return PraxisUtils.clamp(score, 0, 20);
+    },
+
+    context: function(tor, meta) {
+      var base = { stable: 15, fragile: 8, humanitarian: 4 };
+      var score = base[meta.operating_context] !== undefined ? base[meta.operating_context] : 10;
+
+      // Cross-dimension modifiers
+      if (meta.operating_context === 'fragile' && tor.comparison_feasibility === 'randomisable') score -= 2;
+      if (meta.operating_context === 'humanitarian' && meta.timeline === 'short') score -= 1;
+
+      return PraxisUtils.clamp(score, 0, 15);
+    }
+  };
+
+  // ── Dimension metadata ───────────────────────────────────────────────────────
+  // Order matches PraxisSchema evaluability.dimensions order
+
+  var DIMENSION_META = [
+    { id: 'data',       label: 'Data Availability',      max: 25 },
+    { id: 'toc',        label: 'ToC Clarity',            max: 20 },
+    { id: 'timeline',   label: 'Timeline Adequacy',      max: 20 },
+    { id: 'context',    label: 'Operating Context',      max: 15 },
+    { id: 'comparison', label: 'Comparison Feasibility', max: 20 }
+  ];
+
+  // ── Public API ───────────────────────────────────────────────────────────────
+
+  /**
+   * Score a single dimension.
+   * @param {string} dimensionId  — one of data | toc | timeline | context | comparison
+   * @param {object} tor          — tor_constraints object (PraxisSchema shape)
+   * @param {object} meta         — project_meta object (PraxisSchema shape)
+   * @returns {number}            — clamped score
+   */
+  function scoreDimension(dimensionId, tor, meta) {
+    var rubric = RUBRICS[dimensionId];
+    return rubric ? rubric(tor, meta) : 0;
+  }
+
+  /**
+   * Compute the full evaluability score.
+   * @param {object} tor   — tor_constraints object
+   * @param {object} meta  — project_meta object
+   * @returns {{
+   *   score: number,
+   *   dimensions: Array,
+   *   blockers: Array,
+   *   recommendations: Array
+   * }}
+   */
+  function score(tor, meta) {
+    // Score each dimension
+    var dimensions = DIMENSION_META.map(function(dim) {
+      var systemScore = scoreDimension(dim.id, tor, meta);
+      return {
+        id: dim.id,
+        label: dim.label,
+        max: dim.max,
+        system_score: systemScore,
+        adjusted_score: null,
+        justification: null
+      };
+    });
+
+    // Total score is sum of dimension scores
+    var totalScore = dimensions.reduce(function(sum, d) { return sum + d.system_score; }, 0);
+
+    // Blockers: any dimension below 40% of its max
+    var blockers = [];
+    dimensions.forEach(function(d) {
+      if (d.system_score / d.max < 0.4) {
+        blockers.push({
+          dimension: d.id,
+          label: d.label,
+          score: d.system_score,
+          max: d.max
+        });
+      }
+    });
+
+    // Rule-based recommendations
+    var recommendations = [];
+
+    if (tor.data_available === 'minimal' || tor.data_available === 'routine_only') {
+      recommendations.push(
+        'Strengthen data readiness by incorporating routine MEAL data from implementing partners.'
+      );
+    }
+    if (tor.comparison_feasibility === 'none' && tor.causal_inference_level !== 'description') {
+      recommendations.push(
+        'Consider contribution analysis or theory-based approach rather than experimental design.'
+      );
+    }
+    if (meta.operating_context === 'fragile' || meta.operating_context === 'humanitarian') {
+      recommendations.push(
+        'Adapt methods for the operating context \u2014 consider remote data collection and safety protocols.'
+      );
+    }
+    if (meta.timeline === 'short' && tor.comparison_feasibility === 'randomisable') {
+      recommendations.push(
+        'The short timeline may not allow for a randomised design. Consider quasi-experimental alternatives.'
+      );
+    }
+
+    return {
+      score: totalScore,
+      dimensions: dimensions,
+      blockers: blockers,
+      recommendations: recommendations
+    };
+  }
+
+  // ── Export ───────────────────────────────────────────────────────────────────
+
+  window.EvaluabilityScorer = {
+    score: score,
+    scoreDimension: scoreDimension,
+    DIMENSION_META: DIMENSION_META
+  };
+
+})();
