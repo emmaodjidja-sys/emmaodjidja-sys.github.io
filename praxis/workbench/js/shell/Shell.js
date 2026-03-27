@@ -15,14 +15,19 @@
       }
     }
 
-    var emptyState = h('div', { className: 'wb-station-empty', style: { textAlign: 'center', padding: '64px 24px' } },
-      h('h3', { className: 'wb-station-empty-title', style: { fontSize: '16px', fontWeight: 600, color: '#1F2937', marginBottom: 8 } },
-        'Station ' + activeStation + ': ' + stationName
-      ),
-      h('p', { className: 'wb-station-empty-desc', style: { fontSize: '13px', color: '#6B7280' } },
-        'This station will be available soon.'
-      )
-    );
+    var stationContent;
+    if (activeStation === 0 && typeof Station0 !== 'undefined') {
+      stationContent = h(Station0, { state: state, dispatch: dispatch });
+    } else {
+      stationContent = h('div', { className: 'wb-station-empty', style: { textAlign: 'center', padding: '64px 24px' } },
+        h('h3', { className: 'wb-station-empty-title', style: { fontSize: '16px', fontWeight: 600, color: '#1F2937', marginBottom: 8 } },
+          'Station ' + activeStation + ': ' + stationName
+        ),
+        h('p', { className: 'wb-station-empty-desc', style: { fontSize: '13px', color: '#6B7280' } },
+          'This station will be available soon.'
+        )
+      );
+    }
 
     return h(React.Fragment, null,
       h(SensitivityBanner, { context: context }),
@@ -33,7 +38,7 @@
           h('div', { className: 'wb-panel' },
             h(StationHeader, { stationId: activeStation, context: context }),
             h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }),
-            h('div', { className: 'wb-panel-content' }, emptyState)
+            h('div', { className: 'wb-panel-content' }, stationContent)
           )
         ),
         h(ContextDrawer, { state: state, dispatch: dispatch })
