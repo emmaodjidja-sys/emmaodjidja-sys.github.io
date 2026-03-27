@@ -47,11 +47,9 @@
     var mode = modeState[0];
     var setMode = modeState[1];
 
-    // Check for saved data
-    var savedState = React.useMemo(function() {
-      var init = PraxisContext.getInitialState();
-      if (init.ui.projectLoaded) return init;
-      return null;
+    // Check for saved data without loading it into state
+    var hasSaved = React.useMemo(function() {
+      return PraxisContext.hasSavedProject();
     }, []);
 
     // Station preview for left panel
@@ -64,9 +62,7 @@
     });
 
     // Left panel
-    var leftPanel = h('div', { className: 'wb-landing-left', style: {
-      flex: '0 0 55%', padding: '48px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center'
-    }},
+    var leftPanel = h('div', { className: 'wb-landing-left' },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' } },
         h(Logo, null),
         h('span', { style: { fontSize: '12px', fontWeight: 700, color: '#2EC4B6', letterSpacing: '0.12em' } }, 'PRAXIS')
@@ -118,8 +114,7 @@
         LABELS.map(function(name, i) {
           return h('div', {
             key: i, onClick: function() {
-              dispatch({ type: AT.INIT });
-              dispatch({ type: AT.SET_ACTIVE_STATION, station: i });
+              dispatch({ type: AT.INIT, station: i });
             },
             style: {
               display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
@@ -144,18 +139,17 @@
       ];
 
       // Continue card (only if saved data exists)
-      if (savedState) {
-        var ctx = savedState.context;
-        var projectName = (ctx.project_meta && ctx.project_meta.title) || 'Untitled Evaluation';
-        var lastEdit = ctx.updated_at ? PraxisUtils.formatDate(ctx.updated_at) : 'Unknown';
+      if (hasSaved) {
         cards.push(h(ActionCard, {
           key: 'continue', title: t('landing.continue'), accent: '#22C55E',
-          onClick: function() { dispatch({ type: AT.SET_PROJECT_LOADED, loaded: true }); }
+          onClick: function() {
+            var saved = PraxisContext.loadSavedProject();
+            if (saved) dispatch({ type: AT.LOAD_FILE, context: saved });
+          }
         },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' } },
             h('span', { style: { width: 6, height: 6, borderRadius: '50%', background: '#22C55E', display: 'inline-block' } }),
-            h('span', { style: { fontSize: '11px', color: '#CBD5E1' } }, projectName),
-            h('span', { style: { fontSize: '10px', color: '#64748B', marginLeft: 'auto' } }, lastEdit)
+            h('span', { style: { fontSize: '11px', color: '#CBD5E1' } }, 'Resume saved project')
           )
         ));
       }
@@ -163,13 +157,10 @@
       rightContent = h('div', null, cards);
     }
 
-    var rightPanel = h('div', { className: 'wb-landing-right', style: {
-      flex: '0 0 45%', padding: '48px 36px', display: 'flex', flexDirection: 'column', justifyContent: 'center'
-    }}, rightContent);
+    var rightPanel = h('div', { className: 'wb-landing-right' }, rightContent);
 
     return h('div', { className: 'wb-landing', style: {
-      position: 'fixed', inset: 0, background: '#0F172A', display: 'flex', flexDirection: 'row',
-      fontFamily: "'Inter', system-ui, sans-serif", zIndex: 100
+      fontFamily: "var(--font-sans)", zIndex: 100
     }}, leftPanel, rightPanel);
   }
 

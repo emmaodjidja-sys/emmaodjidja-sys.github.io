@@ -10,11 +10,11 @@
     // Auto-persist to localStorage (debounced 500ms)
     var persistRef = React.useRef(PraxisUtils.debounce(function(ctx) {
       try {
-        var size = PraxisUtils.estimateJSONSize(ctx);
-        if (size > 4 * 1024 * 1024) {
+        var json = JSON.stringify(ctx);
+        if (json.length > 4 * 1024 * 1024) {
           dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: 'Project data is large. Consider downloading your .praxis file.', toastType: 'warning' });
         }
-        localStorage.setItem('praxis-workbench', JSON.stringify(ctx));
+        localStorage.setItem('praxis-workbench', json);
       } catch (e) { /* quota exceeded */ }
     }, 500));
 

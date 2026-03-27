@@ -31,10 +31,17 @@
       case ACTION_TYPES.INIT:
         return {
           context: action.context || PraxisSchema.createEmptyContext(),
-          ui: Object.assign({}, defaultUI, { projectLoaded: true, experienceTier: action.tier || 'foundation' })
+          ui: Object.assign({}, defaultUI, {
+            projectLoaded: true,
+            experienceTier: action.tier || 'foundation',
+            activeStation: action.station != null ? action.station : 0
+          })
         };
 
       case ACTION_TYPES.LOAD_FILE:
+        if (!action.context || action.context.schema !== 'praxis-workbench') {
+          return state; // reject invalid files silently
+        }
         return {
           context: action.context,
           ui: Object.assign({}, state.ui, { projectLoaded: true })
@@ -91,22 +98,37 @@
   }
 
   function getInitialState() {
+    return { context: PraxisSchema.createEmptyContext(), ui: Object.assign({}, defaultUI) };
+  }
+
+  function hasSavedProject() {
+    try {
+      var saved = localStorage.getItem('praxis-workbench');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        return parsed && parsed.schema === 'praxis-workbench';
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function loadSavedProject() {
     try {
       var saved = localStorage.getItem('praxis-workbench');
       if (saved) {
         var context = JSON.parse(saved);
-        if (context && context.schema === 'praxis-workbench') {
-          return { context: context, ui: Object.assign({}, defaultUI, { projectLoaded: true }) };
-        }
+        if (context && context.schema === 'praxis-workbench') return context;
       }
-    } catch (e) { }
-    return { context: PraxisSchema.createEmptyContext(), ui: Object.assign({}, defaultUI) };
+    } catch (e) {}
+    return null;
   }
 
   window.PraxisContext = {
     ACTION_TYPES: ACTION_TYPES,
     reducer: reducer,
     getInitialState: getInitialState,
+    hasSavedProject: hasSavedProject,
+    loadSavedProject: loadSavedProject,
     defaultUI: defaultUI
   };
 })();

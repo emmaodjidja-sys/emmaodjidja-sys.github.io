@@ -8,9 +8,7 @@
   ];
 
   function completedBadge() {
-    return h('span', {
-      style: { position: 'absolute', top: 2, right: 2, width: 10, height: 10 }
-    },
+    return h('span', { className: 'wb-rail-check' },
       h('svg', { width: 10, height: 10, viewBox: '0 0 10 10' },
         h('circle', { cx: 5, cy: 5, r: 5, fill: '#10B981' }),
         h('path', { d: 'M3 5l1.5 1.5L7 4', stroke: '#fff', strokeWidth: 1.2, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' })
@@ -19,12 +17,7 @@
   }
 
   function staleDot() {
-    return h('span', {
-      style: {
-        position: 'absolute', top: 2, right: 2,
-        width: 6, height: 6, borderRadius: '50%', background: '#F59E0B'
-      }
-    });
+    return h('span', { className: 'wb-rail-stale-dot' });
   }
 
   function StationRail(props) {
