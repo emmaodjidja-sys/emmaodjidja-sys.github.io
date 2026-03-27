@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Station 5 — InstrumentScaffold + InstrumentExport Tests</title>
+<style>
+body { font-family: monospace; padding: 20px; background: #0B1A2E; color: #2EC4B6; }
+.pass { color: #10B981; } .fail { color: #EF4444; }
+h2 { color: white; margin-top: 20px; }
+.summary { margin-top: 24px; padding: 12px 16px; border-radius: 6px; font-size: 16px; font-weight: bold; }
+.summary.all-pass { background: #065F46; color: #A7F3D0; }
+.summary.has-fail { background: #7F1D1D; color: #FCA5A5; }
+</style>
+</head>
+<body>
+<h1>PRAXIS Workbench — Station 5 InstrumentScaffold + InstrumentExport Tests</h1>
+<div id="results"></div>
+<script src="../js/schema.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../data/indicator_bank.js"></script>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="../js/stations/station5/InstrumentScaffold.js"></script>
+<script src="../js/stations/station5/InstrumentExport.js"></script>
+<script>
+var results = document.getElementById('results');
+var pass = 0, fail = 0;
+
+function assert(name, condition) {
+  if (condition) { pass++; log(name, true); }
+  else { fail++; log(name, false); }
+}
+
+function log(name, ok) {
+  var el = document.createElement('div');
+  el.className = ok ? 'pass' : 'fail';
+  el.textContent = (ok ? '\u2713 ' : '\u2717 ') + name;
+  results.appendChild(el);
+}
+
+function section(name) {
+  var el = document.createElement('h2');
+  el.textContent = name;
+  results.appendChild(el);
+}
+
+// ── Test data ──
+var testRows = [
+  { id: 'eq1', criterion: 'Relevance', question: 'To what extent does the programme address root causes of VE?', indicators: [{ text: '% beneficiaries confirming relevance', source: 'MER' }], dataSources: 'Surveys, KIIs', judgementCriteria: 'Strong: \u226580%' },
+  { id: 'eq2', criterion: 'Effectiveness', question: 'Has the programme reduced community vulnerability to VE?', indicators: [{ text: 'Community resilience index', source: 'Custom' }, { text: 'VE incident rate', source: 'ACLED' }], dataSources: 'ACLED, Surveys', judgementCriteria: 'Threshold: \u226515% reduction' },
+  { id: 'eq3', criterion: 'Efficiency', question: 'How efficiently were resources converted into outputs?', indicators: [{ text: 'Cost per beneficiary', source: 'Finance' }], dataSources: 'Financial records', judgementCriteria: 'Within \u00b115% budget' }
+];
+
+// ============================================================================
+// 1. suggestResponseType
+// ============================================================================
+section('suggestResponseType');
+
+var numericInd = InstrumentScaffold.suggestResponseType({ text: '% beneficiaries confirming relevance' });
+assert('Percentage indicator returns numeric type', numericInd.type === 'numeric');
+assert('Numeric has min:0 config', numericInd.config.min === 0);
+assert('Numeric has reason string', numericInd.reason.indexOf('numeric') >= 0);
+
+var numericCount = InstrumentScaffold.suggestResponseType({ text: 'Number of trained health workers' });
+assert('"Number of" indicator returns numeric type', numericCount.type === 'numeric');
+
+var numericRate = InstrumentScaffold.suggestResponseType({ text: 'Dropout rate among participants' });
+assert('"rate" indicator returns numeric type', numericRate.type === 'numeric');
+
+var likertInd = InstrumentScaffold.suggestResponseType({ text: 'Community satisfaction with services' });
+assert('Satisfaction indicator returns likert type', likertInd.type === 'likert');
+assert('Likert has 5 points', likertInd.config.points === 5);
+assert('Likert has includeNA', likertInd.config.includeNA === true);
+
+var likertPerception = InstrumentScaffold.suggestResponseType({ text: 'Perception of safety in target area' });
+assert('"Perception" indicator returns likert type', likertPerception.type === 'likert');
+
+var likertTrust = InstrumentScaffold.suggestResponseType({ text: 'Level of trust in local institutions' });
+assert('"trust" indicator returns likert type', likertTrust.type === 'likert');
+
+var binaryInd = InstrumentScaffold.suggestResponseType({ text: 'Existence of referral pathway' });
+assert('Existence indicator returns select_one', binaryInd.type === 'select_one');
+assert('Binary has Yes/No options', binaryInd.config.options[0] === 'Yes' && binaryInd.config.options[1] === 'No');
+
+var binaryAvail = InstrumentScaffold.suggestResponseType({ text: 'Availability of essential medicines' });
+assert('"Availability" indicator returns select_one', binaryAvail.type === 'select_one');
+
+var textInd = InstrumentScaffold.suggestResponseType({ text: 'Key challenges faced by programme staff' });
+assert('Qualitative indicator returns text type', textInd.type === 'text');
+assert('Text has maxLength config', textInd.config.maxLength === 500);
+
+var textDefault = InstrumentScaffold.suggestResponseType({ text: 'Describe the community dynamics' });
+assert('Generic indicator defaults to text', textDefault.type === 'text');
+
+// String input
+var stringInput = InstrumentScaffold.suggestResponseType('proportion of households with access');
+assert('Plain string input works (proportion -> numeric)', stringInput.type === 'numeric');
+
+// ============================================================================
+// 2. scaffoldQuestionsForEQ
+// ============================================================================
+section('scaffoldQuestionsForEQ');
+
+var eqRow = testRows[1]; // Effectiveness with 2 indicators
+var surveyQs = InstrumentScaffold.scaffoldQuestionsForEQ(eqRow, 'survey');
+assert('Survey EQ produces questions array', Array.isArray(surveyQs));
+assert('Survey EQ: 1 main + 2 indicator questions = 3', surveyQs.length === 3);
+assert('First question has id', typeof surveyQs[0].id === 'string' && surveyQs[0].id.length > 0);
+assert('First question has text', typeof surveyQs[0].text === 'string' && surveyQs[0].text.length > 0);
+assert('First question has responseType', typeof surveyQs[0].responseType === 'string');
+assert('Main survey question uses likert for structured', surveyQs[0].responseType === 'likert');
+assert('Main survey question is required', surveyQs[0].required === true);
+assert('Indicator question has suggested response type', surveyQs[1].responseType === 'numeric'); // "Community resilience index" contains "index" -> numeric via "rate" regex? Let's check
+// "Community resilience index" — no %, rate, proportion, number, count, index matches "index" via the regex in suggestResponseType? Actually "index" is in the regex pattern as part of "index|ratio"
+// Actually checking the regex: /%|rate|proportion|number of|count|index|ratio/ — "index" matches!
+
+var kiiQs = InstrumentScaffold.scaffoldQuestionsForEQ(eqRow, 'kii');
+assert('KII EQ produces questions', kiiQs.length === 3);
+assert('KII main question starts with "In your view"', kiiQs[0].text.indexOf('In your view') === 0);
+assert('KII main question ends with example prompt', kiiQs[0].text.indexOf('Can you give an example?') >= 0);
+assert('KII main question is open text', kiiQs[0].responseType === 'text');
+assert('KII indicator question is also text', kiiQs[1].responseType === 'text');
+
+var fgdQs = InstrumentScaffold.scaffoldQuestionsForEQ(eqRow, 'fgd');
+assert('FGD EQ produces questions', fgdQs.length === 3);
+assert('FGD questions are open text', fgdQs[0].responseType === 'text');
+
+// EQ with many indicators (should cap at 3)
+var manyIndRow = { id: 'eq_many', criterion: 'Impact', question: 'What impact?', indicators: [
+  { text: 'Ind 1' }, { text: 'Ind 2' }, { text: 'Ind 3' }, { text: 'Ind 4' }, { text: 'Ind 5' }
+] };
+var cappedQs = InstrumentScaffold.scaffoldQuestionsForEQ(manyIndRow, 'survey');
+assert('Caps indicator questions at 3 (1 main + 3 indicator = 4)', cappedQs.length === 4);
+
+// ============================================================================
+// 3. addDemographicsSection
+// ============================================================================
+section('addDemographicsSection');
+
+var demo = InstrumentScaffold.addDemographicsSection();
+assert('Demographics section has id', typeof demo.id === 'string');
+assert('Demographics label is "Demographics"', demo.label === 'Demographics');
+assert('Demographics eqId is null', demo.eqId === null);
+assert('Demographics has 4 questions', demo.questions.length === 4);
+assert('Age question is select_one', demo.questions[0].responseType === 'select_one');
+assert('Age question has 5 age groups', demo.questions[0].responseConfig.options.length === 5);
+assert('Gender question has 4 options', demo.questions[1].responseConfig.options.length === 4);
+assert('Displacement question has 4 options', demo.questions[2].responseConfig.options.length === 4);
+assert('Location question is text', demo.questions[3].responseType === 'text');
+
+// ============================================================================
+// 4. scaffoldInstruments
+// ============================================================================
+section('scaffoldInstruments');
+
+var instruments = InstrumentScaffold.scaffoldInstruments(testRows);
+assert('Produces 3 instruments', instruments.length === 3);
+
+var survey = instruments[0];
+var kii = instruments[1];
+var fgd = instruments[2];
+
+assert('First instrument is survey', survey.type === 'survey');
+assert('Survey has name', survey.name === 'Household Perception Survey');
+assert('Survey has method', survey.method === 'Structured questionnaire');
+assert('Survey has targetSample', typeof survey.targetSample === 'string' && survey.targetSample.length > 0);
+assert('Survey has id', typeof survey.id === 'string' && survey.id.indexOf('inst_') === 0);
+
+assert('Second instrument is kii', kii.type === 'kii');
+assert('KII has name', kii.name === 'Key Informant Interview Guide');
+assert('KII has sections', kii.sections.length > 0);
+
+assert('Third instrument is fgd', fgd.type === 'fgd');
+assert('FGD has name', fgd.name === 'Focus Group Discussion Guide');
+
+// Survey should have demographics as first section
+assert('Survey first section is Demographics', survey.sections[0].label === 'Demographics');
+assert('Survey has EQ sections after demographics', survey.sections.length > 1);
+
+// KII should NOT have demographics
+var kiiHasDemographics = kii.sections.some(function(s) { return s.label === 'Demographics'; });
+assert('KII does not have demographics section', !kiiHasDemographics);
+
+// Each section should have questions
+var allSectionsHaveQuestions = instruments.every(function(inst) {
+  return inst.sections.every(function(sec) {
+    return sec.questions.length > 0;
+  });
+});
+assert('All sections in all instruments have questions', allSectionsHaveQuestions);
+
+// Test with sampleParams
+var spInstruments = InstrumentScaffold.scaffoldInstruments(testRows, { result: { totalSample: 420 } });
+assert('Sample params override survey target', spInstruments[0].targetSample === '420 respondents');
+
+// EQ sections should have eqId set
+var eqSections = survey.sections.filter(function(s) { return s.eqId !== null; });
+assert('Survey has EQ sections with eqId set', eqSections.length > 0);
+assert('EQ section eqId matches row id', eqSections[0].eqId === 'eq1' || eqSections[0].eqId === 'eq2');
+
+// ============================================================================
+// 5. exportAsXLSForm structure
+// ============================================================================
+section('exportAsXLSForm structure');
+
+var xlsxLoaded = typeof window.XLSX !== 'undefined';
+assert('XLSX library is loaded', xlsxLoaded);
+
+if (xlsxLoaded) {
+  // Use buildXLSFormWorkbook to test structure without triggering download
+  var wb = InstrumentExport.buildXLSFormWorkbook(survey);
+  assert('Workbook is created', wb !== null && wb !== undefined);
+
+  var sheetNames = wb.SheetNames;
+  assert('Workbook has 3 sheets', sheetNames.length === 3);
+  assert('First sheet is "survey"', sheetNames[0] === 'survey');
+  assert('Second sheet is "choices"', sheetNames[1] === 'choices');
+  assert('Third sheet is "settings"', sheetNames[2] === 'settings');
+
+  // Parse survey sheet
+  var surveySheet = XLSX.utils.sheet_to_json(wb.Sheets['survey'], { header: 1 });
+  assert('Survey sheet has header row', surveySheet.length > 0);
+  assert('Survey header has "type" column', surveySheet[0][0] === 'type');
+  assert('Survey header has "name" column', surveySheet[0][1] === 'name');
+  assert('Survey header has "label" column', surveySheet[0][2] === 'label');
+  assert('Survey header has "required" column', surveySheet[0][3] === 'required');
+  assert('Survey header has "relevant" column', surveySheet[0][4] === 'relevant');
+  assert('Survey header has "constraint" column', surveySheet[0][5] === 'constraint');
+  assert('Survey header has "constraint_message" column', surveySheet[0][6] === 'constraint_message');
+
+  // Check begin_group / end_group pairs
+  var beginGroups = surveySheet.filter(function(r) { return r[0] === 'begin_group'; });
+  var endGroups = surveySheet.filter(function(r) { return r[0] === 'end_group'; });
+  assert('begin_group count matches end_group count', beginGroups.length === endGroups.length);
+  assert('Has at least 2 groups (demographics + EQ sections)', beginGroups.length >= 2);
+
+  // Check question type mappings
+  var selectOneRows = surveySheet.filter(function(r) { return typeof r[0] === 'string' && r[0].indexOf('select_one') === 0; });
+  assert('Has select_one questions (demographics)', selectOneRows.length > 0);
+
+  var likertRows = surveySheet.filter(function(r) { return typeof r[0] === 'string' && r[0].indexOf('select_one likert') === 0; });
+  assert('Has Likert-type questions', likertRows.length > 0);
+
+  // Check choices sheet
+  var choicesSheet = XLSX.utils.sheet_to_json(wb.Sheets['choices'], { header: 1 });
+  assert('Choices sheet has header row', choicesSheet.length > 0);
+  assert('Choices header has list_name', choicesSheet[0][0] === 'list_name');
+  assert('Choices header has name', choicesSheet[0][1] === 'name');
+  assert('Choices header has label', choicesSheet[0][2] === 'label');
+
+  // Check for standard lists
+  var choiceListNames = choicesSheet.slice(1).map(function(r) { return r[0]; });
+  var hasLikert5 = choiceListNames.indexOf('likert5') >= 0;
+  assert('Choices include likert5 list', hasLikert5);
+
+  var hasGender = choiceListNames.indexOf('gender') >= 0;
+  assert('Choices include gender list', hasGender);
+
+  var hasAgeGroup = choiceListNames.indexOf('age_group') >= 0;
+  assert('Choices include age_group list', hasAgeGroup);
+
+  // Check settings sheet
+  var settingsSheet = XLSX.utils.sheet_to_json(wb.Sheets['settings'], { header: 1 });
+  assert('Settings sheet has header row', settingsSheet.length >= 2);
+  assert('Settings header has form_title', settingsSheet[0][0] === 'form_title');
+  assert('Settings header has form_id', settingsSheet[0][1] === 'form_id');
+  assert('Settings form_title matches instrument name', settingsSheet[1][0] === survey.name);
+
+  // Check sanitizeName utility
+  var sn = InstrumentExport.sanitizeName('In your opinion, does this programme address root causes?', 5);
+  assert('sanitizeName produces prefixed name', sn.indexOf('q5_') === 0);
+  assert('sanitizeName has no special characters', /^[a-z0-9_]+$/.test(sn));
+
+  // Verify name column values in survey sheet are clean
+  var dataRows = surveySheet.slice(1).filter(function(r) { return r[0] !== 'begin_group' && r[0] !== 'end_group'; });
+  var allNamesClean = dataRows.every(function(r) {
+    return /^[a-z0-9_]+$/.test(r[1]);
+  });
+  assert('All question names are clean (lowercase, underscores, digits)', allNamesClean);
+}
+
+// ── Summary ──
+var summaryEl = document.createElement('div');
+summaryEl.className = 'summary ' + (fail === 0 ? 'all-pass' : 'has-fail');
+summaryEl.textContent = pass + ' passed, ' + fail + ' failed \u2014 ' + (fail === 0 ? 'ALL TESTS PASS' : fail + ' FAILURE(S)');
+results.appendChild(summaryEl);
+</script>
+</body>
+</html>
