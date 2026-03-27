@@ -20,6 +20,8 @@
       stationContent = h(Station0, { state: state, dispatch: dispatch });
     } else if (activeStation === 2 && typeof Station2 !== 'undefined') {
       stationContent = h(Station2, { state: state, dispatch: dispatch });
+    } else if (activeStation === 5 && typeof Station5 !== 'undefined') {
+      stationContent = h(Station5, { state: state, dispatch: dispatch });
     } else {
       stationContent = h('div', { className: 'wb-station-empty', style: { textAlign: 'center', padding: '64px 24px' } },
         h('h3', { className: 'wb-station-empty-title', style: { fontSize: '16px', fontWeight: 600, color: '#1F2937', marginBottom: 8 } },
