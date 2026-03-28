@@ -398,7 +398,7 @@
 <div class="container">
   <section class="hero reveal">
     <h1>PRAXIS <em>AI for Good</em> Lab</h1>
-    <p class="hero-sub">Open-source AI for programme evaluation and early warning. Built by a practitioner working in the Sahel, not a product team.</p>
+    <p class="hero-sub">Open-source AI for programme evaluation and conflict early warning. Twelve years of field experience in the Sahel, encoded into tools that work offline in Ouagadougou.</p>
     <div class="hero-ctas">
       <a href="./tools/" class="btn btn-warm">Evaluation Tools</a>
       <a href="./ews/" class="btn btn-outline">PRAXIS EWS</a>
@@ -424,7 +424,7 @@
     </div>
 
     <div class="reveal">
-      <div id="tremor-root" style="border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px;">Loading visualization...</div>
+      <div id="tremor-root" style="overflow: hidden; margin-bottom: 20px;">Loading visualization...</div>
 
       <div class="showcase-stats">
         <div class="showcase-stat">
@@ -1007,75 +1007,14 @@ function TREMORViz() {
   }];
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.bg,
-      border: `1px solid ${C.bdr}`,
-      maxWidth: 760,
+      background: "transparent",
+      maxWidth: "100%",
       margin: "0 auto",
       fontFamily: "'IBM Plex Sans',sans-serif"
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "20px 24px 14px",
-      borderBottom: `1px solid ${C.bdr}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'IBM Plex Mono',monospace",
-      fontSize: 10,
-      fontWeight: 600,
-      letterSpacing: 2,
-      color: C.cool,
-      textTransform: "uppercase",
-      marginBottom: 6
-    }
-  }, "PRAXIS TREMOR Research"), /*#__PURE__*/React.createElement("h2", {
-    style: {
-      fontFamily: "'Instrument Serif',serif",
-      fontSize: 22,
-      fontWeight: 400,
-      color: C.txW,
-      margin: 0,
-      lineHeight: 1.3
-    }
-  }, "No single event type predicts violence. ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: C.warm
-    }
-  }, "Co-occurrence does.")), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: 11,
-      color: C.txS,
-      margin: "8px 0 0",
-      lineHeight: 1.5
-    }
-  }, "When multiple types of violence converge in the same district in the same week, what follows is significantly worse. 100,184 ACLED events, 13 countries, 1,503 districts, 2010-2025."), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit,minmax(100px,1fr))",
-      gap: 8,
-      marginTop: 14
-    }
-  }, [["100,184", "events analysed"], ["13", "countries"], ["1,503", "districts"], ["9.4x", "where to look"], ["1.6x", "when to act"]].map(([n, label], i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'IBM Plex Mono',monospace",
-      fontSize: 20,
-      fontWeight: 700,
-      color: i >= 3 ? [C.warm, C.cool][i - 3] : C.cool,
-      lineHeight: 1
-    }
-  }, n), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 9,
-      color: C.txM,
-      marginTop: 3,
-      lineHeight: 1.2
-    }
-  }, label))))), /*#__PURE__*/React.createElement("div", {
+  },
+
+  /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       borderBottom: `1px solid ${C.bdr}`,
@@ -1102,7 +1041,7 @@ function TREMORViz() {
   }, t.label))), view === "trends" && /*#__PURE__*/React.createElement("div", {
     role: "tabpanel",
     style: {
-      padding: "14px 20px 18px"
+      padding: "12px 16px 16px"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1117,8 +1056,6 @@ function TREMORViz() {
     style: pill(tsM === id)
   }, label))), /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.bgA,
-      border: `1px solid ${C.bdr}`,
       padding: "6px 4px"
     }
   }, tsM === "events" && /*#__PURE__*/React.createElement(AreaChart, {
@@ -1209,9 +1146,7 @@ function TREMORViz() {
   }, /*#__PURE__*/React.createElement("svg", {
     viewBox: "0 0 800 460",
     style: {
-      width: "100%",
-      background: C.bgA,
-      border: `1px solid ${C.bdr}`
+      width: "100%"
     },
     "aria-label": mapMode === "kafd_ied" ? "Map: KAFD+IED districts" : "Map: multi-type co-occurrence districts"
   }, [-15, -10, -5, 0, 5, 10, 15].map(lon => {
