@@ -24,8 +24,9 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .brand-360{font-size:9px;font-weight:700;color:var(--teal);border:1px solid var(--teal);border-radius:4px;padding:1px 4px;margin-left:2px;letter-spacing:.05em}
 .brand-sep{color:rgba(136,153,170,.4);font-weight:300;font-size:13px}
 .brand-page{color:#CBD5E1;font-size:12px;font-weight:500}
-.tb-div{width:1px;height:24px;background:rgba(255,255,255,.1);margin:0 6px}
-.tb-group{display:flex;align-items:center;gap:1px}
+.tb-div{width:1px;height:24px;background:rgba(255,255,255,.12);margin:0 10px}
+.tb-group{display:flex;align-items:center;gap:2px}
+.tb-group-layer{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.04);border-radius:5px;padding:1px 2px}
 .tb{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:5px;border:none;font-size:11px;font-weight:600;color:#CBD5E1;background:transparent;transition:all .15s;white-space:nowrap}
 .tb:hover{background:rgba(255,255,255,.08);color:#fff}
 .tb.active{background:var(--teal);color:var(--navy)}
@@ -89,15 +90,15 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .snap-guide-v{width:1px;top:0;bottom:0}
 
 /* ── Nodes ────────────────── */
-.toc-node{position:absolute;width:200px;min-height:56px;border-radius:9px;background:var(--surface);border:2px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.05);user-select:none;z-index:5;touch-action:none}
+.toc-node{position:absolute;width:200px;min-height:56px;border-radius:6px;background:var(--surface);border:1.5px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);user-select:none;z-index:5;touch-action:none}
 .toc-node.animating{transition:left .3s ease,top .3s ease}
-.toc-node:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.toc-node.selected{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-glow),0 4px 12px rgba(0,0,0,.1)}
+.toc-node:hover{box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.toc-node.selected{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-glow),0 2px 8px rgba(0,0,0,.08)}
 .toc-node.in-selection{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
 .toc-node.connect-source{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.2)}
 .toc-node.connect-target:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.2)}
 .toc-node.dragging{z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.15);transition:none!important}
-.node-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:9px 0 0 9px}
+.node-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:6px 0 0 6px}
 .node-body{padding:8px 10px 8px 14px}
 .node-level-tag{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.65}
 .node-title{font-size:12px;font-weight:600;line-height:1.3;word-break:break-word}
@@ -182,10 +183,10 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .modal-header h3{font-size:14px;font-weight:700}
 .modal-body{padding:18px;overflow-y:auto;flex:1}
 .modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-.modal-btn{padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s}
-.modal-btn:hover{border-color:var(--teal);color:var(--teal)}
-.modal-btn.primary{background:var(--teal);color:var(--navy);border-color:var(--teal)}
-.modal-btn.primary:hover{background:var(--teal-dark);color:#fff}
+.modal-btn{padding:7px 16px;border-radius:5px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s}
+.modal-btn:hover{border-color:var(--navy);color:var(--navy)}
+.modal-btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.modal-btn.primary:hover{background:#122240}
 
 /* ── Foundation popover ──── */
 .foundation-popover{position:absolute;z-index:55;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.1);padding:12px 14px;max-width:280px;font-size:11px;line-height:1.5;color:var(--text)}
@@ -203,21 +204,27 @@ button{font-family:inherit;cursor:pointer}input,textarea,select{font-family:inhe
 .tpl-icon svg{width:18px;height:18px}
 
 /* ── Welcome ──────────────── */
-.welcome-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;background:rgba(241,245,249,.92);backdrop-filter:blur(4px)}
-.welcome-card{background:var(--surface);border-radius:14px;padding:32px;box-shadow:0 16px 48px rgba(0,0,0,.1);max-width:640px;width:95%}
-.welcome-icon{display:flex;align-items:center;justify-content:center;margin-bottom:12px}
-.welcome-icon svg{width:48px;height:48px}
-.welcome-title{font-size:20px;font-weight:800;text-align:center;margin-bottom:6px;color:var(--navy)}
-.welcome-sub{font-size:13px;color:var(--text-muted);line-height:1.6;text-align:center;margin-bottom:20px}
-.welcome-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-bottom:6px}
-.welcome-grid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.welcome-btn{padding:9px 14px;border-radius:7px;font-size:12px;font-weight:700;border:none;transition:all .15s;text-align:left}
-.welcome-btn-primary{background:var(--teal);color:var(--navy)}
-.welcome-btn-primary:hover{background:var(--teal-dark);color:#fff}
-.welcome-btn-secondary{background:var(--bg);color:var(--text);border:1.5px solid var(--border);flex:1 1 140px}
-.welcome-btn-secondary:hover{border-color:var(--teal);color:var(--teal)}
-.welcome-btn-info{font-size:9px;color:var(--text-muted);font-weight:500;margin-top:2px}
-.welcome-actions{display:flex;gap:6px;justify-content:center}
+.welcome-overlay{position:fixed;inset:0;display:flex;flex-direction:column;z-index:50;background:var(--bg)}
+.welcome-header{height:48px;background:var(--navy);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
+.welcome-header-brand{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--teal);text-transform:uppercase}
+.welcome-header-sep{color:rgba(255,255,255,.2);font-size:13px}
+.welcome-header-title{font-size:12px;font-weight:500;color:#CBD5E1}
+.welcome-body{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px;overflow-y:auto}
+.welcome-card{max-width:600px;width:100%}
+.welcome-title{font-size:22px;font-weight:800;margin-bottom:6px;color:var(--navy)}
+.welcome-sub{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:28px}
+.welcome-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-bottom:8px}
+.welcome-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.welcome-tpl-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:6px;border:1px solid var(--border);border-left:3px solid var(--teal);background:var(--surface);cursor:pointer;transition:all .15s;text-align:left;font-size:13px;font-weight:600;color:var(--text)}
+.welcome-tpl-card:hover{border-left-color:var(--navy);background:#FAFBFC;box-shadow:0 2px 8px rgba(11,26,46,.06)}
+.welcome-tpl-meta{font-size:10px;color:var(--text-muted);font-weight:500;margin-top:2px}
+.welcome-tpl-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.welcome-actions{display:flex;gap:8px;margin-top:4px}
+.welcome-btn{padding:9px 16px;border-radius:5px;font-size:12px;font-weight:700;border:none;transition:all .15s}
+.welcome-btn-primary{background:var(--navy);color:#fff}
+.welcome-btn-primary:hover{background:#122240}
+.welcome-btn-secondary{background:var(--surface);color:var(--text);border:1.5px solid var(--border)}
+.welcome-btn-secondary:hover{border-color:var(--navy);color:var(--navy)}
 
 /* ── Export dropdown ────────── */
 .export-dropdown{position:absolute;top:44px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:110;min-width:180px;padding:4px 0}
@@ -261,7 +268,7 @@ const LEVELS=[
   {id:'activity',label:'Activities',color:'#64748B',bg:'rgba(100,116,139,0.03)',y:1760,hint:'What the programme does'},
 ];
 const LANE_H=380,NODE_W=200,GRID=24;
-const EV_STRENGTH={strong:{color:'#10B981',w:3,dash:'',lbl:'Strong'},moderate:{color:'#3B82F6',w:2.5,dash:'',lbl:'Moderate'},weak:{color:'#F59E0B',w:2,dash:'8,4',lbl:'Weak'},none:{color:'#94A3B8',w:1.5,dash:'4,4',lbl:'None'},contested:{color:'#D97706',w:2,dash:'3,3',lbl:'Contested'}};
+const EV_STRENGTH={strong:{color:'#10B981',w:1.5,dash:'',lbl:'Strong'},moderate:{color:'#3B82F6',w:1.5,dash:'',lbl:'Moderate'},weak:{color:'#F59E0B',w:1.25,dash:'8,4',lbl:'Weak'},none:{color:'#CBD5E1',w:1,dash:'4,4',lbl:'None'},contested:{color:'#D97706',w:1.25,dash:'3,3',lbl:'Contested'}};
 const EV_TYPES=[{id:'systematic_review',lbl:'Systematic Review'},{id:'rct',lbl:'RCT / Experimental'},{id:'quasi_experimental',lbl:'Quasi-Experimental'},{id:'observational',lbl:'Observational'},{id:'mixed_methods',lbl:'Mixed Methods'},{id:'expert_opinion',lbl:'Expert Opinion'},{id:'theoretical',lbl:'Theoretical'},{id:'programme_data',lbl:'Programme Data'}];
 const EV_TRANSFER=[{id:'high',lbl:'High'},{id:'moderate',lbl:'Moderate'},{id:'low',lbl:'Low'},{id:'unknown',lbl:'Unknown'}];
 const ASSUMPTION_COLORS={untested:'#94A3B8',validated:'#10B981',critical:'#F59E0B',invalid:'#EF4444'};
@@ -523,7 +530,7 @@ function buildSVGString(state, stakeholder){
     conns.forEach(c=>{
       const src=nodes.find(n=>n.id===c.sourceId),tgt=nodes.find(n=>n.id===c.targetId);if(!src||!tgt)return;
       const ep=getConnEndpoints(src,tgt);
-      svg+=`<path d="${bezier(ep.sx,ep.sy,ep.tx,ep.ty)}" fill="none" stroke="#CBD5E1" stroke-width="1.5" marker-end="url(#a-sh)" opacity="0.7"/>`;
+      svg+=`<path d="${bezier(ep.sx,ep.sy,ep.tx,ep.ty)}" fill="none" stroke="#CBD5E1" stroke-width="1" marker-end="url(#a-sh)" opacity="0.6"/>`;
     });
     nodes.forEach(n=>{
       const lv=LEVELS.find(l=>l.id===n.level);const h=50;
@@ -730,6 +737,19 @@ function KnowledgeSourceInline({ks,onChange}){
 }
 
 // ── Bulk Source Popover [IC2] ─────────────────────────────────
+// ── Collapsible reference section (collapsed by default) ──
+function CollapsibleRef({title,children}){
+  const[open,setOpen]=useState(false);
+  return(
+    <div className="sb-section">
+      <div className="sb-title" style={{cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',userSelect:'none'}} onClick={()=>setOpen(!open)}>
+        <span>{title}</span>
+        <span style={{fontSize:8,color:'var(--slate-light)',transition:'transform .15s',transform:open?'rotate(90deg)':'rotate(0deg)'}}>&#9654;</span>
+      </div>
+      {open&&children}
+    </div>);
+}
+
 function BulkSourcePopover({onApply,onClose}){
   const[st,setSt]=useState('unset');
   const[by,setBy]=useState('');
@@ -821,8 +841,8 @@ const ConnectionPath=memo(function ConnectionPath({conn,source,target,selected,s
   return(
     <g className={selected?'conn-selected':''}>
       <path d={path} className="conn-hit" onClick={()=>onSelect(conn.id)}/>
-      <path d={path} fill="none" stroke={st.color} strokeWidth={st.w} strokeDasharray={st.dash} strokeLinecap="round" className="conn-path" onClick={()=>onSelect(conn.id)} markerEnd={`url(#arr-${conn.evidence?.strength||'none'})`} markerStart={conn.bidirectional?`url(#arr-${conn.evidence?.strength||'none'})`:undefined}/>
-      {selected&&<path d={path} fill="none" stroke={st.color} strokeWidth={st.w+2} strokeDasharray={st.dash} strokeLinecap="round" opacity=".3"/>}
+      <path d={path} fill="none" stroke={selected?'#2EC4B6':st.color} strokeWidth={selected?2:st.w} strokeDasharray={st.dash} strokeLinecap="round" className="conn-path" onClick={()=>onSelect(conn.id)} markerEnd={`url(#arr-${conn.evidence?.strength||'none'})`} markerStart={conn.bidirectional?`url(#arr-${conn.evidence?.strength||'none'})`:undefined}/>
+      {selected&&<path d={path} fill="none" stroke="#2EC4B6" strokeWidth={4} strokeLinecap="round" opacity=".15"/>}
       {conn.bidirectional&&<g><circle cx={mid.x-14} cy={mid.y} r={6} fill="none" stroke={st.color} strokeWidth="1.5"/><path d={`M${mid.x-17} ${mid.y-3} l3 3-3 3`} fill="none" stroke={st.color} strokeWidth="1.5"/></g>}
       {showE&&<g className="evidence-dot" onClick={()=>onSelect(conn.id)}>
         <circle cx={mid.x} cy={mid.y} r={9} fill={st.color} opacity=".9"/>
@@ -1046,37 +1066,40 @@ function ConnectionDetail({conn,nodes,dispatch}){
 function WelcomeScreen({dispatch}){
   const fr=useRef();
   const onImport=(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(ev)=>dispatch({type:'IMPORT',json:ev.target.result});r.readAsText(f);};
-  const complex=['rssh','peacebuilding'],simple=['health_simple'];
+  const allTemplates=[
+    {id:'rssh',category:'Reference',color:'#3B82F6'},
+    {id:'peacebuilding',category:'Reference',color:'#8B5CF6'},
+    {id:'health_simple',category:'Starter',color:'#10B981'}
+  ];
   return(
-    <div className="welcome-overlay"><div className="welcome-card">
-      <div className="welcome-icon">{WelcomeIcons.hero}</div>
-      <div className="welcome-title">Theory of Change Builder</div>
-      <div className="welcome-sub">Build interactive, evidence-mapped causal diagrams with assumption tracking, evidence taxonomy, feedback loops, and narrative theory documentation.</div>
-      <div style={{textAlign:'left',marginBottom:10}}>
-        <div className="welcome-section-label">Complex Programmes</div>
+    <div className="welcome-overlay">
+      <div className="welcome-header">
+        <span className="welcome-header-brand">PRAXIS</span>
+        <span className="welcome-header-sep">|</span>
+        <span className="welcome-header-title">Theory of Change Builder</span>
+      </div>
+      <div className="welcome-body"><div className="welcome-card">
+        <div className="welcome-title">Theory of Change Builder</div>
+        <div className="welcome-sub">Build evidence-mapped causal diagrams with assumption tracking, knowledge source attribution, and narrative documentation.</div>
+        <div className="welcome-section-label">Start from a template</div>
         <div className="welcome-grid">
-          {complex.map(k=>{const t=TEMPLATES[k];const icon=k==='rssh'?WelcomeIcons.globe:WelcomeIcons.shield;return(
-            <button key={k} className="welcome-btn welcome-btn-secondary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:k})}>
-              <div style={{fontSize:13,display:'flex',alignItems:'center',gap:6}}><span className="tpl-icon">{icon}</span> <strong>{t.name}</strong></div>
-              <div className="welcome-btn-info">{t.nodes.length} nodes &middot; {t.connections.length} pathways &middot; {t.connections.filter(c=>c.bidirectional).length} feedback loops</div>
+          {allTemplates.map(({id,category,color})=>{const t=TEMPLATES[id];if(!t)return null;return(
+            <button key={id} className="welcome-tpl-card" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id})}>
+              <span className="welcome-tpl-badge" style={{background:color+'18',color}}>{category}</span>
+              <div style={{flex:1}}>
+                <div>{t.name}</div>
+                <div className="welcome-tpl-meta">{t.nodes.length} nodes &middot; {t.connections.length} pathways{t.connections.filter(c=>c.bidirectional).length>0?' \u00b7 '+t.connections.filter(c=>c.bidirectional).length+' feedback loops':''}</div>
+              </div>
             </button>);})}
         </div>
-      </div>
-      <div style={{textAlign:'left',marginBottom:14}}>
-        <div className="welcome-section-label">Starters</div>
-        <div className="welcome-grid">
-          {simple.map(k=>{const t=TEMPLATES[k];return(
-            <button key={k} className="welcome-btn welcome-btn-secondary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:k})}>
-              <span style={{display:'inline-flex',alignItems:'center',gap:6}}><span className="tpl-icon">{WelcomeIcons.heartbeat}</span> {t.name}</span>
-            </button>);})}
+        <div className="welcome-section-label">Or start fresh</div>
+        <div className="welcome-actions">
+          <button className="welcome-btn welcome-btn-primary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:'blank'})}>Start Blank</button>
+          <button className="welcome-btn welcome-btn-secondary" onClick={()=>fr.current?.click()}>Import JSON</button>
+          <input ref={fr} type="file" accept=".json" style={{display:'none'}} onChange={onImport}/>
         </div>
-      </div>
-      <div className="welcome-actions">
-        <button className="welcome-btn welcome-btn-primary" onClick={()=>dispatch({type:'LOAD_TEMPLATE',id:'blank'})}><span style={{display:'inline-flex',alignItems:'center',gap:4}}>{WelcomeIcons.file} Start Blank</span></button>
-        <button className="welcome-btn welcome-btn-secondary" style={{flex:'0'}} onClick={()=>fr.current?.click()}>Import JSON</button>
-        <input ref={fr} type="file" accept=".json" style={{display:'none'}} onChange={onImport}/>
-      </div>
-    </div></div>);
+      </div></div>
+    </div>);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1315,7 +1338,7 @@ function ToCBuilder({sensitivity,experienceTier,initialData,onDataChange,fromSta
           <button className={`tb ${s.mode==='connect'?'active':''}`} onClick={()=>dispatch({type:'SET_MODE',mode:s.mode==='connect'?'select':'connect'})} title="Connect (C)">{I.link} <span>Connect</span></button>
         </div>
         <div className="tb-div"/>
-        <div className="tb-group">
+        <div className="tb-group-layer">
           <button className={`tb ${s.showAssumptions?'active':''}`} onClick={()=>dispatch({type:'TOGGLE_ASSUMPTIONS'})}>{s.showAssumptions?I.eye:I.eyeOff} <span>Assumptions</span></button>
           <button className={`tb ${s.showEvidence?'active':''}`} onClick={()=>dispatch({type:'TOGGLE_EVIDENCE'})}>{s.showEvidence?I.eye:I.eyeOff} <span>Evidence</span></button>
           <button className={`tb ${s.showCodes?'active':''}`} onClick={()=>dispatch({type:'TOGGLE_CODES'})} title="Show traceability codes">{I.code} <span>Codes</span></button>
@@ -1351,6 +1374,32 @@ function ToCBuilder({sensitivity,experienceTier,initialData,onDataChange,fromSta
           <button className="tb" onClick={()=>fileRef.current?.click()} title="Import">{I.ul}</button>
           <input ref={fileRef} type="file" accept=".json,.csv,.xlsx,.xls" style={{display:'none'}} onChange={onImport}/>
         </div>
+      </div>}
+
+      {/* ── Embedded toolbar (shown only in iframe) ──── */}
+      {embedded&&<div className="top-bar" style={{height:40}}>
+        <div className="tb-group">
+          <button className={`tb undo-btn ${canUndo?'can':''}`} onClick={undo} title="Undo">{I.undo}</button>
+          <button className={`tb undo-btn ${canRedo?'can':''}`} onClick={redo} title="Redo">{I.redo}</button>
+        </div>
+        <div className="tb-div"/>
+        <div className="tb-group">
+          <button className={`tb ${s.mode==='select'?'active':''}`} onClick={()=>dispatch({type:'SET_MODE',mode:'select'})} title="Select (V)">{I.pointer} <span>Select</span></button>
+          <button className={`tb ${s.mode==='connect'?'active':''}`} onClick={()=>dispatch({type:'SET_MODE',mode:s.mode==='connect'?'select':'connect'})} title="Connect (C)">{I.link} <span>Connect</span></button>
+        </div>
+        <div className="tb-div"/>
+        <div className="tb-group">
+          <button className="tb" onClick={()=>dispatch({type:'SET_ZOOM',zoom:s.zoom+.15})}>{I.zoomIn}</button>
+          <span className="zoom-display">{Math.round(s.zoom*100)}%</span>
+          <button className="tb" onClick={()=>dispatch({type:'SET_ZOOM',zoom:s.zoom-.15})}>{I.zoomOut}</button>
+          <button className="tb" onClick={fitView} title="Fit (F)">{I.fit}</button>
+        </div>
+        <div className="spacer"/>
+        {s.nodes.length>0&&<div className="stats">
+          <span className="stat">{s.nodes.length} nodes</span>
+          <span className="stat">{s.connections.length} paths</span>
+        </div>}
+        <button className="tb" style={{background:'var(--teal)',color:'var(--navy)',fontWeight:700,borderRadius:5,padding:'5px 12px'}} onClick={()=>{if(window._praxisExportToC)window._praxisExportToC(s);dispatch({type:'SET_TOAST',msg:'Saved to Workbench'});}}>Save to Workbench</button>
       </div>}
 
       <div className="main">
@@ -1392,24 +1441,21 @@ function ToCBuilder({sensitivity,experienceTier,initialData,onDataChange,fromSta
                 <button className="add-btn" onClick={()=>setBulkSourceOpen(!bulkSourceOpen)}>Apply Source to All Nodes</button>
                 {bulkSourceOpen&&<BulkSourcePopover onApply={(st,by)=>dispatch({type:'APPLY_BULK_SOURCE',source_type:st,contributed_by:by})} onClose={()=>setBulkSourceOpen(false)}/>}
               </div>
-              <div className="sb-section">
-                <div className="sb-title">Evidence Legend</div>
+              <CollapsibleRef title="Evidence Legend">
                 {Object.entries(EV_STRENGTH).map(([k,st])=>(
                   <div key={k} className="legend-row">
-                    <svg width={28} height={8}><line x1={0} y1={4} x2={28} y2={4} stroke={st.color} strokeWidth={st.w} strokeDasharray={st.dash} strokeLinecap="round"/></svg>
+                    <svg width={28} height={8}><line x1={0} y1={4} x2={28} y2={4} stroke={st.color} strokeWidth={Math.max(st.w,1.5)} strokeDasharray={st.dash} strokeLinecap="round"/></svg>
                     <span>{st.lbl}</span>
                   </div>))}
-              </div>
-              <div className="sb-section">
-                <div className="sb-title">Assumption Status</div>
+              </CollapsibleRef>
+              <CollapsibleRef title="Assumption Status">
                 {Object.entries(ASSUMPTION_COLORS).map(([k,c])=>(
                   <div key={k} className="legend-row"><div className="legend-dot" style={{background:c}}/><span style={{textTransform:'capitalize'}}>{k}</span></div>))}
-              </div>
-              <div className="sb-section">
-                <div className="sb-title">Source Types</div>
+              </CollapsibleRef>
+              <CollapsibleRef title="Source Types">
                 {SOURCE_TYPES.filter(st=>st.id!=='unset').map(st=>(
                   <div key={st.id} className="legend-row"><div className="legend-dot" style={{background:st.color}}/><span>{st.icon} {st.label}</span></div>))}
-              </div>
+              </CollapsibleRef>
               <div className="sb-section">
                 <div className="shortcut-box">
                   <strong>Shortcuts</strong><br/>
@@ -1514,8 +1560,47 @@ function ToCBuilder({sensitivity,experienceTier,initialData,onDataChange,fromSta
 // STANDALONE WRAPPER [E3]
 // ═══════════════════════════════════════════════════════════════
 function StandaloneToCBuilder(){
-  return <ToCBuilder/>;
+  const isEmbedded = window.self !== window.top;
+  return <ToCBuilder embedded={isEmbedded}/>;
 }
+
+// ── PRAXIS Workbench Bridge ──
+(function() {
+  if (window.self === window.top) return;
+
+  window.parent.postMessage({ type: 'TOC_READY' }, '*');
+
+  window.addEventListener('message', function(e) {
+    if (!e.data || !e.data.type) return;
+    if (e.data.type === 'PRAXIS_INIT' && e.data.payload) {
+      // Store for component to pick up via window._praxisInitData
+      window._praxisInitData = e.data.payload;
+      // Dispatch custom event so the component can react
+      window.dispatchEvent(new CustomEvent('praxis-init', { detail: e.data.payload }));
+    }
+  });
+
+  // Expose export function for bridge
+  window._praxisExportToC = function(state) {
+    var data = {
+      title: state.title,
+      narrative: state.narrative,
+      nodes: state.nodes,
+      connections: state.connections
+    };
+    window.parent.postMessage({ type: 'TOC_EXPORT', payload: data }, '*');
+  };
+
+  window._praxisChangeToC = function(state) {
+    var data = {
+      title: state.title,
+      narrative: state.narrative,
+      nodes: state.nodes,
+      connections: state.connections
+    };
+    window.parent.postMessage({ type: 'TOC_CHANGE', payload: data }, '*');
+  };
+})();
 
 const root=ReactDOM.createRoot(document.getElementById('root'));
 root.render(<StandaloneToCBuilder/>);
