@@ -212,7 +212,9 @@
       ) : null,
 
       // Calculator overlay
-      calculatorOverlay
+      calculatorOverlay,
+
+      typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 4, dispatch: dispatch }) : null
     );
   }
 

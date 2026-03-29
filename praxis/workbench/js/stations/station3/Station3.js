@@ -246,7 +246,9 @@
         className: 'wb-btn wb-btn-primary',
         onClick: function() { setMode('canvas'); },
         style: { fontSize: '14px', padding: '10px 24px' }
-      }, rankedDesigns.length > 0 ? 'Revise Design Scoring' : 'Review & Score Designs')
+      }, rankedDesigns.length > 0 ? 'Revise Design Scoring' : 'Review & Score Designs'),
+
+      typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 3, dispatch: dispatch }) : null
     );
   }
 

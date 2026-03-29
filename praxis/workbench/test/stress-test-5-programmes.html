@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PRAXIS Workbench — Stress Test: 5 Real-World Programmes</title>
+<style>
+  body { font-family: 'DM Sans', 'Segoe UI', sans-serif; max-width: 1100px; margin: 0 auto; padding: 24px; background: #F8FAFC; color: #0F172A; }
+  h1 { font-size: 20px; color: #0B1A2E; border-bottom: 2px solid #2EC4B6; padding-bottom: 8px; }
+  h2 { font-size: 16px; color: #0B1A2E; margin-top: 32px; border-left: 3px solid #2EC4B6; padding-left: 10px; }
+  .programme { background: #fff; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+  .programme h3 { margin: 0 0 4px 0; font-size: 15px; }
+  .programme .desc { font-size: 12px; color: #64748B; margin-bottom: 12px; line-height: 1.5; }
+  .score-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .score-num { font-size: 28px; font-weight: 800; }
+  .score-band { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 4px; }
+  .band-green { background: #D1FAE5; color: #065F46; }
+  .band-amber { background: #FEF3C7; color: #92400E; }
+  .band-red { background: #FEE2E2; color: #991B1B; }
+  .dims { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+  .dim { padding: 8px; background: #F8FAFC; border-radius: 6px; font-size: 11px; }
+  .dim-label { font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.04em; font-size: 9px; margin-bottom: 4px; }
+  .dim-score { font-size: 16px; font-weight: 700; }
+  .dim-pct { font-size: 10px; color: #94A3B8; }
+  .blockers { margin-top: 8px; }
+  .blocker { font-size: 11px; color: #991B1B; background: #FEE2E2; padding: 4px 8px; border-radius: 4px; display: inline-block; margin: 2px 4px 2px 0; }
+  .recs { margin-top: 8px; }
+  .rec { font-size: 11px; color: #065F46; background: #D1FAE5; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; }
+  .assessment { font-size: 12px; line-height: 1.6; margin-top: 12px; padding: 10px; background: #F1F5F9; border-radius: 6px; border-left: 3px solid #3B82F6; }
+  .assessment strong { color: #1E40AF; }
+  .matrix-preview { margin-top: 12px; }
+  .matrix-preview table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .matrix-preview th { background: #0B1A2E; color: #fff; padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .matrix-preview td { padding: 5px 8px; border-bottom: 1px solid #E2E8F0; vertical-align: top; }
+  .crit-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+  .summary-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
+  .summary-table th { background: #0B1A2E; color: #fff; padding: 8px; text-align: left; }
+  .summary-table td { padding: 8px; border-bottom: 1px solid #E2E8F0; }
+  .pass { color: #065F46; font-weight: 700; }
+  .fail { color: #991B1B; font-weight: 700; }
+  .warn { color: #92400E; font-weight: 700; }
+  #results { margin-top: 20px; }
+  .analysis-section { margin-top: 24px; padding: 16px; background: #fff; border: 1px solid #E2E8F0; border-radius: 8px; }
+  .analysis-section h3 { margin: 0 0 8px 0; font-size: 14px; color: #0B1A2E; }
+</style>
+</head>
+<body>
+
+<h1>PRAXIS Workbench — Stress Test: 5 Real-World Programmes</h1>
+<p style="font-size:13px;color:#64748B;">Tests the EvaluabilityScorer and Station 6 analysis plan generator with diverse, messy, real-world evaluation scenarios. Checks for edge cases, scoring accuracy, and professional relevance of recommendations.</p>
+
+<div id="results">Loading scripts...</div>
+
+<!-- Load workbench dependencies in order -->
+<script>
+// Minimal PraxisUtils stub for the scorer
+window.PraxisUtils = {
+  clamp: function(val, min, max) { return Math.max(min, Math.min(max, val)); },
+  uid: function(prefix) { return (prefix || '') + '-' + Math.random().toString(36).substr(2, 9); }
+};
+</script>
+<script src="../js/schema.js"></script>
+<script src="../js/staleness.js"></script>
+<script src="../js/stations/station0/EvaluabilityScorer.js"></script>
+<script src="../data/indicator_bank.js"></script>
+<script src="../js/stations/station2/MatrixGenerator.js"></script>
+<script src="../js/stations/station6/Station6.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// 5 REAL-WORLD MESSY PROGRAMMES
+// ═══════════════════════════════════════════════════════════════════
+
+var PROGRAMMES = [
+
+  // ── 1. The "impossible RCT" ──────────────────────────────────
+  {
+    name: 'USAID Resilience & Food Security Activity — Lake Chad Basin',
+    description: 'A $42M multi-country resilience programme operating across NE Nigeria, Cameroon, and Niger in active conflict zones. Donor wants attribution-level evidence (RCT) but the operating context makes randomisation practically impossible. Baseline data exists but was collected 3 years ago by a different contractor with different indicators.',
+    messiness: 'Donor demands experimental evidence in a humanitarian context. Stale baseline. Multi-country with different implementing partners. Active conflict disrupts data collection.',
+    meta: {
+      programme_name: 'USAID Resilience & Food Security Activity — Lake Chad Basin',
+      organisation: 'USAID / Implementing consortium',
+      country: 'Nigeria, Cameroon, Niger',
+      health_areas: ['nutrition'],
+      sector: 'food_security',
+      budget: 'high',
+      operating_context: 'humanitarian',
+      programme_maturity: 'scaling',
+      timeline: 'medium'
+    },
+    tor: {
+      evaluation_purpose: ['accountability', 'learning'],
+      causal_inference_level: 'attribution',
+      comparison_feasibility: 'randomisable',
+      data_available: 'routine_only',
+      unit_of_intervention: 'cluster',
+      programme_complexity: 'complex',
+      geographic_scope: 'Multi-country (NE Nigeria, Far North Cameroon, Diffa Niger)',
+      target_population: 'Conflict-affected households in food-insecure areas'
+    }
+  },
+
+  // ── 2. The "no counterfactual" peacebuilding programme ───────
+  {
+    name: 'GCERF Community Resilience Against Violent Extremism — Sahel',
+    description: 'A $6M CVE programme working with religious leaders, youth groups, and local governance structures across 4 Sahelian countries. Theory of Change is unclear — the programme evolved organically. No comparison group is possible because the intervention targets entire communities selected based on threat intelligence. Only qualitative data from 6-monthly narrative reports.',
+    messiness: 'No ToC documentation. Politically sensitive beneficiary data. No comparison group possible. Qualitative data only. CVE outcomes are inherently hard to measure. Programme evolved beyond original design.',
+    meta: {
+      programme_name: 'GCERF Community Resilience Against Violent Extremism',
+      organisation: 'GCERF',
+      country: 'Mali, Burkina Faso, Niger, Chad',
+      health_areas: [],
+      sector: 'governance',
+      budget: 'medium',
+      operating_context: 'fragile',
+      programme_maturity: 'mature',
+      timeline: 'long'
+    },
+    tor: {
+      evaluation_purpose: ['learning', 'programme_improvement'],
+      causal_inference_level: 'contribution',
+      comparison_feasibility: 'none',
+      data_available: 'minimal',
+      unit_of_intervention: 'cluster',
+      programme_complexity: 'complex',
+      geographic_scope: '4 Sahelian countries, 23 communes',
+      target_population: 'At-risk communities in zones of extremist recruitment'
+    }
+  },
+
+  // ── 3. The "gold standard" health programme ──────────────────
+  {
+    name: 'Global Fund RSSH Strengthening in Ghana',
+    description: 'A mature Global Fund grant ($120M) to strengthen Ghana\'s health system — supply chain, HMIS, community health workers. Has 5 years of baseline data through DHIS2, a natural comparison (phased rollout across 6 regions with staggered start dates), and a clear results framework aligned to GF Modular Framework.',
+    messiness: 'Almost too clean — tests whether the tool gives a high score without false positives. The one challenge: the programme is mature and some components have already been integrated into the national system, making attribution of the "GF contribution" difficult.',
+    meta: {
+      programme_name: 'Global Fund RSSH Strengthening Grant',
+      organisation: 'Global Fund / Ghana Health Service',
+      country: 'Ghana',
+      health_areas: ['health_systems', 'malaria', 'hiv'],
+      sector: 'health',
+      budget: 'high',
+      operating_context: 'stable',
+      programme_maturity: 'mature',
+      timeline: 'long'
+    },
+    tor: {
+      evaluation_purpose: ['accountability', 'learning', 'programme_improvement'],
+      causal_inference_level: 'contribution',
+      comparison_feasibility: 'natural',
+      data_available: 'baseline_endline',
+      unit_of_intervention: 'system',
+      programme_complexity: 'complicated',
+      geographic_scope: 'National (6 priority regions for phased rollout)',
+      target_population: 'Health system actors and service users in 6 priority regions'
+    }
+  },
+
+  // ── 4. The "pilot with no data" ──────────────────────────────
+  {
+    name: 'Digital Cash Transfer Pilot — South Sudan',
+    description: 'A 6-month $800K pilot testing mobile money transfers to IDPs in Juba PoC sites. No baseline collected ("we just started distributing"). Implementing NGO wants to know if the programme works before requesting a $15M scale-up. 2,400 beneficiaries, no comparison group, no M&E officer on staff. One Excel spreadsheet of disbursement records exists.',
+    messiness: 'No baseline. No M&E capacity. 6-month timeline for an evaluation that should take 12. Humanitarian context. Pilot stage with scale-up pressure. Minimal data. Politically sensitive (IDP targeting).',
+    meta: {
+      programme_name: 'Digital Cash Transfer Pilot',
+      organisation: 'International NGO (unnamed)',
+      country: 'South Sudan',
+      health_areas: [],
+      sector: 'social_protection',
+      budget: 'low',
+      operating_context: 'humanitarian',
+      programme_maturity: 'pilot',
+      timeline: 'short'
+    },
+    tor: {
+      evaluation_purpose: ['programme_improvement'],
+      causal_inference_level: 'description',
+      comparison_feasibility: 'none',
+      data_available: 'minimal',
+      unit_of_intervention: 'individual',
+      programme_complexity: 'simple',
+      geographic_scope: 'Juba PoC sites 1 and 3',
+      target_population: 'Internally displaced persons receiving mobile money transfers'
+    }
+  },
+
+  // ── 5. The "ambitious mixed-methods multi-sector" ────────────
+  {
+    name: 'EU Spotlight Initiative — Ending Violence Against Women — Uganda',
+    description: 'A $30M multi-sector UN joint programme (UNDP, UN Women, UNFPA, UNICEF) with 6 pillars: legislation, institutional strengthening, prevention, services, data, civil society. The evaluation ToR demands both quantitative impact measurement AND qualitative systems change analysis across all 6 pillars. District-level DID is possible for some pillars but not others. UBOS household survey data available for 3 of 6 pillars.',
+    messiness: 'Multi-agency coordination nightmare. 6 pillars with different evaluability. Some pillars have quantitative data, others only qualitative. Mixed methods required but budget only allows for one evaluation team. DID feasible for service delivery pillar but not for legislation/policy pillars.',
+    meta: {
+      programme_name: 'EU Spotlight Initiative — Ending Violence Against Women',
+      organisation: 'EU / UN (UNDP, UN Women, UNFPA, UNICEF)',
+      country: 'Uganda',
+      health_areas: ['sexual_reproductive_health'],
+      sector: 'gender',
+      budget: 'high',
+      operating_context: 'stable',
+      programme_maturity: 'scaling',
+      timeline: 'medium'
+    },
+    tor: {
+      evaluation_purpose: ['accountability', 'learning'],
+      causal_inference_level: 'attribution',
+      comparison_feasibility: 'natural',
+      data_available: 'timeseries',
+      unit_of_intervention: 'system',
+      programme_complexity: 'complex',
+      geographic_scope: 'National programme, 15 focus districts',
+      target_population: 'Women and girls at risk of gender-based violence'
+    }
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// RUN TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+function getBandInfo(score) {
+  if (score >= 80) return { label: 'Highly evaluable', cls: 'band-green' };
+  if (score >= 60) return { label: 'Evaluable with constraints', cls: 'band-amber' };
+  if (score >= 40) return { label: 'Challenging to evaluate', cls: 'band-amber' };
+  return { label: 'Significant evaluability concerns', cls: 'band-red' };
+}
+
+var CRITERION_COLORS = {
+  relevance:     { bg: '#DBEAFE', text: '#1E40AF' },
+  coherence:     { bg: '#E0E7FF', text: '#3730A3' },
+  effectiveness: { bg: '#D1FAE5', text: '#065F46' },
+  efficiency:    { bg: '#FEF3C7', text: '#92400E' },
+  impact:        { bg: '#FCE7F3', text: '#9D174D' },
+  sustainability:{ bg: '#CCFBF1', text: '#115E59' }
+};
+
+function assessResult(prog, result) {
+  var issues = [];
+  var passes = [];
+  var name = prog.name;
+
+  // Programme 1: Should flag humanitarian + RCT conflict
+  if (name.indexOf('Lake Chad') >= 0) {
+    if (result.score >= 70) issues.push('Score too high for humanitarian RCT — expected constraints');
+    if (result.score < 30) issues.push('Score too low — programme has routine data and is scaling');
+    if (result.recommendations.some(function(r) { return r.indexOf('operating context') >= 0 || r.indexOf('humanitarian') >= 0; })) passes.push('Correctly flags humanitarian context adaptation');
+    if (result.recommendations.some(function(r) { return r.indexOf('quasi-experimental') >= 0 || r.indexOf('randomised') >= 0; })) passes.push('Correctly warns about RCT feasibility in short timeline');
+    if (result.blockers.some(function(b) { return b.dimension === 'data'; })) passes.push('Correctly identifies data as a blocker');
+    else issues.push('Should flag data as a blocker (routine_only with stale baseline)');
+  }
+
+  // Programme 2: Should score low but not catastrophically
+  if (name.indexOf('GCERF') >= 0) {
+    if (result.score >= 60) issues.push('Score too high for programme with no comparison, minimal data');
+    if (result.score < 25) issues.push('Score too low — programme is mature with long timeline');
+    if (result.blockers.some(function(b) { return b.dimension === 'data'; })) passes.push('Correctly identifies data as critical gap');
+    if (result.recommendations.some(function(r) { return r.indexOf('contribution analysis') >= 0; })) passes.push('Correctly suggests contribution analysis for no-comparison context');
+  }
+
+  // Programme 3: Should score high
+  if (name.indexOf('Global Fund') >= 0) {
+    if (result.score < 70) issues.push('Score too low for gold-standard programme');
+    if (result.score > 95) issues.push('Score suspiciously high — attribution challenge should cap it');
+    if (result.blockers.length > 0) issues.push('Should have no blockers for this well-resourced programme');
+    else passes.push('Correctly identifies no blockers');
+  }
+
+  // Programme 4: Should score very low
+  if (name.indexOf('South Sudan') >= 0) {
+    if (result.score >= 50) issues.push('Score too high for pilot with no data in humanitarian context');
+    if (result.score < 15) issues.push('Score unreasonably low — description-level inference should soften comparison penalty');
+    if (result.blockers.length < 2) issues.push('Expected at least 2 blockers (data, context)');
+    else passes.push('Correctly identifies multiple blockers');
+    if (result.recommendations.some(function(r) { return r.indexOf('data readiness') >= 0 || r.indexOf('MEAL') >= 0; })) passes.push('Correctly recommends strengthening data');
+  }
+
+  // Programme 5: Should be moderate — some pillars evaluable, others not
+  if (name.indexOf('Spotlight') >= 0) {
+    if (result.score < 50) issues.push('Score too low — programme has timeseries data and natural comparison');
+    if (result.score >= 85) issues.push('Score too high — multi-sector complexity should introduce constraints');
+    if (result.recommendations.length === 0) issues.push('Should generate recommendations for this complex programme');
+    else passes.push('Generates relevant recommendations');
+  }
+
+  return { issues: issues, passes: passes };
+}
+
+// ── Run ──────────────────────────────────────────────────────────
+
+window.addEventListener('DOMContentLoaded', function() {
+  // Small delay to allow scripts to load
+  setTimeout(runTests, 100);
+});
+
+function runTests() {
+  if (typeof EvaluabilityScorer === 'undefined') {
+    document.getElementById('results').innerHTML = '<p style="color:red;">EvaluabilityScorer not loaded. Check script paths.</p>';
+    return;
+  }
+
+  var html = '';
+  var summaryRows = [];
+  var totalPasses = 0, totalIssues = 0;
+
+  PROGRAMMES.forEach(function(prog, idx) {
+    var result = EvaluabilityScorer.score(prog.tor, prog.meta);
+    var band = getBandInfo(result.score);
+    var assessment = assessResult(prog, result);
+    totalPasses += assessment.passes.length;
+    totalIssues += assessment.issues.length;
+
+    summaryRows.push({
+      name: prog.name.split('—')[0].trim(),
+      score: result.score,
+      band: band,
+      blockers: result.blockers.length,
+      recs: result.recommendations.length,
+      passes: assessment.passes.length,
+      issues: assessment.issues.length
+    });
+
+    html += '<div class="programme">';
+    html += '<h3>' + (idx + 1) + '. ' + prog.name + '</h3>';
+    html += '<div class="desc"><strong>Scenario:</strong> ' + prog.description + '</div>';
+    html += '<div class="desc"><strong>Messiness factors:</strong> ' + prog.messiness + '</div>';
+
+    // Score bar
+    html += '<div class="score-bar">';
+    html += '<span class="score-num">' + result.score + '</span>';
+    html += '<span class="score-band ' + band.cls + '">' + band.label + '</span>';
+    html += '</div>';
+
+    // Dimensions
+    html += '<div class="dims">';
+    result.dimensions.forEach(function(d) {
+      var pct = Math.round((d.system_score / d.max) * 100);
+      var color = pct >= 75 ? '#065F46' : pct >= 50 ? '#92400E' : '#991B1B';
+      html += '<div class="dim">';
+      html += '<div class="dim-label">' + d.label + '</div>';
+      html += '<div class="dim-score" style="color:' + color + '">' + d.system_score + '<span class="dim-pct">/' + d.max + ' (' + pct + '%)</span></div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    // Blockers
+    if (result.blockers.length > 0) {
+      html += '<div class="blockers"><strong style="font-size:11px;color:#991B1B;">Blockers:</strong> ';
+      result.blockers.forEach(function(b) {
+        html += '<span class="blocker">' + b.label + ' (' + b.system_score + '/' + b.max + ')</span>';
+      });
+      html += '</div>';
+    }
+
+    // Recommendations
+    if (result.recommendations.length > 0) {
+      html += '<div class="recs"><strong style="font-size:11px;color:#065F46;">Recommendations:</strong>';
+      result.recommendations.forEach(function(r) {
+        html += '<div class="rec">' + r + '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Assessment
+    html += '<div class="assessment">';
+    html += '<strong>Stress Test Assessment:</strong><br>';
+    if (assessment.passes.length > 0) {
+      assessment.passes.forEach(function(p) {
+        html += '<span class="pass">\u2713</span> ' + p + '<br>';
+      });
+    }
+    if (assessment.issues.length > 0) {
+      assessment.issues.forEach(function(i) {
+        html += '<span class="fail">\u2717</span> ' + i + '<br>';
+      });
+    }
+    if (assessment.issues.length === 0) {
+      html += '<span class="pass">\u2713 All checks passed</span>';
+    }
+    html += '</div>';
+
+    html += '</div>'; // .programme
+  });
+
+  // Summary table
+  html += '<h2>Summary</h2>';
+  html += '<table class="summary-table"><thead><tr>';
+  html += '<th>Programme</th><th>Score</th><th>Band</th><th>Blockers</th><th>Recs</th><th>Passes</th><th>Issues</th>';
+  html += '</tr></thead><tbody>';
+  summaryRows.forEach(function(r) {
+    html += '<tr>';
+    html += '<td>' + r.name + '</td>';
+    html += '<td><strong>' + r.score + '</strong></td>';
+    html += '<td><span class="score-band ' + r.band.cls + '">' + r.band.label + '</span></td>';
+    html += '<td>' + r.blockers + '</td>';
+    html += '<td>' + r.recs + '</td>';
+    html += '<td class="pass">' + r.passes + '</td>';
+    html += '<td class="' + (r.issues > 0 ? 'fail' : 'pass') + '">' + r.issues + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  // Overall verdict
+  html += '<div class="analysis-section">';
+  html += '<h3>Overall Verdict</h3>';
+  html += '<p style="font-size:13px;line-height:1.6;">';
+  html += '<strong>' + totalPasses + '</strong> checks passed, <strong>' + totalIssues + '</strong> issues found across 5 programmes.<br>';
+  if (totalIssues === 0) {
+    html += '<span class="pass">The scoring engine produces professionally reasonable results across all 5 scenarios.</span>';
+  } else {
+    html += '<span class="warn">Some scoring edge cases need attention. See individual assessments above.</span>';
+  }
+  html += '</p></div>';
+
+  document.getElementById('results').innerHTML = html;
+}
+</script>
+</body>
+</html>

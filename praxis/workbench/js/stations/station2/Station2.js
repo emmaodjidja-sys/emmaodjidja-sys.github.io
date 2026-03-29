@@ -98,7 +98,8 @@
         onClose: function() { setShowAddModal(false); } }) : null,
       indBankEqId ? h(IndicatorSelector, { eqId: indBankEqId, context: context,
         currentIndicators: (function() { var bankRow = indBankEqId ? rows.filter(function(r) { return r.id === indBankEqId; })[0] : null; return bankRow ? bankRow.indicators : []; })(),
-        onAdd: addIndicator, onClose: function() { setIndBankEqId(null); } }) : null);
+        onAdd: addIndicator, onClose: function() { setIndBankEqId(null); } }) : null,
+      typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 2, dispatch: dispatch, onSave: saveStation }) : null);
   }
 
   window.Station2 = Station2;

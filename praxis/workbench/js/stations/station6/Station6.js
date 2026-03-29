@@ -317,7 +317,10 @@
           className: 'wb-btn wb-btn-teal',
           onClick: handleSave
         }, 'Save Draft')
-      ) : null
+      ) : null,
+
+      // Navigation
+      typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 6, dispatch: dispatch, onSave: handleSave }) : null
     );
   }
 

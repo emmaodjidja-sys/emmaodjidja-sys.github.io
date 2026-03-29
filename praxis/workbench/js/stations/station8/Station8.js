@@ -1,8 +1,7 @@
 /**
  * Station8.js — Deck Generator
- * Pulls structured summary data from multiple stations to generate
- * a presentation-ready overview. Provides sessionStorage bridge to
- * the standalone deck generator tool.
+ * Structured presentation summary from workbench context.
+ * Provides sessionStorage bridge to standalone deck tool.
  */
 (function () {
   'use strict';
@@ -11,14 +10,9 @@
   var useState = React.useState;
   var useCallback = React.useCallback;
 
-  // ── Helpers ──
-
-  function getTopDesign(designRec) {
-    if (!designRec) return null;
-    if (designRec.ranked_designs && designRec.ranked_designs.length > 0) return designRec.ranked_designs[0];
-    if (designRec.ranked && designRec.ranked.length > 0) return designRec.ranked[0];
-    if (designRec.selected_design) return { id: designRec.selected_design };
-    return null;
+  function uid(prefix) {
+    if (typeof PraxisUtils !== 'undefined' && PraxisUtils.uid) return PraxisUtils.uid(prefix);
+    return prefix + '-' + Math.random().toString(36).substr(2, 9);
   }
 
   function formatDesignName(id) {
@@ -26,10 +20,86 @@
     return id.replace(/[_-]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
-  function uid(prefix) {
-    if (typeof PraxisUtils !== 'undefined' && PraxisUtils.uid) return PraxisUtils.uid(prefix);
-    return prefix + '-' + Math.random().toString(36).substr(2, 9);
+  function getTopDesign(rec) {
+    if (!rec) return null;
+    if (rec.ranked_designs && rec.ranked_designs.length > 0) return rec.ranked_designs[0];
+    if (rec.selected_design) return { id: rec.selected_design };
+    return null;
   }
+
+  // ── Build structured slide data ──
+
+  function buildSlides(context) {
+    var meta = context.project_meta || {};
+    var matrix = context.evaluation_matrix || {};
+    var designRec = context.design_recommendation || {};
+    var sampleParams = context.sample_parameters || {};
+    var instruments = (context.instruments || {}).items || [];
+    var topDesign = getTopDesign(designRec);
+    var rows = matrix.rows || [];
+    var result = sampleParams.result || {};
+
+    return [
+      {
+        id: uid('s'), title: 'Programme Overview',
+        fields: [
+          { label: 'Programme', value: meta.programme_name || 'Not specified' },
+          { label: 'Organisation', value: meta.organisation || 'Not specified' },
+          { label: 'Country / Region', value: meta.country || 'Not specified' },
+          { label: 'Sectors', value: (meta.health_areas || []).join(', ') || meta.sector || 'Not specified' },
+          { label: 'Operating Context', value: meta.operating_context ? meta.operating_context.charAt(0).toUpperCase() + meta.operating_context.slice(1) : 'Not specified' },
+          { label: 'Budget', value: meta.budget ? meta.budget.charAt(0).toUpperCase() + meta.budget.slice(1) : 'Not specified' }
+        ].filter(function (f) { return f.value !== 'Not specified'; })
+      },
+      {
+        id: uid('s'), title: 'Evaluation Questions',
+        items: rows.length > 0
+          ? rows.map(function (eq, i) {
+              var num = eq.number || eq.id || (i + 1);
+              var numStr = (typeof num === 'string' && num.indexOf('eq_') === 0) ? num.replace('eq_', '') : num;
+              return { num: numStr, text: eq.question || eq.text || '', criterion: eq.criterion || '' };
+            })
+          : null,
+        emptyMessage: 'Complete Station 2 to define evaluation questions.'
+      },
+      {
+        id: uid('s'), title: 'Evaluation Design',
+        fields: topDesign
+          ? [
+              { label: 'Design', value: formatDesignName(topDesign.id || topDesign.design_id || '') },
+              topDesign.family ? { label: 'Family', value: topDesign.family } : null,
+              topDesign.score != null ? { label: 'Score', value: (typeof topDesign.score === 'number' ? topDesign.score.toFixed(1) : topDesign.score) + '/100' } : null
+            ].filter(Boolean)
+          : null,
+        emptyMessage: 'Complete Station 3 to select an evaluation design.'
+      },
+      {
+        id: uid('s'), title: 'Sample Strategy',
+        fields: (result.primary || sampleParams.design_id)
+          ? [
+              result.primary ? { label: 'Sample Size', value: String(result.primary) } : null,
+              result.label ? { label: 'Design', value: result.label } : (sampleParams.design_id ? { label: 'Design', value: formatDesignName(sampleParams.design_id) } : null),
+              sampleParams.qualitative_plan && sampleParams.qualitative_plan.breakdown && sampleParams.qualitative_plan.breakdown.length > 0
+                ? { label: 'Qualitative', value: sampleParams.qualitative_plan.breakdown.map(function (b) { return b.method + ' (' + b.count + ')'; }).join(', ') }
+                : null
+            ].filter(Boolean)
+          : null,
+        emptyMessage: 'Complete Station 4 to define sample parameters.'
+      },
+      instruments.length > 0 ? {
+        id: uid('s'), title: 'Data Collection',
+        items: instruments.map(function (inst) {
+          return { num: '', text: (inst.title || inst.name || 'Untitled') + ' \u2014 ' + (inst.questions ? inst.questions.length : 0) + ' questions', criterion: '' };
+        })
+      } : null
+    ].filter(Boolean);
+  }
+
+  var CRITERION_COLORS = {
+    relevance: { bg: '#DBEAFE', text: '#1E40AF' }, coherence: { bg: '#E0E7FF', text: '#3730A3' },
+    effectiveness: { bg: '#D1FAE5', text: '#065F46' }, efficiency: { bg: '#FEF3C7', text: '#92400E' },
+    impact: { bg: '#FCE7F3', text: '#9D174D' }, sustainability: { bg: '#CCFBF1', text: '#115E59' }
+  };
 
   // ── Station 8 Component ──
 
@@ -38,237 +108,111 @@
     var dispatch = props.dispatch;
     var context = (state && state.context) || {};
 
-    var projectMeta = context.project_meta || {};
-    var matrix = context.evaluation_matrix || {};
-    var designRec = context.design_recommendation || {};
-    var sampleParams = context.sample_parameters || {};
-    var reportStructure = context.report_structure || {};
+    var _slides = useState(function () { return buildSlides(context); });
+    var slides = _slides[0]; var setSlides = _slides[1];
 
-    var topDesign = getTopDesign(designRec);
-    var matrixRows = matrix.rows || [];
-
-    // Build slides from available data
-    var buildSlides = useCallback(function () {
-      var slides = [];
-
-      // Slide 1: Programme overview
-      var metaParts = [
-        projectMeta.programme_name || '',
-        projectMeta.organisation || '',
-        projectMeta.country || '',
-        (projectMeta.health_areas || projectMeta.sectors || []).join(', ')
-      ].filter(Boolean);
-
-      slides.push({
-        id: uid('slide'),
-        title: 'Programme Overview',
-        content: metaParts.length > 0
-          ? metaParts.join(' \u2022 ')
-          : 'No programme data available. Complete Station 0 to add project metadata.'
-      });
-
-      // Slide 2: Evaluation questions
-      slides.push({
-        id: uid('slide'),
-        title: 'Key Evaluation Questions',
-        content: matrixRows.length > 0
-          ? matrixRows.map(function (eq, i) {
-              var num = eq.number || eq.id || (i + 1);
-              var numStr = (typeof num === 'string' && num.indexOf('eq_') === 0)
-                ? num.replace('eq_', '') : num;
-              return numStr + '. ' + (eq.question || eq.text || '');
-            }).join('\n')
-          : 'No evaluation questions defined. Complete Station 2.'
-      });
-
-      // Slide 3: Evaluation design
-      slides.push({
-        id: uid('slide'),
-        title: 'Evaluation Design',
-        content: topDesign
-          ? formatDesignName(topDesign.id || topDesign.design_id || '') +
-            (topDesign.score != null ? ' (Score: ' + (typeof topDesign.score === 'number' ? topDesign.score.toFixed(1) : topDesign.score) + ')' : '') +
-            (topDesign.family ? '\nFamily: ' + topDesign.family : '')
-          : 'No design selected. Complete Station 3.'
-      });
-
-      // Slide 4: Sample strategy
-      var result = sampleParams.result || {};
-      slides.push({
-        id: uid('slide'),
-        title: 'Sample Strategy',
-        content: result.primary || sampleParams.design_id
-          ? [
-              result.primary ? 'Sample size: ' + result.primary : null,
-              result.label ? 'Design: ' + result.label : (sampleParams.design_id ? 'Design: ' + formatDesignName(sampleParams.design_id) : null),
-              sampleParams.qualitative_plan && sampleParams.qualitative_plan.breakdown && sampleParams.qualitative_plan.breakdown.length > 0
-                ? 'Qualitative: ' + sampleParams.qualitative_plan.breakdown.map(function (b) { return b.method + ' (' + b.count + ')'; }).join(', ')
-                : null
-            ].filter(Boolean).join('\n')
-          : 'No sample parameters defined. Complete Station 4.'
-      });
-
-      // Slide 5: Data collection plan (from instruments if available)
-      var instruments = (context.instruments || {}).items || [];
-      if (instruments.length > 0) {
-        slides.push({
-          id: uid('slide'),
-          title: 'Data Collection Plan',
-          content: instruments.map(function (inst) {
-            return (inst.title || inst.name || 'Untitled') +
-              ' (' + (inst.questions ? inst.questions.length : 0) + ' questions)';
-          }).join('\n')
-        });
-      }
-
-      return slides;
-    }, [projectMeta, matrixRows, topDesign, sampleParams, context.instruments]);
-
-    var _slides = useState(function () { return buildSlides(); });
-    var slides = _slides[0];
-    var setSlides = _slides[1];
-
-    // ── Open Deck Tool with sessionStorage bridge ──
-    var handleOpenDeckTool = useCallback(function () {
-      // Store the full context summary in sessionStorage for the deck tool to read
-      var deckContext = {
-        project_meta: projectMeta,
-        evaluation_questions: matrixRows.map(function (eq, i) {
-          return {
-            number: eq.number || eq.id || (i + 1),
-            question: eq.question || eq.text || '',
-            criterion: eq.criterion || ''
-          };
-        }),
-        design: topDesign ? {
-          id: topDesign.id || topDesign.design_id || '',
-          name: formatDesignName(topDesign.id || topDesign.design_id || ''),
-          score: topDesign.score,
-          family: topDesign.family
-        } : null,
-        sample: {
-          design_id: sampleParams.design_id,
-          result: sampleParams.result || {},
-          qualitative_plan: sampleParams.qualitative_plan || {}
-        },
-        instruments: ((context.instruments || {}).items || []).map(function (inst) {
-          return { title: inst.title || inst.name, questionCount: (inst.questions || []).length, type: inst.type };
-        }),
-        generated_at: new Date().toISOString()
-      };
-
-      try {
-        sessionStorage.setItem('praxis-deck-context', JSON.stringify(deckContext));
-      } catch (e) {
-        // sessionStorage may be full or unavailable; proceed anyway
-      }
-
-      window.open('/praxis/tools/deck-generator/', '_blank');
-    }, [projectMeta, matrixRows, topDesign, sampleParams, context.instruments]);
-
-    // ── Other handlers ──
-    var handleRegenerate = useCallback(function () {
-      setSlides(buildSlides());
-    }, [buildSlides]);
-
-    var handleDownloadPDF = useCallback(function () {
-      window.print();
-    }, []);
+    var handleRegenerate = useCallback(function () { setSlides(buildSlides(context)); }, [context]);
 
     var handleSave = useCallback(function () {
-      dispatch({
-        type: 'SAVE_STATION',
-        stationId: 8,
-        data: { presentation: { slides: slides, completed_at: new Date().toISOString() } }
-      });
+      dispatch({ type: 'SAVE_STATION', stationId: 8, data: { presentation: { slides: slides, completed_at: new Date().toISOString() } } });
       dispatch({ type: 'SHOW_TOAST', message: 'Presentation saved', toastType: 'success' });
     }, [dispatch, slides]);
 
+    var handleOpenDeckTool = useCallback(function () {
+      try {
+        sessionStorage.setItem('praxis-deck-context', JSON.stringify({
+          project_meta: context.project_meta,
+          evaluation_matrix: context.evaluation_matrix,
+          design_recommendation: context.design_recommendation,
+          sample_parameters: context.sample_parameters,
+          instruments: context.instruments,
+          generated_at: new Date().toISOString()
+        }));
+      } catch (e) { /* ignore */ }
+      window.open('/praxis/tools/deck-generator/', '_blank');
+    }, [context]);
+
     // ── Render ──
     return h('div', null,
-      // Feature badge
-      h('div', { style: { marginBottom: '1.5rem' } },
-        h('span', {
-          className: 'wb-badge',
-          style: {
-            background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a',
-            padding: '0.35rem 0.85rem', fontSize: '0.8rem', fontWeight: 600
-          }
-        }, 'Full feature coming soon')
-      ),
-
-      // Summary cards
-      h('div', { style: { display: 'grid', gap: '1rem' } },
-        slides.map(function (slide, i) {
+      // Slide cards
+      h('div', { style: { display: 'grid', gap: 12 } },
+        slides.map(function (slide, si) {
           return h('div', {
             key: slide.id,
-            className: 'wb-card',
-            style: { position: 'relative' }
+            style: {
+              background: 'var(--surface, #fff)', border: '1px solid var(--border, #E2E8F0)',
+              borderRadius: 6, overflow: 'hidden'
+            }
           },
-            // Slide number chip
-            h('span', {
-              style: {
-                position: 'absolute', top: '0.75rem', right: '0.75rem',
-                fontSize: '0.7rem', color: 'var(--slate, #64748b)', opacity: 0.6
-              }
-            }, 'Slide ' + (i + 1)),
-
-            // Title
-            h('h4', {
-              style: {
-                margin: '0 0 0.75rem 0',
-                color: 'var(--text, #0F172A)',
-                fontSize: '1.05rem'
-              }
-            }, slide.title),
-
-            // Content
+            // Card header
             h('div', {
               style: {
-                whiteSpace: 'pre-line',
-                fontSize: '0.9rem',
-                color: 'var(--slate, #64748b)',
-                lineHeight: '1.6'
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px', borderBottom: '1px solid var(--border, #E2E8F0)',
+                background: '#FAFBFC'
               }
-            }, slide.content)
+            },
+              h('span', { style: { fontSize: 12, fontWeight: 600, color: 'var(--text, #0F172A)' } }, slide.title),
+              h('span', { style: { fontSize: 10, color: 'var(--slate, #64748B)', fontWeight: 500 } }, 'Slide ' + (si + 1))
+            ),
+
+            // Card body
+            h('div', { style: { padding: '12px 14px' } },
+              // Fields layout (key-value pairs)
+              slide.fields
+                ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 } },
+                    slide.fields.map(function (f, fi) {
+                      return h('div', { key: fi },
+                        h('div', { style: { fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--slate, #64748B)', marginBottom: 2 } }, f.label),
+                        h('div', { style: { fontSize: 13, fontWeight: 500, color: 'var(--text, #0F172A)' } }, f.value)
+                      );
+                    })
+                  )
+                : null,
+
+              // Items layout (numbered list — for EQs, instruments)
+              slide.items
+                ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                    slide.items.map(function (item, ii) {
+                      var cc = item.criterion ? CRITERION_COLORS[item.criterion] : null;
+                      return h('div', {
+                        key: ii,
+                        style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, lineHeight: 1.5 }
+                      },
+                        item.num ? h('span', { style: { fontWeight: 700, color: 'var(--slate, #64748B)', flexShrink: 0, minWidth: 20 } }, item.num + '.') : null,
+                        cc ? h('span', {
+                          style: { display: 'inline-block', padding: '1px 6px', borderRadius: 3, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', background: cc.bg, color: cc.text, flexShrink: 0, marginTop: 2 }
+                        }, item.criterion.substring(0, 5)) : null,
+                        h('span', { style: { color: 'var(--text, #0F172A)' } }, item.text)
+                      );
+                    })
+                  )
+                : null,
+
+              // Empty message
+              !slide.fields && !slide.items && slide.emptyMessage
+                ? h('p', { style: { fontSize: 12, color: 'var(--slate, #64748B)', fontStyle: 'italic', margin: 0 } }, slide.emptyMessage)
+                : null
+            )
           );
         })
       ),
 
       // Actions
       h('div', {
-        style: {
-          display: 'flex', gap: '0.75rem', marginTop: '1.5rem',
-          flexWrap: 'wrap', alignItems: 'center'
-        }
+        style: { display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap', alignItems: 'center' }
       },
-        h('button', {
-          className: 'wb-btn wb-btn-primary',
-          onClick: handleOpenDeckTool,
-          title: 'Opens the Deck Generator tool with your workbench data pre-loaded via sessionStorage'
-        }, 'Open Deck Tool \u2197'),
-        h('button', {
-          className: 'wb-btn',
-          onClick: handleDownloadPDF
-        }, 'Download Summary PDF'),
-        h('button', {
-          className: 'wb-btn wb-btn-teal',
-          onClick: handleSave
-        }, 'Save Presentation'),
-        h('button', {
-          className: 'wb-btn',
-          style: { fontSize: '0.85rem' },
-          onClick: handleRegenerate
-        }, 'Regenerate Slides')
+        h('button', { className: 'wb-btn wb-btn-primary', onClick: handleOpenDeckTool, title: 'Opens deck tool with data via sessionStorage' }, 'Open Deck Tool \u2197'),
+        h('button', { className: 'wb-btn', onClick: function () { window.print(); } }, 'Download PDF'),
+        h('button', { className: 'wb-btn wb-btn-teal', onClick: handleSave }, 'Save'),
+        h('button', { className: 'wb-btn', style: { fontSize: 11 }, onClick: handleRegenerate }, 'Regenerate')
       ),
 
-      // sessionStorage info
-      h('p', {
-        style: {
-          marginTop: '1rem', fontSize: '0.78rem',
-          color: 'var(--slate, #64748b)', fontStyle: 'italic'
-        }
-      }, 'The Deck Tool receives your evaluation context via sessionStorage \u2014 no data leaves your browser.')
+      h('p', { style: { marginTop: 10, fontSize: 10, color: 'var(--slate, #64748B)' } },
+        'Data is passed to the Deck Tool via sessionStorage \u2014 nothing leaves your browser.'),
+
+      // Navigation
+      typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 8, dispatch: dispatch, onSave: handleSave }) : null
     );
   }
 

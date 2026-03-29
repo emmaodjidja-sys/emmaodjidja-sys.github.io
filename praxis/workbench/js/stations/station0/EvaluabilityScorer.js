@@ -159,6 +159,16 @@
         'The short timeline may not allow for a randomised design. Consider quasi-experimental alternatives.'
       );
     }
+    if (meta.timeline === 'short') {
+      recommendations.push(
+        'Consider rapid evaluation methods suited to the short timeline \u2014 real-time evaluation, rapid assessment protocols, or a focused evaluability assessment before a full evaluation.'
+      );
+    }
+    if (meta.operating_context === 'humanitarian' && isMultiCountry(meta) && tor.comparison_feasibility === 'randomisable') {
+      recommendations.push(
+        'Randomisation across multiple countries in a humanitarian context faces severe feasibility constraints. Consider a multi-site contribution analysis with nested quasi-experimental components where conditions allow.'
+      );
+    }
 
     return {
       score: totalScore,

@@ -140,7 +140,8 @@
             h('li', null, 'Validation constraints & calculations')))),
       h('div', { style: { fontSize: 11, color: '#718096', marginTop: 8 } }, 'The exported XLSForm includes empty relevant and constraint columns, ready for skip logic configuration in KoboToolbox.'));
 
-    return h('div', null, badges, cards, coverageTable, skipLogic);
+    return h('div', null, badges, cards, coverageTable, skipLogic,
+      typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 5, dispatch: dispatch }) : null);
   }
 
   window.Station5 = Station5;

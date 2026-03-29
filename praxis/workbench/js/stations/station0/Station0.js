@@ -215,7 +215,8 @@
       });
     }
 
-    return h('div', null, phaseBar, content);
+    return h('div', null, phaseBar, content,
+      typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 0, dispatch: dispatch, onSave: handleSave }) : null);
   }
 
   window.Station0 = Station0;

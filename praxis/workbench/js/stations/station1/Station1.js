@@ -306,7 +306,9 @@
             ),
             h('p', { className: 'wb-helper', style: { fontSize: 12, textAlign: 'center' } },
               'You can switch between builders at any time. Both produce the same underlying data.')
-          )
+          ),
+
+      typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 1, dispatch: dispatch }) : null
     );
   }
 
