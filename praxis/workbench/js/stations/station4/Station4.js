@@ -60,16 +60,15 @@
 
     // ── No design selected ──
     if (!topDesign) {
-      return h('div', { className: 'wb-card', style: { textAlign: 'center', padding: '3rem 2rem' } },
-        h('div', { style: { fontSize: '2.5rem', marginBottom: '1rem', opacity: 0.4 } }, '\u{1F4CA}'),
-        h('h3', { style: { marginBottom: '0.75rem', color: 'var(--text-primary, #1a1a2e)' } },
+      return h('div', { style: { textAlign: 'center', padding: '48px 32px' } },
+        h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--text, #0F172A)', marginBottom: 6 } },
           'No Evaluation Design Selected'),
-        h('p', { className: 'wb-helper', style: { marginBottom: '1.5rem' } },
-          'Complete Station 3 first to select an evaluation design.'),
+        h('p', { style: { fontSize: 13, color: 'var(--slate, #64748B)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 20px' } },
+          'Complete Station 3 first to select an evaluation design. The sample size calculator will be pre-configured based on your chosen design.'),
         h('button', {
           className: 'wb-btn wb-btn-primary',
           onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', stationId: 3 }); }
-        }, 'Go to Station 3: Design Advisor')
+        }, 'Go to Station 3')
       );
     }
 
@@ -141,12 +140,13 @@
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' } },
           h('div', {
             style: {
-              width: '48px', height: '48px', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #0d9488, #14b8a6)',
+              width: 40, height: 40, borderRadius: 8,
+              background: 'var(--navy, #0B1A2E)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: '1.25rem', flexShrink: 0
+              color: 'var(--teal, #2EC4B6)', fontSize: 14, fontWeight: 800,
+              letterSpacing: '0.03em', flexShrink: 0
             }
-          }, '\u{1F3AF}'),
+          }, 'S4'),
           h('div', null,
             h('h3', { style: { margin: 0, fontSize: '1.15rem', color: 'var(--text-primary, #1a1a2e)' } },
               formatDesignName(designId)),

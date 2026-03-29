@@ -139,16 +139,15 @@
 
     // ── No matrix data ──
     if (!hasMatrix) {
-      return h('div', { className: 'wb-card', style: { textAlign: 'center', padding: '3rem 2rem' } },
-        h('div', { style: { fontSize: '2.5rem', marginBottom: '1rem', opacity: 0.4 } }, '\u{1F4CA}'),
-        h('h3', { style: { marginBottom: '0.75rem', color: 'var(--text, #1a1a2e)' } },
+      return h('div', { style: { textAlign: 'center', padding: '48px 32px' } },
+        h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--text, #0F172A)', marginBottom: 6 } },
           'No Evaluation Matrix Available'),
-        h('p', { className: 'wb-helper', style: { marginBottom: '1.5rem' } },
-          'Complete Station 2 first to define your evaluation questions.'),
+        h('p', { style: { fontSize: 13, color: 'var(--slate, #64748B)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 20px' } },
+          'Complete Station 2 first to define your evaluation questions. The analysis framework will suggest methods based on your matrix.'),
         h('button', {
           className: 'wb-btn wb-btn-primary',
           onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', stationId: 2 }); }
-        }, 'Go to Station 2: Evaluation Matrix')
+        }, 'Go to Station 2')
       );
     }
 
@@ -193,17 +192,6 @@
 
     // ── Render ──
     return h('div', null,
-      // Feature badge
-      h('div', { style: { marginBottom: '1.5rem' } },
-        h('span', {
-          className: 'wb-badge',
-          style: {
-            background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a',
-            padding: '0.35rem 0.85rem', fontSize: '0.8rem', fontWeight: 600
-          }
-        }, 'Full feature coming soon')
-      ),
-
       // Design context (if available)
       selectedDesign ? h('div', {
         style: {

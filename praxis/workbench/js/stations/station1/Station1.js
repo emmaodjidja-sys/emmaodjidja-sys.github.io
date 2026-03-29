@@ -4,11 +4,11 @@
 
   var TOC_BUILDER_URL = '/praxis/tools/toc-builder/';
 
-  var LEVEL_ICONS = {
-    impact:   '\u{1F3AF}',
-    outcome:  '\u{1F4C8}',
-    output:   '\u{1F4E6}',
-    activity: '\u{2699}\uFE0F'
+  var LEVEL_COLORS = {
+    impact:   '#0B1A2E',
+    outcome:  '#1E40AF',
+    output:   '#059669',
+    activity: '#64748B'
   };
 
   var LEVEL_LABELS = {
@@ -40,19 +40,27 @@
       type: 'button',
       className: 'wb-card',
       style: {
-        cursor: 'pointer', textAlign: 'left', padding: '20px 22px',
-        border: '1px solid var(--border)', borderRadius: 10,
+        cursor: 'pointer', textAlign: 'left', padding: '18px 20px',
+        border: '1px solid var(--border, #E2E8F0)',
+        borderLeft: '3px solid ' + (props.accent || 'var(--teal, #2EC4B6)'),
+        borderRadius: 6,
         transition: 'border-color 0.15s, box-shadow 0.15s',
-        background: 'var(--bg)',
+        background: 'var(--surface, #fff)',
         width: '100%'
       },
       onClick: props.onClick,
-      onMouseEnter: function(e) { e.currentTarget.style.borderColor = 'var(--teal, #14b8a6)'; },
-      onMouseLeave: function(e) { e.currentTarget.style.borderColor = 'var(--border)'; }
+      onMouseEnter: function(e) { e.currentTarget.style.boxShadow = '0 2px 8px rgba(11,26,46,0.06)'; },
+      onMouseLeave: function(e) { e.currentTarget.style.boxShadow = 'none'; }
     },
-      h('div', { style: { fontSize: 28, marginBottom: 10 } }, props.icon),
-      h('div', { style: { fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 4 } }, props.title),
-      h('p', { style: { fontSize: 13, color: 'var(--slate)', lineHeight: '1.5', margin: 0 } }, props.description)
+      props.badge
+        ? h('span', {
+            style: { display: 'inline-block', fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.04em', padding: '2px 8px', borderRadius: 3, marginBottom: 8,
+              background: props.badgeBg || '#F1F5F9', color: props.badgeColor || '#64748B' }
+          }, props.badge)
+        : null,
+      h('div', { style: { fontSize: 14, fontWeight: 600, color: 'var(--text, #0F172A)', marginBottom: 4 } }, props.title),
+      h('p', { style: { fontSize: 12, color: 'var(--slate, #64748B)', lineHeight: '1.5', margin: 0 } }, props.description)
     );
   }
 
@@ -82,7 +90,7 @@
       h('div', { style: { display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 } },
         ['impact', 'outcome', 'output', 'activity'].map(function(level) {
           return h('div', { key: level, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 } },
-            h('span', null, LEVEL_ICONS[level]),
+            h('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: LEVEL_COLORS[level] || '#94A3B8' } }),
             h('span', { style: { fontWeight: 600, color: 'var(--text)' } }, counts[level]),
             h('span', { style: { color: 'var(--slate)' } }, LEVEL_LABELS[level])
           );
@@ -292,13 +300,15 @@
             // Option cards
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 } },
               h(OptionCard, {
-                icon: '\u{1F4DD}',
+                badge: 'Recommended', badgeBg: '#D1FAE5', badgeColor: '#065F46',
+                accent: '#10B981',
                 title: 'Guided Builder',
                 description: 'Step-by-step structured form. Best for straightforward programmes or if you\'re new to Theories of Change.',
                 onClick: function() { setMode('inline'); }
               }),
               h(OptionCard, {
-                icon: '\u{1F5FA}\uFE0F',
+                badge: 'Advanced', badgeBg: '#EDE9FE', badgeColor: '#6D28D9',
+                accent: '#8B5CF6',
                 title: 'Full Canvas',
                 description: 'Visual node-and-connection builder with drag-and-drop. Best for complex programmes with multiple causal pathways.',
                 onClick: function() { setMode('canvas'); }
