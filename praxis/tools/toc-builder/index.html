@@ -1399,7 +1399,7 @@ function ToCBuilder({sensitivity,experienceTier,initialData,onDataChange,fromSta
           <span className="stat">{s.nodes.length} nodes</span>
           <span className="stat">{s.connections.length} paths</span>
         </div>}
-        <button className="tb" style={{background:'var(--teal)',color:'var(--navy)',fontWeight:700,borderRadius:5,padding:'5px 12px'}} onClick={()=>{if(window._praxisExportToC)window._praxisExportToC(s);dispatch({type:'SET_TOAST',msg:'Saved to Workbench'});}}>Save to Workbench</button>
+        <button className="tb" onClick={autoLayout} title="Auto-arrange">{I.layout} <span>Arrange</span></button>
       </div>}
 
       <div className="main">

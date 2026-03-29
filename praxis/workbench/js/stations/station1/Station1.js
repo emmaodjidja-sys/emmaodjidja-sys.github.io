@@ -136,28 +136,44 @@
       h('div', {
         style: {
           display: 'flex', alignItems: 'center', gap: 12,
-          padding: '8px 16px', borderBottom: '1px solid var(--border)',
-          background: 'var(--bg-alt, #f8fafc)', flexShrink: 0
+          padding: '0 16px', height: 44,
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--navy, #0B1A2E)', flexShrink: 0
         }
       },
-        h('div', { style: { fontSize: 14, fontWeight: 600, color: 'var(--text)', flex: 1 } },
-          'Theory of Change Builder'),
-        bridge.ready
-          ? h('span', { style: { fontSize: 11, color: 'var(--teal, #14b8a6)', marginRight: 8 } }, 'Connected')
-          : h('span', { style: { fontSize: 11, color: 'var(--slate)', marginRight: 8 } }, 'Loading\u2026'),
         h('button', {
           type: 'button',
-          className: 'wb-btn wb-btn-teal wb-btn-sm',
-          onClick: handleSave,
-          disabled: !bridge.ready
-        }, 'Save to Workbench'),
-        h('button', {
-          type: 'button',
-          className: 'wb-btn wb-btn-ghost wb-btn-sm',
           onClick: props.onClose,
-          'aria-label': 'Close canvas overlay',
-          style: { fontSize: 18, lineHeight: 1 }
-        }, '\u00D7')
+          style: {
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'none', border: 'none', color: '#CBD5E1',
+            fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            padding: '6px 10px', borderRadius: 5,
+            transition: 'background 0.15s'
+          },
+          onMouseEnter: function(e) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; },
+          onMouseLeave: function(e) { e.currentTarget.style.background = 'none'; }
+        }, '\u2190 Back to Stations'),
+        h('div', {
+          style: { width: 1, height: 20, background: 'rgba(255,255,255,0.12)', margin: '0 4px' }
+        }),
+        h('span', { style: { fontSize: 12, fontWeight: 500, color: '#94A3B8' } },
+          'Station 1: Theory of Change'),
+        h('div', { style: { flex: 1 } }),
+        bridge.ready
+          ? h('span', { style: { fontSize: 10, color: 'var(--teal, #2EC4B6)', marginRight: 8, fontWeight: 600 } }, '\u2713 Connected')
+          : h('span', { style: { fontSize: 10, color: '#94A3B8', marginRight: 8 } }, 'Connecting\u2026'),
+        h('button', {
+          type: 'button',
+          onClick: function() { handleSave(); props.onClose(); },
+          disabled: !bridge.ready,
+          style: {
+            padding: '5px 14px', borderRadius: 5, border: 'none',
+            background: 'var(--teal, #2EC4B6)', color: 'var(--navy, #0B1A2E)',
+            fontSize: 12, fontWeight: 700, cursor: bridge.ready ? 'pointer' : 'default',
+            opacity: bridge.ready ? 1 : 0.5
+          }
+        }, 'Save & Return')
       ),
 
       // Iframe
