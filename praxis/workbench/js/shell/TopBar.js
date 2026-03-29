@@ -52,9 +52,7 @@
         })
       ),
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
-        h('span', { className: 'wb-tier-pill', 'data-tier': state.ui.experienceTier },
-          (state.ui.experienceTier || 'foundation').toUpperCase()
-        ),
+        h(ExperienceTierBadge, { tier: state.ui.experienceTier, dispatch: dispatch }),
         h('button', {
           className: 'wb-btn wb-btn-ghost wb-btn-sm',
           onClick: handleSave,

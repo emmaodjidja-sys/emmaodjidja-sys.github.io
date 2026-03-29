@@ -6,6 +6,7 @@
 <title>PRAXIS Evaluation Workbench</title>
 <meta name="description" content="Design a complete evaluation from scoping to reporting. Nine integrated stations guide you through the full evaluation lifecycle.">
 <link rel="icon" type="image/svg+xml" href="../logo.svg">
+<link rel="manifest" href="manifest.json">
 
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -49,6 +50,8 @@
 <script src="js/components/StationHeader.js"></script>
 <script src="js/components/StalenessWarning.js"></script>
 <script src="js/components/SensitivityBanner.js"></script>
+<script src="js/components/ExperienceTierBadge.js"></script>
+<script src="js/components/HelpSidebar.js"></script>
 <script src="js/shell/TopBar.js"></script>
 <script src="js/shell/StationRail.js"></script>
 <script src="js/shell/ContextDrawer.js"></script>
@@ -72,6 +75,19 @@
 <script src="js/stations/station2/IndicatorSelector.js"></script>
 <script src="js/stations/station2/Station2.js"></script>
 
+<!-- Station 1: Theory of Change -->
+<script src="js/stations/station1/TocBridge.js"></script>
+<script src="js/stations/station1/TocInline.js"></script>
+<script src="js/stations/station1/Station1.js"></script>
+
+<!-- Station 3: Design Advisor -->
+<script src="js/stations/station3/DesignBridge.js"></script>
+<script src="js/stations/station3/Station3.js"></script>
+
+<!-- Station 4: Sample Size -->
+<script src="js/stations/station4/SampleBridge.js"></script>
+<script src="js/stations/station4/Station4.js"></script>
+
 <!-- Station 5: Instrument Builder -->
 <script src="js/stations/station5/InstrumentScaffold.js"></script>
 <script src="js/stations/station5/InstrumentExport.js"></script>
@@ -79,7 +95,23 @@
 <script src="js/stations/station5/InstrumentEditor.js"></script>
 <script src="js/stations/station5/Station5.js"></script>
 
+<!-- Station 6: Analysis Framework (stub) -->
+<script src="js/stations/station6/Station6.js"></script>
+
+<!-- Station 7: Report Builder (stub) -->
+<script src="js/stations/station7/Station7.js"></script>
+
+<!-- Station 8: Deck Generator (stub) -->
+<script src="js/stations/station8/Station8.js"></script>
+
 <!-- Root app (must be last) -->
 <script src="js/app.js"></script>
+
+<!-- Service Worker registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(function(e) { console.warn('SW registration failed:', e); });
+}
+</script>
 </body>
 </html>

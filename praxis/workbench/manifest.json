@@ -1,0 +1,12 @@
+{
+  "name": "PRAXIS Evaluation Workbench",
+  "short_name": "PRAXIS",
+  "description": "Design a complete evaluation from scoping to reporting. Nine integrated stations guide you through the full evaluation lifecycle.",
+  "start_url": "/praxis/workbench/",
+  "display": "standalone",
+  "background_color": "#0B1A2E",
+  "theme_color": "#2EC4B6",
+  "icons": [
+    { "src": "/praxis/logo.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

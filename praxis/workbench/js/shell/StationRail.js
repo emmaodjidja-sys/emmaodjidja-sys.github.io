@@ -59,7 +59,18 @@
       })(i);
     }
 
-    return h('nav', { className: 'wb-rail' }, buttons);
+    // Help button at bottom of rail
+    var helpBtn = h('button', {
+      key: 'help',
+      className: 'wb-rail-btn',
+      onClick: function() {
+        if (props.onHelpToggle) props.onHelpToggle();
+      },
+      style: { position: 'relative', marginTop: 'auto' },
+      title: 'Help'
+    }, h('span', { style: { fontSize: '10px', fontWeight: 700 } }, '?'));
+
+    return h('nav', { className: 'wb-rail' }, buttons.concat([helpBtn]));
   }
 
   window.StationRail = StationRail;
