@@ -5,13 +5,13 @@
   var SECTORS = ['Peacebuilding / PVE', 'Health', 'Education', 'Livelihoods', 'WASH', 'Nutrition', 'Governance', 'Protection'];
 
   function OptionCards(props) {
-    return h('div', { style: { display: 'flex', gap: '8px' } },
+    return h('div', { className: 'wb-select-grid' },
       props.options.map(function(opt) {
         var selected = props.value === opt.value;
-        var cls = 'wb-option-card' + (selected ? ' wb-option-card--selected' : '') + (selected && opt.variant ? ' wb-option-card--' + opt.variant : '');
+        var cls = 'wb-select-card' + (selected ? ' wb-select-card--active' : '') + (selected && opt.variant ? ' wb-select-card--' + opt.variant : '');
         return h('div', { key: opt.value, className: cls, onClick: function() { props.onChange(opt.value); } },
-          h('div', { style: { fontSize: '12px', fontWeight: 600, color: selected ? (opt.variantColor || '#0B1A2E') : '#0B1A2E' } }, opt.label),
-          opt.desc ? h('div', { style: { fontSize: '9px', color: '#64748B', marginTop: 2 } }, opt.desc) : null
+          h('div', { className: 'wb-select-card-label' }, opt.label),
+          opt.desc ? h('div', { className: 'wb-select-card-hint' }, opt.desc) : null
         );
       })
     );
@@ -52,20 +52,20 @@
       h('div', { className: 'wb-form-grid' },
         // Programme Name
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Programme Name'),
+          h('label', { className: 'wb-field-label' }, 'Programme Name'),
           h('input', { className: 'wb-input', type: 'text', value: data.programme_name || '', placeholder: 'e.g. Resilience Through Livelihoods', onChange: function(e) { onChange('programme_name', e.target.value); } })
         ),
 
         // Organisation
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Organisation'),
+          h('label', { className: 'wb-field-label' }, 'Organisation'),
           h('input', { className: 'wb-input', type: 'text', value: data.organisation || '', placeholder: 'e.g. Mercy Corps', onChange: function(e) { onChange('organisation', e.target.value); } })
         ),
 
         // Sectors (full width)
         h('div', { style: { gridColumn: '1 / -1' } },
-          h('label', { className: 'wb-label' }, 'Sectors'),
-          h('div', { style: { fontSize: '11px', color: '#64748B', marginBottom: 6 } }, 'Select all that apply'),
+          h('label', { className: 'wb-field-label' }, 'Sectors'),
+          h('div', { className: 'wb-field-helper' }, 'Select all that apply'),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
             SECTORS.map(function(s) {
               var selected = sectors.indexOf(s) >= 0;
@@ -81,14 +81,14 @@
 
         // Country/Region
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Country / Region'),
+          h('label', { className: 'wb-field-label' }, 'Country / Region'),
           h('input', { className: 'wb-input', type: 'text', value: data.country || '', placeholder: 'e.g. South Sudan, DRC', onChange: function(e) { onChange('country', e.target.value); } })
         ),
 
         // Budget Range
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Budget Range'),
-          h('div', { style: { fontSize: '11px', color: '#64748B', marginBottom: 6 } }, 'Often not in the ToR \u2014 skip if unknown'),
+          h('label', { className: 'wb-field-label' }, 'Budget Range'),
+          h('div', { className: 'wb-field-helper' }, 'Often not in the ToR \u2014 skip if unknown'),
           OptionCards({ value: data.budget, onChange: function(v) { onChange('budget', v); }, options: [
             { value: 'low', label: 'Low', desc: '<$200K' },
             { value: 'medium', label: 'Medium', desc: '$200K\u2013$1M' },
@@ -98,7 +98,7 @@
 
         // Operating Context
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Operating Context'),
+          h('label', { className: 'wb-field-label' }, 'Operating Context'),
           OptionCards({ value: data.operating_context, onChange: function(v) { onChange('operating_context', v); }, options: [
             { value: 'stable', label: 'Stable' },
             { value: 'fragile', label: 'Fragile', variant: 'amber' },
@@ -108,7 +108,7 @@
 
         // Programme Maturity
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Programme Maturity'),
+          h('label', { className: 'wb-field-label' }, 'Programme Maturity'),
           OptionCards({ value: data.programme_maturity, onChange: function(v) { onChange('programme_maturity', v); }, options: [
             { value: 'pilot', label: 'Pilot' },
             { value: 'scaling', label: 'Scaling' },
@@ -118,7 +118,7 @@
 
         // Timeline
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Timeline'),
+          h('label', { className: 'wb-field-label' }, 'Timeline'),
           OptionCards({ value: data.timeline, onChange: function(v) { onChange('timeline', v); }, options: [
             { value: 'short', label: 'Short', desc: '<6 months' },
             { value: 'medium', label: 'Medium', desc: '6\u201312 months' },

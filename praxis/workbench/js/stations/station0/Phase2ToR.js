@@ -3,13 +3,13 @@
   var h = React.createElement;
 
   function OptionCards(props) {
-    return h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+    return h('div', { className: 'wb-select-grid' },
       props.options.map(function(opt) {
         var selected = props.value === opt.value;
-        var cls = 'wb-option-card' + (selected ? ' wb-option-card--selected' : '');
+        var cls = 'wb-select-card' + (selected ? ' wb-select-card--active' : '');
         return h('div', { key: opt.value, className: cls, onClick: function() { props.onChange(opt.value); } },
-          h('div', { style: { fontSize: '12px', fontWeight: 600 } }, opt.label),
-          opt.desc ? h('div', { style: { fontSize: '9px', color: '#64748B', marginTop: 2 } }, opt.desc) : null
+          h('div', { className: 'wb-select-card-label' }, opt.label),
+          opt.desc ? h('div', { className: 'wb-select-card-hint' }, opt.desc) : null
         );
       })
     );
@@ -46,14 +46,14 @@
       h('div', { className: 'wb-form-grid' },
         // Raw ToR text
         h('div', { style: { gridColumn: '1 / -1' } },
-          h('label', { className: 'wb-label' }, 'Terms of Reference'),
-          h('div', { style: { fontSize: '11px', color: '#64748B', marginBottom: 6 } }, 'Paste your Terms of Reference here if you have one (optional)'),
+          h('label', { className: 'wb-field-label' }, 'Terms of Reference'),
+          h('div', { className: 'wb-field-helper' }, 'Paste your Terms of Reference here if you have one (optional)'),
           h('textarea', { className: 'wb-input', rows: 5, value: data.raw_text || '', placeholder: 'Paste ToR text here...', onChange: function(e) { onChange('raw_text', e.target.value); } })
         ),
 
         // Evaluation purpose (multi-select chips)
         h('div', { style: { gridColumn: '1 / -1' } },
-          h('label', { className: 'wb-label' }, 'Evaluation Purpose'),
+          h('label', { className: 'wb-field-label' }, 'Evaluation Purpose'),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
             ['Impact', 'Outcome', 'Process', 'Learning'].map(function(p) {
               var selected = purposes.indexOf(p) >= 0;
@@ -68,7 +68,7 @@
 
         // Causal inference level
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Causal Inference Level'),
+          h('label', { className: 'wb-field-label' }, 'Causal Inference Level'),
           OptionCards({ value: data.causal_inference_level, onChange: function(v) { onChange('causal_inference_level', v); }, options: [
             { value: 'attribution', label: 'Attribution' },
             { value: 'contribution', label: 'Contribution' },
@@ -78,7 +78,7 @@
 
         // Comparison feasibility
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Comparison Feasibility'),
+          h('label', { className: 'wb-field-label' }, 'Comparison Feasibility'),
           OptionCards({ value: data.comparison_feasibility, onChange: function(v) { onChange('comparison_feasibility', v); }, options: [
             { value: 'randomisable', label: 'Randomisable' },
             { value: 'natural', label: 'Natural comparison' },
@@ -89,7 +89,7 @@
 
         // Data availability
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Data Availability'),
+          h('label', { className: 'wb-field-label' }, 'Data Availability'),
           OptionCards({ value: data.data_available, onChange: function(v) { onChange('data_available', v); }, options: [
             { value: 'baseline_endline', label: 'Baseline + Endline' },
             { value: 'timeseries', label: 'Time series' },
@@ -100,7 +100,7 @@
 
         // Unit of intervention
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Unit of Intervention'),
+          h('label', { className: 'wb-field-label' }, 'Unit of Intervention'),
           OptionCards({ value: data.unit_of_intervention, onChange: function(v) { onChange('unit_of_intervention', v); }, options: [
             { value: 'individual', label: 'Individual / Household' },
             { value: 'facility', label: 'Facility / Community' },
@@ -110,7 +110,7 @@
 
         // Programme complexity
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Programme Complexity'),
+          h('label', { className: 'wb-field-label' }, 'Programme Complexity'),
           OptionCards({ value: data.programme_complexity, onChange: function(v) { onChange('programme_complexity', v); }, options: [
             { value: 'simple', label: 'Simple / Linear' },
             { value: 'complicated', label: 'Complicated' },
@@ -120,19 +120,19 @@
 
         // Geographic scope
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Geographic Scope'),
+          h('label', { className: 'wb-field-label' }, 'Geographic Scope'),
           h('input', { className: 'wb-input', type: 'text', value: data.geographic_scope || '', placeholder: 'e.g. 3 districts in Jonglei State', onChange: function(e) { onChange('geographic_scope', e.target.value); } })
         ),
 
         // Target population
         h('div', null,
-          h('label', { className: 'wb-label' }, 'Target Population'),
+          h('label', { className: 'wb-field-label' }, 'Target Population'),
           h('input', { className: 'wb-input', type: 'text', value: data.target_population || '', placeholder: 'e.g. Adolescent girls aged 10\u201319', onChange: function(e) { onChange('target_population', e.target.value); } })
         ),
 
         // Evaluation questions
         h('div', { style: { gridColumn: '1 / -1' } },
-          h('label', { className: 'wb-label' }, 'Evaluation Questions from ToR'),
+          h('label', { className: 'wb-field-label' }, 'Evaluation Questions from ToR'),
           questions.map(function(q, i) {
             return h('div', { key: i, style: { display: 'flex', gap: '6px', marginBottom: 6 } },
               h('input', { className: 'wb-input', type: 'text', value: q, style: { flex: 1 }, placeholder: 'Evaluation question ' + (i + 1), onChange: function(e) { updateQuestion(i, e.target.value); } }),
