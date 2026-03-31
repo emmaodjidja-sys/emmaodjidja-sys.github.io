@@ -276,17 +276,13 @@
     }
 
     // ── Landing mode ──
-    return h('div', { style: { maxWidth: 600, margin: '0 auto', padding: '20px 0' } },
+    return h('div', { style: { maxWidth: 620 } },
 
-      // Station header
-      h('div', { style: { marginBottom: 24 } },
-        h('h2', { style: { fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 6 } },
-          'Station 1: Theory of Change'),
-        h('p', { style: { fontSize: 13, color: 'var(--slate)', lineHeight: '1.5', maxWidth: 520 } },
-          'Define the causal pathway from programme activities to intended impact. ' +
-          'Your Theory of Change anchors every downstream evaluation decision\u2014design, ' +
-          'matrix, indicators, and data collection all trace back to what you build here.')
-      ),
+      // Station intro
+      h('p', { className: 'wb-station-desc', style: { marginBottom: 20 } },
+        'Define the causal pathway from programme activities to intended impact. ' +
+        'Your Theory of Change anchors every downstream evaluation decision\u2014design, ' +
+        'matrix, indicators, and data collection all trace back to what you build here.'),
 
       // If ToC data exists, show summary
       hasData
