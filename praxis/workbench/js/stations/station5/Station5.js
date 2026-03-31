@@ -61,12 +61,11 @@
     // EMPTY STATE
     if (!localInst.length) {
       return h('div', null, badges,
-        matrixRows.length ? h('div', { style: { textAlign: 'center', padding: '48px 24px' } },
-          h('div', { style: { fontSize: 40, marginBottom: 12 } }, '\uD83D\uDCDD'),
-          h('h3', { style: { fontSize: 16, fontWeight: 600, marginBottom: 6 } }, 'Generate Data Collection Instruments'),
-          h('p', { style: { fontSize: 13, color: 'var(--slate)', maxWidth: 420, margin: '0 auto 20px' } },
-            'Scaffold survey, KII, and FGD instruments from your evaluation matrix with auto-suggested response types.'),
-          h('button', { className: 'wb-btn wb-btn-teal', onClick: generate }, 'Generate Instruments'))
+        matrixRows.length ? h('div', { style: { textAlign: 'center', padding: '48px 32px' } },
+          h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6 } }, 'Generate Data Collection Instruments'),
+          h('p', { style: { fontSize: 13, color: 'var(--slate)', maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.6 } },
+            'Scaffold survey, KII, and FGD instruments from your ' + matrixRows.length + ' evaluation questions with auto-suggested response types.'),
+          h('button', { className: 'wb-btn wb-btn-primary', onClick: generate }, 'Generate Instruments'))
         : h('div', { style: { textAlign: 'center', padding: '48px 24px' } },
           h('h3', { style: { fontSize: 16, fontWeight: 600, marginBottom: 6 } }, 'Complete Station 2 first'),
           h('p', { style: { fontSize: 13, color: 'var(--slate)' } }, 'Instruments require an evaluation matrix.'),

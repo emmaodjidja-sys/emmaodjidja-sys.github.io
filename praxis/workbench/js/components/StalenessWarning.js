@@ -34,7 +34,7 @@
         gap: '12px'
       }
     },
-      h('span', { style: { fontSize: '16px' } }, '\u26A0\uFE0F'),
+      h('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: 'var(--amber)', flexShrink: 0 } }),
       h('p', { style: { flex: 1, margin: 0, fontSize: '12px', color: '#78350F' } }, warningText),
       h('button', {
         className: 'wb-btn wb-btn-outline wb-btn-sm',

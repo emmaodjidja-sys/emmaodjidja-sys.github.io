@@ -59,12 +59,11 @@
 
     // Empty state
     if (rows.length === 0) {
-      return h('div', { style: { textAlign: 'center', padding: '48px 24px' } },
-        h('div', { style: { fontSize: 40, marginBottom: 12 } }, '\uD83D\uDCCB'),
-        h('h3', { style: { fontSize: 16, fontWeight: 600, marginBottom: 6 } }, 'Build Your Evaluation Matrix'),
-        h('p', { style: { fontSize: 13, color: 'var(--slate)', maxWidth: 400, margin: '0 auto 20px' } },
-          'Generate evaluation questions matched to your Theory of Change and DAC criteria, with auto-linked indicators.'),
-        h('button', { className: 'wb-btn wb-btn-teal', onClick: generate }, 'Generate Matrix'));
+      return h('div', { style: { textAlign: 'center', padding: '48px 32px' } },
+        h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6 } }, 'Build Your Evaluation Matrix'),
+        h('p', { style: { fontSize: 13, color: 'var(--slate)', maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.6 } },
+          'Generate evaluation questions matched to your Theory of Change and DAC criteria, with auto-linked indicators from the PRAXIS indicator bank.'),
+        h('button', { className: 'wb-btn wb-btn-primary', onClick: generate }, 'Generate Matrix'));
     }
 
     var indCount = rows.reduce(function(s, r) { return s + (r.indicators || []).length; }, 0);

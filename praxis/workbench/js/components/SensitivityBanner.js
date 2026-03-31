@@ -20,10 +20,8 @@
         : 'SENSITIVE — Contains programme-sensitive data. Share only with authorised team members.';
     }
 
-    var icon = isHighly ? '\uD83D\uDD34' : '\uD83D\uDFE1';
-
     return h('div', { className: className },
-      h('span', null, icon),
+      h('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: isHighly ? '#EF4444' : '#F59E0B', flexShrink: 0 } }),
       h('span', null, text)
     );
   }
