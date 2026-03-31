@@ -109,10 +109,15 @@
 <!-- Root app (must be last) -->
 <script src="js/app.js"></script>
 
-<!-- Service Worker registration -->
+<!-- Service Worker: disabled during development. Unregister any stale SW. -->
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(function(e) { console.warn('SW registration failed:', e); });
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(r) { r.unregister(); });
+  });
+  caches.keys().then(function(names) {
+    names.forEach(function(n) { caches.delete(n); });
+  });
 }
 </script>
 </body>
