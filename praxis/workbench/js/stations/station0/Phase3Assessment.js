@@ -3,10 +3,16 @@
   var h = React.createElement;
 
   function getBand(score) {
-    if (score >= 80) return { label: 'Highly evaluable', color: '#059669' };
-    if (score >= 60) return { label: 'Evaluable with constraints', color: '#D97706' };
-    if (score >= 40) return { label: 'Challenging to evaluate', color: '#DC7633' };
-    return { label: 'Significant evaluability concerns', color: '#DC2626' };
+    if (score >= 80) return { label: 'Highly evaluable', css: 'wb-score-band--green' };
+    if (score >= 60) return { label: 'Evaluable with constraints', css: 'wb-score-band--amber' };
+    if (score >= 40) return { label: 'Challenging to evaluate', css: 'wb-score-band--amber' };
+    return { label: 'Significant evaluability concerns', css: 'wb-score-band--red' };
+  }
+
+  function dimFillColor(pct) {
+    if (pct > 75) return '#059669';
+    if (pct >= 50) return '#D97706';
+    return '#DC2626';
   }
 
   function Phase3Assessment(props) {
@@ -49,52 +55,63 @@
     }
 
     return h('div', null,
-      // Score display
-      h('div', { style: { textAlign: 'center', padding: '24px 0 16px' } },
-        h('div', { style: { fontSize: '48px', fontWeight: 700, color: band.color } }, adjustedTotal),
-        h('div', { style: { fontSize: '14px', fontWeight: 600, color: band.color, marginTop: 4 } }, band.label),
-        h('div', { style: { fontSize: '11px', color: '#6B7280', marginTop: 4 } }, 'out of 100')
+      // Score display — uses .wb-score design-system classes
+      h('div', { style: { textAlign: 'center', padding: '20px 0 8px' } },
+        h('div', { className: 'wb-score', style: { justifyContent: 'center' } },
+          h('span', { className: 'wb-score-number' }, adjustedTotal),
+          h('span', { className: 'wb-score-label' }, 'out of 100')
+        ),
+        h('div', { style: { marginTop: 8 } },
+          h('span', { className: 'wb-score-band ' + band.css }, band.label)
+        )
       ),
 
       // Override audit trail
-      overrideCount > 0 ? h('div', { style: { background: '#F0F9FF', border: '1px solid #93C5FD', borderRadius: 6, padding: '10px 14px', marginBottom: 16, fontSize: '12px', color: '#1E40AF' } },
-        overrideCount + ' score(s) adjusted by evaluator. Original auto-score: ' + originalTotal + '. Adjusted total: ' + adjustedTotal + '.'
+      overrideCount > 0 ? h('div', { className: 'wb-guidance', style: { marginTop: 12 } },
+        h('span', { className: 'wb-guidance-text' },
+          overrideCount + ' score(s) adjusted by evaluator. Original auto-score: ' + originalTotal + '. Adjusted total: ' + adjustedTotal + '.'
+        )
       ) : null,
 
-      // Dimension breakdown
-      h('div', { style: { marginBottom: 20 } },
+      // Dimension breakdown — uses .wb-dimension design-system classes
+      h('div', { style: { margin: '16px 0 20px' } },
         scoringResult.dimensions.map(function(dim) {
           var isExpanded = expandedDim === dim.id;
           var ov = overrides[dim.id];
           var displayScore = ov && ov.adjustedScore != null ? ov.adjustedScore : dim.system_score;
           var pct = Math.round((displayScore / dim.max) * 100);
 
-          return h('div', { key: dim.id, style: { border: '1px solid #E5E7EB', borderRadius: 6, marginBottom: 8, overflow: 'hidden' } },
-            // Collapsed row
+          return h('div', { key: dim.id, style: { cursor: 'pointer' } },
+            // Dimension row — collapsed
             h('div', {
-              style: { display: 'flex', alignItems: 'center', padding: '10px 14px', cursor: 'pointer', gap: '12px' },
+              className: 'wb-dimension',
               onClick: function() { setExpandedDim(isExpanded ? null : dim.id); }
             },
-              h('span', { style: { fontSize: '12px', transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' } }, '\u25B6'),
-              h('span', { style: { flex: 1, fontSize: '13px', fontWeight: 500 } }, dim.label),
-              h('div', { style: { width: 80, height: 6, background: '#E5E7EB', borderRadius: 3, overflow: 'hidden' } },
-                h('div', { style: { width: pct + '%', height: '100%', background: pct >= 60 ? '#059669' : pct >= 40 ? '#D97706' : '#DC2626', borderRadius: 3 } })
+              h('span', {
+                style: { fontSize: '10px', color: 'var(--slate)', marginRight: -4,
+                  transform: isExpanded ? 'rotate(90deg)' : 'none',
+                  transition: 'transform 0.15s', display: 'inline-block' }
+              }, '\u25B6'),
+              h('span', { className: 'wb-dimension-label' }, dim.label),
+              h('div', { className: 'wb-dimension-bar' },
+                h('div', { className: 'wb-dimension-fill', style: { width: pct + '%', background: dimFillColor(pct) } })
               ),
-              h('span', { style: { fontSize: '12px', fontWeight: 600, color: '#374151', marginLeft: 8, minWidth: 36, textAlign: 'right' } }, displayScore + '/' + dim.max)
+              h('span', { className: 'wb-dimension-score' }, displayScore + '/' + dim.max)
             ),
 
-            // Expanded content
-            isExpanded ? h('div', { style: { padding: '0 14px 14px', borderTop: '1px solid #E5E7EB' } },
-              h('div', { style: { fontSize: '12px', color: '#374151', margin: '12px 0 8px' } },
+            // Expanded detail
+            isExpanded ? h('div', { style: { padding: '4px 0 12px 28px' } },
+              h('p', { style: { fontSize: '12px', color: 'var(--text)', margin: '0 0 6px', lineHeight: '1.5' } },
                 h('strong', null, 'What drove this score: '), droveText(dim)
               ),
-              h('div', { style: { fontSize: '12px', color: '#374151', marginBottom: 12 } },
+              h('p', { style: { fontSize: '12px', color: 'var(--text)', margin: '0 0 12px', lineHeight: '1.5' } },
                 h('strong', null, 'What would improve it: '), improveText(dim)
               ),
               // Override panel
-              h('div', { style: { background: '#F9FAFB', borderRadius: 4, padding: '10px 12px' } },
-                h('div', { style: { fontSize: '11px', color: '#6B7280', marginBottom: 6 } },
-                  'System: ' + dim.system_score + '/' + dim.max + ' \u2192 Your assessment:'
+              h('div', { className: 'wb-card', style: { padding: '10px 14px' } },
+                h('label', { className: 'wb-field-label' },
+                  'Evaluator override',
+                  h('span', { className: 'wb-field-hint' }, 'System: ' + dim.system_score + '/' + dim.max)
                 ),
                 h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: 8 } },
                   h('input', {
@@ -102,7 +119,7 @@
                     type: 'number',
                     min: 0,
                     max: dim.max,
-                    style: { width: 60 },
+                    style: { width: 64 },
                     value: ov && ov.adjustedScore != null ? ov.adjustedScore : '',
                     placeholder: String(dim.system_score),
                     onChange: function(e) {
@@ -112,12 +129,13 @@
                       onOverride(dim.id, val, (ov && ov.justification) || '');
                     }
                   }),
-                  h('span', { style: { fontSize: '12px', color: '#6B7280' } }, '/ ' + dim.max)
+                  h('span', { style: { fontSize: '12px', color: 'var(--slate)' } }, '/ ' + dim.max)
                 ),
+                h('label', { className: 'wb-field-label' }, 'Justification'),
                 h('textarea', {
-                  className: 'wb-input',
+                  className: 'wb-input wb-textarea',
                   rows: 2,
-                  placeholder: 'Justification for override...',
+                  placeholder: 'Reason for adjusting this dimension score...',
                   value: (ov && ov.justification) || '',
                   onChange: function(e) {
                     onOverride(dim.id, ov && ov.adjustedScore != null ? ov.adjustedScore : null, e.target.value);
@@ -130,29 +148,29 @@
       ),
 
       // Blockers
-      scoringResult.blockers.length > 0 ? h('div', { style: { background: '#FFF7ED', border: '1px solid #FDBA74', borderRadius: 6, padding: '12px 16px', marginBottom: 16 } },
-        h('div', { className: 'wb-badge-amber', style: { marginBottom: 6 } }, 'CONSTRAINTS'),
+      scoringResult.blockers.length > 0 ? h('div', { className: 'wb-card', style: { borderLeft: '3px solid var(--amber)', marginBottom: 16 } },
+        h('div', { className: 'wb-badge wb-badge-amber', style: { marginBottom: 8 } }, 'CONSTRAINTS'),
         scoringResult.blockers.map(function(b, i) {
-          return h('p', { key: i, style: { fontSize: '12px', color: '#92400E', margin: '4px 0' } },
-            b.label + ' scored ' + b.score + '/' + b.max + ' \u2014 below the 40% threshold.'
+          return h('p', { key: i, style: { fontSize: '12px', color: '#92400E', margin: '4px 0', lineHeight: '1.5' } },
+            b.label + ' scored ' + b.score + '/' + b.max + ' \u2014 below the 40\u2009% threshold.'
           );
         })
       ) : null,
 
       // Recommendations
-      scoringResult.recommendations.length > 0 ? h('div', { style: { background: '#ECFDF5', border: '1px solid #6EE7B7', borderRadius: 6, padding: '12px 16px', marginBottom: 16 } },
-        h('div', { className: 'wb-badge-green', style: { marginBottom: 6 } }, 'RECOMMENDATIONS'),
+      scoringResult.recommendations.length > 0 ? h('div', { className: 'wb-card', style: { borderLeft: '3px solid var(--green)', marginBottom: 16 } },
+        h('div', { className: 'wb-badge wb-badge-green', style: { marginBottom: 8 } }, 'RECOMMENDATIONS'),
         scoringResult.recommendations.map(function(r, i) {
-          return h('p', { key: i, style: { fontSize: '12px', color: '#065F46', margin: '4px 0' } }, r);
+          return h('p', { key: i, style: { fontSize: '12px', color: '#065F46', margin: '4px 0', lineHeight: '1.5' } }, r);
         })
       ) : null,
 
       // Bottom bar
       h('div', { className: 'wb-panel-footer' },
-        h('span', { style: { fontSize: '11px', color: '#64748B' } }, 'Phase 3 of 3 \u00B7 Evaluability Assessment'),
+        h('span', { className: 'wb-station-nav-pos' }, 'Phase 3 of 3 \u00B7 Evaluability Assessment'),
         h('div', { style: { display: 'flex', gap: '8px' } },
-          h('button', { className: 'wb-btn wb-btn-outline', onClick: onBack }, '\u2190 Review Phases'),
-          h('button', { className: 'wb-btn wb-btn-primary', onClick: onSave }, 'Save & Proceed to Station 1 \u2192')
+          h('button', { className: 'wb-btn wb-btn-outline', onClick: onBack }, 'Review Phases'),
+          h('button', { className: 'wb-btn wb-btn-primary', onClick: onSave }, 'Save & Proceed to Station 1')
         )
       )
     );

@@ -148,8 +148,24 @@
             }
           }, 'S4'),
           h('div', null,
-            h('h3', { style: { margin: 0, fontSize: '1.15rem', color: 'var(--text-primary, #1a1a2e)' } },
-              formatDesignName(designId)),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '0.75rem' } },
+              h('h3', { style: { margin: 0, fontSize: '1.15rem', color: 'var(--text-primary, #1a1a2e)' } },
+                formatDesignName(designId)),
+              h('a', {
+                href: '#',
+                onClick: function (e) {
+                  e.preventDefault();
+                  dispatch({ type: 'SET_ACTIVE_STATION', stationId: 3 });
+                },
+                style: {
+                  fontSize: '12px', color: 'var(--teal, #0d9488)',
+                  textDecoration: 'none', fontWeight: 500, whiteSpace: 'nowrap',
+                  cursor: 'pointer'
+                },
+                onMouseEnter: function (e) { e.target.style.textDecoration = 'underline'; },
+                onMouseLeave: function (e) { e.target.style.textDecoration = 'none'; }
+              }, 'Change design \u2192')
+            ),
             topDesign.family
               ? h('span', { className: 'wb-badge', style: { marginTop: '0.25rem', display: 'inline-block' } },
                   topDesign.family)

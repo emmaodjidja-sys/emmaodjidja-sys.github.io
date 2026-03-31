@@ -21,12 +21,145 @@
     'budget', 'timeline', 'maturity', 'complexity', 'unit'
   ];
 
+  var QUESTION_OPTIONS = {
+    purpose: [
+      { value: 'impact', label: 'Impact', desc: 'Did the programme cause the change?' },
+      { value: 'outcome', label: 'Outcome', desc: 'Did the expected changes occur?' },
+      { value: 'process', label: 'Process', desc: 'How was it implemented?' },
+      { value: 'learning', label: 'Learning', desc: 'How should the programme adapt?' }
+    ],
+    causal: [
+      { value: 'attribution', label: 'Attribution', desc: 'Prove the programme caused the change' },
+      { value: 'contribution', label: 'Contribution', desc: 'Show plausible contribution' },
+      { value: 'description', label: 'Description', desc: 'Document what happened' }
+    ],
+    comparison: [
+      { value: 'randomisable', label: 'Random assignment possible', desc: 'Can randomly assign programme' },
+      { value: 'natural', label: 'Natural comparison exists', desc: 'Similar groups not receiving programme' },
+      { value: 'threshold', label: 'Eligibility threshold', desc: 'Score/cutoff for selection' },
+      { value: 'none', label: 'No comparison group', desc: 'Universal or no feasible comparison' }
+    ],
+    data: [
+      { value: 'baseline_endline', label: 'Baseline + endline', desc: 'Collected for both groups' },
+      { value: 'timeseries', label: 'Routine time series', desc: 'Regular data over time (HMIS, DHIS2)' },
+      { value: 'routine_only', label: 'Routine data only', desc: 'Admin/monitoring, no formal baseline' },
+      { value: 'minimal', label: 'Minimal / none', desc: 'Need to collect from scratch' }
+    ],
+    context: [
+      { value: 'stable', label: 'Stable', desc: 'Normal development, good access' },
+      { value: 'fragile', label: 'Fragile / conflict', desc: 'Security constraints, limited access' },
+      { value: 'humanitarian', label: 'Humanitarian', desc: 'Acute crisis, displacement' }
+    ],
+    budget: [
+      { value: 'low', label: 'Low (<$50K)', desc: 'Internal or light-touch' },
+      { value: 'medium', label: 'Medium ($50-200K)', desc: 'Standard commissioned evaluation' },
+      { value: 'high', label: 'High ($200K+)', desc: 'Large-scale or multi-country' }
+    ],
+    timeline: [
+      { value: 'short', label: 'Short (<3 months)', desc: 'Rapid assessment' },
+      { value: 'medium', label: 'Medium (3-12 months)', desc: 'Standard evaluation' },
+      { value: 'long', label: 'Long (12+ months)', desc: 'Multi-year evaluation' }
+    ],
+    maturity: [
+      { value: 'pilot', label: 'Pilot / early', desc: 'Testing new approach' },
+      { value: 'scaling', label: 'Scaling up', desc: 'Expanding to new areas' },
+      { value: 'mature', label: 'Mature / ongoing', desc: 'Established for years' },
+      { value: 'completed', label: 'Completed', desc: 'Retrospective evaluation' }
+    ],
+    complexity: [
+      { value: 'simple', label: 'Simple / linear', desc: 'Clear causal chain' },
+      { value: 'complicated', label: 'Complicated', desc: 'Multiple components, predictable' },
+      { value: 'complex', label: 'Complex / adaptive', desc: 'Emergent, feedback loops' }
+    ],
+    unit: [
+      { value: 'individual', label: 'Individual / household', desc: 'Direct service to people' },
+      { value: 'cluster', label: 'Facility / community', desc: 'Targets groups/institutions' },
+      { value: 'system', label: 'System / policy', desc: 'National reform, governance' }
+    ]
+  };
+
+  // ── Option Card (selectable during edit) ────────────────────────────
+  function OptionCard(props) {
+    var opt = props.option;
+    var selected = props.selected;
+
+    return h('div', {
+      onClick: props.onSelect,
+      style: {
+        padding: '10px 12px',
+        border: '2px solid ' + (selected ? '#1565c0' : '#e0e0e0'),
+        borderRadius: '8px',
+        cursor: 'pointer',
+        background: selected ? '#e3f2fd' : '#fff',
+        marginBottom: '6px',
+        transition: 'border-color 0.15s, background 0.15s'
+      }
+    },
+      h('div', { style: { fontSize: '13px', fontWeight: 600, color: selected ? '#1565c0' : '#1a1a1a' } }, opt.label),
+      opt.desc && h('div', { style: { fontSize: '12px', color: '#666', marginTop: '2px' } }, opt.desc)
+    );
+  }
+
   // ── Question Card ──────────────────────────────────────────────────
   function QuestionCard(props) {
     var id = props.id;
     var value = props.value;
     var filled = value != null;
+    var onChangeAnswer = props.onChangeAnswer;
 
+    var editState = React.useState(false);
+    var editing = editState[0];
+    var setEditing = editState[1];
+
+    // Find display label for the current value
+    var displayLabel = value;
+    if (value && QUESTION_OPTIONS[id]) {
+      var matchOpt = QUESTION_OPTIONS[id].find(function(o) { return o.value === value; });
+      if (matchOpt) displayLabel = matchOpt.label;
+    }
+
+    function handleSelect(optValue) {
+      if (onChangeAnswer) onChangeAnswer(id, optValue);
+      setEditing(false);
+    }
+
+    // Editing mode: show option cards
+    if (editing && QUESTION_OPTIONS[id]) {
+      return h('div', {
+        className: 'wb-card',
+        style: {
+          borderLeft: '4px solid #1565c0',
+          padding: '12px 16px',
+          marginBottom: '8px'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }
+        },
+          h('div', {
+            className: 'wb-card-label',
+            style: { fontSize: '12px', color: '#1565c0', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }
+          }, QUESTION_LABELS[id]),
+          h('button', {
+            onClick: function() { setEditing(false); },
+            style: {
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: '12px', color: '#666', padding: '2px 6px'
+            }
+          }, 'Cancel')
+        ),
+        QUESTION_OPTIONS[id].map(function(opt) {
+          return h(OptionCard, {
+            key: opt.value,
+            option: opt,
+            selected: opt.value === value,
+            onSelect: function() { handleSelect(opt.value); }
+          });
+        })
+      );
+    }
+
+    // Read-only mode
     return h('div', {
       className: 'wb-card',
       style: {
@@ -36,14 +169,29 @@
       }
     },
       h('div', {
-        className: 'wb-card-label',
-        style: { fontSize: '12px', color: '#666', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }
-      }, QUESTION_LABELS[id]),
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }
+      },
+        h('div', {
+          className: 'wb-card-label',
+          style: { fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }
+        }, QUESTION_LABELS[id]),
+        filled && onChangeAnswer
+          ? h('button', {
+              onClick: function() { setEditing(true); },
+              'aria-label': 'Edit ' + QUESTION_LABELS[id],
+              style: {
+                background: 'none', border: '1px solid #ccc', borderRadius: '4px',
+                cursor: 'pointer', fontSize: '11px', color: '#1565c0',
+                padding: '2px 8px', lineHeight: '18px'
+              }
+            }, 'Edit')
+          : null
+      ),
       filled
         ? h('div', {
             className: 'wb-card-value',
             style: { fontSize: '14px', fontWeight: 600, color: '#1a1a1a' }
-          }, value)
+          }, displayLabel)
         : h('div', {
             className: 'wb-card-placeholder',
             style: { fontSize: '13px', fontStyle: 'italic', color: '#f57f17' }
@@ -166,12 +314,34 @@
 
     // Derive pre-filled answers from Station 0 context
     var context = (state && state.context) || {};
-    var prefillAnswers = React.useMemo(function() {
+    var basePrefill = React.useMemo(function() {
       return window.torToDesignAnswers(
         context.tor_constraints || {},
         context.project_meta || {}
       );
     }, [context.tor_constraints, context.project_meta]);
+
+    // Local overrides for edited answers
+    var overrideState = React.useState({});
+    var overrides = overrideState[0];
+    var setOverrides = overrideState[1];
+
+    // Merge base prefill with any user overrides
+    var prefillAnswers = React.useMemo(function() {
+      var merged = {};
+      Object.keys(basePrefill).forEach(function(k) { merged[k] = basePrefill[k]; });
+      Object.keys(overrides).forEach(function(k) { merged[k] = overrides[k]; });
+      return merged;
+    }, [basePrefill, overrides]);
+
+    function handleChangeAnswer(questionId, newValue) {
+      setOverrides(function(prev) {
+        var next = {};
+        Object.keys(prev).forEach(function(k) { next[k] = prev[k]; });
+        next[questionId] = newValue;
+        return next;
+      });
+    }
 
     // Existing design recommendation from state
     var designRec = context.design_recommendation || null;
@@ -223,7 +393,8 @@
           return h(QuestionCard, {
             key: id,
             id: id,
-            value: prefillAnswers[id] || null
+            value: prefillAnswers[id] || null,
+            onChangeAnswer: handleChangeAnswer
           });
         })
       ),
