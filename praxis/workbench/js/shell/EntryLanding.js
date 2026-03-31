@@ -135,7 +135,14 @@
       var cards = [
         h(ActionCard, { key: 'new', title: '+ ' + t('landing.new'), desc: t('landing.new_desc'), accent: '#2EC4B6', onClick: function() { setMode('tier'); } }),
         h(ActionCard, { key: 'open', title: t('landing.open'), desc: t('landing.open_desc'), accent: '#3B82F6', onClick: function() { setMode('open'); } }),
-        h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: '#8B5CF6', onClick: function() { setMode('quick'); } })
+        h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: '#8B5CF6', onClick: function() { setMode('quick'); } }),
+        h(ActionCard, { key: 'demo', title: 'Load Demo', desc: 'Pre-populated Global Fund RSSH evaluation with 6 EQs, instruments, and sample strategy. Explore all 9 stations.', accent: '#F59E0B',
+          onClick: function() {
+            if (window.PRAXIS_DEMO) {
+              dispatch({ type: AT.INIT, context: window.PRAXIS_DEMO, tier: 'practitioner', station: 0 });
+            }
+          }
+        })
       ];
 
       // Continue card (only if saved project has actual data)

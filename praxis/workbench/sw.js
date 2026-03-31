@@ -2,7 +2,7 @@
     Cache-first for local assets, network-first for CDN resources.
     ───────────────────────────────────────────────────────────── */
 
-var CACHE_NAME = 'praxis-wb-v2';
+var CACHE_NAME = 'praxis-wb-v3';
 
 // ── Local assets to precache ────────────────────────────────────────────────
 
