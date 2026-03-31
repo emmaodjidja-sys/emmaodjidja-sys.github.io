@@ -428,14 +428,14 @@
 
       <div class="showcase-stats">
         <div class="showcase-stat">
-          <div class="showcase-stat-value">9.4x</div>
+          <div class="showcase-stat-value">8.8x</div>
           <div class="showcase-stat-label">Where to look</div>
-          <div class="showcase-stat-sub">KAFD+IED districts at 9.4x clean baseline. N=292. p &lt; 0.001.</div>
+          <div class="showcase-stat-sub">KAFD+IED districts at 8.8x clean baseline (excl. triggering types). N=292. p &lt; 0.001.</div>
         </div>
         <div class="showcase-stat">
-          <div class="showcase-stat-value">1.6x</div>
+          <div class="showcase-stat-value">1.2x</div>
           <div class="showcase-stat-label">When to act</div>
-          <div class="showcase-stat-sub">Signal week marks 60% further escalation above pre-signal corridor.</div>
+          <div class="showcase-stat-sub">Signal week marks 18% further escalation in non-triggering violence above pre-signal corridor.</div>
         </div>
         <div class="showcase-stat">
           <div class="showcase-stat-value">13</div>
@@ -732,6 +732,36 @@ const C = {
   tx: "#e8e4df",
   txW: "#e8e4df"
 };
+const ACTOR_TACTICS = [
+  {name:"JNIM/AQIM",events:14144,mix:[33.9,14.9,11.7,8.6,12.5,0.1],fatPerEvent:2.5},
+  {name:"IS Sahel",events:2254,mix:[21.4,27.7,1.4,6.9,24.3,0.0],fatPerEvent:2.6},
+  {name:"ISWAP",events:9175,mix:[38.4,22.9,5.3,6.9,8.5,3.2],fatPerEvent:4.3},
+  {name:"Boko Haram",events:4831,mix:[30.4,27.2,3.6,7.1,20.3,1.3],fatPerEvent:5.5},
+  {name:"Ambazonian",events:7952,mix:[38.9,17.4,2.8,22.1,11.8,0.0],fatPerEvent:0.8},
+  {name:"Communal",events:11885,mix:[35.0,44.5,0.0,11.5,3.1,0.0],fatPerEvent:3.6},
+];
+const TACTIC_LABELS = ["Clash","Attack","IED","Abduction","Looting","Suicide bomb"];
+const TACTIC_COLORS = [C.blue,"#73726c",C.gold,"#993556",C.cool,"#E24B4A"];
+const JNIM_RATIO = [
+  {country:"Togo",ratio:0.08,ied:21.0,kafd:1.6,n:62},
+  {country:"Mali",ratio:0.46,ied:16.9,kafd:7.8,n:5330},
+  {country:"Niger",ratio:0.80,ied:16.2,kafd:12.9,n:612},
+  {country:"BF",ratio:1.01,ied:7.9,kafd:8.0,n:7531},
+  {country:"Benin",ratio:3.29,ied:6.2,kafd:20.3,n:566},
+];
+const ACTOR_SIGNAL = [
+  {name:"Communal",incr:3.45,dist:2.2,n:1737,cat:"other"},
+  {name:"ISWAP",incr:1.86,dist:4.6,n:1355,cat:"ve"},
+  {name:"JNIM",incr:1.73,dist:4.3,n:3169,cat:"ve"},
+  {name:"IS Sahel",incr:1.55,dist:3.9,n:398,cat:"ve"},
+  {name:"Boko Haram",incr:1.40,dist:8.1,n:619,cat:"ve"},
+  {name:"Ambazonian",incr:1.24,dist:9.3,n:1607,cat:"ve"},
+];
+const BF_ARC = [
+  {year:2018,ratio:0.7},{year:2019,ratio:1.7},{year:2020,ratio:1.2},
+  {year:2021,ratio:4.3},{year:2022,ratio:1.2},{year:2023,ratio:0.5},
+  {year:2024,ratio:0.3},{year:2025,ratio:0.0},
+];
 function Btn({
   children,
   onClick,
@@ -975,6 +1005,9 @@ function TREMORViz() {
   }, {
     id: "regions",
     label: "Regional replication"
+  }, {
+    id: "actors",
+    label: "Actor signatures"
   }];
   const pill = active => ({
     fontSize: 10,
@@ -1533,7 +1566,128 @@ function TREMORViz() {
       lineHeight: 1.5,
       marginTop: 4
     }
-  }, "IEDs in Togo, Benin, Ghana, and C", "\u00f4", "te d'Ivoire without concurrent attacks predict escalating violence at 5.2x (week +1), 5.8x (week +2), and 7.3x (week +3). 28 of 38 district-weeks occurred in 2023-2025. p ", "<", " 0.001."))), /*#__PURE__*/React.createElement("div", {
+  }, "IEDs in Togo, Benin, Ghana, and C", "\u00f4", "te d'Ivoire without concurrent attacks predict escalating violence at 5.2x (week +1), 5.8x (week +2), and 7.3x (week +3). 28 of 38 district-weeks occurred in 2023-2025. p ", "<", " 0.001."))), view === "actors" && /*#__PURE__*/React.createElement("div", {
+  style: {padding: "0 16px 24px"}
+},
+/*#__PURE__*/React.createElement("div", {
+  style: {background: C.bgA, border: "1px solid " + C.bdr, padding: 16, marginBottom: 16, overflow: "hidden"}
+},
+/*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 13, fontWeight: 600, color: C.tx, marginTop: 2}}, "Distinct tactical signatures"),
+/*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 12}}, "Each armed group produces a structurally different mix of sub-event types. Share of total events by group."),
+/*#__PURE__*/React.createElement("svg", {viewBox: "0 0 700 260", style: {width: "100%", display: "block"}},
+  ACTOR_TACTICS.map(function(a, ai) {
+    var x0 = 80 + ai * 100;
+    var cumY = 0;
+    return /*#__PURE__*/React.createElement("g", {key: ai},
+      a.mix.map(function(pct, ti) {
+        var h = pct / 100 * 180;
+        var y = 240 - cumY - h;
+        cumY += h;
+        return /*#__PURE__*/React.createElement("rect", {key: ti, x: x0, y: y, width: 65, height: Math.max(h, 0), fill: TACTIC_COLORS[ti], opacity: 0.8, rx: 1});
+      }),
+      /*#__PURE__*/React.createElement("text", {x: x0 + 32, y: 253, fill: C.txS, fontSize: 9, fontFamily: "'IBM Plex Sans',sans-serif", textAnchor: "middle"}, a.name),
+      /*#__PURE__*/React.createElement("text", {x: x0 + 32, y: 36, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, (a.events / 1000).toFixed(1) + "k")
+    );
+  }),
+  [0, 25, 50, 75, 100].map(function(v) {
+    return /*#__PURE__*/React.createElement("g", {key: v},
+      /*#__PURE__*/React.createElement("line", {x1: 75, y1: 240 - v / 100 * 180, x2: 700, y2: 240 - v / 100 * 180, stroke: C.bdr, strokeWidth: 0.5}),
+      /*#__PURE__*/React.createElement("text", {x: 70, y: 240 - v / 100 * 180 + 3, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "end"}, v + "%")
+    );
+  })
+),
+/*#__PURE__*/React.createElement("div", {style: {display: "flex", flexWrap: "wrap", gap: 10, marginTop: 8}},
+  TACTIC_LABELS.map(function(l, i) {
+    return /*#__PURE__*/React.createElement("span", {key: i, style: {display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: C.txS}},
+      /*#__PURE__*/React.createElement("span", {style: {width: 8, height: 8, borderRadius: 1, background: TACTIC_COLORS[i], display: "inline-block"}}),
+      l
+    );
+  })
+)),
+/*#__PURE__*/React.createElement("div", {
+  style: {background: C.bgA, border: "1px solid " + C.bdr, padding: 16, marginBottom: 16, overflow: "hidden"}
+},
+/*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 13, fontWeight: 600, color: C.tx, marginTop: 2}}, "JNIM adapts tactics by country"),
+/*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 12}}, "KAFD-to-IED ratio shifts from IED-dominant in established theatres to abduction-dominant in frontier zones. Burkina Faso shows a confirmed transition arc (4.3:1 peak in 2021 \u2192 0.0:1 by 2025)."),
+/*#__PURE__*/React.createElement("svg", {viewBox: "0 0 700 180", style: {width: "100%", display: "block"}},
+  JNIM_RATIO.map(function(r, i) {
+    var maxR = 3.5;
+    var bw = Math.min(r.ratio / maxR * 320, 320);
+    var y = 20 + i * 30;
+    return /*#__PURE__*/React.createElement("g", {key: i},
+      /*#__PURE__*/React.createElement("text", {x: 68, y: y + 12, fill: C.txS, fontSize: 10, fontFamily: "'IBM Plex Sans',sans-serif", textAnchor: "end"}, r.country),
+      /*#__PURE__*/React.createElement("rect", {x: 75, y: y, width: bw, height: 20, rx: 2, fill: r.ratio > 1.5 ? "#993556" : C.gold, opacity: 0.75}),
+      /*#__PURE__*/React.createElement("text", {x: 75 + bw + 6, y: y + 13, fill: C.txS, fontSize: 9, fontFamily: "'IBM Plex Mono',monospace"}, r.ratio.toFixed(1) + ":1"),
+      /*#__PURE__*/React.createElement("text", {x: 480, y: y + 13, fill: C.txM, fontSize: 9, fontFamily: "'IBM Plex Mono',monospace"}, "IED " + r.ied.toFixed(0) + "% \u00b7 KAFD " + r.kafd.toFixed(0) + "%")
+    );
+  }),
+  /*#__PURE__*/React.createElement("line", {x1: 75 + 1 / 3.5 * 320, y1: 14, x2: 75 + 1 / 3.5 * 320, y2: 165, stroke: C.txM, strokeWidth: 0.5, strokeDasharray: "3,3", opacity: 0.4}),
+  /*#__PURE__*/React.createElement("text", {x: 75 + 1 / 3.5 * 320, y: 174, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, "1:1 balance")
+)),
+/*#__PURE__*/React.createElement("div", {
+  style: {background: C.bgA, border: "1px solid " + C.bdr, padding: 16, marginBottom: 16, overflow: "hidden"}
+},
+/*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 13, fontWeight: 600, color: C.tx, marginTop: 2}}, "Burkina Faso: frontier-to-established transition"),
+/*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 12}}, "JNIM's KAFD:IED ratio peaked at 4.3:1 during rapid 2021 expansion, then fell to 0.0:1 by 2025 as IED supply chains matured. This is the most analytically significant new result."),
+/*#__PURE__*/React.createElement("svg", {viewBox: "0 0 700 160", style: {width: "100%", display: "block"}},
+  [0, 1, 2, 3, 4].map(function(v) {
+    return /*#__PURE__*/React.createElement("g", {key: v},
+      /*#__PURE__*/React.createElement("line", {x1: 60, y1: 130 - v / 4.5 * 110, x2: 660, y2: 130 - v / 4.5 * 110, stroke: C.bdr, strokeWidth: 0.5}),
+      /*#__PURE__*/React.createElement("text", {x: 55, y: 130 - v / 4.5 * 110 + 3, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "end"}, v + ":1")
+    );
+  }),
+  /*#__PURE__*/React.createElement("polyline", {fill: "none", stroke: C.warm, strokeWidth: 2, points: BF_ARC.map(function(d, i) { return (80 + i * 82) + "," + (130 - d.ratio / 4.5 * 110); }).join(" ")}),
+  BF_ARC.map(function(d, i) {
+    return /*#__PURE__*/React.createElement("g", {key: i},
+      /*#__PURE__*/React.createElement("circle", {cx: 80 + i * 82, cy: 130 - d.ratio / 4.5 * 110, r: 4, fill: d.ratio > 2 ? C.warm : C.cool, stroke: C.bgA, strokeWidth: 1.5}),
+      /*#__PURE__*/React.createElement("text", {x: 80 + i * 82, y: 145, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, d.year),
+      /*#__PURE__*/React.createElement("text", {x: 80 + i * 82, y: 130 - d.ratio / 4.5 * 110 - 8, fill: C.txS, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, d.ratio.toFixed(1))
+    );
+  }),
+  /*#__PURE__*/React.createElement("text", {x: 80 + 3 * 82, y: 130 - 4.3 / 4.5 * 110 - 18, fill: C.warm, fontSize: 8, fontWeight: 600, fontFamily: "'IBM Plex Sans',sans-serif", textAnchor: "middle"}, "Peak expansion")
+)),
+/*#__PURE__*/React.createElement("div", {
+  style: {background: C.bgA, border: "1px solid " + C.bdr, padding: 16, overflow: "hidden"}
+},
+/*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Sans',sans-serif", fontSize: 13, fontWeight: 600, color: C.tx, marginTop: 2}}, "Signal strength varies by actor type"),
+/*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 12}}, "Inverse relationship: actors with routine composite weeks (Ambazonian, Boko Haram) have strong district identification but weak temporal signals. Rare-composite actors (communal militia) show the opposite."),
+/*#__PURE__*/React.createElement("svg", {viewBox: "0 0 700 240", style: {width: "100%", display: "block"}},
+  /*#__PURE__*/React.createElement("line", {x1: 100, y1: 200, x2: 640, y2: 200, stroke: C.bdr, strokeWidth: 0.5}),
+  /*#__PURE__*/React.createElement("line", {x1: 100, y1: 20, x2: 100, y2: 200, stroke: C.bdr, strokeWidth: 0.5}),
+  /*#__PURE__*/React.createElement("text", {x: 370, y: 228, fill: C.txM, fontSize: 9, fontFamily: "'IBM Plex Sans',sans-serif", textAnchor: "middle"}, "Temporal escalation at t=0 (higher = stronger \"when to act\")"),
+  /*#__PURE__*/React.createElement("text", {x: 14, y: 110, fill: C.txM, fontSize: 9, fontFamily: "'IBM Plex Sans',sans-serif", textAnchor: "middle", transform: "rotate(-90,14,110)"}, "District identification at t+1 (higher = \"where to look\")"),
+  [1, 2, 3].map(function(v) {
+    return /*#__PURE__*/React.createElement("g", {key: v},
+      /*#__PURE__*/React.createElement("line", {x1: 100, y1: 200 - v / 3.6 * 180, x2: 640, y2: 200 - v / 3.6 * 180, stroke: C.bdr, strokeWidth: 0.3}),
+      /*#__PURE__*/React.createElement("text", {x: 94, y: 200 - v / 3.6 * 180 + 3, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "end"}, (v * 3.3).toFixed(0) + "x")
+    );
+  }),
+  [1.5, 2, 2.5, 3, 3.5].map(function(v) {
+    return /*#__PURE__*/React.createElement("g", {key: v},
+      /*#__PURE__*/React.createElement("line", {x1: 100 + (v - 1) / 2.8 * 540, y1: 20, x2: 100 + (v - 1) / 2.8 * 540, y2: 200, stroke: C.bdr, strokeWidth: 0.3}),
+      /*#__PURE__*/React.createElement("text", {x: 100 + (v - 1) / 2.8 * 540, y: 212, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, v.toFixed(1) + "x")
+    );
+  }),
+  ACTOR_SIGNAL.map(function(a, i) {
+    var cx = 100 + (a.incr - 1) / 2.8 * 540;
+    var cy = 200 - a.dist / 10 * 180;
+    var r = Math.sqrt(a.n / 80);
+    var col = a.cat === "ve" ? C.gold : C.blue;
+    return /*#__PURE__*/React.createElement("g", {key: i},
+      /*#__PURE__*/React.createElement("circle", {cx: cx, cy: cy, r: r, fill: col, opacity: 0.4, stroke: col, strokeWidth: 1}),
+      /*#__PURE__*/React.createElement("text", {x: cx, y: cy - r - 4, fill: C.txS, fontSize: 9, fontFamily: "'IBM Plex Sans',sans-serif", textAnchor: "middle"}, a.name)
+    );
+  }),
+  /*#__PURE__*/React.createElement("text", {x: 130, y: 40, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Sans',sans-serif", opacity: 0.5}, "Persistent hotspots (STRATEGIC)"),
+  /*#__PURE__*/React.createElement("text", {x: 510, y: 190, fill: C.txM, fontSize: 8, fontFamily: "'IBM Plex Sans',sans-serif", opacity: 0.5}, "Rare escalation (CONCURRENT)")
+),
+/*#__PURE__*/React.createElement("div", {style: {display: "flex", gap: 14, marginTop: 6}},
+  /*#__PURE__*/React.createElement("span", {style: {display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: C.txS}},
+    /*#__PURE__*/React.createElement("span", {style: {width: 8, height: 8, borderRadius: "50%", background: C.gold, display: "inline-block"}}), "VE groups"),
+  /*#__PURE__*/React.createElement("span", {style: {display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: C.txS}},
+    /*#__PURE__*/React.createElement("span", {style: {width: 8, height: 8, borderRadius: "50%", background: C.blue, display: "inline-block"}}), "Other armed"),
+  /*#__PURE__*/React.createElement("span", {style: {fontSize: 10, color: C.txM, fontStyle: "italic"}}, "Bubble size = composite weeks")
+))), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "10px 20px",
       borderTop: `1px solid ${C.bdr}`,

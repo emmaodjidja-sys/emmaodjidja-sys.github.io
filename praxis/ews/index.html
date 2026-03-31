@@ -494,14 +494,14 @@
 
     <div class="figure-stats">
       <div class="figure-stat">
-        <div class="figure-stat-value">9.4x</div>
+        <div class="figure-stat-value">8.8x</div>
         <div class="figure-stat-label">District identification</div>
-        <div class="figure-stat-sub">KAFD+IED districts vs clean baseline</div>
+        <div class="figure-stat-sub">KAFD+IED districts vs clean baseline (excl. triggering types)</div>
       </div>
       <div class="figure-stat">
-        <div class="figure-stat-value">1.6x</div>
+        <div class="figure-stat-value">1.2x</div>
         <div class="figure-stat-label">Temporal escalation</div>
-        <div class="figure-stat-sub">Signal week spike above pre-signal corridor</div>
+        <div class="figure-stat-sub">Signal week spike in non-triggering violence above pre-signal corridor</div>
       </div>
       <div class="figure-stat">
         <div class="figure-stat-value">13</div>
@@ -510,7 +510,7 @@
       </div>
     </div>
 
-    <p class="figure-caption">The composite co-occurrence signal operates on two levels. First, as a district identifier: districts where KAFD and IED co-occur in the same week are persistently high-conflict, averaging 9.4 times the clean baseline attack rate. Second, as a temporal escalation indicator: within those already-violent districts, the signal week produces a further 1.6-fold spike above the pre-signal corridor. Both dimensions are operationally valuable.</p>
+    <p class="figure-caption">The composite co-occurrence signal operates on two levels. First, as a district identifier: districts where KAFD and IED co-occur in the same week are persistently high-conflict, averaging 8.8 times the clean baseline attack rate (excluding triggering event types). Second, as a temporal escalation indicator: within those already-violent districts, the signal week produces a further 1.2-fold spike in non-triggering violence above the pre-signal corridor. Both dimensions are operationally valuable.</p>
 
     <div class="research-detail">
       <p class="research-label">Status</p>
@@ -636,10 +636,10 @@ const {
 // ═══════════════════════════════════════════════════════════════
 const LAGS = [-4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
 const XLAB = ['\u22124', '\u22123', '\u22122', '\u22121', '0', '+1', '+2', '+3', '+4', '+5'];
-const FLAT_BASE = 0.252;
+const FLAT_BASE = 0.241;
 const BASE_LINE = Array(10).fill([FLAT_BASE, FLAT_BASE * 0.94, FLAT_BASE * 1.06]);
-const KI = [[2.192, 1.905, 2.479], [2.277, 1.969, 2.586], [2.305, 2.010, 2.600], [2.370, 2.063, 2.677], [3.603, 3.280, 3.925], [2.455, 2.160, 2.751], [2.182, 1.910, 2.453], [2.216, 1.923, 2.509], [2.195, 1.905, 2.486], [2.175, 1.873, 2.477]];
-const KI_PRE = 2.286;
+const KI = [[2.007, 1.720, 2.294], [1.990, 1.702, 2.278], [2.072, 1.782, 2.362], [2.099, 1.808, 2.390], [2.401, 2.098, 2.704], [2.120, 1.828, 2.412], [1.969, 1.680, 2.258], [1.935, 1.648, 2.222], [1.980, 1.692, 2.268], [1.901, 1.614, 2.188]];
+const KI_PRE = 2.042;
 const THREE = [[1.632, 1.567, 1.697], [1.646, 1.580, 1.711], [1.662, 1.597, 1.727], [1.776, 1.709, 1.842], [2.733, 2.668, 2.798], [1.784, 1.717, 1.851], [1.692, 1.626, 1.757], [1.652, 1.587, 1.717], [1.630, 1.565, 1.695], [1.621, 1.555, 1.687]];
 const THREE_PRE = 1.679;
 const KAFD_ALONE = [[.358, .330, .386], [.343, .317, .368], [.342, .315, .368], [.351, .326, .377], [0, 0, 0], [.367, .340, .394], [.389, .360, .419], [.362, .334, .389], [.358, .332, .385], [.344, .317, .372]];
@@ -891,6 +891,36 @@ const C = {
   tx: "#e8e4df",
   txW: "#e8e4df"
 };
+const ACTOR_TACTICS = [
+  {name:"JNIM/AQIM",events:14144,mix:[33.9,14.9,11.7,8.6,12.5,0.1],fatPerEvent:2.5},
+  {name:"IS Sahel",events:2254,mix:[21.4,27.7,1.4,6.9,24.3,0.0],fatPerEvent:2.6},
+  {name:"ISWAP",events:9175,mix:[38.4,22.9,5.3,6.9,8.5,3.2],fatPerEvent:4.3},
+  {name:"Boko Haram",events:4831,mix:[30.4,27.2,3.6,7.1,20.3,1.3],fatPerEvent:5.5},
+  {name:"Ambazonian",events:7952,mix:[38.9,17.4,2.8,22.1,11.8,0.0],fatPerEvent:0.8},
+  {name:"Communal",events:11885,mix:[35.0,44.5,0.0,11.5,3.1,0.0],fatPerEvent:3.6},
+];
+const TACTIC_LABELS = ["Clash","Attack","IED","Abduction","Looting","Suicide bomb"];
+const TACTIC_COLORS = [C.blue,"#73726c",C.gold,"#993556",C.cool,"#E24B4A"];
+const JNIM_RATIO = [
+  {country:"Togo",ratio:0.08,ied:21.0,kafd:1.6,n:62},
+  {country:"Mali",ratio:0.46,ied:16.9,kafd:7.8,n:5330},
+  {country:"Niger",ratio:0.80,ied:16.2,kafd:12.9,n:612},
+  {country:"BF",ratio:1.01,ied:7.9,kafd:8.0,n:7531},
+  {country:"Benin",ratio:3.29,ied:6.2,kafd:20.3,n:566},
+];
+const ACTOR_SIGNAL = [
+  {name:"Communal",incr:3.45,dist:2.2,n:1737,cat:"other"},
+  {name:"ISWAP",incr:1.86,dist:4.6,n:1355,cat:"ve"},
+  {name:"JNIM",incr:1.73,dist:4.3,n:3169,cat:"ve"},
+  {name:"IS Sahel",incr:1.55,dist:3.9,n:398,cat:"ve"},
+  {name:"Boko Haram",incr:1.40,dist:8.1,n:619,cat:"ve"},
+  {name:"Ambazonian",incr:1.24,dist:9.3,n:1607,cat:"ve"},
+];
+const BF_ARC = [
+  {year:2018,ratio:0.7},{year:2019,ratio:1.7},{year:2020,ratio:1.2},
+  {year:2021,ratio:4.3},{year:2022,ratio:1.2},{year:2023,ratio:0.5},
+  {year:2024,ratio:0.3},{year:2025,ratio:0.0},
+];
 
 // ═══════════════════════════════════════════════════════════════
 // PlotSVG — lead-lag chart with hover crosshair
@@ -1203,8 +1233,8 @@ function EWSViz() {
       color: C.warm,
       pts: KI
     }],
-    metrics: "9.4x baseline \u00b7 1.6x escalation at t=0",
-    note: "These districts average 9.4 times the Sahel-wide baseline. Within them, the signal week marks a further 58% spike above their own pre-signal corridor."
+    metrics: "8.8x baseline \u00b7 1.2x escalation at t=0",
+    note: "These districts average 8.8 times the Sahel-wide baseline (excl. triggering types). Within them, the signal week marks a further 18% spike in non-triggering violence above the pre-signal corridor."
   }, {
     id: "three",
     label: "3+ types",
@@ -1488,14 +1518,14 @@ function EWSViz() {
       marginBottom: 14
     }
   }, [{
-    val: "9.4x",
+    val: "8.8x",
     sub: "Where to look",
-    detail: "KAFD+IED co-occurrence districts are 9.4 times more violent than the Sahel average",
+    detail: "KAFD+IED co-occurrence districts are 8.8 times more violent than the Sahel average (excl. triggering types)",
     color: C.warm
   }, {
-    val: "1.6x",
+    val: "1.2x",
     sub: "When to act",
-    detail: "Within those districts, the signal week marks a further 60% escalation above their already-elevated baseline",
+    detail: "Within those districts, the signal week marks a further 18% escalation in non-triggering violence above the pre-signal corridor",
     color: C.cool
   }, {
     val: "13",
@@ -1566,7 +1596,7 @@ function EWSViz() {
       borderBottom: "1px solid " + C.bdr,
       padding: "0 20px"
     }
-  }, [["exclusive", "Exclusive signal test"], ["countries", "Country breakdown"], ["coastal", "Coastal discovery"]].map(([id, label]) => /*#__PURE__*/React.createElement(Btn, {
+  }, [["exclusive", "Exclusive signal test"], ["countries", "Country breakdown"], ["coastal", "Coastal discovery"], ["actors", "Actor signatures"]].map(([id, label]) => /*#__PURE__*/React.createElement(Btn, {
     key: id,
     onClick: () => setMethTab(id),
     style: {
@@ -1923,7 +1953,93 @@ function EWSViz() {
       color: C.gold,
       border: "1px solid " + C.bdr
     }
-  }, c)))), /*#__PURE__*/React.createElement("div", {
+  }, c)))), methTab === "actors" && /*#__PURE__*/React.createElement("div", {style: {padding: 14}},
+/*#__PURE__*/React.createElement("div", {style: {fontSize: 12, color: C.txS, lineHeight: 1.7, marginBottom: 14}}, "The composite detector is actor-agnostic: it counts types, not actors. But when decomposed by the dominant actor in each composite week, the signal reveals distinct tactical signatures and an inverse relationship between district identification and temporal escalation strength."),
+
+/* Tactical profiles mini-chart */
+/*#__PURE__*/React.createElement("div", {style: {marginBottom: 16}},
+  /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, fontWeight: 600, color: C.tx, marginBottom: 6}}, "Tactical mix by armed group"),
+  ACTOR_TACTICS.map(function(a, ai) {
+    return /*#__PURE__*/React.createElement("div", {key: ai, style: {display: "flex", alignItems: "center", gap: 8, marginBottom: 3}},
+      /*#__PURE__*/React.createElement("span", {style: {fontSize: 10, color: C.txS, width: 75, textAlign: "right", fontFamily: "'IBM Plex Sans',sans-serif"}}, a.name),
+      /*#__PURE__*/React.createElement("div", {style: {display: "flex", flex: 1, height: 14, borderRadius: 1, overflow: "hidden"}},
+        a.mix.map(function(pct, ti) {
+          return pct > 0.5 ? /*#__PURE__*/React.createElement("div", {key: ti, style: {width: pct + "%", background: TACTIC_COLORS[ti], opacity: 0.8}}) : null;
+        })
+      ),
+      /*#__PURE__*/React.createElement("span", {style: {fontSize: 9, color: C.txM, width: 35, fontFamily: "'IBM Plex Mono',monospace"}}, (a.events / 1000).toFixed(1) + "k")
+    );
+  }),
+  /*#__PURE__*/React.createElement("div", {style: {display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6}},
+    TACTIC_LABELS.map(function(l, i) {
+      return /*#__PURE__*/React.createElement("span", {key: i, style: {display: "flex", alignItems: "center", gap: 3, fontSize: 9, color: C.txS}},
+        /*#__PURE__*/React.createElement("span", {style: {width: 7, height: 7, borderRadius: 1, background: TACTIC_COLORS[i], display: "inline-block"}}),
+        l
+      );
+    })
+  )
+),
+
+/* JNIM country ratios */
+/*#__PURE__*/React.createElement("div", {style: {marginBottom: 16}},
+  /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, fontWeight: 600, color: C.tx, marginBottom: 4}}, "JNIM KAFD:IED ratio by country"),
+  /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "IED-dominant in established zones; abduction-dominant in frontier zones."),
+  JNIM_RATIO.map(function(r, i) {
+    return /*#__PURE__*/React.createElement("div", {key: i, style: {display: "flex", alignItems: "center", gap: 8, marginBottom: 4}},
+      /*#__PURE__*/React.createElement("span", {style: {fontSize: 10, color: C.txS, width: 45, textAlign: "right"}}, r.country),
+      /*#__PURE__*/React.createElement("div", {style: {width: Math.min(r.ratio / 3.5 * 200, 200), height: 12, borderRadius: 2, background: r.ratio > 1.5 ? "#993556" : C.gold, opacity: 0.75}}),
+      /*#__PURE__*/React.createElement("span", {style: {fontSize: 9, color: C.txM, fontFamily: "'IBM Plex Mono',monospace"}}, r.ratio.toFixed(1) + ":1")
+    );
+  })
+),
+
+/* BF arc */
+/*#__PURE__*/React.createElement("div", {style: {marginBottom: 16}},
+  /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, fontWeight: 600, color: C.tx, marginBottom: 4}}, "Burkina Faso transition arc"),
+  /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "KAFD:IED peaked 4.3:1 in 2021 (expansion), fell to 0.0:1 by 2025 (IED supply chains matured)."),
+  /*#__PURE__*/React.createElement("svg", {viewBox: "0 0 600 100", style: {width: "100%", display: "block"}},
+    [0, 1, 2, 3, 4].map(function(v) {
+      return /*#__PURE__*/React.createElement("line", {key: v, x1: 40, y1: 85 - v / 4.5 * 70, x2: 560, y2: 85 - v / 4.5 * 70, stroke: C.bdr, strokeWidth: 0.3});
+    }),
+    /*#__PURE__*/React.createElement("polyline", {fill: "none", stroke: C.warm, strokeWidth: 1.5, points: BF_ARC.map(function(d, i) { return (55 + i * 68) + "," + (85 - d.ratio / 4.5 * 70); }).join(" ")}),
+    BF_ARC.map(function(d, i) {
+      return /*#__PURE__*/React.createElement("g", {key: i},
+        /*#__PURE__*/React.createElement("circle", {cx: 55 + i * 68, cy: 85 - d.ratio / 4.5 * 70, r: 3, fill: d.ratio > 2 ? C.warm : C.cool, stroke: C.bgA, strokeWidth: 1}),
+        /*#__PURE__*/React.createElement("text", {x: 55 + i * 68, y: 96, fill: C.txM, fontSize: 7, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, String(d.year).slice(2))
+      );
+    })
+  )
+),
+
+/* Signal strength table */
+/*#__PURE__*/React.createElement("div", null,
+  /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, fontWeight: 600, color: C.tx, marginBottom: 4}}, "Signal strength by actor type"),
+  /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "Inverse relationship: high-frequency composite actors \u2192 strong \"where\" / weak \"when\". Low-frequency \u2192 weak \"where\" / strong \"when\"."),
+  /*#__PURE__*/React.createElement("table", {style: {width: "100%", borderCollapse: "collapse", fontSize: 10}},
+    /*#__PURE__*/React.createElement("thead", null,
+      /*#__PURE__*/React.createElement("tr", {style: {borderBottom: "1px solid " + C.bdr}},
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "left", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "Actor"),
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "Temporal (t=0)"),
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "District ID (t+1)"),
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "N composite"),
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "left", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "Primary function")
+      )
+    ),
+    /*#__PURE__*/React.createElement("tbody", null,
+      ACTOR_SIGNAL.map(function(a, i) {
+        return /*#__PURE__*/React.createElement("tr", {key: i, style: {borderBottom: "1px solid " + C.bdr}},
+          /*#__PURE__*/React.createElement("td", {style: {padding: "5px 6px", color: C.txS}}, a.name),
+          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: a.incr > 2 ? C.warm : C.txS, fontFamily: "'IBM Plex Mono',monospace"}}, a.incr.toFixed(2) + "x"),
+          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: a.dist > 6 ? C.warm : C.txS, fontFamily: "'IBM Plex Mono',monospace"}}, a.dist.toFixed(1) + "x"),
+          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: C.txM, fontFamily: "'IBM Plex Mono',monospace"}}, a.n.toLocaleString()),
+          /*#__PURE__*/React.createElement("td", {style: {padding: "5px 6px", color: C.txM, fontSize: 9}}, a.dist > 6 ? "STRATEGIC" : a.incr > 2 ? "CONCURRENT" : "Both")
+        );
+      })
+    )
+  )
+),
+
+/*#__PURE__*/React.createElement("div", {style: {fontSize: 10, color: C.txM, marginTop: 12, lineHeight: 1.6, borderTop: "1px solid " + C.bdr, paddingTop: 8}}, "Actor classification uses keyword matching on ACLED actor1 field. Attribution is less reliable in frontier zones. Temporal escalation values use inclusive outcome (not corrected for N4 predictor-outcome overlap); relative ordering is robust but absolute values are inflated. \"Communal\" aggregates 1,125+ distinct named actors across ACLED's coding convention. Ethnic labels are never used in TREMOR outputs.")), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "8px 20px 12px",
       textAlign: "center"
