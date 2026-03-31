@@ -79,12 +79,14 @@
       ),
 
       // Narrative (truncated)
-      toc.narrative
-        ? h('p', {
+      (function() {
+        var narr = toc.narrative;
+        var text = typeof narr === 'string' ? narr : (narr && (narr.description || narr.theory || narr.context)) || '';
+        return text ? h('p', {
             style: { fontSize: 12, color: 'var(--slate)', lineHeight: '1.5', marginBottom: 14,
               display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }
-          }, toc.narrative)
-        : null,
+          }, text) : null;
+      })(),
 
       // Node counts by level
       h('div', { style: { display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 } },
