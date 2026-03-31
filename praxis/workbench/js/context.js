@@ -14,7 +14,8 @@
     SET_PROJECT_LOADED: 'SET_PROJECT_LOADED',
     CLEAR_PROJECT: 'CLEAR_PROJECT',
     SHOW_TOAST: 'SHOW_TOAST',
-    DISMISS_TOAST: 'DISMISS_TOAST'
+    DISMISS_TOAST: 'DISMISS_TOAST',
+    CLEAR_STALE: 'CLEAR_STALE'
   };
 
   var defaultUI = {
@@ -91,6 +92,11 @@
         return { context: state.context, ui: Object.assign({}, state.ui, {
           toasts: state.ui.toasts.filter(function(t) { return t.id !== action.id; })
         })};
+
+      case ACTION_TYPES.CLEAR_STALE:
+        var clearedStaleness = Object.assign({}, state.context.staleness);
+        clearedStaleness[action.stationId] = false;
+        return { context: Object.assign({}, state.context, { staleness: clearedStaleness }), ui: state.ui };
 
       default:
         return state;

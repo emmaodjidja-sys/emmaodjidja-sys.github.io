@@ -14,7 +14,21 @@
 
     function handleStaleDismiss(action) {
       if (action === 'dismiss') {
-        // For now just a no-op; real logic added when stations are wired
+        dispatch({ type: PraxisContext.ACTION_TYPES.CLEAR_STALE, stationId: activeStation });
+      } else if (action === 'review') {
+        // Navigate to the upstream station that changed
+        var deps = PraxisStaleness.UPSTREAM_DEPS[activeStation] || [];
+        var fields = PraxisSchema.STATION_FIELDS;
+        for (var s = 0; s <= 8; s++) {
+          if (s === activeStation) continue;
+          var written = fields[s] || [];
+          for (var i = 0; i < written.length; i++) {
+            if (deps.indexOf(written[i]) !== -1) {
+              dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: s });
+              return;
+            }
+          }
+        }
       }
     }
 
