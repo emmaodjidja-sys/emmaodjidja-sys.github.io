@@ -15,13 +15,9 @@
 
   function getTopDesign(designRec) {
     if (!designRec) return null;
+    if (designRec.ranked_designs && designRec.ranked_designs.length > 0) return designRec.ranked_designs[0];
     if (designRec.ranked && designRec.ranked.length > 0) return designRec.ranked[0];
-    if (designRec.designs && designRec.designs.length > 0) {
-      return designRec.designs.slice().sort(function (a, b) {
-        return (b.score || 0) - (a.score || 0);
-      })[0];
-    }
-    if (designRec.selected) return designRec.selected;
+    if (designRec.selected_design) return { id: designRec.selected_design };
     return null;
   }
 
@@ -67,7 +63,7 @@
           'Complete Station 3 first to select an evaluation design. The sample size calculator will be pre-configured based on your chosen design.'),
         h('button', {
           className: 'wb-btn wb-btn-primary',
-          onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', stationId: 3 }); }
+          onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 3 }); }
         }, 'Go to Station 3')
       );
     }
@@ -155,7 +151,7 @@
                 href: '#',
                 onClick: function (e) {
                   e.preventDefault();
-                  dispatch({ type: 'SET_ACTIVE_STATION', stationId: 3 });
+                  dispatch({ type: 'SET_ACTIVE_STATION', station: 3 });
                 },
                 style: {
                   fontSize: '12px', color: 'var(--teal, #0d9488)',

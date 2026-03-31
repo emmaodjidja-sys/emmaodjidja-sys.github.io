@@ -146,7 +146,7 @@
           'Complete Station 2 first to define your evaluation questions. The analysis framework will suggest methods based on your matrix.'),
         h('button', {
           className: 'wb-btn wb-btn-primary',
-          onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', stationId: 2 }); }
+          onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 2 }); }
         }, 'Go to Station 2')
       );
     }
