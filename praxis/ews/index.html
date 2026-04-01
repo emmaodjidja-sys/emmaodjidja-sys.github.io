@@ -1963,6 +1963,15 @@ function EWSViz() {
 // ─── TACTICAL MIX ANIMATED BARS ───
 /*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
   /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 8}}, "Tactical mix by armed group"),
+  // Inline legend header
+  /*#__PURE__*/React.createElement("div", {style: {display: "flex", alignItems: "center", gap: 6, marginBottom: 6, paddingLeft: 78}},
+    TACTIC_LABELS.map(function(l, i) {
+      return /*#__PURE__*/React.createElement("span", {key: i, style: {display: "flex", alignItems: "center", gap: 3, fontSize: 8, color: C.txS}},
+        /*#__PURE__*/React.createElement("span", {style: {width: 6, height: 6, borderRadius: 1, background: TACTIC_COLORS[i], display: "inline-block", opacity: 0.8}}),
+        l
+      );
+    })
+  ),
   ACTOR_TACTICS.map(function(a, ai) {
     var show = animStep >= 1;
     return /*#__PURE__*/React.createElement("div", {key: ai, style: {marginBottom: 4}},
@@ -2003,15 +2012,6 @@ function EWSViz() {
     /*#__PURE__*/React.createElement("span", {style: {color: C.warm, fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600}}, actorHover.pct.toFixed(1) + "%"),
     /*#__PURE__*/React.createElement("span", {style: {color: C.txM, marginLeft: 6}}, "(" + actorHover.events.toLocaleString() + " events)")
   ),
-  // Legend
-  /*#__PURE__*/React.createElement("div", {style: {display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8}},
-    TACTIC_LABELS.map(function(l, i) {
-      return /*#__PURE__*/React.createElement("span", {key: i, style: {display: "flex", alignItems: "center", gap: 3, fontSize: 9, color: C.txS}},
-        /*#__PURE__*/React.createElement("span", {style: {width: 7, height: 7, borderRadius: 1, background: TACTIC_COLORS[i], display: "inline-block"}}),
-        l
-      );
-    })
-  )
 ),
 
 // ─── JNIM COUNTRY RATIOS ───
