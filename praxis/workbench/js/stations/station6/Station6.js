@@ -139,10 +139,10 @@
 
     // ── No matrix data ──
     if (!hasMatrix) {
-      return h('div', { style: { textAlign: 'center', padding: '48px 32px' } },
-        h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--text, #0F172A)', marginBottom: 6 } },
+      return h('div', { className: 'wb-station-empty' },
+        h('div', { className: 'wb-station-empty-title' },
           'No Evaluation Matrix Available'),
-        h('p', { style: { fontSize: 13, color: 'var(--slate, #64748B)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 20px' } },
+        h('p', { className: 'wb-station-empty-desc' },
           'Complete Station 2 first to define your evaluation questions. The analysis framework will suggest methods based on your matrix.'),
         h('button', {
           className: 'wb-btn wb-btn-primary',
@@ -180,109 +180,86 @@
       }
     }, [dispatch, rows]);
 
-    // ── DAC criterion badge colors ──
-    var CRITERION_COLORS = {
-      relevance: { bg: '#DBEAFE', text: '#1E40AF' },
-      coherence: { bg: '#E0E7FF', text: '#3730A3' },
-      effectiveness: { bg: '#D1FAE5', text: '#065F46' },
-      efficiency: { bg: '#FEF3C7', text: '#92400E' },
-      impact: { bg: '#FCE7F3', text: '#9D174D' },
-      sustainability: { bg: '#CCFBF1', text: '#115E59' }
-    };
-
     // ── Render ──
     return h('div', null,
       // Design context (if available)
-      selectedDesign ? h('div', {
-        style: {
-          background: '#F8FAFC', border: '1px solid var(--border, #e2e8f0)',
-          borderRadius: '6px', padding: '0.75rem 1rem', marginBottom: '1rem',
-          fontSize: '0.85rem', color: 'var(--slate, #64748b)'
-        }
-      },
-        h('strong', { style: { color: 'var(--text, #0F172A)' } }, 'Evaluation design: '),
-        selectedDesign,
-        ' \u2014 analysis method suggestions are tailored to this design.'
+      selectedDesign ? h('div', { className: 'wb-guidance wb-guidance--neutral' },
+        h('span', { className: 'wb-guidance-text' },
+          h('strong', null, 'Evaluation design: '),
+          selectedDesign,
+          ' \u2014 analysis method suggestions are tailored to this design.'
+        )
       ) : null,
 
       // Table scaffold
-      h('div', { className: 'wb-card', style: { overflowX: 'auto' } },
-        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' } },
-          h('h4', { style: { margin: 0 } }, 'Analysis Framework'),
-          generated ? h('span', { style: { fontSize: '0.8rem', color: 'var(--slate, #64748b)' } },
+      h('div', { className: 'wb-card' },
+        h('div', { className: 'wb-toolbar' },
+          h('h4', { className: 'wb-station-title' }, 'Analysis Framework'),
+          h('span', { className: 'wb-toolbar-spacer' }),
+          generated ? h('span', { className: 'wb-td--meta' },
             rows.length + ' evaluation question' + (rows.length !== 1 ? 's' : '')
           ) : null
         ),
 
         !generated
-          ? h('div', { style: { textAlign: 'center', padding: '2rem' } },
-              h('p', { style: { fontSize: '0.9rem', color: 'var(--slate, #64748b)', marginBottom: '1rem' } },
+          ? h('div', { className: 'wb-station-empty' },
+              h('p', { className: 'wb-station-empty-desc' },
                 'Generate an analysis plan from your ' + (matrix.rows || []).length + ' evaluation questions. Methods and software will be suggested based on each question\'s criterion, indicators, and your selected evaluation design.'),
               h('button', {
                 className: 'wb-btn wb-btn-primary',
                 onClick: handleGenerate
               }, 'Generate Analysis Plan')
             )
-          : h('table', {
-              style: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }
-            },
+          : h('table', { className: 'wb-table wb-table--analysis' },
               h('thead', null,
-                h('tr', { style: { borderBottom: '2px solid var(--border, #e2e8f0)' } },
-                  h('th', { style: thStyle({ width: '55px' }) }, 'EQ'),
-                  h('th', { style: thStyle({ width: '70px' }) }, 'Criterion'),
-                  h('th', { style: thStyle({ maxWidth: '240px' }) }, 'Evaluation Question'),
-                  h('th', { style: thStyle() }, 'Method'),
-                  h('th', { style: thStyle({ width: '160px' }) }, 'Software'),
-                  h('th', { style: thStyle({ width: '140px' }) }, 'Notes')
+                h('tr', null,
+                  h('th', { className: 'wb-th--eq' }, 'EQ'),
+                  h('th', { className: 'wb-th--criterion' }, 'Criterion'),
+                  h('th', { className: 'wb-th--question' }, 'Evaluation Question'),
+                  h('th', null, 'Method'),
+                  h('th', { className: 'wb-th--software' }, 'Software'),
+                  h('th', { className: 'wb-th--notes' }, 'Notes')
                 )
               ),
               h('tbody', null,
                 rows.map(function (row, i) {
-                  var cc = CRITERION_COLORS[row.criterion] || { bg: '#F1F5F9', text: '#475569' };
-                  return h('tr', { key: row.id, style: { borderBottom: '1px solid var(--border, #e2e8f0)' } },
+                  return h('tr', { key: row.id },
                     // EQ #
-                    h('td', { style: tdStyle({ textAlign: 'center', fontWeight: 600 }) },
+                    h('td', { className: 'wb-td--center-bold' },
                       (typeof row.eqNumber === 'string' && row.eqNumber.indexOf('eq_') === 0)
                         ? row.eqNumber.replace('eq_', '')
                         : row.eqNumber),
                     // Criterion badge
-                    h('td', { style: tdStyle({ textAlign: 'center' }) },
+                    h('td', { className: 'wb-td--center' },
                       h('span', {
-                        style: {
-                          display: 'inline-block', padding: '2px 8px', borderRadius: '4px',
-                          fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase',
-                          letterSpacing: '0.03em', background: cc.bg, color: cc.text
-                        }
+                        className: 'wb-criterion wb-criterion--' + (row.criterion || 'effectiveness')
                       }, (row.criterion || '').substring(0, 5))
                     ),
                     // Question (read-only)
-                    h('td', { style: tdStyle({ maxWidth: '240px', fontSize: '0.82rem', lineHeight: 1.4 }) },
+                    h('td', { className: 'wb-td--question' },
                       row.question),
                     // Method (editable)
-                    h('td', { style: tdStyle() },
+                    h('td', null,
                       h('textarea', {
-                        className: 'wb-input',
+                        className: 'wb-input wb-textarea',
                         rows: 2,
-                        style: { width: '100%', minWidth: '160px', resize: 'vertical', fontSize: '0.82rem' },
                         value: row.method,
                         onChange: function (e) { updateRow(i, 'method', e.target.value); }
                       })
                     ),
                     // Software (editable)
-                    h('td', { style: tdStyle() },
+                    h('td', null,
                       h('input', {
                         className: 'wb-input',
-                        style: { width: '100%', minWidth: '100px', fontSize: '0.82rem' },
                         value: row.software,
                         placeholder: 'e.g., Stata, R',
                         onChange: function (e) { updateRow(i, 'software', e.target.value); }
                       })
                     ),
                     // Notes (editable)
-                    h('td', { style: tdStyle() },
+                    h('td', null,
                       h('input', {
                         className: 'wb-input',
-                        style: { width: '100%', minWidth: '100px', fontSize: '0.82rem' },
                         value: row.notes,
                         placeholder: 'Notes\u2026',
                         onChange: function (e) { updateRow(i, 'notes', e.target.value); }
@@ -295,10 +272,9 @@
       ),
 
       // Actions
-      generated ? h('div', { style: { display: 'flex', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' } },
+      generated ? h('div', { className: 'wb-action-bar' },
         h('button', {
           className: 'wb-btn',
-          style: { fontSize: '0.85rem' },
           onClick: handleGenerate
         }, 'Regenerate Suggestions'),
         h('button', {
@@ -310,23 +286,6 @@
       // Navigation
       typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 6, dispatch: dispatch, onSave: handleSave }) : null
     );
-  }
-
-  // ── Style helpers ──
-  function thStyle(extra) {
-    var base = {
-      textAlign: 'left', padding: '0.65rem 0.75rem',
-      fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase',
-      letterSpacing: '0.04em', color: 'var(--slate, #64748b)',
-      background: '#F8FAFC', position: 'sticky', top: 0,
-      borderBottom: '2px solid var(--border, #e2e8f0)'
-    };
-    return extra ? Object.assign(base, extra) : base;
-  }
-
-  function tdStyle(extra) {
-    var base = { padding: '0.6rem 0.75rem', verticalAlign: 'top' };
-    return extra ? Object.assign(base, extra) : base;
   }
 
   window.Station6 = Station6;

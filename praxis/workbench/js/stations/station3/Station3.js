@@ -82,21 +82,14 @@
   function OptionCard(props) {
     var opt = props.option;
     var selected = props.selected;
+    var cardClass = 'wb-select-card' + (selected ? ' wb-select-card--active' : '');
 
     return h('div', {
       onClick: props.onSelect,
-      style: {
-        padding: '10px 12px',
-        border: '2px solid ' + (selected ? '#1565c0' : '#e0e0e0'),
-        borderRadius: '8px',
-        cursor: 'pointer',
-        background: selected ? '#e3f2fd' : '#fff',
-        marginBottom: '6px',
-        transition: 'border-color 0.15s, background 0.15s'
-      }
+      className: cardClass
     },
-      h('div', { style: { fontSize: '13px', fontWeight: 600, color: selected ? '#1565c0' : '#1a1a1a' } }, opt.label),
-      opt.desc && h('div', { style: { fontSize: '12px', color: '#666', marginTop: '2px' } }, opt.desc)
+      h('div', { className: 'wb-option-label' + (selected ? ' wb-option-label--selected' : '') }, opt.label),
+      opt.desc && h('div', { className: 'wb-option-desc' }, opt.desc)
     );
   }
 
@@ -126,26 +119,17 @@
     // Editing mode: show option cards
     if (editing && QUESTION_OPTIONS[id]) {
       return h('div', {
-        className: 'wb-card',
-        style: {
-          borderLeft: '4px solid #1565c0',
-          padding: '12px 16px',
-          marginBottom: '8px'
-        }
+        className: 'wb-card wb-question-card wb-question-card--editing'
       },
         h('div', {
-          style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }
+          className: 'wb-question-card-header wb-question-card-header--editing'
         },
           h('div', {
-            className: 'wb-card-label',
-            style: { fontSize: '12px', color: '#1565c0', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }
+            className: 'wb-question-card-title wb-question-card-title--editing'
           }, QUESTION_LABELS[id]),
           h('button', {
             onClick: function() { setEditing(false); },
-            style: {
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: '12px', color: '#666', padding: '2px 6px'
-            }
+            className: 'wb-btn wb-btn-ghost wb-btn-sm'
           }, 'Cancel')
         ),
         QUESTION_OPTIONS[id].map(function(opt) {
@@ -160,42 +144,28 @@
     }
 
     // Read-only mode
+    var cardClass = 'wb-card wb-question-card' + (filled ? ' wb-question-card--filled' : ' wb-question-card--empty');
+
     return h('div', {
-      className: 'wb-card',
-      style: {
-        borderLeft: '4px solid ' + (filled ? '#2e7d32' : '#f9a825'),
-        padding: '12px 16px',
-        marginBottom: '8px'
-      }
+      className: cardClass
     },
       h('div', {
-        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }
+        className: 'wb-question-card-header'
       },
         h('div', {
-          className: 'wb-card-label',
-          style: { fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }
+          className: 'wb-question-card-title'
         }, QUESTION_LABELS[id]),
         filled && onChangeAnswer
           ? h('button', {
               onClick: function() { setEditing(true); },
               'aria-label': 'Edit ' + QUESTION_LABELS[id],
-              style: {
-                background: 'none', border: '1px solid #ccc', borderRadius: '4px',
-                cursor: 'pointer', fontSize: '11px', color: '#1565c0',
-                padding: '2px 8px', lineHeight: '18px'
-              }
+              className: 'wb-btn wb-btn-outline wb-btn-sm'
             }, 'Edit')
           : null
       ),
       filled
-        ? h('div', {
-            className: 'wb-card-value',
-            style: { fontSize: '14px', fontWeight: 600, color: '#1a1a1a' }
-          }, displayLabel)
-        : h('div', {
-            className: 'wb-card-placeholder',
-            style: { fontSize: '13px', fontStyle: 'italic', color: '#f57f17' }
-          }, 'Your input needed')
+        ? h('div', { className: 'wb-question-card-value' }, displayLabel)
+        : h('div', { className: 'wb-question-card-hint' }, 'Your input needed')
     );
   }
 
@@ -203,36 +173,24 @@
   function DesignSummaryCard(props) {
     var design = props.design;
     var rank = props.rank;
+    var isTop = rank === 1;
 
     return h('div', {
-      className: 'wb-card',
-      style: {
-        padding: '16px',
-        marginBottom: '12px',
-        borderLeft: '4px solid ' + (rank === 1 ? '#1565c0' : '#90a4ae')
-      }
+      className: 'wb-card wb-design-result' + (isTop ? ' wb-design-result--top' : '')
     },
-      h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' } },
+      h('div', { className: 'wb-design-result-header' },
         h('span', {
-          className: 'wb-badge',
-          style: {
-            background: rank === 1 ? '#1565c0' : '#546e7a',
-            color: '#fff',
-            borderRadius: '12px',
-            padding: '2px 10px',
-            fontSize: '12px',
-            fontWeight: 700
-          }
+          className: 'wb-design-rank' + (isTop ? ' wb-design-rank--top' : '')
         }, '#' + rank),
         h('span', {
-          style: { fontSize: '15px', fontWeight: 600, color: '#1a1a1a' }
+          className: 'wb-design-result-name'
         }, design.name || design.label || 'Design ' + rank)
       ),
       design.score != null && h('div', {
-        style: { fontSize: '13px', color: '#555' }
+        className: 'wb-design-result-score'
       }, 'Score: ' + design.score),
       design.rationale && h('div', {
-        style: { fontSize: '13px', color: '#666', marginTop: '4px' }
+        className: 'wb-design-result-rationale'
       }, design.rationale)
     );
   }
@@ -248,34 +206,11 @@
       onSave(payload);
     });
 
-    return h('div', {
-      className: 'wb-canvas-overlay',
-      style: {
-        position: 'fixed',
-        top: 0, left: 0, right: 0, bottom: 0,
-        zIndex: 1000,
-        background: '#fff',
-        display: 'flex',
-        flexDirection: 'column'
-      }
-    },
+    return h('div', { className: 'wb-canvas-overlay' },
       // Header bar
-      h('div', {
-        className: 'wb-canvas-header',
-        style: {
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 20px',
-          borderBottom: '1px solid #e0e0e0',
-          background: '#fafafa',
-          flexShrink: 0
-        }
-      },
-        h('span', {
-          style: { fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }
-        }, 'Evaluation Design Advisor'),
-        h('div', { style: { display: 'flex', gap: '10px' } },
+      h('div', { className: 'wb-canvas-header' },
+        h('span', { className: 'wb-canvas-header-title' }, 'Evaluation Design Advisor'),
+        h('div', { className: 'wb-canvas-header-actions' },
           h('button', {
             className: 'wb-btn wb-btn-primary',
             onClick: function() {
@@ -283,13 +218,11 @@
               if (iframeRef.current) {
                 iframeRef.current.contentWindow.postMessage({ type: 'PRAXIS_REQUEST_EXPORT' }, '*');
               }
-            },
-            style: { fontSize: '13px', padding: '6px 16px' }
+            }
           }, 'Save to Workbench'),
           h('button', {
             className: 'wb-btn wb-btn-ghost',
-            onClick: onClose,
-            style: { fontSize: '13px', padding: '6px 16px' }
+            onClick: onClose
           }, 'Close')
         )
       ),
@@ -297,7 +230,7 @@
       h('iframe', {
         ref: iframeRef,
         src: '/praxis/tools/evaluation-design-advisor/',
-        style: { flex: 1, border: 'none', width: '100%' },
+        className: 'wb-canvas-iframe',
         title: 'Evaluation Design Advisor'
       })
     );
@@ -368,27 +301,15 @@
 
     return h('div', { className: 'wb-station wb-station-3' },
       // Header
-      h('div', { className: 'wb-station-header', style: { marginBottom: '20px' } },
-        h('h2', {
-          className: 'wb-station-title',
-          style: { fontSize: '20px', fontWeight: 700, color: '#1a1a1a', marginBottom: '6px' }
-        }, 'Evaluation Design'),
-        h('p', {
-          className: 'wb-station-subtitle',
-          style: { fontSize: '14px', color: '#555', margin: 0 }
-        }, filledCount + ' of 10 questions pre-filled from your evaluability assessment')
+      h('div', { className: 'wb-station-header' },
+        h('h2', { className: 'wb-station-title' }, 'Evaluation Design'),
+        h('p', { className: 'wb-station-desc' },
+          filledCount + ' of 10 questions pre-filled from your evaluability assessment'
+        )
       ),
 
       // Question grid
-      h('div', {
-        className: 'wb-question-grid',
-        style: {
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: '8px',
-          marginBottom: '24px'
-        }
-      },
+      h('div', { className: 'wb-question-grid' },
         ALL_QUESTION_IDS.map(function(id) {
           return h(QuestionCard, {
             key: id,
@@ -400,13 +321,8 @@
       ),
 
       // Existing design results summary
-      rankedDesigns.length > 0 && h('div', {
-        className: 'wb-design-results',
-        style: { marginBottom: '24px' }
-      },
-        h('h3', {
-          style: { fontSize: '16px', fontWeight: 600, color: '#1a1a1a', marginBottom: '12px' }
-        }, 'Recommended Designs'),
+      rankedDesigns.length > 0 && h('div', { className: 'wb-design-results' },
+        h('h3', { className: 'wb-design-results-title' }, 'Recommended Designs'),
         rankedDesigns.map(function(design, i) {
           return h(DesignSummaryCard, { key: i, design: design, rank: i + 1 });
         })
@@ -415,8 +331,7 @@
       // Primary action
       h('button', {
         className: 'wb-btn wb-btn-primary',
-        onClick: function() { setMode('canvas'); },
-        style: { fontSize: '14px', padding: '10px 24px' }
+        onClick: function() { setMode('canvas'); }
       }, rankedDesigns.length > 0 ? 'Revise Design Scoring' : 'Review & Score Designs'),
 
       typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 3, dispatch: dispatch }) : null

@@ -16,11 +16,11 @@
 
     // Upstream gate
     if (!meta.programme_name) {
-      return h('div', { style: { textAlign: 'center', padding: '64px 24px' } },
-        h('h3', { style: { fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 8 } }, 'Complete Station 0 first'),
-        h('p', { style: { fontSize: 13, color: 'var(--slate)' } },
+      return h('div', { className: 'wb-station-empty' },
+        h('div', { className: 'wb-station-empty-title' }, 'Complete Station 0 first'),
+        h('div', { className: 'wb-station-empty-desc' },
           'The Evaluation Matrix requires programme details and evaluability assessment from Station 0.'),
-        h('button', { className: 'wb-btn wb-btn-primary', style: { marginTop: 16 },
+        h('button', { className: 'wb-btn wb-btn-primary',
           onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 0 }); } }, 'Go to Station 0'));
     }
 
@@ -59,9 +59,9 @@
 
     // Empty state
     if (rows.length === 0) {
-      return h('div', { style: { textAlign: 'center', padding: '48px 32px' } },
-        h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6 } }, 'Build Your Evaluation Matrix'),
-        h('p', { style: { fontSize: 13, color: 'var(--slate)', maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.6 } },
+      return h('div', { className: 'wb-station-empty' },
+        h('div', { className: 'wb-station-empty-title' }, 'Build Your Evaluation Matrix'),
+        h('div', { className: 'wb-station-empty-desc' },
           'Generate evaluation questions matched to your Theory of Change and DAC criteria, with auto-linked indicators from the PRAXIS indicator bank.'),
         h('button', { className: 'wb-btn wb-btn-primary', onClick: generate }, 'Generate Matrix'));
     }
@@ -71,21 +71,19 @@
     var selRow = selectedId ? rows.filter(function(r) { return r.id === selectedId; })[0] : null;
 
     return h('div', null,
-      h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
-        h('span', { style: { fontSize: 12, color: 'var(--slate)' } },
+      h('div', { className: 'wb-toolbar' },
+        h('span', { className: 'wb-field-helper', style: { margin: 0 } },
           rows.length + ' EQs \u00b7 ' + indCount + ' indicators \u00b7 ' + Object.keys(critSet).length + ' criteria'),
-        h('span', { style: { flex: 1 } }),
+        h('div', { className: 'wb-toolbar-spacer' }),
         h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: saveStation }, 'Save Matrix')),
       h(MatrixTable, { rows: rows, selectedId: selectedId, criterionFilter: criterionFilter,
         onSelect: function(id) { setSelectedId(selectedId === id ? null : id); }, onFilterChange: setCriterionFilter,
         onAdd: function() { setShowAddModal(true); }, onExport: function() { setShowExport(!showExport); } }),
       showExport ? h('div', { style: { position: 'relative' } },
-        h('div', { style: { position: 'absolute', right: 0, top: 4, background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-md)', padding: 6, zIndex: 50 } },
+        h('div', { className: 'wb-export-menu' },
           ['word', 'excel', 'json'].map(function(f) {
             var labels = { word: 'Export as Word', excel: 'Export as Excel', json: 'Export as .praxis' };
-            return h('button', { key: f, className: 'wb-btn wb-btn-sm wb-btn-ghost',
-              style: { display: 'block', width: '100%', textAlign: 'left' },
+            return h('button', { key: f, className: 'wb-btn wb-btn-sm wb-btn-ghost wb-export-menu-item',
               onClick: function() { handleExport(f); } }, labels[f]);
           }))) : null,
       selRow ? h(MatrixInlineEditor, { key: selectedId, row: selRow, tier: tier,

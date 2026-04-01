@@ -413,10 +413,166 @@
   margin: 4px 0; line-height: 1.5;
 }
 
+/* ── Guidance neutral variant (design context) ────────── */
+.wb-guidance--neutral {
+  background: #F8FAFC; border-color: var(--border);
+  color: var(--slate);
+}
+.wb-guidance--neutral .wb-guidance-text { color: var(--slate); }
+.wb-guidance--neutral strong { color: var(--text); }
+
+/* ── Station 6 table helpers ──────────────────────────── */
+.wb-table--analysis { font-size: 0.9rem; }
+.wb-table--analysis th.wb-th--eq { width: 55px; }
+.wb-table--analysis th.wb-th--criterion { width: 70px; }
+.wb-table--analysis th.wb-th--question { max-width: 240px; }
+.wb-table--analysis th.wb-th--software { width: 160px; }
+.wb-table--analysis th.wb-th--notes { width: 140px; }
+.wb-table--analysis td.wb-td--center { text-align: center; }
+.wb-table--analysis td.wb-td--center-bold { text-align: center; font-weight: 600; }
+.wb-table--analysis td.wb-td--question { max-width: 240px; font-size: 0.82rem; line-height: 1.4; }
+
+/* ── Station 6 action bar ─────────────────────────────── */
+.wb-action-bar {
+  display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;
+}
+
+/* ── Question grid (Station 3) ─────────────────────────── */
+.wb-question-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+/* ── Question cards (Station 3) ────────────────────────── */
+.wb-question-card {
+  border-left: 4px solid var(--border);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+.wb-question-card--filled {
+  border-left-color: var(--green-dark);
+}
+.wb-question-card--empty {
+  border-left-color: var(--amber);
+}
+.wb-question-card--editing {
+  border-left-color: var(--blue);
+}
+
+.wb-question-card-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.wb-question-card-header--editing {
+  margin-bottom: 8px;
+}
+
+.wb-question-card-title {
+  font-size: 12px; color: var(--slate);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.wb-question-card-title--editing {
+  color: var(--blue); font-weight: 600;
+}
+
+.wb-question-card-value {
+  font-size: 14px; font-weight: 600; color: var(--text);
+}
+
+.wb-question-card-hint {
+  font-size: 13px; font-style: italic; color: var(--amber-dark);
+}
+
+/* ── Option cards in editing mode (Station 3) ──────────── */
+.wb-select-card--active .wb-option-label {
+  color: var(--blue);
+}
+.wb-option-label {
+  font-size: 13px; font-weight: 600; color: var(--text);
+}
+.wb-option-desc {
+  font-size: 12px; color: var(--slate); margin-top: 2px;
+}
+
+/* ── Design result cards (Station 3) ───────────────────── */
+.wb-design-result {
+  padding: 16px; margin-bottom: 12px;
+  border-left: 4px solid var(--slate-light);
+}
+.wb-design-result--top {
+  border-left-color: var(--blue);
+}
+
+.wb-design-result-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+}
+
+.wb-design-rank {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--slate); color: #fff;
+  font-size: 12px; font-weight: 700;
+}
+.wb-design-rank--top {
+  background: var(--navy);
+}
+
+.wb-design-result-name {
+  font-size: 15px; font-weight: 600; color: var(--text);
+}
+
+.wb-design-result-score {
+  font-size: 13px; color: var(--slate);
+}
+
+.wb-design-result-rationale {
+  font-size: 13px; color: var(--slate); margin-top: 4px;
+}
+
+.wb-design-results-title {
+  font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px;
+}
+
+/* ── Canvas overlay (Station 3) ────────────────────────── */
+.wb-canvas-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1000; background: var(--surface);
+  display: flex; flex-direction: column;
+}
+.wb-canvas-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  background: var(--bg); flex-shrink: 0;
+}
+.wb-canvas-header-title {
+  font-size: 16px; font-weight: 600; color: var(--text);
+}
+.wb-canvas-header-actions {
+  display: flex; gap: 10px;
+}
+.wb-canvas-iframe {
+  flex: 1; border: none; width: 100%;
+}
+
+/* ── Export menu ───────────────────────────────────────── */
+.wb-export-menu {
+  position: absolute; right: 0; top: 4px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+  padding: 4px; z-index: 50; min-width: 160px;
+}
+.wb-export-menu-item {
+  display: block; width: 100%; text-align: left;
+}
+
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
   .wb-form-grid { grid-template-columns: 1fr; gap: 14px; }
   .wb-select-grid { flex-direction: column; }
   .wb-dimension-label { width: 100px; font-size: 11px; }
   .wb-review-grid { grid-template-columns: 1fr; }
+  .wb-question-grid { grid-template-columns: 1fr; }
 }
