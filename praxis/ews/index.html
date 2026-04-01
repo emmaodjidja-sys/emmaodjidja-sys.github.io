@@ -1193,12 +1193,14 @@ function EWSViz() {
   const [methTab, setMethTab] = useState("exclusive");
   const [animStep, setAnimStep] = useState(0);
   const [showRatio, setShowRatio] = useState(false);
+  const [actorHover, setActorHover] = useState(null);
   const expandRef = useRef(null);
   useEffect(() => {
-    if (methTab === "exclusive" && showMethodology) {
+    if ((methTab === "exclusive" || methTab === "actors") && showMethodology) {
       setAnimStep(0);
       requestAnimationFrame(() => {
         setTimeout(() => setAnimStep(1), 50);
+        setTimeout(() => setAnimStep(2), 400);
       });
     }
   }, [methTab, showMethodology]);
@@ -1953,24 +1955,56 @@ function EWSViz() {
       color: C.gold,
       border: "1px solid " + C.bdr
     }
-  }, c)))), methTab === "actors" && /*#__PURE__*/React.createElement("div", {style: {padding: 14}},
-/*#__PURE__*/React.createElement("div", {style: {fontSize: 12, color: C.txS, lineHeight: 1.7, marginBottom: 14}}, "The composite detector is actor-agnostic: it counts types, not actors. But when decomposed by the dominant actor in each composite week, the signal reveals distinct tactical signatures and an inverse relationship between district identification and temporal escalation strength."),
+  }, c)))), methTab === "actors" && /*#__PURE__*/React.createElement("div", {style: {padding: "16px 20px 20px"}},
+/*#__PURE__*/React.createElement("p", {style: {fontSize: 11, color: C.txS, marginBottom: 14, lineHeight: 1.5}},
+  "The composite detector is actor-agnostic: it counts types, not actors. But when decomposed by the dominant actor in each composite week, the signal reveals distinct tactical signatures and an inverse relationship between district identification and temporal escalation strength."
+),
 
-/* Tactical profiles mini-chart */
-/*#__PURE__*/React.createElement("div", {style: {marginBottom: 16}},
-  /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, fontWeight: 600, color: C.tx, marginBottom: 6}}, "Tactical mix by armed group"),
+// ─── TACTICAL MIX ANIMATED BARS ───
+/*#__PURE__*/React.createElement("div", {style: {marginBottom: 18}},
+  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 8}}, "Tactical mix by armed group"),
   ACTOR_TACTICS.map(function(a, ai) {
-    return /*#__PURE__*/React.createElement("div", {key: ai, style: {display: "flex", alignItems: "center", gap: 8, marginBottom: 3}},
-      /*#__PURE__*/React.createElement("span", {style: {fontSize: 10, color: C.txS, width: 75, textAlign: "right", fontFamily: "'IBM Plex Sans',sans-serif"}}, a.name),
-      /*#__PURE__*/React.createElement("div", {style: {display: "flex", flex: 1, height: 14, borderRadius: 1, overflow: "hidden"}},
-        a.mix.map(function(pct, ti) {
-          return pct > 0.5 ? /*#__PURE__*/React.createElement("div", {key: ti, style: {width: pct + "%", background: TACTIC_COLORS[ti], opacity: 0.8}}) : null;
-        })
-      ),
-      /*#__PURE__*/React.createElement("span", {style: {fontSize: 9, color: C.txM, width: 35, fontFamily: "'IBM Plex Mono',monospace"}}, (a.events / 1000).toFixed(1) + "k")
+    var show = animStep >= 1;
+    return /*#__PURE__*/React.createElement("div", {key: ai, style: {marginBottom: 4}},
+      /*#__PURE__*/React.createElement("div", {style: {display: "flex", alignItems: "center", gap: 6}},
+        /*#__PURE__*/React.createElement("div", {style: {width: 72, textAlign: "right", flexShrink: 0}},
+          /*#__PURE__*/React.createElement("div", {style: {fontSize: 10, color: C.tx, fontWeight: 500}}, a.name)
+        ),
+        /*#__PURE__*/React.createElement("div", {style: {flex: 1, height: 16, display: "flex", borderRadius: 1, overflow: "hidden", background: C.bgC}},
+          a.mix.map(function(pct, ti) {
+            return pct > 0.3 ? /*#__PURE__*/React.createElement("div", {
+              key: ti,
+              style: {
+                width: show ? pct + "%" : "0%",
+                height: "100%",
+                background: TACTIC_COLORS[ti],
+                opacity: 0.8,
+                transition: "width 0.6s cubic-bezier(0.4,0,0.2,1)",
+                transitionDelay: (ai * 60 + ti * 20) + "ms",
+                cursor: "pointer"
+              },
+              onMouseEnter: function() { setActorHover({type: "tactic", actor: a.name, tactic: TACTIC_LABELS[ti], pct: pct, events: Math.round(a.events * pct / 100)}); },
+              onMouseLeave: function() { setActorHover(null); }
+            }) : null;
+          })
+        ),
+        /*#__PURE__*/React.createElement("div", {style: {width: 32, fontSize: 9, color: C.txM, fontFamily: "'IBM Plex Mono',monospace", textAlign: "right"}},
+          show ? (a.events / 1000).toFixed(1) + "k" : ""
+        )
+      )
     );
   }),
-  /*#__PURE__*/React.createElement("div", {style: {display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6}},
+  // Hover tooltip
+  actorHover && actorHover.type === "tactic" && /*#__PURE__*/React.createElement("div", {
+    style: {marginTop: 6, padding: "5px 10px", background: C.bg, border: "1px solid " + C.bdr, display: "inline-block", fontSize: 10}
+  },
+    /*#__PURE__*/React.createElement("span", {style: {color: C.txW, fontWeight: 600}}, actorHover.actor),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.txS, marginLeft: 6}}, actorHover.tactic + ": "),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.warm, fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600}}, actorHover.pct.toFixed(1) + "%"),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.txM, marginLeft: 6}}, "(" + actorHover.events.toLocaleString() + " events)")
+  ),
+  // Legend
+  /*#__PURE__*/React.createElement("div", {style: {display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8}},
     TACTIC_LABELS.map(function(l, i) {
       return /*#__PURE__*/React.createElement("span", {key: i, style: {display: "flex", alignItems: "center", gap: 3, fontSize: 9, color: C.txS}},
         /*#__PURE__*/React.createElement("span", {style: {width: 7, height: 7, borderRadius: 1, background: TACTIC_COLORS[i], display: "inline-block"}}),
@@ -1980,55 +2014,173 @@ function EWSViz() {
   )
 ),
 
-/* JNIM country ratios */
-/*#__PURE__*/React.createElement("div", {style: {marginBottom: 16}},
-  /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, fontWeight: 600, color: C.tx, marginBottom: 4}}, "JNIM KAFD:IED ratio by country"),
+// ─── JNIM COUNTRY RATIOS ───
+/*#__PURE__*/React.createElement("div", {style: {marginBottom: 18}},
+  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "JNIM KAFD:IED ratio by country"),
   /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "IED-dominant in established zones; abduction-dominant in frontier zones."),
   JNIM_RATIO.map(function(r, i) {
-    return /*#__PURE__*/React.createElement("div", {key: i, style: {display: "flex", alignItems: "center", gap: 8, marginBottom: 4}},
-      /*#__PURE__*/React.createElement("span", {style: {fontSize: 10, color: C.txS, width: 45, textAlign: "right"}}, r.country),
-      /*#__PURE__*/React.createElement("div", {style: {width: Math.min(r.ratio / 3.5 * 200, 200), height: 12, borderRadius: 2, background: r.ratio > 1.5 ? "#993556" : C.gold, opacity: 0.75}}),
-      /*#__PURE__*/React.createElement("span", {style: {fontSize: 9, color: C.txM, fontFamily: "'IBM Plex Mono',monospace"}}, r.ratio.toFixed(1) + ":1")
+    var show = animStep >= 1;
+    var maxR = 3.5;
+    var barW = Math.min(r.ratio / maxR * 100, 100);
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: {display: "flex", alignItems: "center", gap: 6, marginBottom: 4, cursor: "pointer"},
+      onMouseEnter: function() { setActorHover({type: "jnim", country: r.country, ratio: r.ratio, ied: r.ied, kafd: r.kafd, n: r.n}); },
+      onMouseLeave: function() { setActorHover(null); }
+    },
+      /*#__PURE__*/React.createElement("div", {style: {width: 40, fontSize: 10, color: C.txS, textAlign: "right", flexShrink: 0}}, r.country),
+      /*#__PURE__*/React.createElement("div", {style: {flex: 1, height: 14, background: C.bgC, borderRadius: 1, overflow: "hidden", position: "relative"}},
+        /*#__PURE__*/React.createElement("div", {style: {
+          width: show ? barW + "%" : "0%",
+          height: "100%",
+          background: r.ratio > 1.5 ? "#993556" : C.gold,
+          opacity: 0.75,
+          borderRadius: 1,
+          transition: "width 0.6s cubic-bezier(0.4,0,0.2,1)",
+          transitionDelay: (i * 80) + "ms"
+        }}),
+        /*#__PURE__*/React.createElement("div", {style: {
+          position: "absolute", left: (1 / maxR * 100) + "%",
+          top: 0, bottom: 0, width: 1,
+          background: C.txM, opacity: 0.3
+        }})
+      ),
+      /*#__PURE__*/React.createElement("div", {style: {width: 35, fontSize: 9, color: show ? C.txS : "transparent", fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, transition: "color 0.3s"}}, r.ratio.toFixed(1) + ":1")
     );
-  })
-),
-
-/* BF arc */
-/*#__PURE__*/React.createElement("div", {style: {marginBottom: 16}},
-  /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, fontWeight: 600, color: C.tx, marginBottom: 4}}, "Burkina Faso transition arc"),
-  /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "KAFD:IED peaked 4.3:1 in 2021 (expansion), fell to 0.0:1 by 2025 (IED supply chains matured)."),
-  /*#__PURE__*/React.createElement("svg", {viewBox: "0 0 600 100", style: {width: "100%", display: "block"}},
-    [0, 1, 2, 3, 4].map(function(v) {
-      return /*#__PURE__*/React.createElement("line", {key: v, x1: 40, y1: 85 - v / 4.5 * 70, x2: 560, y2: 85 - v / 4.5 * 70, stroke: C.bdr, strokeWidth: 0.3});
-    }),
-    /*#__PURE__*/React.createElement("polyline", {fill: "none", stroke: C.warm, strokeWidth: 1.5, points: BF_ARC.map(function(d, i) { return (55 + i * 68) + "," + (85 - d.ratio / 4.5 * 70); }).join(" ")}),
-    BF_ARC.map(function(d, i) {
-      return /*#__PURE__*/React.createElement("g", {key: i},
-        /*#__PURE__*/React.createElement("circle", {cx: 55 + i * 68, cy: 85 - d.ratio / 4.5 * 70, r: 3, fill: d.ratio > 2 ? C.warm : C.cool, stroke: C.bgA, strokeWidth: 1}),
-        /*#__PURE__*/React.createElement("text", {x: 55 + i * 68, y: 96, fill: C.txM, fontSize: 7, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, String(d.year).slice(2))
-      );
-    })
+  }),
+  // Hover tooltip
+  actorHover && actorHover.type === "jnim" && /*#__PURE__*/React.createElement("div", {
+    style: {marginTop: 6, padding: "5px 10px", background: C.bg, border: "1px solid " + C.bdr, display: "inline-block", fontSize: 10}
+  },
+    /*#__PURE__*/React.createElement("span", {style: {color: C.txW, fontWeight: 600}}, actorHover.country),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.txS, marginLeft: 8}}, "KAFD:IED = "),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.warm, fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600}}, actorHover.ratio.toFixed(2) + ":1"),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.txM, marginLeft: 8}}, "IED " + actorHover.ied.toFixed(0) + "% \u00b7 KAFD " + actorHover.kafd.toFixed(0) + "%"),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.txM, marginLeft: 8}}, "N=" + actorHover.n.toLocaleString())
   )
 ),
 
-/* Signal strength table */
+// ─── BF TRANSITION ARC ───
+/*#__PURE__*/React.createElement("div", {style: {marginBottom: 18}},
+  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "Burkina Faso transition arc"),
+  /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "KAFD:IED peaked 4.3:1 in 2021 (expansion), fell to 0.0:1 by 2025 (IED supply chains matured)."),
+  (function() {
+    var W = 600, H = 130, Pad = {t: 16, r: 14, b: 28, l: 36};
+    var cw = W - Pad.l - Pad.r, ch = H - Pad.t - Pad.b;
+    var yMax = 4.8;
+    var xS = function(i) { return Pad.l + i / (BF_ARC.length - 1) * cw; };
+    var yS = function(v) { return Pad.t + ch - v / yMax * ch; };
+    return /*#__PURE__*/React.createElement("svg", {
+      viewBox: "0 0 " + W + " " + H,
+      style: {width: "100%", display: "block"},
+      onMouseMove: function(e) {
+        var svg = e.currentTarget;
+        var rect = svg.getBoundingClientRect();
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var svgX = (clientX - rect.left) / rect.width * W;
+        var closest = 0, minD = Infinity;
+        BF_ARC.forEach(function(_, i) {
+          var d = Math.abs(xS(i) - svgX);
+          if (d < minD) { minD = d; closest = i; }
+        });
+        setActorHover({type: "bf", idx: closest, year: BF_ARC[closest].year, ratio: BF_ARC[closest].ratio});
+      },
+      onTouchMove: function(e) {
+        var svg = e.currentTarget;
+        var rect = svg.getBoundingClientRect();
+        var clientX = e.touches[0].clientX;
+        var svgX = (clientX - rect.left) / rect.width * W;
+        var closest = 0, minD = Infinity;
+        BF_ARC.forEach(function(_, i) {
+          var d = Math.abs(xS(i) - svgX);
+          if (d < minD) { minD = d; closest = i; }
+        });
+        setActorHover({type: "bf", idx: closest, year: BF_ARC[closest].year, ratio: BF_ARC[closest].ratio});
+      },
+      onMouseLeave: function() { setActorHover(null); },
+      onTouchEnd: function() { setActorHover(null); }
+    },
+      // Y gridlines
+      [0, 1, 2, 3, 4].map(function(v) {
+        return /*#__PURE__*/React.createElement("g", {key: v},
+          /*#__PURE__*/React.createElement("line", {x1: Pad.l, y1: yS(v), x2: W - Pad.r, y2: yS(v), stroke: C.bdr, strokeWidth: 0.3}),
+          v > 0 && /*#__PURE__*/React.createElement("text", {x: Pad.l - 4, y: yS(v) + 3, fill: C.txM, fontSize: 7, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "end"}, v + ":1")
+        );
+      }),
+      // 1:1 reference
+      /*#__PURE__*/React.createElement("line", {x1: Pad.l, y1: yS(1), x2: W - Pad.r, y2: yS(1), stroke: C.txM, strokeWidth: 0.6, strokeDasharray: "3,3", opacity: 0.3}),
+      // Area fill
+      /*#__PURE__*/React.createElement("path", {
+        d: "M" + BF_ARC.map(function(d, i) { return xS(i) + "," + yS(d.ratio); }).join("L") +
+           "L" + xS(BF_ARC.length - 1) + "," + yS(0) + "L" + xS(0) + "," + yS(0) + "Z",
+        fill: C.warm, opacity: 0.06
+      }),
+      // Line
+      /*#__PURE__*/React.createElement("polyline", {
+        fill: "none", stroke: C.warm, strokeWidth: 1.5,
+        points: BF_ARC.map(function(d, i) { return xS(i) + "," + yS(d.ratio); }).join(" ")
+      }),
+      // Points + labels
+      BF_ARC.map(function(d, i) {
+        return /*#__PURE__*/React.createElement("g", {key: i},
+          /*#__PURE__*/React.createElement("circle", {cx: xS(i), cy: yS(d.ratio), r: 3, fill: d.ratio > 2 ? C.warm : C.cool, stroke: C.bgA, strokeWidth: 1}),
+          /*#__PURE__*/React.createElement("text", {x: xS(i), y: H - 8, fill: C.txM, fontSize: 7, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, String(d.year).slice(2))
+        );
+      }),
+      // Hover crosshair
+      actorHover && actorHover.type === "bf" && /*#__PURE__*/React.createElement("g", null,
+        /*#__PURE__*/React.createElement("line", {
+          x1: xS(actorHover.idx), y1: Pad.t, x2: xS(actorHover.idx), y2: H - Pad.b,
+          stroke: C.txS, strokeWidth: 0.5, opacity: 0.5
+        }),
+        /*#__PURE__*/React.createElement("circle", {
+          cx: xS(actorHover.idx), cy: yS(actorHover.ratio), r: 5,
+          fill: "none", stroke: C.warm, strokeWidth: 1.5
+        }),
+        /*#__PURE__*/React.createElement("rect", {
+          x: xS(actorHover.idx) + 8, y: Pad.t,
+          width: 60, height: 24, rx: 3,
+          fill: C.bg, stroke: C.bdr, strokeWidth: 0.5, opacity: 0.95
+        }),
+        /*#__PURE__*/React.createElement("text", {
+          x: xS(actorHover.idx) + 14, y: Pad.t + 10,
+          fill: C.txS, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace"
+        }, actorHover.year),
+        /*#__PURE__*/React.createElement("text", {
+          x: xS(actorHover.idx) + 14, y: Pad.t + 21,
+          fill: C.warm, fontSize: 9, fontWeight: 600, fontFamily: "'IBM Plex Mono',monospace"
+        }, actorHover.ratio.toFixed(1) + ":1")
+      ),
+      // Invisible rect for hover capture
+      /*#__PURE__*/React.createElement("rect", {x: Pad.l, y: Pad.t, width: cw, height: ch, fill: "transparent"})
+    );
+  })()
+),
+
+// ─── SIGNAL STRENGTH TABLE WITH HOVER ───
 /*#__PURE__*/React.createElement("div", null,
-  /*#__PURE__*/React.createElement("div", {style: {fontSize: 12, fontWeight: 600, color: C.tx, marginBottom: 4}}, "Signal strength by actor type"),
+  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "Signal strength by actor type"),
   /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "Inverse relationship: high-frequency composite actors \u2192 strong \"where\" / weak \"when\". Low-frequency \u2192 weak \"where\" / strong \"when\"."),
   /*#__PURE__*/React.createElement("table", {style: {width: "100%", borderCollapse: "collapse", fontSize: 10}},
     /*#__PURE__*/React.createElement("thead", null,
       /*#__PURE__*/React.createElement("tr", {style: {borderBottom: "1px solid " + C.bdr}},
-        /*#__PURE__*/React.createElement("th", {style: {textAlign: "left", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "Actor"),
-        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "Temporal (t=0)"),
-        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "District ID (t+1)"),
-        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "N composite"),
-        /*#__PURE__*/React.createElement("th", {style: {textAlign: "left", padding: "4px 6px", color: C.txM, fontWeight: 400}}, "Primary function")
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "left", padding: "4px 6px", color: C.txM, fontWeight: 600, fontSize: 9}}, "Actor"),
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 600, fontSize: 9}}, "Temporal (t=0)"),
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 600, fontSize: 9}}, "District ID (t+1)"),
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "right", padding: "4px 6px", color: C.txM, fontWeight: 600, fontSize: 9}}, "N composite"),
+        /*#__PURE__*/React.createElement("th", {style: {textAlign: "left", padding: "4px 6px", color: C.txM, fontWeight: 600, fontSize: 9}}, "Function")
       )
     ),
     /*#__PURE__*/React.createElement("tbody", null,
       ACTOR_SIGNAL.map(function(a, i) {
-        return /*#__PURE__*/React.createElement("tr", {key: i, style: {borderBottom: "1px solid " + C.bdr}},
-          /*#__PURE__*/React.createElement("td", {style: {padding: "5px 6px", color: C.txS}}, a.name),
+        var isHov = actorHover && actorHover.type === "table" && actorHover.idx === i;
+        return /*#__PURE__*/React.createElement("tr", {
+          key: i,
+          style: {borderBottom: "1px solid " + C.bdr, background: isHov ? C.bgC : "transparent", transition: "background 0.15s", cursor: "pointer"},
+          onMouseEnter: function() { setActorHover({type: "table", idx: i}); },
+          onMouseLeave: function() { setActorHover(null); }
+        },
+          /*#__PURE__*/React.createElement("td", {style: {padding: "5px 6px", color: isHov ? C.txW : C.txS, fontWeight: isHov ? 600 : 400, transition: "all 0.15s"}}, a.name),
           /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: a.incr > 2 ? C.warm : C.txS, fontFamily: "'IBM Plex Mono',monospace"}}, a.incr.toFixed(2) + "x"),
           /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: a.dist > 6 ? C.warm : C.txS, fontFamily: "'IBM Plex Mono',monospace"}}, a.dist.toFixed(1) + "x"),
           /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: C.txM, fontFamily: "'IBM Plex Mono',monospace"}}, a.n.toLocaleString()),
@@ -2039,7 +2191,10 @@ function EWSViz() {
   )
 ),
 
-/*#__PURE__*/React.createElement("div", {style: {fontSize: 10, color: C.txM, marginTop: 12, lineHeight: 1.6, borderTop: "1px solid " + C.bdr, paddingTop: 8}}, "Actor classification uses keyword matching on ACLED actor1 field. Attribution is less reliable in frontier zones. Temporal escalation values use inclusive outcome (not corrected for N4 predictor-outcome overlap); relative ordering is robust but absolute values are inflated. \"Communal\" aggregates 1,125+ distinct named actors across ACLED's coding convention. Ethnic labels are never used in TREMOR outputs.")), /*#__PURE__*/React.createElement("div", {
+// Footer note
+/*#__PURE__*/React.createElement("div", {style: {fontSize: 10, color: C.txM, marginTop: 12, lineHeight: 1.6, borderTop: "1px solid " + C.bdr, paddingTop: 8}},
+  "Actor classification uses keyword matching on ACLED actor1 field. Attribution is less reliable in frontier zones. Temporal escalation values use inclusive outcome (not corrected for N4 predictor-outcome overlap); relative ordering is robust but absolute values are inflated. \"Communal\" aggregates 1,125+ distinct named actors across ACLED's coding convention. Ethnic labels are never used in TREMOR outputs."
+)), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "8px 20px 12px",
       textAlign: "center"
