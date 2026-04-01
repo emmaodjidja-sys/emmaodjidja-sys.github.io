@@ -56,10 +56,10 @@
 
     // ── No design selected ──
     if (!topDesign) {
-      return h('div', { style: { textAlign: 'center', padding: '48px 32px' } },
-        h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--text, #0F172A)', marginBottom: 6 } },
+      return h('div', { className: 'wb-station-empty' },
+        h('div', { className: 'wb-station-empty-title' },
           'No Evaluation Design Selected'),
-        h('p', { style: { fontSize: 13, color: 'var(--slate, #64748B)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 20px' } },
+        h('p', { className: 'wb-station-empty-desc' },
           'Complete Station 3 first to select an evaluation design. The sample size calculator will be pre-configured based on your chosen design.'),
         h('button', {
           className: 'wb-btn wb-btn-primary',
@@ -75,37 +75,15 @@
         ? window.designToCalculatorId(designRec)
         : 'twoProportions';
 
-      calculatorOverlay = h('div', {
-        style: {
-          position: 'fixed', inset: 0, zIndex: 9000,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }
-      },
-        h('div', {
-          style: {
-            width: '90vw', maxWidth: '1100px', height: '85vh',
-            background: 'var(--bg-primary, #fff)',
-            borderRadius: '12px', overflow: 'hidden',
-            display: 'flex', flexDirection: 'column',
-            boxShadow: '0 24px 80px rgba(0,0,0,0.25)'
-          }
-        },
+      calculatorOverlay = h('div', { className: 'wb-overlay' },
+        h('div', { className: 'wb-overlay-panel' },
           // Header
-          h('div', {
-            style: {
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '1rem 1.5rem',
-              borderBottom: '1px solid var(--border, #e2e8f0)',
-              background: 'var(--bg-secondary, #f8fafc)'
-            }
-          },
-            h('h3', { style: { margin: 0, fontSize: '1.1rem' } }, 'Sample Size Calculator'),
-            h('div', { style: { display: 'flex', gap: '0.75rem' } },
+          h('div', { className: 'wb-overlay-header' },
+            h('h3', { className: 'wb-overlay-header-title' }, 'Sample Size Calculator'),
+            h('div', { className: 'wb-overlay-header-actions' },
               h('button', {
                 className: 'wb-btn wb-btn-teal wb-btn-sm',
                 onClick: function () {
-                  // Request export from calculator
                   if (iframeRef.current && iframeRef.current.contentWindow) {
                     iframeRef.current.contentWindow.postMessage({ type: 'REQUEST_EXPORT' }, '*');
                   }
@@ -122,7 +100,8 @@
           h('iframe', {
             ref: iframeRef,
             src: '/praxis/tools/sample-size-calculator/',
-            style: { flex: 1, border: 'none', width: '100%' },
+            className: 'wb-overlay-body',
+            style: { border: 'none', width: '100%' },
             title: 'Sample Size Calculator'
           })
         )
@@ -132,42 +111,27 @@
     // ── Main layout ──
     return h('div', null,
       // Selected design card
-      h('div', { className: 'wb-card', style: { marginBottom: '1.5rem' } },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' } },
-          h('div', {
-            style: {
-              width: 40, height: 40, borderRadius: 8,
-              background: 'var(--navy, #0B1A2E)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'var(--teal, #2EC4B6)', fontSize: 14, fontWeight: 800,
-              letterSpacing: '0.03em', flexShrink: 0
-            }
-          }, 'S4'),
+      h('div', { className: 'wb-card' },
+        h('div', { className: 'wb-design-card' },
+          h('div', { className: 'wb-station-icon' }, 'S4'),
           h('div', null,
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '0.75rem' } },
-              h('h3', { style: { margin: 0, fontSize: '1.15rem', color: 'var(--text-primary, #1a1a2e)' } },
+            h('div', { className: 'wb-design-card-header' },
+              h('h3', { className: 'wb-design-card-title' },
                 formatDesignName(designId)),
               h('a', {
                 href: '#',
+                className: 'wb-design-card-link',
                 onClick: function (e) {
                   e.preventDefault();
                   dispatch({ type: 'SET_ACTIVE_STATION', station: 3 });
-                },
-                style: {
-                  fontSize: '12px', color: 'var(--teal, #0d9488)',
-                  textDecoration: 'none', fontWeight: 500, whiteSpace: 'nowrap',
-                  cursor: 'pointer'
-                },
-                onMouseEnter: function (e) { e.target.style.textDecoration = 'underline'; },
-                onMouseLeave: function (e) { e.target.style.textDecoration = 'none'; }
+                }
               }, 'Change design \u2192')
             ),
             topDesign.family
-              ? h('span', { className: 'wb-badge', style: { marginTop: '0.25rem', display: 'inline-block' } },
-                  topDesign.family)
+              ? h('span', { className: 'wb-badge' }, topDesign.family)
               : null,
             topDesign.score != null
-              ? h('span', { className: 'wb-pill', style: { marginLeft: '0.5rem' } },
+              ? h('span', { className: 'wb-pill' },
                   'Score: ' + (typeof topDesign.score === 'number' ? topDesign.score.toFixed(1) : topDesign.score))
               : null
           )
@@ -177,44 +141,43 @@
       ),
 
       // Action button
-      h('div', { style: { marginBottom: '1.5rem' } },
+      h('div', { className: 'wb-param-grid' },
         h('button', {
           className: 'wb-btn wb-btn-primary',
-          onClick: function () { setShowCalculator(true); },
-          style: { marginRight: '0.75rem' }
+          onClick: function () { setShowCalculator(true); }
         }, sampleParams ? 'Recalculate' : 'Open Calculator')
       ),
 
       // Sample parameters summary (if saved)
-      sampleParams ? h('div', { className: 'wb-card', style: { marginBottom: '1.5rem' } },
-        h('h4', { style: { marginTop: 0, marginBottom: '1rem' } }, 'Sample Parameters Summary'),
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' } },
+      sampleParams ? h('div', { className: 'wb-card' },
+        h('h4', { className: 'wb-station-title' }, 'Sample Parameters Summary'),
+        h('div', { className: 'wb-param-grid' },
           // Design
-          h('div', { className: 'wb-card', style: { padding: '1rem', background: 'var(--bg-secondary, #f8fafc)' } },
-            h('div', { className: 'wb-label', style: { marginBottom: '0.25rem' } }, 'Design'),
-            h('div', { style: { fontWeight: 600 } },
+          h('div', { className: 'wb-param-card' },
+            h('div', { className: 'wb-param-label' }, 'Design'),
+            h('div', { className: 'wb-param-value' },
               sampleParams.design || sampleParams.designType || formatDesignName(designId))
           ),
           // Sample size
           sampleParams.sampleSize != null || sampleParams.total_sample != null
-            ? h('div', { className: 'wb-card', style: { padding: '1rem', background: 'var(--bg-secondary, #f8fafc)' } },
-                h('div', { className: 'wb-label', style: { marginBottom: '0.25rem' } }, 'Total Sample Size'),
-                h('div', { style: { fontWeight: 600, fontSize: '1.5rem', color: 'var(--teal, #0d9488)' } },
+            ? h('div', { className: 'wb-param-card' },
+                h('div', { className: 'wb-param-label' }, 'Total Sample Size'),
+                h('div', { className: 'wb-param-value wb-param-value--highlight' },
                   sampleParams.sampleSize || sampleParams.total_sample || 'N/A')
               )
             : null,
           // Power
           sampleParams.power != null
-            ? h('div', { className: 'wb-card', style: { padding: '1rem', background: 'var(--bg-secondary, #f8fafc)' } },
-                h('div', { className: 'wb-label', style: { marginBottom: '0.25rem' } }, 'Statistical Power'),
-                h('div', { style: { fontWeight: 600 } }, (sampleParams.power * 100).toFixed(0) + '%')
+            ? h('div', { className: 'wb-param-card' },
+                h('div', { className: 'wb-param-label' }, 'Statistical Power'),
+                h('div', { className: 'wb-param-value' }, (sampleParams.power * 100).toFixed(0) + '%')
               )
             : null,
           // Qualitative
           sampleParams.qualitative
-            ? h('div', { className: 'wb-card', style: { padding: '1rem', background: 'var(--bg-secondary, #f8fafc)' } },
-                h('div', { className: 'wb-label', style: { marginBottom: '0.25rem' } }, 'Qualitative Plan'),
-                h('div', { style: { fontWeight: 600 } },
+            ? h('div', { className: 'wb-param-card' },
+                h('div', { className: 'wb-param-label' }, 'Qualitative Plan'),
+                h('div', { className: 'wb-param-value' },
                   typeof sampleParams.qualitative === 'string'
                     ? sampleParams.qualitative
                     : JSON.stringify(sampleParams.qualitative))

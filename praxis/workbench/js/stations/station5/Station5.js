@@ -53,40 +53,41 @@
     // Upstream badges
     var designMethod = (context.design || {}).method || 'contribution analysis';
     var sampleInfo = context.sampling && context.sampling.result ? context.sampling.result.totalSample + ' respondents' : '';
-    var badges = h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 } },
-      matrixRows.length ? h('span', { style: { fontSize: 11, padding: '2px 8px', background: '#EBF8FF', color: '#2B6CB0', borderRadius: 10 } }, 'Matrix: ' + matrixRows.length + ' EQs') : null,
-      h('span', { style: { fontSize: 11, padding: '2px 8px', background: '#F0FFF4', color: '#276749', borderRadius: 10 } }, 'Design: ' + designMethod),
-      sampleInfo ? h('span', { style: { fontSize: 11, padding: '2px 8px', background: '#FEFCBF', color: '#744210', borderRadius: 10 } }, 'Sample: ' + sampleInfo) : null);
+    var badges = h('div', { className: 'wb-context-badges' },
+      matrixRows.length ? h('span', { className: 'wb-context-badge' }, 'Matrix: ' + matrixRows.length + ' EQs') : null,
+      h('span', { className: 'wb-context-badge' }, 'Design: ' + designMethod),
+      sampleInfo ? h('span', { className: 'wb-context-badge' }, 'Sample: ' + sampleInfo) : null);
 
     // EMPTY STATE
     if (!localInst.length) {
       return h('div', null, badges,
-        matrixRows.length ? h('div', { style: { textAlign: 'center', padding: '48px 32px' } },
-          h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6 } }, 'Generate Data Collection Instruments'),
-          h('p', { style: { fontSize: 13, color: 'var(--slate)', maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.6 } },
+        matrixRows.length ? h('div', { className: 'wb-station-empty' },
+          h('div', { className: 'wb-station-empty-title' }, 'Generate Data Collection Instruments'),
+          h('div', { className: 'wb-station-empty-desc' },
             'Scaffold survey, KII, and FGD instruments from your ' + matrixRows.length + ' evaluation questions with auto-suggested response types.'),
           h('button', { className: 'wb-btn wb-btn-primary', onClick: generate }, 'Generate Instruments'))
-        : h('div', { style: { textAlign: 'center', padding: '48px 24px' } },
-          h('h3', { style: { fontSize: 16, fontWeight: 600, marginBottom: 6 } }, 'Complete Station 2 first'),
-          h('p', { style: { fontSize: 13, color: 'var(--slate)' } }, 'Instruments require an evaluation matrix.'),
-          h('button', { className: 'wb-btn wb-btn-primary', style: { marginTop: 12 },
+        : h('div', { className: 'wb-station-empty' },
+          h('div', { className: 'wb-station-empty-title' }, 'Complete Station 2 first'),
+          h('div', { className: 'wb-station-empty-desc' }, 'Instruments require an evaluation matrix.'),
+          h('button', { className: 'wb-btn wb-btn-primary',
             onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 2 }); } }, 'Go to Station 2')));
     }
 
     // INSTRUMENT CARDS
-    var cards = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 20 } },
+    var cards = h('div', { className: 'wb-param-grid', style: { marginBottom: 20 } },
       localInst.map(function(inst) {
         var qCount = (inst.sections || []).reduce(function(s, sec) { return s + (sec.questions || []).length; }, 0);
         var secCount = (inst.sections || []).length;
         var eqIds = {}; (inst.sections || []).forEach(function(sec) { if (sec.eqId) eqIds[sec.eqId] = true; });
-        return h('div', { key: inst.id, className: 'wb-card', style: { padding: 16, cursor: 'pointer', transition: 'box-shadow 0.15s' },
+        return h('div', { key: inst.id, className: 'wb-card wb-card--interactive',
           onClick: function() { setEditingId(inst.id); } },
-          h('div', { style: { fontSize: 14, fontWeight: 600, color: '#1F2937', marginBottom: 4 } }, inst.name),
-          h('div', { style: { fontSize: 12, color: '#6B7280', marginBottom: 8 } }, inst.method),
-          h('div', { style: { display: 'flex', gap: 8, fontSize: 11, color: '#4A5568' } },
-            h('span', null, qCount + ' questions'), h('span', null, secCount + ' sections')),
-          h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 } },
-            Object.keys(eqIds).map(function(eqId) { return h('span', { key: eqId, style: { fontSize: 10, padding: '1px 6px', background: '#E6FFFA', color: '#234E52', borderRadius: 8 } }, eqId); })));
+          h('div', { className: 'wb-action-card-title' }, inst.name),
+          h('div', { className: 'wb-action-card-desc', style: { marginBottom: 8 } }, inst.method),
+          h('div', { className: 'wb-context-badges' },
+            h('span', { className: 'wb-context-badge' }, qCount + ' questions'),
+            h('span', { className: 'wb-context-badge' }, secCount + ' sections')),
+          Object.keys(eqIds).length > 0 ? h('div', { className: 'wb-context-badges', style: { marginTop: 6 } },
+            Object.keys(eqIds).map(function(eqId) { return h('span', { key: eqId, className: 'wb-badge wb-badge-teal' }, eqId); })) : null);
       }));
 
     // COVERAGE MATRIX
@@ -100,44 +101,45 @@
     var uncoveredCount = eqCoverage.filter(function(ec) { return Object.keys(ec.covered).length === 0; }).length;
 
     var coverageTable = matrixRows.length ? h('div', { style: { marginBottom: 20 } },
-      h('h4', { style: { fontSize: 14, fontWeight: 600, marginBottom: 8 } }, 'EQ Coverage Matrix'),
-      uncoveredCount > 0 ? h('div', { style: { fontSize: 12, color: '#92400E', background: '#FFFBEB', padding: '6px 10px', borderRadius: 6, marginBottom: 8 } },
-        uncoveredCount + ' evaluation question(s) not covered by any instrument') : null,
-      h('div', { style: { overflowX: 'auto' } },
-        h('table', { style: { width: '100%', fontSize: 12, borderCollapse: 'collapse' } },
+      h('h4', { className: 'wb-field-label', style: { marginBottom: 8 } }, 'EQ Coverage Matrix'),
+      uncoveredCount > 0 ? h('div', { className: 'wb-guidance', style: { background: 'var(--amber-light)', borderColor: 'var(--amber)' } },
+        h('span', { className: 'wb-guidance-text', style: { color: '#92400E' } },
+          uncoveredCount + ' evaluation question(s) not covered by any instrument')) : null,
+      h('div', { className: 'wb-table-container' },
+        h('table', { className: 'wb-table' },
           h('thead', null, h('tr', null,
-            h('th', { style: { textAlign: 'left', padding: '6px 8px', borderBottom: '2px solid #E2E8F0', fontSize: 11, color: '#6B7280' } }, 'EQ'),
-            localInst.map(function(inst) { return h('th', { key: inst.id, style: { textAlign: 'center', padding: '6px 8px', borderBottom: '2px solid #E2E8F0', fontSize: 11, color: '#6B7280' } }, (inst.type || 'survey').toUpperCase()); }))),
+            h('th', null, 'Evaluation Question'),
+            localInst.map(function(inst) { return h('th', { key: inst.id, style: { textAlign: 'center' } }, (inst.type || 'survey').toUpperCase()); }))),
           h('tbody', null, eqCoverage.map(function(ec) {
             var noCoverage = Object.keys(ec.covered).length === 0;
-            return h('tr', { key: ec.row.id, style: { background: noCoverage ? '#FFFBEB' : 'transparent' } },
-              h('td', { style: { padding: '5px 8px', borderBottom: '1px solid #E2E8F0', color: noCoverage ? '#92400E' : '#374151', fontWeight: noCoverage ? 600 : 400 } },
-                (ec.row.question || ec.row.text || ec.row.id || '').slice(0, 50)),
+            return h('tr', { key: ec.row.id, className: noCoverage ? 'wb-coverage-gap' : '' },
+              h('td', { style: { fontWeight: noCoverage ? 600 : 400, color: noCoverage ? '#92400E' : 'var(--text)' } },
+                (ec.row.question || ec.row.text || ec.row.id || '').slice(0, 60)),
               localInst.map(function(inst) {
-                return h('td', { key: inst.id, style: { textAlign: 'center', padding: '5px 8px', borderBottom: '1px solid #E2E8F0' } },
-                  ec.covered[inst.id] ? h('span', { style: { color: '#319795', fontWeight: 700 } }, '\u2713') : '\u2014');
+                return h('td', { key: inst.id, style: { textAlign: 'center' } },
+                  ec.covered[inst.id] ? h('span', { style: { color: 'var(--teal)', fontWeight: 700 } }, '\u2713') : '\u2014');
               }));
           }))))) : null;
 
     // SKIP LOGIC BOUNDARY
-    var skipLogic = h('div', { className: 'wb-card', style: { padding: 16, marginBottom: 16 } },
+    var skipLogic = h('div', { className: 'wb-card', style: { marginBottom: 16 } },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
-        h('h4', { style: { fontSize: 14, fontWeight: 600, margin: 0 } }, 'Skip Logic & Branching'),
-        h('span', { style: { fontSize: 10, padding: '2px 8px', background: '#EDF2F7', color: '#4A5568', borderRadius: 10, fontWeight: 600 } }, 'Handled in KoboToolbox')),
-      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 12 } },
-        h('div', { style: { background: '#F0FFF4', padding: 10, borderRadius: 6 } },
-          h('strong', { style: { color: '#276749' } }, 'What we do here'),
-          h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, color: '#2D3748' } },
+        h('span', { className: 'wb-field-label', style: { margin: 0 } }, 'Skip Logic & Branching'),
+        h('span', { className: 'wb-badge', style: { background: 'var(--bg)', color: 'var(--slate)' } }, 'Handled in KoboToolbox')),
+      h('div', { className: 'wb-form-grid', style: { marginBottom: 8, fontSize: 12 } },
+        h('div', { style: { background: 'var(--green-light)', padding: 12, borderRadius: 'var(--radius-sm)' } },
+          h('strong', { style: { color: '#065F46', fontSize: 11 } }, 'What this builder does'),
+          h('ul', { style: { margin: '6px 0 0', paddingLeft: 16, color: 'var(--text)' } },
             h('li', null, 'Structure questions in logical sections'),
             h('li', null, 'Set required/optional flags'),
             h('li', null, 'Define response types and constraints'))),
-        h('div', { style: { background: '#EBF8FF', padding: 10, borderRadius: 6 } },
-          h('strong', { style: { color: '#2B6CB0' } }, 'What KoboToolbox does'),
-          h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, color: '#2D3748' } },
+        h('div', { style: { background: 'var(--blue-light)', padding: 12, borderRadius: 'var(--radius-sm)' } },
+          h('strong', { style: { color: '#1E40AF', fontSize: 11 } }, 'Configure in KoboToolbox'),
+          h('ul', { style: { margin: '6px 0 0', paddingLeft: 16, color: 'var(--text)' } },
             h('li', null, 'Skip logic (relevant column)'),
             h('li', null, 'Cascading selects'),
             h('li', null, 'Validation constraints & calculations')))),
-      h('div', { style: { fontSize: 11, color: '#718096', marginTop: 8 } }, 'The exported XLSForm includes empty relevant and constraint columns, ready for skip logic configuration in KoboToolbox.'));
+      h('p', { className: 'wb-field-helper' }, 'The exported XLSForm includes empty relevant and constraint columns, ready for skip logic configuration in KoboToolbox.'));
 
     return h('div', null, badges, cards, coverageTable, skipLogic,
       typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 5, dispatch: dispatch }) : null);

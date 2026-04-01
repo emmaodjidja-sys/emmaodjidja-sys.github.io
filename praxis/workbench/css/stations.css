@@ -265,9 +265,158 @@
   background: #FFFBEB; border-left: 3px solid var(--amber);
 }
 
+/* ── Calculator overlay ────────────────────────────────── */
+.wb-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+}
+.wb-overlay-panel {
+  width: 90vw; max-width: 1100px; height: 85vh;
+  background: var(--surface); border-radius: 12px;
+  overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+}
+.wb-overlay-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: #F8FAFC;
+}
+.wb-overlay-header-title {
+  margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text);
+}
+.wb-overlay-header-actions {
+  display: flex; gap: 0.75rem;
+}
+.wb-overlay-body {
+  flex: 1; overflow: hidden;
+}
+
+/* ── Station icon ──────────────────────────────────────── */
+.wb-station-icon {
+  width: 40px; height: 40px; border-radius: 8px;
+  background: var(--navy); display: flex;
+  align-items: center; justify-content: center;
+  color: var(--teal); font-size: 14px; font-weight: 800;
+  letter-spacing: 0.03em; flex-shrink: 0;
+}
+
+/* ── Design card ───────────────────────────────────────── */
+.wb-design-card {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+}
+.wb-design-card-title {
+  margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text);
+}
+.wb-design-card-header {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.wb-design-card-link {
+  font-size: 12px; color: var(--teal); text-decoration: none;
+  font-weight: 500; white-space: nowrap; cursor: pointer;
+}
+.wb-design-card-link:hover { text-decoration: underline; }
+
+/* ── Parameter grid ────────────────────────────────────── */
+.wb-param-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.wb-param-card {
+  padding: 1rem; background: var(--bg);
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+}
+.wb-param-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--slate); margin-bottom: 4px;
+}
+.wb-param-value {
+  font-size: 15px; font-weight: 600; color: var(--text);
+}
+.wb-param-value--highlight {
+  font-size: 1.5rem; color: var(--teal);
+}
+
+/* ── Toolbar ───────────────────────────────────────────── */
+.wb-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.wb-toolbar-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+.wb-toolbar-spacer { flex: 1; }
+
+/* ── Button active state ───────────────────────────────── */
+.wb-btn--active { background: var(--navy); color: white; border-color: var(--navy); }
+
+/* ── Table container ───────────────────────────────────── */
+.wb-table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
+
+/* ── Matrix table row states ───────────────────────────── */
+.wb-table tr.wb-table-row { cursor: pointer; border-left: 3px solid transparent; transition: background 0.1s; }
+.wb-table tr.wb-table-row:nth-child(even) { background: #FAFBFC; }
+.wb-table tr.wb-table-row:nth-child(odd) { background: var(--surface); }
+.wb-table tr.wb-table-row--selected { border-left: 3px solid var(--blue); background: var(--blue-light) !important; }
+.wb-table tr.wb-table-row:not(.wb-table-row--selected):hover { background: #F1F5F9; }
+
+/* ── Table cell sizing helpers ─────────────────────────── */
+.wb-td--num { font-size: 11px; color: var(--slate); }
+.wb-td--text { font-size: 12px; line-height: 1.4; }
+.wb-td--meta { font-size: 10px; color: var(--slate); }
+.wb-td--badges { font-size: 10px; }
+
+/* ── Phase review card ─────────────────────────────────── */
+.wb-review-card {
+  padding: 24px; margin: 16px 0;
+}
+.wb-review-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 20px;
+}
+.wb-review-header-check {
+  color: var(--green-dark); font-size: 20px;
+}
+.wb-review-header-title {
+  font-size: 14px; font-weight: 600;
+  color: var(--text); margin: 0;
+}
+.wb-review-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 20px;
+}
+.wb-review-label {
+  font-size: 9px; color: var(--slate);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.wb-review-value {
+  font-size: 12px; font-weight: 600; color: var(--text);
+}
+.wb-review-add-link {
+  font-size: 12px; color: var(--teal-dark);
+  cursor: pointer; text-decoration: none;
+}
+.wb-review-actions {
+  display: flex; justify-content: space-between; margin-top: 16px;
+}
+
+/* ── Guidance signal variant (amber) ───────────────────── */
+.wb-guidance--signal {
+  background: var(--amber-warm); border: 1px solid var(--amber-border);
+  border-radius: var(--radius-md); padding: 12px 16px;
+  margin-bottom: 16px;
+}
+.wb-guidance--signal-title {
+  font-size: 10px; font-weight: 700; color: var(--amber-dark);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.wb-guidance--signal-text {
+  font-size: 12px; color: var(--amber-text);
+  margin: 4px 0; line-height: 1.5;
+}
+
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
   .wb-form-grid { grid-template-columns: 1fr; gap: 14px; }
   .wb-select-grid { flex-direction: column; }
   .wb-dimension-label { width: 100px; font-size: 11px; }
+  .wb-review-grid { grid-template-columns: 1fr; }
 }
