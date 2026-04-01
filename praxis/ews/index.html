@@ -1961,7 +1961,7 @@ function EWSViz() {
 ),
 
 // ─── TACTICAL MIX ANIMATED BARS ───
-/*#__PURE__*/React.createElement("div", {style: {marginBottom: 18}},
+/*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
   /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 8}}, "Tactical mix by armed group"),
   ACTOR_TACTICS.map(function(a, ai) {
     var show = animStep >= 1;
@@ -2015,7 +2015,7 @@ function EWSViz() {
 ),
 
 // ─── JNIM COUNTRY RATIOS ───
-/*#__PURE__*/React.createElement("div", {style: {marginBottom: 18}},
+/*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
   /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "JNIM KAFD:IED ratio by country"),
   /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "IED-dominant in established zones; abduction-dominant in frontier zones."),
   JNIM_RATIO.map(function(r, i) {
@@ -2061,7 +2061,7 @@ function EWSViz() {
 ),
 
 // ─── BF TRANSITION ARC ───
-/*#__PURE__*/React.createElement("div", {style: {marginBottom: 18}},
+/*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
   /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "Burkina Faso transition arc"),
   /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "KAFD:IED peaked 4.3:1 in 2021 (expansion), fell to 0.0:1 by 2025 (IED supply chains matured)."),
   (function() {
@@ -2158,7 +2158,7 @@ function EWSViz() {
 ),
 
 // ─── SIGNAL STRENGTH TABLE WITH HOVER ───
-/*#__PURE__*/React.createElement("div", null,
+/*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
   /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "Signal strength by actor type"),
   /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "Inverse relationship: high-frequency composite actors \u2192 strong \"where\" / weak \"when\". Low-frequency \u2192 weak \"where\" / strong \"when\"."),
   /*#__PURE__*/React.createElement("table", {style: {width: "100%", borderCollapse: "collapse", fontSize: 10}},
