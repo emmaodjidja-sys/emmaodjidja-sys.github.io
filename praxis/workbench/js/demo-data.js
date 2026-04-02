@@ -54,16 +54,22 @@
     },
 
     evaluability: {
-      score: 94,
+      score: 68,
       dimensions: [
-        { id: 'data', label: 'Data Availability', max: 25, system_score: 25, adjusted_score: null, justification: null },
-        { id: 'toc', label: 'ToC Clarity', max: 20, system_score: 20, adjusted_score: null, justification: null },
-        { id: 'timeline', label: 'Timeline Adequacy', max: 20, system_score: 20, adjusted_score: null, justification: null },
-        { id: 'context', label: 'Operating Context', max: 15, system_score: 15, adjusted_score: null, justification: null },
-        { id: 'comparison', label: 'Comparison Feasibility', max: 20, system_score: 14, adjusted_score: null, justification: null }
+        { id: 'data', label: 'Data Availability', max: 25, system_score: 15, adjusted_score: null, justification: 'DHIS2 data completeness is high but accuracy varies across districts. GhiLMIS supply chain data is in a separate system. DHS available only every 5 years.' },
+        { id: 'toc', label: 'ToC Clarity', max: 20, system_score: 14, adjusted_score: null, justification: 'Programme has a results framework but causal mechanisms between RSSH pillars and health outcomes are underspecified. No documented assumptions.' },
+        { id: 'timeline', label: 'Timeline Adequacy', max: 20, system_score: 16, adjusted_score: null, justification: 'Adequate for process and output indicators. U5MR impact measurement requires two DHS rounds (10+ years), exceeding evaluation timeline.' },
+        { id: 'context', label: 'Operating Context', max: 15, system_score: 12, adjusted_score: null, justification: 'Stable overall but northern priority regions face staff turnover, road access constraints during rainy season, and language barriers.' },
+        { id: 'comparison', label: 'Comparison Feasibility', max: 20, system_score: 11, adjusted_score: null, justification: 'Phased rollout provides a natural experiment, but regions were selected on need (selection bias). Parallel trends assumption needs careful testing.' }
       ],
-      blockers: [],
-      recommendations: [],
+      blockers: [
+        { dimension: 'data', label: 'Data Availability', score: 15, max: 25 }
+      ],
+      recommendations: [
+        'Conduct data quality assessment (register-to-report verification) before relying on DHIS2 indicators.',
+        'Use intermediate outcome indicators (case fatality rates, treatment completion) as proxies for impact rather than attempting U5MR attribution.',
+        'Test parallel trends at district level within regions rather than across regions to mitigate selection bias.'
+      ],
       completed_at: '2026-01-20T10:00:00.000Z'
     },
 
@@ -175,7 +181,18 @@
           judgementCriteria: 'CHW model is cost-effective if unit cost is <150% of facility-based delivery with comparable outcomes'
         },
         {
-          id: 'eq_6', number: 6, criterion: 'sustainability',
+          id: 'eq_6', number: 6, criterion: 'coherence',
+          question: 'How well does the RSSH grant align with and complement other health programmes operating in Ghana (PEPFAR, PMI, GAVI, bilateral support)?',
+          subQuestions: ['Are there areas of duplication or gaps?', 'How effective is coordination through the CCM and sector working groups?'],
+          indicators: [
+            { name: 'Number of coordination mechanisms with active GF participation', code: 'COH-1', source: 'Institutional assessment' },
+            { name: 'Degree of alignment between GF RSSH activities and national health sector plan priorities', code: 'COH-2', source: 'Document review' }
+          ],
+          dataSources: ['CCM meeting minutes', 'Health sector review documents', 'Partner mapping exercise', 'KIIs with development partners'],
+          judgementCriteria: 'Strong: formal coordination mechanisms with documented complementarity. Moderate: informal coordination. Weak: duplication or gaps identified.'
+        },
+        {
+          id: 'eq_7', number: 7, criterion: 'sustainability',
           question: 'Will the health system strengthening gains be sustained after the Global Fund grant period ends?',
           subQuestions: ['Is government co-financing increasing?', 'Are institutional structures being integrated into GHS?'],
           indicators: [
@@ -221,8 +238,8 @@
         methods: ['KII', 'FGD', 'Document review'],
         contexts: {},
         breakdown: [
-          { method: 'Key Informant Interviews', count: 36, notes: '6 per region: DHD, pharmacist, HMIS officer, CHW supervisor, facility head, GHS regional director' },
-          { method: 'Focus Group Discussions', count: 12, notes: '2 per region: CHWs (1) and community members (1)' },
+          { method: 'Key Informant Interviews', count: 36, notes: '6 per region: District Health Director, District Pharmacy Technician, District Health Information Officer, Sub-district Head (CHPS Coordinator), facility-in-charge, Regional Health Director' },
+          { method: 'Focus Group Discussions', count: 24, notes: '4 per region: CHOs/CHVs (1), community members female (1), community members male (1), facility staff (1). Stratified by urban/rural.' },
           { method: 'Document Review', count: 1, notes: 'National health strategy, GF grant documents, GHS annual reports' }
         ]
       },
@@ -273,7 +290,7 @@
               ]
             },
             {
-              id: 'sec_4', label: 'Sustainability (EQ6)', eqId: 'eq_6',
+              id: 'sec_4', label: 'Sustainability (EQ6)', eqId: 'eq_7',
               questions: [
                 { id: 'q9', text: 'What plans exist to sustain RSSH activities after the grant ends?', responseType: 'text', responseConfig: {}, required: true },
                 { id: 'q10', text: 'What proportion of RSSH costs are now covered by government budget?', responseType: 'text', responseConfig: {}, required: false }

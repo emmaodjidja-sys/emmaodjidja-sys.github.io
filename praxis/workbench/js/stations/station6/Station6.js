@@ -98,9 +98,21 @@
         type: 'quantitative'
       };
       if (isQuasiExp && selectedDesign === 'did' && (f.hasRate || hasAdmin)) return {
-        method: 'Difference-in-differences (DID) estimation exploiting phased rollout across regions, with parallel trends verification',
-        steps: '1. Construct panel dataset: facility/district-level outcomes across pre/post periods and treatment/comparison regions. 2. Test parallel trends assumption visually (event study plot) and statistically (pre-period interaction terms). 3. Estimate DID with two-way fixed effects (unit + time). 4. Robustness: vary treatment timing, add region-specific trends, test with synthetic control for largest regions.',
-        software: 'Stata: xtreg/reghdfe with absorb(facility year), coefplot for event studies. R: fixest package (feols), did package for staggered adoption. Visualisation: ggplot2 or Stata\'s coefplot.',
+        method: 'Difference-in-differences (DID) estimation exploiting phased rollout. IMPORTANT: If treatment timing is staggered across units, use heterogeneity-robust DID estimators (Callaway & Sant\u2019Anna 2021, Sun & Abraham 2021) rather than naive two-way fixed effects, which produce biased estimates under staggered adoption (Goodman-Bacon 2021).',
+        steps: '1. Construct panel dataset: facility/district-level outcomes across pre/post periods and treatment/comparison regions. 2. Test parallel trends assumption visually (event study plot) and with Rambachan & Roth (2023) sensitivity analysis (honestdid). 3. If staggered rollout: use Callaway-Sant\u2019Anna group-time ATT estimator (csdid). If common treatment timing: use TWFE with reghdfe. 4. Conduct event study to visualise dynamic treatment effects. 5. Robustness: vary treatment timing window, test with synthetic control (synth/scpi) for largest units, Oster (2019) bounds for omitted variable bias.',
+        software: 'Stata: csdid (Callaway-Sant\u2019Anna), did_multiplegt (de Chaisemartin-D\u2019Haultfoeuille), eventstudyinteract (Sun-Abraham), reghdfe (naive TWFE for comparison only), honestdid for sensitivity. R: did package, fixest (feols/sunab), HonestDiD. Python: linearmodels for panel data.',
+        type: 'quantitative'
+      };
+      if (isQuasiExp && selectedDesign === 'rdd') return {
+        method: 'Regression discontinuity design (RDD) exploiting a threshold/cutoff rule that determines programme eligibility or intensity',
+        steps: '1. Verify the assignment variable and cutoff: confirm that treatment is determined by crossing a threshold (eligibility score, geographic boundary, date cutoff). 2. Test for manipulation of the running variable using the McCrary (2008) density test (rddensity). 3. Estimate the local average treatment effect (LATE) at the cutoff using local polynomial regression with optimal bandwidth selection (Calonico, Cattaneo & Titiunik 2014). 4. Robustness: vary bandwidth, test with different polynomial orders, check for covariate balance at the cutoff, test for discontinuities at placebo cutoffs.',
+        software: 'Stata: rdrobust (Cattaneo, Idrobo & Titiunik 2020), rddensity for McCrary test, rdplot for visualisation. R: rdrobust, rddensity, rdlocrand packages. Python: rdrobust package.',
+        type: 'quantitative'
+      };
+      if (isQuasiExp && (selectedDesign === 'psm' || selectedDesign === 'matching')) return {
+        method: 'Propensity score matching (PSM) or inverse probability weighting (IPW) to construct a comparable comparison group from observational data',
+        steps: '1. Estimate propensity scores using logistic regression on pre-treatment covariates. 2. Assess common support and trim observations outside the overlap region. 3. Match using nearest-neighbour, kernel, or caliper matching (or compute IPW weights). 4. Verify covariate balance after matching (standardised mean differences < 0.1). 5. Estimate ATT using the matched sample. 6. Sensitivity: Rosenbaum bounds for hidden bias, vary matching algorithm and caliper width.',
+        software: 'Stata: teffects psmatch/ipw, psmatch2, pstest for balance diagnostics. R: MatchIt (Ho et al.), WeightIt for IPW, cobalt for balance diagnostics. Sensitivity: rbounds (Rosenbaum), sensemakr (Cinelli & Hazlett 2020).',
         type: 'quantitative'
       };
       if (isQuasiExp && selectedDesign === 'its') return {
@@ -149,8 +161,8 @@
     if (criterion === 'impact') {
       if (isExperimental) return {
         method: 'Experimental impact estimation with subgroup heterogeneity analysis and mediation analysis to understand causal mechanisms',
-        steps: '1. Estimate average treatment effect (ATE) on primary impact indicator. 2. Conduct heterogeneity analysis: interact treatment with baseline characteristics (sex, vulnerability quintile, region). 3. Mediation analysis: decompose total effect through intermediate outcomes using the sequential g-estimation or Baron-Kenny approach. 4. Report minimum detectable effect sizes for non-significant results.',
-        software: 'Stata: ivregress for mediation, margins for heterogeneity, forest plots via coefplot. R: mediation package, ggplot2 for forest plots.',
+        steps: '1. Estimate average treatment effect (ATE) on primary impact indicator. 2. Conduct heterogeneity analysis: interact treatment with baseline characteristics (sex, vulnerability quintile, region). 3. Mediation analysis: decompose total effect through intermediate outcomes using causal mediation (Imai, Keele & Tingley 2010). 4. Test for differential attrition and compute Lee (2009) bounds. 5. Apply multiple hypothesis correction (Anderson 2008 sharpened q-values) for subgroup tests. 6. Report minimum detectable effect sizes for non-significant results.',
+        software: 'Stata: medeff for causal mediation, margins for heterogeneity, coefplot for forest plots. R: mediation package (Imai et al.), grf for causal forests heterogeneity. Robustness: Oster (2019) psacalc for omitted variable bounds.',
         type: 'quantitative'
       };
       if (isQuasiExp && selectedDesign === 'did') return {
@@ -443,8 +455,12 @@
 
   // ── Word Export ──
 
+  function esc(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
   function exportAnalysisPlan(cards, programmeName) {
-    var title = programmeName || 'Evaluation Programme';
+    var title = esc(programmeName || 'Evaluation Programme');
 
     var quantCards = cards.filter(function (c) { return c.analysisType === 'quantitative'; });
     var qualCards = cards.filter(function (c) { return c.analysisType !== 'quantitative'; });
@@ -465,19 +481,19 @@
           ? card.eqNumber.replace('eq_', '')
           : card.eqNumber;
         t += '<div style="margin-bottom:16pt;padding:10pt;border:1pt solid #E2E8F0;border-left:3pt solid #2EC4B6;border-radius:4pt">';
-        t += '<p style="margin:0 0 4pt;font-size:11pt"><strong>EQ ' + eqLabel + ' (' + (card.criterion || '') + ')</strong></p>';
-        t += '<p style="margin:0 0 6pt;font-size:10pt;color:#374151">' + (card.question || '') + '</p>';
+        t += '<p style="margin:0 0 4pt;font-size:11pt"><strong>EQ ' + esc(String(eqLabel)) + ' (' + esc(card.criterion || '') + ')</strong></p>';
+        t += '<p style="margin:0 0 6pt;font-size:10pt;color:#374151">' + esc(card.question || '') + '</p>';
         t += '<p style="margin:0 0 3pt;font-size:9pt;font-weight:bold;color:#64748B">METHOD</p>';
-        t += '<p style="margin:0 0 6pt;font-size:10pt">' + (card.method || '') + '</p>';
+        t += '<p style="margin:0 0 6pt;font-size:10pt">' + esc(card.method || '') + '</p>';
         if (card.steps) {
           t += '<p style="margin:0 0 3pt;font-size:9pt;font-weight:bold;color:#64748B">ANALYTICAL STEPS</p>';
-          t += '<p style="margin:0 0 6pt;font-size:9pt;color:#374151;line-height:1.5">' + card.steps + '</p>';
+          t += '<p style="margin:0 0 6pt;font-size:9pt;color:#374151;line-height:1.5">' + esc(card.steps) + '</p>';
         }
         t += '<p style="margin:0 0 3pt;font-size:9pt;font-weight:bold;color:#64748B">SOFTWARE & TOOLS</p>';
-        t += '<p style="margin:0 0 6pt;font-size:9pt;color:#374151">' + (card.software || '') + '</p>';
+        t += '<p style="margin:0 0 6pt;font-size:9pt;color:#374151">' + esc(card.software || '') + '</p>';
         t += '<p style="margin:0 0 3pt;font-size:9pt;font-weight:bold;color:#64748B">DATA SOURCES</p>';
-        t += '<p style="margin:0 0 6pt;font-size:9pt;color:#374151">' + (card.dataSources || []).join('; ') + '</p>';
-        t += '<p style="margin:0;font-size:9pt;color:#64748B">Disaggregation: ' + disaggLabel(card.disaggregations || []) + '</p>';
+        t += '<p style="margin:0 0 6pt;font-size:9pt;color:#374151">' + esc((card.dataSources || []).join('; ')) + '</p>';
+        t += '<p style="margin:0;font-size:9pt;color:#64748B">Disaggregation: ' + esc(disaggLabel(card.disaggregations || [])) + '</p>';
         t += '</div>';
       });
       return t;

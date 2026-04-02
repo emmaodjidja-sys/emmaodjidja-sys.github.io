@@ -58,7 +58,60 @@
     );
   }
 
+  // Error boundary — catches rendering errors, shows recovery UI instead of white screen
+  class ErrorBoundary extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(error) {
+      return { hasError: true, error: error };
+    }
+    componentDidCatch(error, info) {
+      console.error('PRAXIS Workbench error:', error, info);
+    }
+    render() {
+      if (this.state.hasError) {
+        var self = this;
+        return h('div', { style: { padding: '48px 32px', maxWidth: 560, margin: '0 auto', fontFamily: 'var(--font-sans)' } },
+          h('h1', { style: { fontSize: 18, fontWeight: 700, color: '#0B1A2E', marginBottom: 8 } }, 'Something went wrong'),
+          h('p', { style: { fontSize: 13, color: '#64748B', lineHeight: 1.6, marginBottom: 16 } },
+            'An error occurred in the workbench. Your data is safe in localStorage. Try refreshing the page, or download your data below.'),
+          h('pre', { style: { fontSize: 11, background: '#F1F5F9', padding: 12, borderRadius: 6, overflow: 'auto', marginBottom: 16, color: '#991B1B' } },
+            String(this.state.error)),
+          h('div', { style: { display: 'flex', gap: 8 } },
+            h('button', {
+              className: 'wb-btn wb-btn-primary',
+              onClick: function() { window.location.reload(); }
+            }, 'Refresh Page'),
+            h('button', {
+              className: 'wb-btn wb-btn-outline',
+              onClick: function() {
+                try {
+                  var data = localStorage.getItem('praxis-workbench');
+                  if (data) {
+                    var blob = new Blob([data], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = 'praxis-recovery.json';
+                    document.body.appendChild(a); a.click();
+                    document.body.removeChild(a); URL.revokeObjectURL(url);
+                  }
+                } catch(e) { alert('Could not export data: ' + e.message); }
+              }
+            }, 'Download Data'),
+            h('button', {
+              className: 'wb-btn wb-btn-ghost',
+              onClick: function() { self.setState({ hasError: false, error: null }); }
+            }, 'Try Again')
+          )
+        );
+      }
+      return this.props.children;
+    }
+  }
+
   // Mount
   var root = ReactDOM.createRoot(document.getElementById('root'));
-  root.render(h(App));
+  root.render(h(ErrorBoundary, null, h(App)));
 })();

@@ -41,7 +41,8 @@
 
       case ACTION_TYPES.LOAD_FILE:
         if (!action.context || action.context.schema !== 'praxis-workbench') {
-          return state; // reject invalid files silently
+          var toasts2 = state.ui.toasts.concat([{ id: PraxisUtils.uid('toast_'), message: 'Invalid file format. Expected a .praxis file.', type: 'error' }]);
+          return { context: state.context, ui: Object.assign({}, state.ui, { toasts: toasts2 }) };
         }
         return {
           context: action.context,
@@ -49,7 +50,7 @@
         };
 
       case ACTION_TYPES.SAVE_STATION:
-        var newContext = PraxisUtils.deepMerge(state.context, action.payload);
+        var newContext = PraxisUtils.deepMerge(state.context, action.payload || action.data);
         newContext.updated_at = new Date().toISOString();
         newContext.staleness = PraxisStaleness.computeStaleness(action.stationId, newContext.staleness);
         return { context: newContext, ui: state.ui };
@@ -78,7 +79,9 @@
         return { context: state.context, ui: Object.assign({}, state.ui, { projectLoaded: action.loaded }) };
 
       case ACTION_TYPES.CLEAR_PROJECT:
-        localStorage.removeItem('praxis-workbench');
+        // Note: localStorage cleanup is handled by the useEffect in app.js
+        // (when projectLoaded becomes false, persist stops; next INIT creates fresh state)
+        try { localStorage.removeItem('praxis-workbench'); localStorage.removeItem('praxis-workbench-ui'); } catch(e) {}
         return {
           context: PraxisSchema.createEmptyContext(),
           ui: Object.assign({}, defaultUI)

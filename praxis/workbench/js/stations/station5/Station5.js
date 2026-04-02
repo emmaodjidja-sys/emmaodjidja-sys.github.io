@@ -21,7 +21,19 @@
       saveInstruments(scaffolded);
     }
 
-    function saveInstruments(items) {
+    // Debounced auto-save — persists silently without toasting on every keystroke
+    var saveTimerRef = React.useRef(null);
+    function saveInstrumentsSilent(items) {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(function() {
+        dispatch({ type: PraxisContext.ACTION_TYPES.SAVE_STATION, stationId: 5,
+          payload: { instruments: { items: items, completed_at: new Date().toISOString() } } });
+      }, 800);
+    }
+
+    // Explicit save with toast — called by save button
+    function saveInstrumentsExplicit(items) {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       dispatch({ type: PraxisContext.ACTION_TYPES.SAVE_STATION, stationId: 5,
         payload: { instruments: { items: items, completed_at: new Date().toISOString() } } });
       dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: 'Instruments saved', toastType: 'success' });
@@ -38,7 +50,7 @@
     function handleInstChange(updated) {
       var next = localInst.map(function(i) { return i.id === updated.id ? updated : i; });
       setLocalInst(next);
-      saveInstruments(next);
+      saveInstrumentsSilent(next);
     }
 
     // EDITING MODE

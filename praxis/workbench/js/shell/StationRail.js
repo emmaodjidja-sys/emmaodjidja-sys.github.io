@@ -32,7 +32,7 @@
       (function(id) {
         var field = context[CONTEXT_FIELDS[id]] || {};
         var isCompleted = field.completed_at != null;
-        var isStale = !isCompleted && staleness[id];
+        var isStale = !!staleness[id]; // stale regardless of completion — upstream changed
         var isActive = activeStation === id;
 
         var cls = 'wb-rail-btn';
@@ -41,8 +41,14 @@
         if (isStale) cls += ' wb-rail-btn--stale';
 
         var badge = null;
-        if (isCompleted) badge = completedBadge();
-        else if (isStale) badge = staleDot();
+        if (isCompleted && isStale) {
+          // Completed but stale — show both indicators
+          badge = h(React.Fragment, null, completedBadge(), staleDot());
+        } else if (isCompleted) {
+          badge = completedBadge();
+        } else if (isStale) {
+          badge = staleDot();
+        }
 
         buttons.push(
           h('button', {
