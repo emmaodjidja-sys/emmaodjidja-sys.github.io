@@ -1,15 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!-- Background -->
-  <rect width="512" height="512" rx="96" fill="#08090D"/>
+  <rect width="512" height="512" rx="96" fill="#0B1A2E"/>
 
-  <!-- The P mark: geometric, constructed from two elements -->
   <!-- Vertical stem -->
-  <rect x="148" y="112" width="52" height="288" rx="4" fill="#58D5BA"/>
+  <rect x="148" y="112" width="52" height="288" rx="4" fill="#2EC4B6"/>
 
-  <!-- Bowl of P: an open arc suggesting forward motion and continuity -->
+  <!-- Bowl of P -->
   <path d="M 200 112 L 300 112 C 370 112 420 162 420 232 C 420 302 370 352 300 352 L 200 352"
-        fill="none" stroke="#58D5BA" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+        fill="none" stroke="#2EC4B6" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
 
-  <!-- Small accent dot: suggests data point, node, precision -->
-  <circle cx="380" cy="400" r="20" fill="#F0B429"/>
+  <!-- Accent dot -->
+  <circle cx="380" cy="400" r="20" fill="#2EC4B6" opacity="0.5"/>
 </svg>

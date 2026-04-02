@@ -11,29 +11,33 @@
 <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/tools/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="../logo.svg">
+<link rel="alternate icon" type="image/png" href="../logo-32.png">
+<meta name="theme-color" content="#0B1A2E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #1a1f2e;
-  --bg-surface: #212738;
-  --warm: #c4704b;
-  --warm-dim: rgba(196,112,75,0.10);
-  --cool: #2a7d6e;
-  --cool-dim: rgba(42,125,110,0.10);
-  --text: #e8e4df;
-  --text-secondary: #a09b94;
-  --text-muted: #6b665f;
-  --border: rgba(232,228,223,0.08);
+  --navy: #0B1A2E;
+  --navy-mid: #122240;
+  --navy-light: #1a3050;
+  --teal: #2EC4B6;
+  --teal-dark: #1a9e92;
+  --teal-glow: rgba(46,196,182,0.12);
+  --slate: #8899AA;
+  --slate-light: #A4B3C2;
+  --off-white: #E8ECF0;
+  --warm: #FAFBFC;
+  --surface: #FFFFFF;
+  --border: rgba(11,26,46,0.08);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
-  color: var(--text);
-  background: var(--bg);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  color: var(--navy);
+  background: var(--warm);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   display: flex;
@@ -43,14 +47,14 @@ body {
 
 a { text-decoration: none; color: inherit; }
 
-.skip { position: absolute; top: -100px; left: 8px; padding: 8px 16px; background: var(--cool); color: var(--bg); font-weight: 600; font-size: 13px; z-index: 200; }
+.skip { position: absolute; top: -100px; left: 8px; padding: 8px 16px; background: var(--teal); color: var(--navy); font-weight: 600; font-size: 13px; z-index: 200; }
 .skip:focus { top: 0; }
 
 /* ── Nav ──────────────────────────────────────────── */
 nav {
   position: sticky; top: 0; z-index: 100;
   border-bottom: 1px solid var(--border);
-  background: rgba(26,31,46,0.88);
+  background: rgba(11,26,46,0.97);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }
 .nav-inner {
@@ -59,19 +63,19 @@ nav {
 }
 .nav-brand {
   display: flex; align-items: center; gap: 10px;
-  font-weight: 700; font-size: 14px; color: #fff;
+  font-weight: 700; font-size: 14px; color: var(--teal);
   letter-spacing: 0.06em;
 }
 .nav-brand img { width: 24px; height: 24px; border-radius: 5px; }
-.nav-sep { color: var(--text-muted); font-weight: 300; margin: 0 2px; }
-.nav-page { color: var(--text-secondary); font-size: 14px; font-weight: 500; }
+.nav-sep { color: var(--slate); font-weight: 300; margin: 0 2px; }
+.nav-page { color: var(--slate-light); font-size: 14px; font-weight: 500; }
 .nav-links { display: flex; gap: 20px; align-items: center; }
-.nav-links a { font-size: 13px; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
-.nav-links a:hover { color: var(--cool); }
+.nav-links a { font-size: 13px; font-weight: 500; color: var(--slate-light); transition: color 0.2s; }
+.nav-links a:hover { color: #fff; }
 .nav-github {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px; font-weight: 500; color: var(--bg) !important;
-  background: var(--warm); padding: 5px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 500; color: var(--navy) !important;
+  background: var(--teal); padding: 5px 14px;
 }
 .nav-github:hover { filter: brightness(1.1); }
 
@@ -79,27 +83,28 @@ nav {
 .hero {
   padding: 80px 32px 72px;
   text-align: center;
+  background: linear-gradient(170deg, var(--navy) 0%, var(--navy-light) 100%);
 }
 .hero-inner {
   max-width: 680px; margin: 0 auto;
 }
 .hero-label {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px; font-weight: 500;
   letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--cool);
+  color: var(--teal);
   padding: 5px 16px;
-  background: var(--cool-dim);
-  border: 1px solid rgba(42,125,110,0.20);
+  background: var(--teal-glow);
+  border: 1px solid rgba(46,196,182,0.20);
   margin-bottom: 32px;
 }
 .hero-label-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--cool);
+  background: var(--teal);
 }
 .hero h1 {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: clamp(32px, 5.5vw, 52px);
   font-weight: 400;
   letter-spacing: -0.01em;
@@ -109,11 +114,11 @@ nav {
 }
 .hero h1 em {
   font-style: italic;
-  color: var(--warm);
+  color: var(--teal);
 }
 .hero-desc {
   font-size: 16px; line-height: 1.8;
-  color: var(--text-secondary);
+  color: var(--slate-light);
   max-width: 540px; margin: 0 auto 40px;
 }
 .hero-stats {
@@ -121,12 +126,12 @@ nav {
 }
 .hero-stat { text-align: center; }
 .hero-stat-num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 28px; font-weight: 500; color: var(--cool);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px; font-weight: 500; color: var(--teal);
   line-height: 1;
 }
 .hero-stat-label {
-  font-size: 11px; color: var(--text-muted); margin-top: 6px;
+  font-size: 11px; color: var(--slate-light); margin-top: 6px;
   font-weight: 500; letter-spacing: 0.02em;
 }
 
@@ -139,23 +144,23 @@ nav {
   max-width: 1000px; margin: 0 auto;
 }
 .overline {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px; font-weight: 500;
   letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--slate);
   margin-bottom: 16px;
 }
 .section-title {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: clamp(24px, 3.5vw, 36px);
-  font-weight: 400; color: #fff;
+  font-weight: 400; color: var(--navy);
   letter-spacing: -0.01em;
   margin-bottom: 12px;
   line-height: 1.2;
 }
 .section-desc {
   font-size: 15px; line-height: 1.8;
-  color: var(--text-secondary);
+  color: var(--slate);
   max-width: 600px;
   margin-bottom: 48px;
 }
@@ -169,8 +174,8 @@ nav {
 
 /* ── Tool card ────────────────────────────────────── */
 .tool-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--off-white);
   border-radius: 0;
   padding: 28px 24px;
   text-decoration: none;
@@ -181,12 +186,12 @@ nav {
   transition: border-color 0.2s ease;
 }
 .tool-card:hover {
-  border-color: var(--cool);
+  border-color: var(--teal);
 }
 .tool-card.live::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--cool);
+  background: var(--teal);
 }
 .tool-card.coming {
   opacity: 0.6;
@@ -194,7 +199,7 @@ nav {
 .tool-card.coming::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--text-muted);
+  background: var(--slate-light);
 }
 
 .tool-card-header {
@@ -205,28 +210,28 @@ nav {
   width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 0;
-  color: var(--cool);
-  background: var(--cool-dim);
+  color: var(--teal);
+  background: var(--teal-glow);
 }
 .tool-status {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .tool-status.live {
-  color: var(--cool);
+  color: var(--teal);
 }
 .tool-status.soon {
-  color: var(--text-muted);
+  color: var(--slate-light);
 }
 
 .tool-card h3 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 17px; font-weight: 400; color: #fff;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 17px; font-weight: 400; color: var(--navy);
   margin-bottom: 8px; line-height: 1.2;
 }
 .tool-card .tool-desc {
-  font-size: 13.5px; color: var(--text-secondary); line-height: 1.65;
+  font-size: 13.5px; color: var(--slate); line-height: 1.65;
   margin-bottom: 16px; flex: 1;
 }
 
@@ -234,19 +239,19 @@ nav {
   display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px;
 }
 .tool-feature {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 10px; font-weight: 500;
   padding: 3px 8px; border-radius: 0;
-  background: rgba(255,255,255,0.04); color: var(--text-secondary);
-  border: 1px solid var(--border);
+  background: #F5F7FA; color: var(--slate);
+  border: 1px solid var(--off-white);
 }
 
 .tool-cta {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 500; color: var(--cool);
+  font-size: 13px; font-weight: 500; color: var(--teal-dark);
 }
 .tool-cta-arrow { }
-.tool-card.coming .tool-cta { color: var(--text-muted); }
+.tool-card.coming .tool-cta { color: var(--slate-light); }
 
 /* ── Use cases ────────────────────────────────────── */
 .use-case-grid {
@@ -254,23 +259,23 @@ nav {
   gap: 16px;
 }
 .use-case-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--off-white);
   border-radius: 0; padding: 24px 20px;
   transition: border-color 0.2s;
 }
 .use-case-card:hover {
-  border-color: var(--cool);
+  border-color: var(--teal);
 }
 .use-case-icon {
   margin-bottom: 12px; display: flex; align-items: center; height: 28px;
 }
 .use-case-card h4 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 15px; font-weight: 400; color: #fff; margin-bottom: 8px;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 15px; font-weight: 400; color: var(--navy); margin-bottom: 8px;
 }
 .use-case-card p {
-  font-size: 13px; color: var(--text-secondary); line-height: 1.65;
+  font-size: 13px; color: var(--slate); line-height: 1.65;
 }
 
 /* ── CTA ──────────────────────────────────────────── */
@@ -280,14 +285,14 @@ nav {
   text-align: center;
 }
 .cta h2 {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: clamp(24px, 3.5vw, 36px);
-  font-weight: 400; color: #fff;
+  font-weight: 400; color: var(--navy);
   letter-spacing: -0.01em;
   margin-bottom: 12px;
 }
 .cta p {
-  font-size: 15px; color: var(--text-secondary);
+  font-size: 15px; color: var(--slate);
   max-width: 480px; margin: 0 auto 32px;
   line-height: 1.7;
 }
@@ -300,38 +305,39 @@ nav {
   font-size: 13px; font-weight: 500;
   transition: all 0.2s; cursor: pointer; border: none;
 }
-.btn-amber { background: var(--warm); color: var(--bg); }
+.btn-amber { background: var(--teal); color: var(--navy); }
 .btn-amber:hover { filter: brightness(1.1); }
-.btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-.btn-ghost:hover { border-color: var(--cool); color: var(--cool); }
+.btn-ghost { background: transparent; color: var(--slate); border: 1px solid var(--off-white); }
+.btn-ghost:hover { border-color: var(--teal); color: var(--teal-dark); }
 
 /* ── Footer ───────────────────────────────────────── */
 footer {
   border-top: 1px solid var(--border);
   padding: 24px 32px;
+  background: var(--navy);
 }
 .footer-inner {
   max-width: 1000px; margin: 0 auto;
   display: flex; align-items: center; justify-content: space-between;
 }
 .footer-left {
-  font-size: 11px; color: var(--text-muted);
+  font-size: 11px; color: var(--slate-light);
   display: flex; align-items: center; gap: 12px;
 }
-.footer-left a { color: var(--text-secondary); transition: color 0.2s; }
-.footer-left a:hover { color: var(--cool); }
+.footer-left a { color: var(--slate-light); transition: color 0.2s; }
+.footer-left a:hover { color: var(--teal); }
 .footer-badges { display: flex; gap: 6px; }
 .footer-badge {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 9px; font-weight: 500;
   letter-spacing: 0.04em; text-transform: uppercase;
   padding: 3px 7px; border-radius: 0;
 }
-.fb-free { background: var(--cool-dim); color: var(--cool); border: 1px solid rgba(42,125,110,0.20); }
-.fb-oss { background: var(--warm-dim); color: var(--warm); border: 1px solid rgba(196,112,75,0.20); }
+.fb-free { background: var(--teal-glow); color: var(--teal); border: 1px solid rgba(46,196,182,0.20); }
+.fb-oss { background: var(--teal-glow); color: var(--teal); border: 1px solid rgba(46,196,182,0.20); }
 .footer-right { display: flex; gap: 16px; }
-.footer-right a { font-size: 12px; color: var(--text-muted); transition: color 0.2s; }
-.footer-right a:hover { color: var(--cool); }
+.footer-right a { font-size: 12px; color: var(--slate-light); transition: color 0.2s; }
+.footer-right a:hover { color: var(--teal); }
 
 /* ── Animations ───────────────────────────────────── */
 .reveal {
@@ -395,7 +401,7 @@ footer {
   .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
   .footer-left { flex-direction: column; gap: 8px; }
   .footer-right { justify-content: center; }
-  .nav-links a:not(.nav-cta) { display: none; }
+  .nav-links a:not(.nav-cta):not(.nav-github) { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -644,37 +650,37 @@ footer {
 
     <div class="use-case-grid">
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
         <h4>Writing a TOR</h4>
         <p>Use the Design Advisor to justify your methodology choice. Run the Sample Size Calculator to include a defensible sample size in the TOR &mdash; not just &ldquo;approximately 400 households.&rdquo;</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
         <h4>Designing a SMART Survey</h4>
         <p>Calculate exact sample size for GAM/SAM with the right DEFF. Select between 30&times;30 cluster design or adapted EPI method based on your context.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg></span>
         <h4>Analysing endline data</h4>
         <p>Upload your .xlsx straight from KoBoToolbox. Get instant frequency tables, Likert scale breakdowns, cross-tabulations, and export a formatted Word report.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
         <h4>Choosing an evaluation approach</h4>
         <p>Input your context &mdash; budget, timeline, comparison group feasibility, programme complexity &mdash; and get a ranked list of designs with trade-offs.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
         <h4>Reviewing a consultant&rsquo;s proposal</h4>
         <p>Cross-check their proposed sample size against your own calculation. Verify the evaluation design fits the stated purpose. Catch methodological gaps early.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
         <h4>Planning in FCV settings</h4>
         <p>The Design Advisor specifically accounts for fragile and conflict-affected contexts &mdash; downranking designs that require stable access.</p>
       </div>
       <div class="use-case-card">
-        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cool)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></span>
+        <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></span>
         <h4>Training junior M&amp;E staff</h4>
         <p>Every parameter has guided presets with contextual explanations. Junior staff can produce a defensible sample size calculation without understanding the underlying statistics.</p>
       </div>
