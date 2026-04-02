@@ -26,14 +26,20 @@
     },
 
     data: function(tor, meta) {
-      var base = { baseline_endline: 25, timeseries: 18, routine_only: 10, minimal: 5 };
-      var score = base[tor.data_available] !== undefined ? base[tor.data_available] : 5;
+      // Data existence (max 15)
+      var existBase = { baseline_endline: 15, timeseries: 11, routine_only: 7, minimal: 3 };
+      var exist = existBase[tor.data_available] !== undefined ? existBase[tor.data_available] : 3;
+      if (tor.data_available === 'routine_only' && meta.programme_maturity === 'mature') exist += 2;
+      if (tor.data_available === 'minimal' && meta.operating_context === 'humanitarian') exist += 1;
 
-      // Cross-dimension modifiers
-      if (tor.data_available === 'routine_only' && meta.programme_maturity === 'mature') score += 3;
-      if (tor.data_available === 'minimal' && meta.operating_context === 'humanitarian') score += 2;
+      // Data quality/usability penalty (max -5 from the 15)
+      // Systems-level programmes have fragmented data across multiple platforms
+      var qualPenalty = 0;
+      if (tor.unit_of_intervention === 'system') qualPenalty -= 2; // system-level = fragmented data
+      if (tor.programme_complexity === 'complex') qualPenalty -= 1; // complex programmes = harder to attribute
+      if (meta.operating_context === 'fragile' || meta.operating_context === 'humanitarian') qualPenalty -= 1; // data quality lower in challenging contexts
 
-      return PraxisUtils.clamp(score, 0, 25);
+      return PraxisUtils.clamp(exist + qualPenalty, 0, 15);
     },
 
     toc: function(tor, meta) {
@@ -67,6 +73,26 @@
       if (meta.operating_context === 'humanitarian' && meta.timeline === 'short') score -= 1;
 
       return PraxisUtils.clamp(score, 0, 15);
+    },
+
+    // Attribution complexity: how hard is it to isolate programme contribution?
+    // Systems-level interventions in complex environments are inherently harder to evaluate
+    complexity: function(tor, meta) {
+      var score = 10; // start at full marks
+
+      // Programme complexity
+      if (tor.programme_complexity === 'complex') score -= 3;
+      else if (tor.programme_complexity === 'complicated') score -= 1;
+
+      // Unit of intervention — system-level is hardest to attribute
+      if (tor.unit_of_intervention === 'system') score -= 2;
+      else if (tor.unit_of_intervention === 'cluster') score -= 1;
+
+      // Causal inference ambition vs design feasibility
+      if (tor.causal_inference_level === 'attribution' && tor.comparison_feasibility === 'none') score -= 3;
+      if (tor.causal_inference_level === 'attribution' && tor.comparison_feasibility === 'natural') score -= 1;
+
+      return PraxisUtils.clamp(score, 0, 10);
     }
   };
 
@@ -74,11 +100,12 @@
   // Order matches PraxisSchema evaluability.dimensions order
 
   var DIMENSION_META = [
-    { id: 'data',       label: 'Data Availability',      max: 25 },
-    { id: 'toc',        label: 'ToC Clarity',            max: 20 },
-    { id: 'timeline',   label: 'Timeline Adequacy',      max: 20 },
-    { id: 'context',    label: 'Operating Context',      max: 15 },
-    { id: 'comparison', label: 'Comparison Feasibility', max: 20 }
+    { id: 'data',       label: 'Data Availability & Quality', max: 15 },
+    { id: 'toc',        label: 'ToC Clarity',                 max: 20 },
+    { id: 'timeline',   label: 'Timeline Adequacy',           max: 20 },
+    { id: 'context',    label: 'Operating Context',           max: 15 },
+    { id: 'comparison', label: 'Comparison Feasibility',      max: 20 },
+    { id: 'complexity', label: 'Attribution Complexity',      max: 10 }
   ];
 
   // ── Public API ───────────────────────────────────────────────────────────────

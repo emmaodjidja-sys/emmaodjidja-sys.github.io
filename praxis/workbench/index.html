@@ -11,12 +11,23 @@
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-<!-- React 18 (specific versions for SW caching) -->
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<!-- React 18 (self-hosted) -->
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
 
-<!-- SheetJS for Excel/XLSForm export (Station 2 + Station 5) -->
-<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- SheetJS loaded on demand by stations that need it (Station 2 export, Station 5 export) -->
+<script>
+window.loadSheetJS = function() {
+  if (window.XLSX) return Promise.resolve();
+  return new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = 'vendor/xlsx.full.min.js';
+    s.onload = resolve;
+    s.onerror = function() { reject(new Error('Failed to load SheetJS')); };
+    document.head.appendChild(s);
+  });
+};
+</script>
 
 <!-- Workbench CSS -->
 <link rel="stylesheet" href="css/tokens.css">
