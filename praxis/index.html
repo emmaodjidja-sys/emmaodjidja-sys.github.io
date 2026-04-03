@@ -409,15 +409,15 @@
   </div>
   <div class="stats-bar">
     <div class="stat-cell">
-      <div class="stat-value" data-target="100184">100,184</div>
+      <div class="stat-value" data-target="100184">0</div>
       <div class="stat-label">conflict events analyzed</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-value" data-target="230">230+</div>
+      <div class="stat-value" data-target="230">0</div>
       <div class="stat-label">countries addressable</div>
     </div>
     <div class="stat-cell">
-      <div class="stat-value" data-target="29">29</div>
+      <div class="stat-value" data-target="29">0</div>
       <div class="stat-label">peer-reviewed papers</div>
     </div>
     <div class="stat-cell">
@@ -429,7 +429,7 @@
 
 <!-- THE PROBLEM -->
 <section class="problem">
-  <div class="section-narrow reveal visible">
+  <div class="section-narrow reveal">
     <p class="overline amber">THE GAP</p>
     <p class="problem-text">Evaluation tools designed for stable contexts fail in conflict zones. Early warning systems that detect individual threats miss the compound signals that actually predict violence. PRAXIS was built to close both gaps — with methods tested in the field, not the lab.</p>
   </div>
@@ -437,7 +437,7 @@
 
 <!-- TWO TRACKS -->
 <section class="tracks">
-  <div class="section-inner reveal visible">
+  <div class="section-inner reveal">
     <p class="overline teal">WHAT THE LAB DOES</p>
     <div class="tracks-grid">
       <div class="track-card teal">
@@ -458,29 +458,29 @@
 
 <!-- THE EVIDENCE -->
 <section class="evidence">
-  <div class="section-wide reveal visible" style="position:relative;z-index:1;">
+  <div class="section-wide reveal" style="position:relative;z-index:1;">
     <p class="overline amber">FEATURED RESEARCH</p>
     <h2>No single event type predicts violence.<br><em>Co-occurrence does.</em></h2>
     <p class="evidence-sub">When individual conflict event types occur in isolation, next-week attack rates drop to baseline. When two or more types co-occur in the same district-week, lethal violence follows within 7 days.</p>
 
     <div class="staircase" id="staircase">
-      <div class="stair" data-height="40" data-value="1x" data-label="Baseline" style="height:40px;background:var(--teal);opacity:0.4;">
+      <div class="stair" data-height="40" data-value="1x" data-label="Baseline" style="height:0px;">
         <span class="stair-value" style="color:var(--slate-light);">1x</span>
         <span class="stair-label">Baseline</span>
       </div>
-      <div class="stair" data-height="80" data-value="2.3x" data-label="2 types" style="height:80px;background:linear-gradient(to top,var(--teal),rgba(46,196,182,0.7));">
+      <div class="stair" data-height="80" data-value="2.3x" data-label="2 types" style="height:0px;">
         <span class="stair-value">2.3x</span>
         <span class="stair-label">2 types</span>
       </div>
-      <div class="stair" data-height="130" data-value="4.0x" data-label="3 types" style="height:130px;background:linear-gradient(to top,var(--teal),var(--amber));">
+      <div class="stair" data-height="130" data-value="4.0x" data-label="3 types" style="height:0px;">
         <span class="stair-value">4.0x</span>
         <span class="stair-label">3 types</span>
       </div>
-      <div class="stair" data-height="180" data-value="5.7x" data-label="4 types" style="height:180px;background:linear-gradient(to top,var(--amber),#d4882a);">
+      <div class="stair" data-height="180" data-value="5.7x" data-label="4 types" style="height:0px;">
         <span class="stair-value">5.7x</span>
         <span class="stair-label">4 types</span>
       </div>
-      <div class="stair" data-height="240" data-value="7.5x" data-label="5+ types" style="height:240px;background:linear-gradient(to top,#d4882a,#c06a20);">
+      <div class="stair" data-height="240" data-value="7.5x" data-label="5+ types" style="height:0px;">
         <span class="stair-value">7.5x</span>
         <span class="stair-label">5+ types</span>
       </div>
@@ -492,7 +492,7 @@
 
 <!-- TOOLS -->
 <section class="tools">
-  <div class="section-inner reveal visible">
+  <div class="section-inner reveal">
     <p class="overline teal">OPEN-SOURCE TOOLKIT</p>
     <h2>6 tools. Free. Offline capable.</h2>
     <p class="tools-sub">Built for evaluators working where connectivity is unreliable and generic frameworks don't fit.</p>
@@ -627,7 +627,7 @@
 
 <!-- CREDENTIALS -->
 <section class="credentials">
-  <div class="section-inner reveal visible">
+  <div class="section-inner reveal">
     <p class="overline" style="color:var(--navy);">THE LAB</p>
     <div class="credentials-grid">
       <div>
@@ -665,7 +665,7 @@
 
 <!-- VISION -->
 <section class="vision">
-  <div class="section-inner reveal visible" style="position:relative;z-index:1;">
+  <div class="section-inner reveal" style="position:relative;z-index:1;">
     <p class="overline teal">OPEN SOURCE</p>
     <h2>Where PRAXIS is going</h2>
     <p>The Sahel is the proof of concept. The methodology transfers wherever ACLED operates — roughly 230 countries. The evaluation tools are MIT licensed and built to be forked, adapted, and extended. This is an open invitation.</p>
@@ -689,7 +689,314 @@
 </footer>
 
 <script>
-  /* Tasks 4-6: Animated counters, staircase animation, canvas particle globe */
+/* === Task 4: Scroll Reveal + Animated Counter + Hamburger === */
+(function() {
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Scroll Reveal */
+  var reveals = document.querySelectorAll('.reveal');
+  if (reveals.length) {
+    if (prefersReduced) {
+      reveals.forEach(function(el) { el.classList.add('visible'); });
+    } else {
+      var revealObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            revealObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      reveals.forEach(function(el) { revealObs.observe(el); });
+    }
+  }
+
+  /* Animated Counter */
+  var stats = document.querySelectorAll('.stat-value[data-target]');
+  if (stats.length) {
+    var counterObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (!e.isIntersecting) return;
+        counterObs.unobserve(e.target);
+        var el = e.target;
+        var target = parseInt(el.getAttribute('data-target'), 10);
+        if (isNaN(target)) return;
+        var suffix = (target === 230) ? '+' : '';
+        if (prefersReduced) {
+          el.textContent = target.toLocaleString() + suffix;
+          return;
+        }
+        var duration = 1800;
+        var start = null;
+        function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+        function step(ts) {
+          if (!start) start = ts;
+          var progress = Math.min((ts - start) / duration, 1);
+          var val = Math.round(easeOutCubic(progress) * target);
+          el.textContent = val.toLocaleString() + (progress >= 1 ? suffix : '');
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }, { threshold: 0.3 });
+    stats.forEach(function(el) { counterObs.observe(el); });
+  }
+
+  /* Hamburger */
+  var hamburger = document.querySelector('.hamburger');
+  var navLinks = document.querySelector('.nav-links');
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', function() {
+      navLinks.classList.toggle('open');
+    });
+  }
+})();
+
+/* === Task 5: Escalation Staircase === */
+(function() {
+  var staircase = document.getElementById('staircase');
+  if (!staircase) return;
+  var stairs = staircase.querySelectorAll('.stair');
+  var backgrounds = [
+    'rgba(46,196,182,0.3)',
+    'linear-gradient(to top, #2EC4B6, rgba(46,196,182,0.8))',
+    'linear-gradient(to top, #2EC4B6, #E8A838)',
+    'linear-gradient(to top, #E8A838, #d4882a)',
+    'linear-gradient(to top, #d4882a, #c06a20)'
+  ];
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var animated = false;
+
+  function animateStairs() {
+    if (animated) return;
+    animated = true;
+    stairs.forEach(function(stair, i) {
+      var h = stair.getAttribute('data-height');
+      var bg = backgrounds[i] || backgrounds[backgrounds.length - 1];
+      var delay = prefersReduced ? 0 : i * 200;
+      setTimeout(function() {
+        stair.style.background = bg;
+        stair.style.height = h + 'px';
+        stair.classList.add('visible');
+      }, delay);
+    });
+  }
+
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        animateStairs();
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  obs.observe(staircase);
+})();
+
+/* === Task 6: Canvas Particle Globe === */
+(function() {
+  var canvas = document.getElementById('globe');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = 800, H = 800;
+  canvas.width = W; canvas.height = H;
+  var cx = W / 2, cy = H / 2, R = 340;
+  var rotation = 0;
+  var isVisible = false;
+
+  /* Projection: equirectangular onto sphere */
+  function project(lon, lat) {
+    var lam = (lon - rotation) * Math.PI / 180;
+    var phi = lat * Math.PI / 180;
+    var x = Math.cos(phi) * Math.sin(lam);
+    var y = -Math.sin(phi);
+    var z = Math.cos(phi) * Math.cos(lam);
+    if (z < 0) return null;
+    return [cx + x * R, cy + y * R, z];
+  }
+
+  /* Simplified continent outlines (lon,lat) */
+  var africa = [
+    [-5,36],[10,37],[12,33],[11,23],[23,22],[35,30],[33,12],[42,12],[51,11],
+    [42,2],[40,-4],[35,-8],[30,-15],[35,-25],[28,-33],[18,-35],[12,-18],
+    [8,-5],[5,5],[0,6],[-8,5],[-17,12],[-17,21],[-13,28],[-5,36]
+  ];
+  var europe = [
+    [-10,36],[-10,43],[0,44],[3,43],[5,46],[8,48],[5,51],[-5,48],[-6,54],
+    [-3,56],[0,51],[3,53],[7,54],[10,55],[12,57],[8,58],[12,60],[18,60],
+    [25,60],[30,60],[30,55],[28,50],[24,48],[22,45],[28,45],[30,42],
+    [26,40],[24,35],[22,38],[20,40],[15,38],[12,38],[10,44],[6,44],
+    [3,42],[0,39],[-5,36],[-10,36]
+  ];
+  var asia = [
+    [30,42],[35,42],[40,38],[44,42],[50,38],[55,37],[60,38],[68,38],
+    [75,35],[78,30],[80,28],[76,18],[80,8],[78,12],[82,8],[88,22],
+    [92,22],[96,16],[100,15],[105,10],[108,16],[110,20],[118,24],
+    [120,30],[122,32],[125,35],[128,38],[130,42],[135,38],[140,42],
+    [142,45],[145,48],[142,52],[135,55],[130,56],[120,55],[110,52],
+    [105,50],[90,48],[80,50],[70,52],[60,55],[55,55],[50,52],[42,48],
+    [35,48],[30,42]
+  ];
+  var southAmerica = [
+    [-80,8],[-75,12],[-68,12],[-60,8],[-50,4],[-45,0],[-35,-5],
+    [-35,-10],[-38,-15],[-40,-22],[-48,-28],[-55,-34],[-68,-55],
+    [-75,-50],[-72,-38],[-70,-30],[-70,-18],[-75,-10],[-80,0],[-80,8]
+  ];
+  var northAmerica = [
+    [-130,50],[-125,48],[-122,37],[-117,32],[-105,25],[-97,20],
+    [-90,16],[-85,12],[-82,8],[-77,8],[-75,12],[-68,12],[-62,10],
+    [-60,13],[-65,18],[-75,18],[-80,25],[-82,30],[-90,30],[-97,27],
+    [-97,36],[-90,42],[-82,42],[-76,38],[-68,43],[-66,44],[-64,48],
+    [-68,48],[-75,55],[-80,52],[-85,55],[-90,50],[-95,52],[-100,55],
+    [-110,55],[-120,55],[-130,60],[-140,60],[-145,62],[-160,60],
+    [-168,65],[-165,70],[-145,68],[-130,70],[-120,68],[-100,65],
+    [-90,62],[-85,65],[-80,65],[-70,60],[-60,60],[-55,52],[-58,48],
+    [-62,48],[-70,50],[-80,50],[-95,48],[-110,48],[-120,48],[-130,50]
+  ];
+  var continents = [africa, europe, asia, southAmerica, northAmerica];
+
+  /* Draw a continent polygon */
+  function drawContinent(pts) {
+    var started = false;
+    ctx.beginPath();
+    for (var i = 0; i < pts.length; i++) {
+      var p = project(pts[i][0], pts[i][1]);
+      if (p) {
+        if (!started) { ctx.moveTo(p[0], p[1]); started = true; }
+        else ctx.lineTo(p[0], p[1]);
+      }
+    }
+    if (started) {
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(46,196,182,0.04)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(46,196,182,0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  /* Latitude grid lines */
+  function drawGrid() {
+    var lats = [-60, -30, 0, 30, 60];
+    for (var li = 0; li < lats.length; li++) {
+      ctx.beginPath();
+      var started = false;
+      for (var lon = -180; lon <= 180; lon += 3) {
+        var p = project(lon, lats[li]);
+        if (p) {
+          if (!started) { ctx.moveTo(p[0], p[1]); started = true; }
+          else ctx.lineTo(p[0], p[1]);
+        } else { started = false; }
+      }
+      ctx.strokeStyle = 'rgba(46,196,182,0.04)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+  }
+
+  /* Sahel glow */
+  function drawSahelGlow() {
+    var p = project(2, 14);
+    if (!p) return;
+    var grad = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 60);
+    grad.addColorStop(0, 'rgba(232,168,56,0.15)');
+    grad.addColorStop(1, 'rgba(232,168,56,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(p[0], p[1], 60, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  /* Particle system */
+  var MAX_PARTICLES = 300;
+  var particles = [];
+  function spawnParticle(stagger) {
+    var angle = Math.random() * Math.PI * 2;
+    var speed = 0.3 + Math.random() * 0.7;
+    var r = (Math.random() < 0.5) ? 0 : 1;
+    return {
+      lon: 2 + (Math.random() - 0.5) * 10,
+      lat: 14 + (Math.random() - 0.5) * 6,
+      vlon: Math.cos(angle) * speed,
+      vlat: Math.sin(angle) * speed,
+      age: stagger ? Math.floor(Math.random() * 180) : 0,
+      maxLife: 120 + Math.floor(Math.random() * 120),
+      size: 1 + Math.random() * 2,
+      colorMix: Math.random()
+    };
+  }
+  for (var i = 0; i < MAX_PARTICLES; i++) {
+    particles.push(spawnParticle(true));
+  }
+
+  function lerpColor(mix) {
+    var r = Math.round(46 + (232 - 46) * mix);
+    var g = Math.round(196 + (168 - 196) * mix);
+    var b = Math.round(182 + (56 - 182) * mix);
+    return [r, g, b];
+  }
+
+  function drawParticles() {
+    for (var i = 0; i < particles.length; i++) {
+      var pt = particles[i];
+      pt.lon += pt.vlon;
+      pt.lat += pt.vlat;
+      pt.age++;
+      if (pt.age >= pt.maxLife) {
+        particles[i] = spawnParticle(false);
+        continue;
+      }
+      var p = project(pt.lon, pt.lat);
+      if (!p) {
+        particles[i] = spawnParticle(false);
+        continue;
+      }
+      var fadeIn = Math.min(pt.age / 30, 1);
+      var fadeOut = Math.max(1 - (pt.age - (pt.maxLife - 40)) / 40, 0);
+      if (pt.age < pt.maxLife - 40) fadeOut = 1;
+      var alpha = fadeIn * fadeOut * 0.7 * p[2];
+      if (alpha <= 0) continue;
+      var c = lerpColor(pt.colorMix);
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], pt.size, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
+      ctx.fill();
+    }
+  }
+
+  function draw() {
+    if (!isVisible) return;
+    ctx.clearRect(0, 0, W, H);
+
+    /* Globe circle */
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(11,26,46,0.3)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(46,196,182,0.06)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    drawGrid();
+    for (var i = 0; i < continents.length; i++) drawContinent(continents[i]);
+    drawSahelGlow();
+    drawParticles();
+
+    rotation += 0.02;
+    requestAnimationFrame(draw);
+  }
+
+  /* Visibility observer */
+  var globeObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var wasVisible = isVisible;
+      isVisible = e.isIntersecting;
+      if (isVisible && !wasVisible) requestAnimationFrame(draw);
+    });
+  }, { threshold: 0 });
+  globeObs.observe(canvas);
+})();
 </script>
 </body>
 </html>
