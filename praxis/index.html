@@ -1,1007 +1,477 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PRAXIS AI for Good Lab | Early Warning &amp; Programme Evaluation</title>
-  <meta name="description" content="PRAXIS AI for Good Lab. Open-source AI for programme evaluation and conflict early warning. Built by a practitioner, not a product team.">
-  <meta property="og:title" content="PRAXIS AI for Good Lab">
-  <meta property="og:description" content="Open-source AI tools for programme evaluation and conflict early warning. 100,184 events analyzed. 230+ countries. 29 peer-reviewed papers.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/svg+xml" href="./logo.svg">
-  <link rel="alternate icon" type="image/png" href="./logo-32.png">
-  <meta name="theme-color" content="#0B1A2E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    /* === VARIABLES === */
-    :root {
-      --navy: #0B1A2E;
-      --navy-deep: #060c17;
-      --navy-mid: #132238;
-      --teal: #2EC4B6;
-      --teal-dim: rgba(46,196,182,0.12);
-      --amber: #E8A838;
-      --amber-dim: rgba(232,168,56,0.12);
-      --slate: #8899AA;
-      --slate-light: #A4B3C2;
-      --off-white: #E8ECF0;
-      --warm: #FAFBFC;
-      --surface: #FFFFFF;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRAXIS AI | Conflict Early Warning & Programme Evaluation</title>
+    <meta name="description" content="PRAXIS AI for Good Lab. Open-source AI for programme evaluation and conflict early warning. Built by a practitioner, not a product team.">
+    <meta property="og:title" content="PRAXIS AI for Good Lab">
+    <meta property="og:description" content="Open-source AI tools for programme evaluation and conflict early warning. 100,184 events analyzed. 230+ countries. 29 peer-reviewed papers.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0B1120">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='32' y2='32' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230B1120'/%3E%3Cstop offset='1' stop-color='%23162032'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Crect x='7' y='7' width='3.5' height='18' rx='1' fill='%2314b8a6'/%3E%3Cpath d='M10.5 7h7c4.5 0 8 3 8 7.5s-3.5 7.5-8 7.5h-7' fill='none' stroke='%2314b8a6' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='25' r='1.5' fill='%2314b8a6' opacity='.5'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        p_navy: '#0B1120',
+                        p_surface: '#162032',
+                        p_teal: '#14b8a6',
+                        p_teal_light: '#5eead4',
+                        p_amber: '#f59e0b',
+                        p_paper: '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::selection { background: #14b8a6; color: #0B1120; }
+        body { background-color: #0B1120; color: #f8fafc; }
 
-    /* === RESET + BASE === */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; scroll-padding-top: 56px; }
-    body {
-      font-family: 'DM Sans', -apple-system, sans-serif;
-      color: var(--navy); background: var(--warm);
-      -webkit-font-smoothing: antialiased;
-      line-height: 1.65; font-size: 16px; overflow-x: hidden;
-    }
-    a { text-decoration: none; color: inherit; }
-    img { max-width: 100%; display: block; }
+        .ambient-glow {
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(20,184,166,0.1) 0%, rgba(11,17,32,0) 70%);
+            top: -200px; right: -100px;
+            z-index: 0; pointer-events: none;
+        }
 
-    /* === UTILITY === */
-    .overline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      letter-spacing: 0.15em; text-transform: uppercase;
-    }
-    .overline.teal { color: var(--teal); }
-    .overline.amber { color: var(--amber); }
-    .section-narrow { max-width: 720px; margin: 0 auto; padding: 0 40px; }
-    .section-inner { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
-    .section-wide { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+        .bg-topo {
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%2314b8a6' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
 
-    /* === NAV === */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(6,12,23,0.95);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(46,196,182,0.06);
-    }
-    .nav-inner {
-      max-width: 1200px; margin: 0 auto; padding: 0 40px;
-      height: 56px; display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-brand {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px; font-weight: 600; color: var(--teal);
-      letter-spacing: 0.06em; display: flex; align-items: center; gap: 8px;
-    }
-    .nav-brand img { width: 22px; height: 22px; }
-    .nav-links { display: flex; gap: 24px; align-items: center; }
-    .nav-links a { font-size: 13px; color: var(--slate-light); transition: color 0.2s; }
-    .nav-links a:hover { color: white; }
-    .nav-links a.active { color: var(--teal); }
-    .nav-github {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px; font-weight: 500;
-      background: var(--teal); color: var(--navy);
-      padding: 5px 14px; transition: opacity 0.2s;
-    }
-    .nav-github:hover { opacity: 0.85; }
-    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
-    .hamburger svg { width: 22px; height: 22px; stroke: var(--slate-light); stroke-width: 2; fill: none; }
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0; transform: translateY(16px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* === HERO === */
-    .hero {
-      position: relative; overflow: hidden;
-      background: var(--navy-deep);
-    }
-    .hero-bg {
-      position: absolute; inset: 0;
-      background: url('./hero-bg.png') center 30% / cover no-repeat;
-      opacity: 0.6;
-    }
-    .hero-bg::after {
-      content: ''; position: absolute; inset: 0;
-      background:
-        linear-gradient(90deg, var(--navy-deep) 0%, var(--navy-deep) 30%, rgba(6,12,23,0.4) 60%, rgba(6,12,23,0.2) 100%),
-        linear-gradient(to top, var(--navy-deep) 0%, transparent 25%);
-    }
-    .hero-inner {
-      max-width: 1200px; margin: 0 auto; padding: 80px 40px 60px;
-      display: grid; grid-template-columns: 1fr 0.8fr; gap: 40px;
-      align-items: center; position: relative; z-index: 2;
-    }
-    .hero h1 {
-      font-family: 'Fraunces', Georgia, serif;
-      font-weight: 300; font-size: clamp(2.5rem, 5vw, 3.8rem);
-      line-height: 1.08; letter-spacing: -0.025em;
-      color: white; margin-bottom: 24px;
-    }
-    .hero h1 em { font-style: italic; color: var(--teal); }
-    .hero-sub {
-      font-size: 16px; color: var(--slate-light);
-      line-height: 1.7; max-width: 460px; margin-bottom: 32px;
-    }
-    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
-    .btn {
-      display: inline-block; font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 500; padding: 11px 24px; transition: all 0.2s;
-    }
-    .btn-teal { background: var(--teal); color: var(--navy); }
-    .btn-teal:hover { opacity: 0.85; }
-    .btn-outline { border: 1px solid rgba(255,255,255,0.15); color: var(--slate-light); }
-    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+        /* Staircase bars */
+        .stair-bar {
+            transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-    /* Globe */
-    .globe-wrap {
-      display: flex; align-items: center; justify-content: center;
-      position: relative;
-    }
-    .globe-wrap canvas {
-      width: 100%; max-width: 480px; height: auto; aspect-ratio: 1;
-      filter: brightness(1.3) contrast(1.1);
-    }
-
-    /* Stats bar */
-    .stats-bar {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      border-top: 1px solid rgba(46,196,182,0.08);
-      position: relative; z-index: 1;
-      max-width: 1200px; margin: 0 auto;
-    }
-    .stat-cell {
-      padding: 20px 40px;
-      border-right: 1px solid rgba(46,196,182,0.06);
-    }
-    .stat-cell:last-child { border-right: none; }
-    .stat-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 24px; font-weight: 500; color: var(--amber);
-    }
-    .stat-label { font-size: 12px; color: var(--slate); margin-top: 2px; }
-
-    /* === PROBLEM === */
-    .problem { padding: 80px 0; background: var(--warm); border-bottom: 1px solid var(--off-white); }
-    .problem-text {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.3rem, 2.5vw, 1.75rem);
-      font-weight: 400; line-height: 1.45; color: var(--navy);
-      max-width: 680px; margin-top: 16px;
-    }
-
-    /* === TRACKS === */
-    .tracks { padding: 80px 0; background: var(--surface); border-bottom: 1px solid var(--off-white); }
-    .tracks-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 24px; margin-top: 32px;
-    }
-    .track-card {
-      background: var(--surface); border: 1px solid var(--off-white);
-      padding: 32px; transition: border-color 0.2s;
-    }
-    .track-card:hover { border-color: var(--teal); }
-    .track-card.teal { border-top: 3px solid var(--teal); }
-    .track-card.amber { border-top: 3px solid var(--amber); }
-    .track-card.amber .track-link { color: var(--amber); }
-    .track-card h3 {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 1.3rem; font-weight: 400; color: var(--navy);
-      margin-bottom: 12px;
-    }
-    .track-card p { font-size: 15px; color: var(--slate); line-height: 1.75; }
-    .track-link {
-      display: inline-block; margin-top: 16px;
-      font-size: 14px; font-weight: 500; color: var(--teal); transition: opacity 0.2s;
-    }
-    .track-link:hover { opacity: 0.7; }
-
-    /* === EVIDENCE === */
-    .evidence {
-      padding: 80px 0; background: var(--navy); position: relative;
-    }
-    .evidence::before {
-      content: ''; position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse 500px 400px at 30% 50%, rgba(46,196,182,0.04) 0%, transparent 70%),
-        radial-gradient(ellipse 400px 300px at 70% 40%, rgba(232,168,56,0.03) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .evidence h2 {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.5rem, 3vw, 2.2rem);
-      font-weight: 400; color: white; margin: 16px 0 12px;
-    }
-    .evidence h2 em { color: var(--teal); font-style: italic; }
-    .evidence-sub {
-      font-size: 15px; color: var(--slate-light);
-      max-width: 560px; line-height: 1.7; margin-bottom: 40px;
-    }
-
-    /* Staircase */
-    .staircase {
-      display: flex; align-items: flex-end; gap: 12px;
-      min-height: 260px; padding: 24px;
-      background: rgba(46,196,182,0.03);
-      border: 1px solid rgba(46,196,182,0.08);
-      position: relative; z-index: 1;
-    }
-    .stair {
-      flex: 1; border-radius: 3px 3px 0 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-end;
-      padding-bottom: 10px;
-      transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      overflow: hidden;
-    }
-    .stair-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 18px; font-weight: 600; color: white;
-    }
-    .stair-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px; color: var(--slate-light);
-      margin-top: 4px;
-    }
-
-    .evidence-note {
-      font-size: 13px; color: var(--slate); margin-top: 16px;
-      position: relative; z-index: 1;
-    }
-    .evidence-link {
-      display: inline-block; margin-top: 20px;
-      font-size: 14px; font-weight: 500; color: var(--teal);
-      position: relative; z-index: 1; transition: opacity 0.2s;
-    }
-    .evidence-link:hover { opacity: 0.7; }
-
-    /* === TOOLS === */
-    .tools { padding: 80px 0; background: var(--warm); border-bottom: 1px solid var(--off-white); }
-    .tools h2 {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 400; color: var(--navy); margin: 16px 0 8px;
-    }
-    .tools-sub { font-size: 15px; color: var(--slate); margin-bottom: 32px; }
-    .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .tool-card {
-      background: var(--surface); border: 1px solid var(--off-white);
-      overflow: hidden; transition: border-color 0.2s;
-    }
-    .tool-card:hover { border-color: var(--teal); }
-    .tool-preview {
-      background: var(--navy); padding: 16px;
-      min-height: 90px; border-bottom: 1px solid rgba(46,196,182,0.08);
-      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--slate);
-    }
-    .tool-body { padding: 16px; }
-    .tool-body h4 { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
-    .tool-body p { font-size: 13px; color: var(--slate); line-height: 1.6; }
-    .tool-body .try-link {
-      display: inline-block; margin-top: 10px;
-      font-size: 13px; font-weight: 500; color: var(--teal); transition: opacity 0.2s;
-    }
-    .tool-body .try-link:hover { opacity: 0.7; }
-    .tool-icon {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 28px; height: 28px; background: var(--teal-dim);
-      color: var(--teal); font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 600; margin-right: 8px;
-      flex-shrink: 0;
-    }
-
-    /* === CREDENTIALS === */
-    .credentials { padding: 80px 0; background: var(--surface); border-bottom: 1px solid var(--off-white); }
-    .credentials h2 {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 400; color: var(--navy); margin: 16px 0 24px;
-    }
-    .credentials-grid {
-      display: grid; grid-template-columns: 1fr 300px; gap: 48px;
-    }
-    .credentials-text { font-size: 15px; color: var(--slate); line-height: 1.8; }
-    .credentials-text strong { color: var(--navy); font-weight: 600; }
-    .credentials-text p + p { margin-top: 16px; }
-    .cred-links { margin-top: 24px; display: flex; gap: 24px; }
-    .cred-links a { font-size: 14px; color: var(--teal); font-weight: 500; transition: opacity 0.2s; }
-    .cred-links a:hover { opacity: 0.7; }
-    .credentials-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .cred-stat {
-      padding: 20px; border: 1px solid var(--off-white); text-align: center;
-    }
-    .cred-stat-num {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 2rem; font-weight: 300; color: var(--amber); line-height: 1;
-    }
-    .cred-stat-label { font-size: 12px; color: var(--slate); margin-top: 6px; }
-
-    /* === VISION === */
-    .vision {
-      padding: 80px 0; background: var(--navy); position: relative;
-    }
-    .vision::before {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(46,196,182,0.03) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .vision h2 {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 400; color: white; margin: 16px 0 20px;
-    }
-    .vision p { font-size: 15px; color: var(--slate-light); line-height: 1.7; max-width: 600px; }
-    .vision-ctas { display: flex; gap: 12px; margin-top: 32px; }
-
-    /* === FOOTER === */
-    footer {
-      background: var(--navy-deep); padding: 24px 0;
-      border-top: 1px solid rgba(46,196,182,0.06);
-    }
-    .footer-inner {
-      max-width: 1200px; margin: 0 auto; padding: 0 40px;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
-    }
-    .footer-links { display: flex; gap: 20px; }
-    .footer-links a { font-size: 13px; color: var(--slate); transition: color 0.2s; }
-    .footer-links a:hover { color: var(--teal); }
-    .footer-copy { font-size: 12px; color: var(--slate); }
-
-    /* === REVEAL === */
-    .reveal {
-      opacity: 0; transform: translateY(12px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    /* === MOBILE === */
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .nav-links.open {
-        display: flex; flex-direction: column;
-        position: absolute; top: 56px; left: 0; right: 0;
-        background: rgba(6,12,23,0.97);
-        padding: 16px 28px; gap: 16px;
-        border-bottom: 1px solid rgba(46,196,182,0.06);
-      }
-      .hamburger { display: block; }
-      .hero-inner { grid-template-columns: 1fr; padding: 60px 24px 40px; }
-      .globe-wrap { display: none; }
-      .stats-bar { grid-template-columns: 1fr 1fr; }
-      .stat-cell { padding: 16px 24px; }
-      .section-narrow, .section-inner, .section-wide { padding: 0 24px; }
-      .tracks-grid { grid-template-columns: 1fr; }
-      .tools-grid { grid-template-columns: 1fr; }
-      .credentials-grid { grid-template-columns: 1fr; gap: 32px; }
-      .problem, .tracks, .evidence, .tools, .credentials, .vision { padding: 56px 0; }
-      .hero h1 { font-size: 2rem; }
-      .footer-inner { flex-direction: column; align-items: flex-start; padding: 0 24px; }
-    }
-  </style>
+        /* Mobile nav */
+        @media (max-width: 767px) {
+            .nav-links-desktop { display: none !important; }
+            .hamburger { display: flex !important; }
+            .mobile-menu.open { display: flex !important; }
+        }
+    </style>
 </head>
-<body>
+<body class="antialiased bg-topo relative">
+    <div class="ambient-glow"></div>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-inner">
-    <a href="./" class="nav-brand"><img src="./logo.svg" alt="PRAXIS" width="22" height="22">PRAXIS</a>
-    <button class="hamburger" aria-label="Toggle menu">
-      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <div class="nav-links">
-      <a href="./" class="active">Lab</a>
-      <a href="./ews/">EWS</a>
-      <a href="./evaluation/">Evaluation</a>
-      <a href="./tools/">Tools</a>
-      <a href="./360/">360</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="nav-github">GitHub</a>
-    </div>
-  </div>
-</nav>
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-lg bg-p_navy/80 border-b border-white/5">
+        <div class="flex items-center gap-4">
+            <div class="w-2 h-2 rounded-full bg-p_teal animate-pulse shadow-[0_0_10px_#14b8a6]"></div>
+            <a href="./" class="text-xl font-bold tracking-tight text-white">PRAXIS.</a>
+        </div>
+        <button class="hamburger hidden items-center justify-center w-8 h-8" aria-label="Toggle menu" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="nav-links-desktop hidden md:flex space-x-8 text-xs font-mono tracking-widest text-slate-400 items-center">
+            <a href="./research/" class="hover:text-p_teal transition-colors">RESEARCH</a>
+            <a href="./ews/" class="hover:text-p_teal transition-colors">EWS</a>
+            <a href="./tools/" class="hover:text-p_teal transition-colors">TOOLS</a>
+            <a href="./360/" class="hover:text-p_teal transition-colors">360</a>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="px-4 py-2 border border-slate-700 rounded hover:border-p_teal hover:text-p_teal transition-colors ml-4 text-white">GitHub</a>
+        </div>
+        <div id="mobile-menu" class="mobile-menu hidden flex-col absolute top-full left-0 right-0 bg-p_navy/95 backdrop-blur-lg border-b border-white/5 px-8 py-6 gap-4 text-sm font-mono tracking-widest text-slate-400">
+            <a href="./research/" class="hover:text-p_teal transition-colors">RESEARCH</a>
+            <a href="./ews/" class="hover:text-p_teal transition-colors">EWS</a>
+            <a href="./tools/" class="hover:text-p_teal transition-colors">TOOLS</a>
+            <a href="./360/" class="hover:text-p_teal transition-colors">360</a>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">GITHUB</a>
+        </div>
+    </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-inner">
-    <div class="hero-text">
-      <p class="overline teal" style="margin-bottom:20px;">AI FOR GOOD LAB</p>
-      <h1>Predicting violence before it satisfies.<br><em>Evaluating what prevents it.</em></h1>
-      <p class="hero-sub">Open-source AI tools for programme evaluation and conflict early warning. Built by a practitioner, not a product team.</p>
-      <div class="hero-ctas">
-        <a href="./tools/" class="btn btn-teal">Explore Tools</a>
-        <a href="./ews/" class="btn btn-outline">Early Warning System</a>
-      </div>
-    </div>
-    <div class="globe-wrap">
-      <canvas id="globe" width="800" height="800"></canvas>
-    </div>
-  </div>
-  <div class="stats-bar">
-    <div class="stat-cell">
-      <div class="stat-value" data-target="100184">0</div>
-      <div class="stat-label">conflict events analyzed</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-value" data-target="230">0</div>
-      <div class="stat-label">countries addressable</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-value" data-target="29">0</div>
-      <div class="stat-label">peer-reviewed papers</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-value">MIT</div>
-      <div class="stat-label">open source license</div>
-    </div>
-  </div>
-</section>
+    <!-- HERO -->
+    <section class="pt-36 pb-20 px-8 max-w-7xl mx-auto border-b border-white/5">
+        <div class="grid lg:grid-cols-12 gap-12 items-center reveal" id="hero-reveal">
+            <div class="lg:col-span-8">
+                <div class="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-p_teal/10 border border-p_teal/20 text-p_teal font-mono text-[10px] uppercase tracking-widest mb-8">
+                    <span>MIT Open Source</span>
+                    <span class="w-1 h-1 bg-p_teal rounded-full"></span>
+                    <span>Offline Capable</span>
+                </div>
 
-<!-- THE PROBLEM -->
-<section class="problem">
-  <div class="section-narrow reveal">
-    <p class="overline amber">THE GAP</p>
-    <p class="problem-text">Evaluation tools designed for stable contexts fail in conflict zones. Early warning systems that detect individual threats miss the compound signals that actually predict violence. PRAXIS was built to close both gaps. Methods tested in the field, not the lab.</p>
-  </div>
-</section>
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[1.1] text-white">
+                    Predicting violence <br/>
+                    <span class="font-serif italic text-slate-400 font-normal">before it satisfies.</span><br/>
+                    <span class="text-p_teal">Evaluating what prevents it.</span>
+                </h1>
 
-<!-- TWO TRACKS -->
-<section class="tracks">
-  <div class="section-inner reveal">
-    <p class="overline teal">WHAT THE LAB DOES</p>
-    <div class="tracks-grid">
-      <div class="track-card teal">
-        <p class="overline teal" style="font-size:10px;margin-bottom:12px;">TRACK 1</p>
-        <h3>Programme Evaluation</h3>
-        <p>Six open-source tools covering the full evaluation workflow. From sample size calculation and Theory of Change to evaluation matrices and indicator selection. 298 indicators across 11 sectors. Every tool runs client-side, offline capable, zero data transmission.</p>
-        <a href="./tools/" class="track-link">Open the toolkit &rarr;</a>
-      </div>
-      <div class="track-card amber">
-        <p class="overline amber" style="font-size:10px;margin-bottom:12px;">TRACK 2</p>
-        <h3>Conflict Early Warning</h3>
-        <p>Composite co-occurrence model built on ACLED event data. Epidemiological surveillance logic and econometric methods detect multi-type escalation pathways before crisis onset. Validated across the Sahel. Applicable wherever ACLED operates. 230+ countries.</p>
-        <a href="./ews/" class="track-link">PRAXIS EWS &rarr;</a>
-      </div>
-    </div>
-  </div>
-</section>
+                <p class="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl mb-12">
+                    Open-source AI for programme evaluation and conflict early warning. 12 years of direct field experience, encoded into tools that work offline.
+                </p>
 
-<!-- THE EVIDENCE -->
-<section class="evidence">
-  <div class="section-wide reveal" style="position:relative;z-index:1;">
-    <p class="overline amber">FEATURED RESEARCH</p>
-    <h2>No single event type predicts violence.<br><em>Co-occurrence does.</em></h2>
-    <p class="evidence-sub">When individual conflict event types occur in isolation, next-week attack rates drop to baseline. When two or more types co-occur in the same district-week, lethal violence follows within 7 days.</p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="./tools/" class="bg-p_teal text-p_navy px-8 py-4 rounded font-semibold tracking-wide hover:bg-p_teal_light transition-colors">Explore Toolkit</a>
+                    <a href="./ews/" class="bg-p_surface border border-slate-700 text-white px-8 py-4 rounded font-semibold tracking-wide hover:border-p_teal transition-colors">Early Warning System</a>
+                </div>
+            </div>
 
-    <div class="staircase" id="staircase">
-      <div class="stair" data-height="40" data-value="1x" data-label="Baseline" style="height:0px;">
-        <span class="stair-value" style="color:var(--slate-light);">1x</span>
-        <span class="stair-label">Baseline</span>
-      </div>
-      <div class="stair" data-height="80" data-value="2.3x" data-label="2 types" style="height:0px;">
-        <span class="stair-value">2.3x</span>
-        <span class="stair-label">2 types</span>
-      </div>
-      <div class="stair" data-height="130" data-value="4.0x" data-label="3 types" style="height:0px;">
-        <span class="stair-value">4.0x</span>
-        <span class="stair-label">3 types</span>
-      </div>
-      <div class="stair" data-height="180" data-value="5.7x" data-label="4 types" style="height:0px;">
-        <span class="stair-value">5.7x</span>
-        <span class="stair-label">4 types</span>
-      </div>
-      <div class="stair" data-height="240" data-value="7.5x" data-label="5+ types" style="height:0px;">
-        <span class="stair-value">7.5x</span>
-        <span class="stair-label">5+ types</span>
-      </div>
-    </div>
-    <p class="evidence-note">100,184 events. 13 countries. 15 years. All p &lt; 0.001 after Bonferroni correction.</p>
-    <a href="./ews/" class="evidence-link">Explore the full dataset &rarr;</a>
-  </div>
-</section>
+            <div class="lg:col-span-4 flex flex-col gap-8 border-l border-white/5 pl-8">
+                <div>
+                    <div class="text-4xl font-mono font-bold text-p_teal mb-1" data-target="100184">0</div>
+                    <div class="text-xs text-slate-500 uppercase tracking-widest font-mono">Conflict Events Analyzed</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-mono font-bold text-white mb-1" data-target="13">0</div>
+                    <div class="text-xs text-slate-500 uppercase tracking-widest font-mono">Countries Tracked</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-mono font-bold text-white mb-1" data-target="298">0</div>
+                    <div class="text-xs text-slate-500 uppercase tracking-widest font-mono">Evaluation Indicators</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<!-- TOOLS -->
-<section class="tools">
-  <div class="section-inner reveal">
-    <p class="overline teal">OPEN-SOURCE TOOLKIT</p>
-    <h2>6 tools. Free. Offline capable.</h2>
-    <p class="tools-sub">Built for evaluators working where connectivity is unreliable and generic frameworks don't fit.</p>
-
-    <div class="tools-grid">
-      <!-- Tool 1: Sample Size Calculator -->
-      <div class="tool-card">
-        <div class="tool-preview">
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-            <span style="font-size:10px;color:var(--slate);">Design:</span>
-            <span style="font-size:10px;background:var(--teal-dim);color:var(--teal);padding:2px 8px;">Cluster-RCT</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;">
+    <!-- RESEARCH / EVIDENCE -->
+    <section id="research" class="py-32 px-8 max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-20 items-center reveal">
             <div>
-              <div style="font-size:20px;color:var(--amber);font-weight:500;">24</div>
-              <div style="font-size:9px;color:var(--slate);">clusters needed</div>
+                <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">The Epidemiological Approach</h2>
+                <h3 class="text-4xl font-bold mb-6 text-white leading-tight">No single event type predicts violence. <span class="text-p_amber">Co-occurrence does.</span></h3>
+                <p class="text-slate-400 leading-relaxed mb-6">
+                    PRAXIS applies epidemiological surveillance logic to ACLED event data. Analysis of over 100,000 events shows that when individual conflict types occur in isolation, escalation drops to baseline. When two or more specific types co-occur in the same district-week, lethal violence follows within 7 days.
+                </p>
+                <p class="text-slate-400 leading-relaxed mb-8">
+                    The composite co-occurrence model was validated across 13 countries over 15 years of weekly admin2-level panel data. All results survive Bonferroni correction at p&nbsp;&lt;&nbsp;0.001.
+                </p>
+                <a href="./research/" class="inline-flex items-center gap-2 text-p_teal font-mono text-sm hover:text-p_teal_light transition-colors">
+                    Read the methodology <span class="text-lg">&rarr;</span>
+                </a>
             </div>
+
+            <!-- Escalation Probability Signal -->
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-8 shadow-2xl">
+                <div class="text-xs font-mono text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-700/50 pb-4">Escalation Probability Signal</div>
+
+                <div id="staircase" class="flex items-end gap-4 relative" style="height: 280px;">
+                    <!-- Baseline -->
+                    <div class="flex-1 flex flex-col items-center justify-end h-full group">
+                        <div class="text-xs font-mono text-slate-500 mb-2 opacity-0 group-hover:opacity-100 transition-opacity">1.0x</div>
+                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: rgba(100,116,139,0.4);" data-target-height="28">
+                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-sm font-mono font-bold text-slate-400 whitespace-nowrap">1.0x</div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-4 uppercase tracking-wider font-mono text-center">Baseline</div>
+                    </div>
+
+                    <!-- 2 types co-occurring -->
+                    <div class="flex-1 flex flex-col items-center justify-end h-full group">
+                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, #14b8a6, rgba(20,184,166,0.6));" data-target-height="65">
+                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-sm font-mono font-bold text-p_teal whitespace-nowrap">2.3x</div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-4 uppercase tracking-wider font-mono text-center">2 types</div>
+                    </div>
+
+                    <!-- 3 types co-occurring -->
+                    <div class="flex-1 flex flex-col items-center justify-end h-full group">
+                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, #14b8a6, #f59e0b);" data-target-height="113">
+                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-sm font-mono font-bold text-p_teal_light whitespace-nowrap">4.0x</div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-4 uppercase tracking-wider font-mono text-center">3 types</div>
+                    </div>
+
+                    <!-- 4 types co-occurring -->
+                    <div class="flex-1 flex flex-col items-center justify-end h-full group">
+                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, #f59e0b, #d97706);" data-target-height="161">
+                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-sm font-mono font-bold text-p_amber whitespace-nowrap">5.7x</div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-4 uppercase tracking-wider font-mono text-center">4 types</div>
+                    </div>
+
+                    <!-- 5+ types co-occurring -->
+                    <div class="flex-1 flex flex-col items-center justify-end h-full group relative">
+                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, #d97706, #dc2626); box-shadow: 0 0 24px rgba(245,158,11,0.25);" data-target-height="213">
+                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 text-lg font-mono font-bold text-p_amber whitespace-nowrap">7.5x</div>
+                        </div>
+                        <div class="text-[10px] text-p_amber mt-4 uppercase tracking-wider font-mono font-bold text-center">5+ types</div>
+                    </div>
+
+                    <!-- KAFD+IED specific -->
+                    <div class="flex-1 flex flex-col items-center justify-end h-full group relative">
+                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, rgba(245,158,11,0.3), #f59e0b, #ef4444); box-shadow: 0 0 30px rgba(245,158,11,0.3);" data-target-height="250">
+                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 text-xl font-mono font-bold text-p_amber whitespace-nowrap">8.8x</div>
+                        </div>
+                        <div class="text-[10px] text-p_amber mt-4 uppercase tracking-wider font-mono font-bold text-center leading-tight">KAFD<br/>+ IED</div>
+                    </div>
+                </div>
+
+                <p class="text-[11px] font-mono text-slate-600 mt-6 leading-relaxed">100,184 events. 13 countries. 15 years. All p&nbsp;&lt;&nbsp;0.001 after Bonferroni correction.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TOOLS -->
+    <section id="tools" class="py-32 bg-p_surface border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-8">
+            <div class="text-center mb-20 reveal">
+                <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">Client-Side Toolkit</h2>
+                <h3 class="text-4xl font-bold text-white mb-6">Built for the realities of the field.</h3>
+                <p class="text-slate-400 max-w-2xl mx-auto">Six live tools covering 298 indicators. Every tool runs client-side with zero data transmission, ensuring you can calculate sample sizes or build evaluation matrices even when the internet drops.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+                <!-- Sample Size Calculator -->
+                <a href="./tools/" class="bg-p_navy border border-slate-700/50 rounded-xl p-8 hover:border-p_teal/50 transition-all group block">
+                    <div class="w-12 h-12 bg-p_teal/10 rounded flex items-center justify-center text-p_teal font-mono font-bold mb-6 group-hover:bg-p_teal group-hover:text-p_navy transition-colors">Ss</div>
+                    <h4 class="text-xl font-bold text-white mb-3">Sample Size Calculator</h4>
+                    <p class="text-sm text-slate-400 mb-8">Cluster-RCT, stratified designs. Handles ICC and attrition calculations entirely offline.</p>
+                    <div class="bg-[#1e293b] rounded p-4 border border-slate-700">
+                        <div class="flex justify-between items-center text-xs font-mono">
+                            <span class="text-slate-400">Power</span>
+                            <span class="text-p_teal font-bold text-lg">80%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1 mt-2 rounded overflow-hidden">
+                            <div class="bg-p_teal w-[80%] h-full rounded"></div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Evaluation Matrix -->
+                <a href="./tools/" class="bg-p_navy border border-slate-700/50 rounded-xl p-8 hover:border-p_teal/50 transition-all group block">
+                    <div class="w-12 h-12 bg-p_teal/10 rounded flex items-center justify-center text-p_teal font-mono font-bold mb-6 group-hover:bg-p_teal group-hover:text-p_navy transition-colors">Em</div>
+                    <h4 class="text-xl font-bold text-white mb-3">Evaluation Matrix</h4>
+                    <p class="text-sm text-slate-400 mb-8">EQs, judgement criteria, indicators, and methods compiled into one robust, exportable table.</p>
+                    <div class="bg-[#1e293b] rounded p-4 border border-slate-700">
+                        <table class="w-full text-[10px] font-mono text-slate-500">
+                            <tr class="border-b border-slate-700/50"><td class="text-p_teal py-1">EQ1</td><td>Relevance</td><td class="text-right text-p_amber">Doc review</td></tr>
+                            <tr class="border-b border-slate-700/50"><td class="text-p_teal py-1">EQ2</td><td>Effectiveness</td><td class="text-right text-p_amber">Mixed methods</td></tr>
+                            <tr><td class="text-p_teal py-1">EQ3</td><td>Impact</td><td class="text-right text-p_amber">Quasi-exp.</td></tr>
+                        </table>
+                    </div>
+                </a>
+
+                <!-- Theory of Change -->
+                <a href="./tools/" class="bg-p_navy border border-slate-700/50 rounded-xl p-8 hover:border-p_teal/50 transition-all group block">
+                    <div class="w-12 h-12 bg-p_teal/10 rounded flex items-center justify-center text-p_teal font-mono font-bold mb-6 group-hover:bg-p_teal group-hover:text-p_navy transition-colors">Tc</div>
+                    <h4 class="text-xl font-bold text-white mb-3">Theory of Change</h4>
+                    <p class="text-sm text-slate-400 mb-8">Visual canvas with drag-drop nodes. Build your programme's logic model visually.</p>
+                    <div class="bg-[#1e293b] rounded p-4 border border-slate-700 flex justify-center items-center gap-3 py-5">
+                        <div class="w-10 h-5 rounded border border-slate-600 bg-slate-800 flex items-center justify-center text-[8px] font-mono text-slate-500">Input</div>
+                        <div class="w-5 h-[1px] bg-slate-600"></div>
+                        <div class="w-10 h-5 rounded border border-p_teal/40 bg-p_teal/10 flex items-center justify-center text-[8px] font-mono text-p_teal">Output</div>
+                        <div class="w-5 h-[1px] bg-slate-600"></div>
+                        <div class="w-10 h-5 rounded border border-p_amber/40 bg-p_amber/10 flex items-center justify-center text-[8px] font-mono text-p_amber">Impact</div>
+                    </div>
+                </a>
+
+                <!-- Design Advisor -->
+                <a href="./tools/" class="bg-p_navy border border-slate-700/50 rounded-xl p-8 hover:border-p_teal/50 transition-all group block">
+                    <div class="w-12 h-12 bg-p_teal/10 rounded flex items-center justify-center text-p_teal font-mono font-bold mb-6 group-hover:bg-p_teal group-hover:text-p_navy transition-colors">Da</div>
+                    <h4 class="text-xl font-bold text-white mb-3">Design Advisor</h4>
+                    <p class="text-sm text-slate-400 mb-8">Answer 8 questions about your context and get a recommended evaluation design.</p>
+                    <div class="bg-[#1e293b] rounded p-4 border border-slate-700 flex items-center gap-3">
+                        <div class="flex-1 h-1 bg-p_teal rounded"></div>
+                        <div class="flex-1 h-1 bg-p_teal rounded"></div>
+                        <div class="flex-1 h-1 bg-p_teal/40 rounded"></div>
+                        <div class="flex-1 h-1 bg-slate-700 rounded"></div>
+                        <span class="text-[10px] font-mono text-slate-500 ml-1">3/8</span>
+                    </div>
+                </a>
+
+                <!-- Indicator Bank -->
+                <a href="./tools/" class="bg-p_navy border border-slate-700/50 rounded-xl p-8 hover:border-p_teal/50 transition-all group block">
+                    <div class="w-12 h-12 bg-p_teal/10 rounded flex items-center justify-center text-p_teal font-mono font-bold mb-6 group-hover:bg-p_teal group-hover:text-p_navy transition-colors">Ib</div>
+                    <h4 class="text-xl font-bold text-white mb-3">Indicator Bank</h4>
+                    <p class="text-sm text-slate-400 mb-8">298 indicators across 11 sectors. Search, filter, and export for your evaluation design.</p>
+                    <div class="bg-[#1e293b] rounded p-4 border border-slate-700">
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500 mb-2">
+                            <span>Health</span><span class="text-p_teal">47</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500 mb-2">
+                            <span>Education</span><span class="text-p_teal">38</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500">
+                            <span>Protection</span><span class="text-p_teal">31</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Data Explorer -->
+                <a href="./tools/" class="bg-p_navy border border-slate-700/50 rounded-xl p-8 hover:border-p_teal/50 transition-all group block">
+                    <div class="w-12 h-12 bg-p_teal/10 rounded flex items-center justify-center text-p_teal font-mono font-bold mb-6 group-hover:bg-p_teal group-hover:text-p_navy transition-colors">Dx</div>
+                    <h4 class="text-xl font-bold text-white mb-3">Data Explorer</h4>
+                    <p class="text-sm text-slate-400 mb-8">Upload CSV or Excel. Auto-detect types, summarize distributions, flag quality issues.</p>
+                    <div class="bg-[#1e293b] rounded p-4 border border-slate-700 flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full bg-p_teal/60"></div>
+                        <div class="text-[10px] font-mono text-slate-500">12 cols detected, 3 flags</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CREDENTIALS -->
+    <section class="py-32 px-8 max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-20 items-center reveal">
             <div>
-              <div style="font-size:20px;color:var(--amber);font-weight:500;">30</div>
-              <div style="font-size:9px;color:var(--slate);">per cluster</div>
+                <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">The Lab</h2>
+                <h3 class="text-4xl font-bold text-white mb-6 leading-tight">Built from field reality</h3>
+                <p class="text-slate-400 leading-relaxed mb-6">
+                    PRAXIS is grounded in 12 years of programme evaluation across conflict-affected settings including Burkina Faso, Mali, Niger, South Sudan, and Burundi. The methodology draws on epidemiology, econometrics, and applied M&amp;E practice.
+                </p>
+                <p class="text-slate-400 leading-relaxed mb-8">
+                    <span class="text-white font-semibold">Emmanuel Nene Odjidja</span>, Founder and Director. Section Editor, Journal of MultiDisciplinary Evaluation. 29 peer-reviewed publications.
+                </p>
+                <div class="flex gap-6 text-sm">
+                    <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="text-p_teal font-mono hover:text-p_teal_light transition-colors">Publications &rarr;</a>
+                    <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="text-p_teal font-mono hover:text-p_teal_light transition-colors">Google Scholar &rarr;</a>
+                </div>
             </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                    <div class="text-3xl font-mono font-bold text-p_amber mb-1">12+</div>
+                    <div class="text-xs text-slate-500 uppercase tracking-widest font-mono">Years in the field</div>
+                </div>
+                <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                    <div class="text-3xl font-mono font-bold text-p_amber mb-1">29</div>
+                    <div class="text-xs text-slate-500 uppercase tracking-widest font-mono">Publications</div>
+                </div>
+                <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                    <div class="text-3xl font-mono font-bold text-p_amber mb-1">6</div>
+                    <div class="text-xs text-slate-500 uppercase tracking-widest font-mono">Countries</div>
+                </div>
+                <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                    <div class="text-3xl font-mono font-bold text-white mb-1">MIT</div>
+                    <div class="text-xs text-slate-500 uppercase tracking-widest font-mono">Open Source</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISION -->
+    <section class="py-24 bg-p_surface border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-8 text-center reveal">
+            <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">Open Source</h2>
+            <h3 class="text-3xl md:text-4xl font-bold text-white mb-6">Where PRAXIS is going</h3>
+            <p class="text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                The methodology transfers wherever ACLED operates. Roughly 230 countries. The evaluation tools are MIT licensed and built to be forked, adapted, and extended. This is an open invitation.
+            </p>
+            <div class="flex justify-center gap-4 flex-wrap">
+                <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="bg-p_teal text-p_navy px-8 py-4 rounded font-semibold tracking-wide hover:bg-p_teal_light transition-colors">View on GitHub</a>
+                <a href="./ews/" class="bg-p_navy border border-slate-700 text-white px-8 py-4 rounded font-semibold tracking-wide hover:border-p_teal transition-colors">Read the methodology</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pt-32 pb-12 px-8 max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-16 mb-20 border-b border-slate-800 pb-20">
             <div>
-              <div style="font-size:20px;color:var(--teal);font-weight:500;">80%</div>
-              <div style="font-size:9px;color:var(--slate);">power</div>
+                <div class="text-5xl font-bold text-white tracking-tight mb-6">PRAXIS.</div>
+                <p class="text-slate-400 font-mono text-xs uppercase tracking-widest leading-loose">
+                    Open-Source AI for Programme Evaluation <br/>
+                    and Conflict Early Warning. <br/>
+                    &copy; 2026. MIT Licensed.
+                </p>
             </div>
-          </div>
-        </div>
-        <div class="tool-body">
-          <div style="display:flex;align-items:center;margin-bottom:8px;">
-            <span class="tool-icon">Ss</span>
-            <h4 style="margin-bottom:0;">Sample Size Calculator</h4>
-          </div>
-          <p>Cluster-RCT, stratified, MDES. Handles ICC, attrition, and finite population corrections.</p>
-          <a href="./tools/" class="try-link">Try it &rarr;</a>
-        </div>
-      </div>
-
-      <!-- Tool 2: Theory of Change Builder -->
-      <div class="tool-card">
-        <div class="tool-preview">
-          <div style="display:flex;gap:4px;margin-bottom:8px;">
-            <span style="font-size:9px;background:var(--teal-dim);color:var(--teal);padding:2px 6px;">Input</span>
-            <span style="font-size:9px;background:var(--teal-dim);color:var(--teal);padding:2px 6px;">Activity</span>
-            <span style="font-size:9px;background:var(--teal-dim);color:var(--teal);padding:2px 6px;">Output</span>
-            <span style="font-size:9px;background:var(--amber-dim);color:var(--amber);padding:2px 6px;">Outcome</span>
-            <span style="font-size:9px;background:var(--amber-dim);color:var(--amber);padding:2px 6px;">Impact</span>
-          </div>
-          <div style="font-size:10px;color:var(--slate);margin-top:6px;">Health &rarr; Nutrition &rarr; CMAM programme</div>
-          <div style="display:flex;gap:6px;margin-top:4px;">
-            <div style="width:40px;height:3px;background:var(--teal);border-radius:2px;"></div>
-            <div style="width:30px;height:3px;background:var(--teal);border-radius:2px;opacity:0.7;"></div>
-            <div style="width:35px;height:3px;background:var(--amber);border-radius:2px;opacity:0.6;"></div>
-          </div>
-        </div>
-        <div class="tool-body">
-          <div style="display:flex;align-items:center;margin-bottom:8px;">
-            <span class="tool-icon">Tc</span>
-            <h4 style="margin-bottom:0;">Theory of Change Builder</h4>
-          </div>
-          <p>Visual drag-drop canvas. Auto-link inputs through impact. Export to PDF and share.</p>
-          <a href="./tools/" class="try-link">Try it &rarr;</a>
-        </div>
-      </div>
-
-      <!-- Tool 3: Evaluation Matrix -->
-      <div class="tool-card">
-        <div class="tool-preview">
-          <table style="width:100%;font-size:10px;color:var(--slate);border-collapse:collapse;">
-            <tr style="border-bottom:1px solid rgba(46,196,182,0.08);">
-              <td style="color:var(--teal);padding:4px 0;">EQ1</td>
-              <td>Relevance</td>
-              <td>2 indicators</td>
-              <td style="color:var(--amber);">Doc review</td>
-            </tr>
-            <tr style="border-bottom:1px solid rgba(46,196,182,0.08);">
-              <td style="color:var(--teal);padding:4px 0;">EQ2</td>
-              <td>Effectiveness</td>
-              <td>4 indicators</td>
-              <td style="color:var(--amber);">Mixed methods</td>
-            </tr>
-            <tr>
-              <td style="color:var(--teal);padding:4px 0;">EQ3</td>
-              <td>Impact</td>
-              <td>3 indicators</td>
-              <td style="color:var(--amber);">Quasi-experimental</td>
-            </tr>
-          </table>
-        </div>
-        <div class="tool-body">
-          <div style="display:flex;align-items:center;margin-bottom:8px;">
-            <span class="tool-icon">Em</span>
-            <h4 style="margin-bottom:0;">Evaluation Matrix</h4>
-          </div>
-          <p>Evaluation questions, judgement criteria, indicators, and data collection methods in one structured table.</p>
-          <a href="./tools/" class="try-link">Try it &rarr;</a>
-        </div>
-      </div>
-
-      <!-- Tool 4: +3 more tools -->
-      <div class="tool-card" style="display:flex;flex-direction:column;justify-content:center;">
-        <div class="tool-body" style="padding:32px;">
-          <h4 style="font-size:16px;margin-bottom:16px;">+ 3 more tools</h4>
-          <div style="display:flex;flex-direction:column;gap:12px;">
-            <div style="display:flex;align-items:center;">
-              <span class="tool-icon">Da</span>
-              <div>
-                <span style="font-size:14px;color:var(--navy);font-weight:500;">Design Advisor</span>
-                <span style="font-size:12px;color:var(--slate);margin-left:8px;">8 questions &rarr; recommended design</span>
-              </div>
+            <div class="md:text-right">
+                <p class="text-xl font-serif italic text-slate-300 mb-6">"Built by a practitioner, not a product team."</p>
+                <h4 class="text-lg font-bold text-white">Emmanuel Nene Odjidja</h4>
+                <p class="text-p_teal font-mono text-sm mt-1 mb-4">Principal Researcher &amp; Founder</p>
+                <div class="flex md:justify-end gap-4 text-sm text-slate-500 font-mono">
+                    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a>
+                    <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="hover:text-white transition-colors">Publications</a>
+                    <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener" class="hover:text-white transition-colors">emmanuelneneodjidja.org</a>
+                </div>
             </div>
-            <div style="display:flex;align-items:center;">
-              <span class="tool-icon">Ib</span>
-              <div>
-                <span style="font-size:14px;color:var(--navy);font-weight:500;">Indicator Bank</span>
-                <span style="font-size:12px;color:var(--slate);margin-left:8px;">298 indicators, 11 sectors</span>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;">
-              <span class="tool-icon">Dx</span>
-              <div>
-                <span style="font-size:14px;color:var(--navy);font-weight:500;">Data Explorer</span>
-                <span style="font-size:12px;color:var(--slate);margin-left:8px;">Upload, detect, summarize</span>
-              </div>
-            </div>
-          </div>
-          <a href="./tools/" class="try-link" style="margin-top:16px;display:inline-block;">View all tools &rarr;</a>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CREDENTIALS -->
-<section class="credentials">
-  <div class="section-inner reveal">
-    <p class="overline" style="color:var(--navy);">THE LAB</p>
-    <div class="credentials-grid">
-      <div>
-        <h2>Built from field reality</h2>
-        <div class="credentials-text">
-          <p>PRAXIS is grounded in 12 years of programme evaluation across conflict-affected settings including Burkina Faso, Mali, Niger, South Sudan, and Burundi. The methodology draws on epidemiology, econometrics, and applied M&E practice.</p>
-          <p><strong>Emmanuel Nene Odjidja</strong>, Founder and Director. Section Editor, Journal of MultiDisciplinary Evaluation. 29 peer-reviewed publications.</p>
-        </div>
-        <div class="cred-links">
-          <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Publications &rarr;</a>
-          <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Google Scholar &rarr;</a>
-        </div>
-      </div>
-      <div class="credentials-stats">
-        <div class="cred-stat">
-          <div class="cred-stat-num">12+</div>
-          <div class="cred-stat-label">years in the field</div>
-        </div>
-        <div class="cred-stat">
-          <div class="cred-stat-num">29</div>
-          <div class="cred-stat-label">publications</div>
-        </div>
-        <div class="cred-stat">
-          <div class="cred-stat-num">6</div>
-          <div class="cred-stat-label">countries</div>
-        </div>
-        <div class="cred-stat">
-          <div class="cred-stat-num">MIT</div>
-          <div class="cred-stat-label">open source</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- VISION -->
-<section class="vision">
-  <div class="section-inner reveal" style="position:relative;z-index:1;">
-    <p class="overline teal">OPEN SOURCE</p>
-    <h2>Where PRAXIS is going</h2>
-    <p>The Sahel is the proof of concept. The methodology transfers wherever ACLED operates. Roughly 230 countries. The evaluation tools are MIT licensed and built to be forked, adapted, and extended. This is an open invitation.</p>
-    <div class="vision-ctas">
-      <a href="https://github.com/emmaodjidja-sys/praxis" class="btn btn-teal" target="_blank" rel="noopener">View on GitHub</a>
-      <a href="./ews/" class="btn btn-outline">Read the methodology</a>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-links">
-      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Publications</a>
-      <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>
-    </div>
-    <span class="footer-copy">2026 PRAXIS. Open source. MIT licensed. ACLED data used under license.</span>
-  </div>
-</footer>
+    </footer>
 
 <script>
-/* === Task 4: Scroll Reveal + Animated Counter + Hamburger === */
 (function() {
-  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Scroll Reveal */
-  var reveals = document.querySelectorAll('.reveal');
-  if (reveals.length) {
-    if (prefersReduced) {
-      reveals.forEach(function(el) { el.classList.add('visible'); });
-    } else {
-      var revealObs = new IntersectionObserver(function(entries) {
-        entries.forEach(function(e) {
-          if (e.isIntersecting) {
-            e.target.classList.add('visible');
-            revealObs.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.1 });
-      reveals.forEach(function(el) { revealObs.observe(el); });
-    }
-  }
-
-  /* Animated Counter */
-  var stats = document.querySelectorAll('.stat-value[data-target]');
-  if (stats.length) {
-    var counterObs = new IntersectionObserver(function(entries) {
-      entries.forEach(function(e) {
-        if (!e.isIntersecting) return;
-        counterObs.unobserve(e.target);
-        var el = e.target;
-        var target = parseInt(el.getAttribute('data-target'), 10);
-        if (isNaN(target)) return;
-        var suffix = (target === 230) ? '+' : '';
+    /* Scroll Reveal */
+    var reveals = document.querySelectorAll('.reveal');
+    if (reveals.length) {
         if (prefersReduced) {
-          el.textContent = target.toLocaleString() + suffix;
-          return;
+            reveals.forEach(function(el) { el.classList.add('visible'); });
+        } else {
+            var revealObs = new IntersectionObserver(function(entries) {
+                entries.forEach(function(e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        revealObs.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            reveals.forEach(function(el) { revealObs.observe(el); });
         }
-        var duration = 1800;
-        var start = null;
-        function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-        function step(ts) {
-          if (!start) start = ts;
-          var progress = Math.min((ts - start) / duration, 1);
-          var val = Math.round(easeOutCubic(progress) * target);
-          el.textContent = val.toLocaleString() + (progress >= 1 ? suffix : '');
-          if (progress < 1) requestAnimationFrame(step);
+    }
+
+    /* Animated Counters */
+    var counters = document.querySelectorAll('[data-target]');
+    if (counters.length) {
+        var counterObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (!e.isIntersecting) return;
+                counterObs.unobserve(e.target);
+                var el = e.target;
+                var target = parseInt(el.getAttribute('data-target'), 10);
+                if (isNaN(target)) return;
+                if (prefersReduced) { el.textContent = target.toLocaleString(); return; }
+                var duration = 1800;
+                var start = null;
+                function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+                function step(ts) {
+                    if (!start) start = ts;
+                    var p = Math.min((ts - start) / duration, 1);
+                    el.textContent = Math.round(easeOut(p) * target).toLocaleString();
+                    if (p < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            });
+        }, { threshold: 0.3 });
+        counters.forEach(function(el) { counterObs.observe(el); });
+    }
+
+    /* Escalation Staircase Animation */
+    var staircase = document.getElementById('staircase');
+    if (staircase) {
+        var bars = staircase.querySelectorAll('.stair-bar');
+        var animated = false;
+        function animateBars() {
+            if (animated) return;
+            animated = true;
+            bars.forEach(function(bar, i) {
+                var h = bar.getAttribute('data-target-height');
+                var delay = prefersReduced ? 0 : i * 150;
+                setTimeout(function() {
+                    bar.style.height = h + 'px';
+                }, delay);
+            });
         }
-        requestAnimationFrame(step);
-      });
-    }, { threshold: 0.3 });
-    stats.forEach(function(el) { counterObs.observe(el); });
-  }
-
-  /* Hamburger */
-  var hamburger = document.querySelector('.hamburger');
-  var navLinks = document.querySelector('.nav-links');
-  if (hamburger && navLinks) {
-    hamburger.addEventListener('click', function() {
-      navLinks.classList.toggle('open');
-    });
-  }
-})();
-
-/* === Task 5: Escalation Staircase === */
-(function() {
-  var staircase = document.getElementById('staircase');
-  if (!staircase) return;
-  var stairs = staircase.querySelectorAll('.stair');
-  var backgrounds = [
-    'rgba(46,196,182,0.3)',
-    'linear-gradient(to top, #2EC4B6, rgba(46,196,182,0.8))',
-    'linear-gradient(to top, #2EC4B6, #E8A838)',
-    'linear-gradient(to top, #E8A838, #d4882a)',
-    'linear-gradient(to top, #d4882a, #c06a20)'
-  ];
-  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var animated = false;
-
-  function animateStairs() {
-    if (animated) return;
-    animated = true;
-    stairs.forEach(function(stair, i) {
-      var h = stair.getAttribute('data-height');
-      var bg = backgrounds[i] || backgrounds[backgrounds.length - 1];
-      var delay = prefersReduced ? 0 : i * 200;
-      setTimeout(function() {
-        stair.style.background = bg;
-        stair.style.height = h + 'px';
-        stair.classList.add('visible');
-      }, delay);
-    });
-  }
-
-  var obs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        animateStairs();
-        obs.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.2 });
-  obs.observe(staircase);
-})();
-
-/* === Task 6: Canvas Particle Globe === */
-(function() {
-  var canvas = document.getElementById('globe');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = 800, H = 800;
-  canvas.width = W; canvas.height = H;
-  var cx = W / 2, cy = H / 2, R = 340;
-  var rotation = 0;
-  var isVisible = false;
-
-  /* Projection: equirectangular onto sphere */
-  function project(lon, lat) {
-    var lam = (lon - rotation) * Math.PI / 180;
-    var phi = lat * Math.PI / 180;
-    var x = Math.cos(phi) * Math.sin(lam);
-    var y = -Math.sin(phi);
-    var z = Math.cos(phi) * Math.cos(lam);
-    if (z < 0) return null;
-    return [cx + x * R, cy + y * R, z];
-  }
-
-  /* Simplified continent outlines (lon,lat) */
-  var africa = [
-    [-5,36],[10,37],[12,33],[11,23],[23,22],[35,30],[33,12],[42,12],[51,11],
-    [42,2],[40,-4],[35,-8],[30,-15],[35,-25],[28,-33],[18,-35],[12,-18],
-    [8,-5],[5,5],[0,6],[-8,5],[-17,12],[-17,21],[-13,28],[-5,36]
-  ];
-  var europe = [
-    [-10,36],[-10,43],[0,44],[3,43],[5,46],[8,48],[5,51],[-5,48],[-6,54],
-    [-3,56],[0,51],[3,53],[7,54],[10,55],[12,57],[8,58],[12,60],[18,60],
-    [25,60],[30,60],[30,55],[28,50],[24,48],[22,45],[28,45],[30,42],
-    [26,40],[24,35],[22,38],[20,40],[15,38],[12,38],[10,44],[6,44],
-    [3,42],[0,39],[-5,36],[-10,36]
-  ];
-  var asia = [
-    [30,42],[35,42],[40,38],[44,42],[50,38],[55,37],[60,38],[68,38],
-    [75,35],[78,30],[80,28],[76,18],[80,8],[78,12],[82,8],[88,22],
-    [92,22],[96,16],[100,15],[105,10],[108,16],[110,20],[118,24],
-    [120,30],[122,32],[125,35],[128,38],[130,42],[135,38],[140,42],
-    [142,45],[145,48],[142,52],[135,55],[130,56],[120,55],[110,52],
-    [105,50],[90,48],[80,50],[70,52],[60,55],[55,55],[50,52],[42,48],
-    [35,48],[30,42]
-  ];
-  var southAmerica = [
-    [-80,8],[-75,12],[-68,12],[-60,8],[-50,4],[-45,0],[-35,-5],
-    [-35,-10],[-38,-15],[-40,-22],[-48,-28],[-55,-34],[-68,-55],
-    [-75,-50],[-72,-38],[-70,-30],[-70,-18],[-75,-10],[-80,0],[-80,8]
-  ];
-  var northAmerica = [
-    [-130,50],[-125,48],[-122,37],[-117,32],[-105,25],[-97,20],
-    [-90,16],[-85,12],[-82,8],[-77,8],[-75,12],[-68,12],[-62,10],
-    [-60,13],[-65,18],[-75,18],[-80,25],[-82,30],[-90,30],[-97,27],
-    [-97,36],[-90,42],[-82,42],[-76,38],[-68,43],[-66,44],[-64,48],
-    [-68,48],[-75,55],[-80,52],[-85,55],[-90,50],[-95,52],[-100,55],
-    [-110,55],[-120,55],[-130,60],[-140,60],[-145,62],[-160,60],
-    [-168,65],[-165,70],[-145,68],[-130,70],[-120,68],[-100,65],
-    [-90,62],[-85,65],[-80,65],[-70,60],[-60,60],[-55,52],[-58,48],
-    [-62,48],[-70,50],[-80,50],[-95,48],[-110,48],[-120,48],[-130,50]
-  ];
-  var continents = [africa, europe, asia, southAmerica, northAmerica];
-
-  /* Draw a continent polygon */
-  function drawContinent(pts) {
-    var started = false;
-    ctx.beginPath();
-    for (var i = 0; i < pts.length; i++) {
-      var p = project(pts[i][0], pts[i][1]);
-      if (p) {
-        if (!started) { ctx.moveTo(p[0], p[1]); started = true; }
-        else ctx.lineTo(p[0], p[1]);
-      }
+        var stairObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) {
+                    animateBars();
+                    stairObs.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.2 });
+        stairObs.observe(staircase);
     }
-    if (started) {
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(46,196,182,0.06)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(46,196,182,0.2)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-  }
-
-  /* Latitude grid lines */
-  function drawGrid() {
-    var lats = [-60, -30, 0, 30, 60];
-    for (var li = 0; li < lats.length; li++) {
-      ctx.beginPath();
-      var started = false;
-      for (var lon = -180; lon <= 180; lon += 3) {
-        var p = project(lon, lats[li]);
-        if (p) {
-          if (!started) { ctx.moveTo(p[0], p[1]); started = true; }
-          else ctx.lineTo(p[0], p[1]);
-        } else { started = false; }
-      }
-      ctx.strokeStyle = 'rgba(46,196,182,0.04)';
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    }
-  }
-
-  /* Sahel glow */
-  function drawSahelGlow() {
-    var p = project(2, 14);
-    if (!p) return;
-    var grad = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 60);
-    grad.addColorStop(0, 'rgba(232,168,56,0.25)');
-    grad.addColorStop(1, 'rgba(232,168,56,0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(p[0], p[1], 60, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  /* Particle system */
-  var MAX_PARTICLES = 300;
-  var particles = [];
-  function spawnParticle(stagger) {
-    var angle = Math.random() * Math.PI * 2;
-    var speed = 0.3 + Math.random() * 0.7;
-    var r = (Math.random() < 0.5) ? 0 : 1;
-    return {
-      lon: 2 + (Math.random() - 0.5) * 10,
-      lat: 14 + (Math.random() - 0.5) * 6,
-      vlon: Math.cos(angle) * speed,
-      vlat: Math.sin(angle) * speed,
-      age: stagger ? Math.floor(Math.random() * 180) : 0,
-      maxLife: 120 + Math.floor(Math.random() * 120),
-      size: 1 + Math.random() * 2,
-      colorMix: Math.random()
-    };
-  }
-  for (var i = 0; i < MAX_PARTICLES; i++) {
-    particles.push(spawnParticle(true));
-  }
-
-  function lerpColor(mix) {
-    var r = Math.round(46 + (232 - 46) * mix);
-    var g = Math.round(196 + (168 - 196) * mix);
-    var b = Math.round(182 + (56 - 182) * mix);
-    return [r, g, b];
-  }
-
-  function drawParticles() {
-    for (var i = 0; i < particles.length; i++) {
-      var pt = particles[i];
-      pt.lon += pt.vlon;
-      pt.lat += pt.vlat;
-      pt.age++;
-      if (pt.age >= pt.maxLife) {
-        particles[i] = spawnParticle(false);
-        continue;
-      }
-      var p = project(pt.lon, pt.lat);
-      if (!p) {
-        particles[i] = spawnParticle(false);
-        continue;
-      }
-      var fadeIn = Math.min(pt.age / 30, 1);
-      var fadeOut = Math.max(1 - (pt.age - (pt.maxLife - 40)) / 40, 0);
-      if (pt.age < pt.maxLife - 40) fadeOut = 1;
-      var alpha = fadeIn * fadeOut * 0.9 * (0.3 + p[2] * 0.7);
-      if (alpha <= 0) continue;
-      var c = lerpColor(pt.colorMix);
-      ctx.beginPath();
-      ctx.arc(p[0], p[1], pt.size, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
-      ctx.fill();
-    }
-  }
-
-  function draw() {
-    if (!isVisible) return;
-    ctx.clearRect(0, 0, W, H);
-
-    /* Globe circle */
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(11,26,46,0.5)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(46,196,182,0.12)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    drawGrid();
-    for (var i = 0; i < continents.length; i++) drawContinent(continents[i]);
-    drawSahelGlow();
-    drawParticles();
-
-    rotation += 0.02;
-    requestAnimationFrame(draw);
-  }
-
-  /* Visibility observer */
-  var globeObs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      var wasVisible = isVisible;
-      isVisible = e.isIntersecting;
-      if (isVisible && !wasVisible) requestAnimationFrame(draw);
-    });
-  }, { threshold: 0 });
-  globeObs.observe(canvas);
 })();
 </script>
 </body>
