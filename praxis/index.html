@@ -60,11 +60,6 @@
         }
         .reveal.visible { opacity: 1; transform: translateY(0); }
 
-        /* Staircase bars */
-        .stair-bar {
-            transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
         /* Mobile nav */
         @media (max-width: 767px) {
             .nav-links-desktop { display: none !important; }
@@ -144,11 +139,11 @@
         </div>
     </section>
 
-    <!-- RESEARCH / EVIDENCE -->
+    <!-- RESEARCH TEASER -->
     <section id="research" class="py-32 px-8 max-w-7xl mx-auto">
         <div class="grid lg:grid-cols-2 gap-20 items-center reveal">
             <div>
-                <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">The Epidemiological Approach</h2>
+                <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">Featured Research</h2>
                 <h3 class="text-4xl font-bold mb-6 text-white leading-tight">No single event type predicts violence. <span class="text-p_amber">Co-occurrence does.</span></h3>
                 <p class="text-slate-400 leading-relaxed mb-6">
                     PRAXIS applies epidemiological surveillance logic to ACLED event data. Analysis of over 100,000 events shows that when individual conflict types occur in isolation, escalation drops to baseline. When two or more specific types co-occur in the same district-week, lethal violence follows within 7 days.
@@ -161,62 +156,37 @@
                 </a>
             </div>
 
-            <!-- Escalation Probability Signal -->
+            <!-- Key Evidence Numbers -->
             <div class="bg-p_surface border border-slate-700/50 rounded-xl p-8 shadow-2xl">
-                <div class="text-xs font-mono text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-700/50 pb-4">Escalation Probability Signal</div>
-
-                <div id="staircase" class="flex items-end gap-4 relative" style="height: 280px;">
-                    <!-- Baseline -->
-                    <div class="flex-1 flex flex-col items-center justify-end h-full group">
-                        <div class="text-xs font-mono text-slate-500 mb-2 opacity-0 group-hover:opacity-100 transition-opacity">1.0x</div>
-                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: rgba(100,116,139,0.4);" data-target-height="28">
-                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-sm font-mono font-bold text-slate-400 whitespace-nowrap">1.0x</div>
+                <div class="text-xs font-mono text-slate-500 uppercase tracking-widest mb-8 border-b border-slate-700/50 pb-4">Evidence Summary</div>
+                <div class="space-y-8">
+                    <div class="flex items-start gap-6">
+                        <div class="text-4xl font-mono font-bold text-p_amber leading-none">8.8x</div>
+                        <div>
+                            <div class="text-white font-semibold mb-1">Where to look</div>
+                            <div class="text-sm text-slate-400 leading-relaxed">KAFD+IED districts at 8.8x clean baseline, excluding triggering types. N=292.</div>
                         </div>
-                        <div class="text-[10px] text-slate-500 mt-4 uppercase tracking-wider font-mono text-center">Baseline</div>
                     </div>
-
-                    <!-- 2 types co-occurring -->
-                    <div class="flex-1 flex flex-col items-center justify-end h-full group">
-                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, #14b8a6, rgba(20,184,166,0.6));" data-target-height="65">
-                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-sm font-mono font-bold text-p_teal whitespace-nowrap">2.3x</div>
+                    <div class="border-t border-slate-700/50"></div>
+                    <div class="flex items-start gap-6">
+                        <div class="text-4xl font-mono font-bold text-p_teal leading-none">1.2x</div>
+                        <div>
+                            <div class="text-white font-semibold mb-1">When to act</div>
+                            <div class="text-sm text-slate-400 leading-relaxed">Signal week marks 18% further escalation in non-triggering violence above pre-signal corridor.</div>
                         </div>
-                        <div class="text-[10px] text-slate-500 mt-4 uppercase tracking-wider font-mono text-center">2 types</div>
                     </div>
-
-                    <!-- 3 types co-occurring -->
-                    <div class="flex-1 flex flex-col items-center justify-end h-full group">
-                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, #14b8a6, #f59e0b);" data-target-height="113">
-                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-sm font-mono font-bold text-p_teal_light whitespace-nowrap">4.0x</div>
+                    <div class="border-t border-slate-700/50"></div>
+                    <div class="flex items-start gap-6">
+                        <div class="text-4xl font-mono font-bold text-white leading-none">13</div>
+                        <div>
+                            <div class="text-white font-semibold mb-1">Where it works</div>
+                            <div class="text-sm text-slate-400 leading-relaxed">Central Sahel, Lake Chad Basin, Coastal West Africa. All p&nbsp;&lt;&nbsp;0.001.</div>
                         </div>
-                        <div class="text-[10px] text-slate-500 mt-4 uppercase tracking-wider font-mono text-center">3 types</div>
-                    </div>
-
-                    <!-- 4 types co-occurring -->
-                    <div class="flex-1 flex flex-col items-center justify-end h-full group">
-                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, #f59e0b, #d97706);" data-target-height="161">
-                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-sm font-mono font-bold text-p_amber whitespace-nowrap">5.7x</div>
-                        </div>
-                        <div class="text-[10px] text-slate-500 mt-4 uppercase tracking-wider font-mono text-center">4 types</div>
-                    </div>
-
-                    <!-- 5+ types co-occurring -->
-                    <div class="flex-1 flex flex-col items-center justify-end h-full group relative">
-                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, #d97706, #dc2626); box-shadow: 0 0 24px rgba(245,158,11,0.25);" data-target-height="213">
-                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 text-lg font-mono font-bold text-p_amber whitespace-nowrap">7.5x</div>
-                        </div>
-                        <div class="text-[10px] text-p_amber mt-4 uppercase tracking-wider font-mono font-bold text-center">5+ types</div>
-                    </div>
-
-                    <!-- KAFD+IED specific -->
-                    <div class="flex-1 flex flex-col items-center justify-end h-full group relative">
-                        <div class="stair-bar w-full rounded-t relative" style="height: 0; background: linear-gradient(to top, rgba(245,158,11,0.3), #f59e0b, #ef4444); box-shadow: 0 0 30px rgba(245,158,11,0.3);" data-target-height="250">
-                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 text-xl font-mono font-bold text-p_amber whitespace-nowrap">8.8x</div>
-                        </div>
-                        <div class="text-[10px] text-p_amber mt-4 uppercase tracking-wider font-mono font-bold text-center leading-tight">KAFD<br/>+ IED</div>
                     </div>
                 </div>
-
-                <p class="text-[11px] font-mono text-slate-600 mt-6 leading-relaxed">100,184 events. 13 countries. 15 years. All p&nbsp;&lt;&nbsp;0.001 after Bonferroni correction.</p>
+                <a href="./research/" class="inline-flex items-center gap-2 text-p_teal font-mono text-xs mt-8 hover:text-p_teal_light transition-colors">
+                    Full interactive visualization <span>&rarr;</span>
+                </a>
             </div>
         </div>
     </section>
@@ -369,7 +339,7 @@
             </p>
             <div class="flex justify-center gap-4 flex-wrap">
                 <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="bg-p_teal text-p_navy px-8 py-4 rounded font-semibold tracking-wide hover:bg-p_teal_light transition-colors">View on GitHub</a>
-                <a href="./ews/" class="bg-p_navy border border-slate-700 text-white px-8 py-4 rounded font-semibold tracking-wide hover:border-p_teal transition-colors">Read the methodology</a>
+                <a href="./research/" class="bg-p_navy border border-slate-700 text-white px-8 py-4 rounded font-semibold tracking-wide hover:border-p_teal transition-colors">Read the methodology</a>
             </div>
         </div>
     </section>
@@ -446,32 +416,6 @@
         counters.forEach(function(el) { counterObs.observe(el); });
     }
 
-    /* Escalation Staircase Animation */
-    var staircase = document.getElementById('staircase');
-    if (staircase) {
-        var bars = staircase.querySelectorAll('.stair-bar');
-        var animated = false;
-        function animateBars() {
-            if (animated) return;
-            animated = true;
-            bars.forEach(function(bar, i) {
-                var h = bar.getAttribute('data-target-height');
-                var delay = prefersReduced ? 0 : i * 150;
-                setTimeout(function() {
-                    bar.style.height = h + 'px';
-                }, delay);
-            });
-        }
-        var stairObs = new IntersectionObserver(function(entries) {
-            entries.forEach(function(e) {
-                if (e.isIntersecting) {
-                    animateBars();
-                    stairObs.unobserve(e.target);
-                }
-            });
-        }, { threshold: 0.2 });
-        stairObs.observe(staircase);
-    }
 })();
 </script>
 </body>
