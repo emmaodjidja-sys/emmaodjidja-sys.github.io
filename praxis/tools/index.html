@@ -18,11 +18,14 @@
 <style>
 :root {
   --navy: #0B1A2E;
+  --navy-deep: #060c17;
   --navy-mid: #122240;
   --navy-light: #1a3050;
   --teal: #2EC4B6;
   --teal-dark: #1a9e92;
   --teal-glow: rgba(46,196,182,0.12);
+  --amber: #E8A838;
+  --amber-dim: rgba(232,168,56,0.12);
   --slate: #8899AA;
   --slate-light: #A4B3C2;
   --off-white: #E8ECF0;
@@ -83,10 +86,22 @@ nav {
 .hero {
   padding: 80px 32px 72px;
   text-align: center;
-  background: linear-gradient(170deg, var(--navy) 0%, var(--navy-light) 100%);
+  background: var(--navy);
+  position: relative; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: url('../hero-bg.png') center 30% / cover no-repeat;
+  opacity: 0.5;
+}
+.hero-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at center, rgba(6,12,23,0.3) 0%, rgba(6,12,23,0.7) 100%),
+    linear-gradient(to top, var(--navy) 0%, transparent 30%);
 }
 .hero-inner {
-  max-width: 680px; margin: 0 auto;
+  max-width: 680px; margin: 0 auto; position: relative; z-index: 1;
 }
 .hero-label {
   display: inline-flex; align-items: center; gap: 8px;
@@ -127,7 +142,7 @@ nav {
 .hero-stat { text-align: center; }
 .hero-stat-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 28px; font-weight: 500; color: var(--teal);
+  font-size: 28px; font-weight: 500; color: var(--amber);
   line-height: 1;
 }
 .hero-stat-label {
@@ -437,13 +452,14 @@ footer {
 </nav>
 
 <section class="hero" id="main" role="main">
+  <div class="hero-bg"></div>
   <div class="hero-inner">
     <div class="hero-label">
       <span class="hero-label-dot"></span> Free &amp; Open Source
     </div>
     <h1>Evaluation Tools<br>Built for <em>Practitioners</em></h1>
     <p class="hero-desc">
-      Free, rigorous tools for every stage of the evaluation lifecycle &mdash;
+      Free, rigorous tools for every stage of the evaluation lifecycle .
       from sample size calculation to design selection. Built on 12+ years of
       field experience and the PRAXIS methodology.
     </p>
@@ -474,7 +490,7 @@ footer {
     <div class="overline reveal">Toolkit</div>
     <h2 class="section-title reveal">Evaluation Toolkit</h2>
     <p class="section-desc reveal">
-      Each tool is designed for real-world field conditions &mdash; not just textbook scenarios.
+      Each tool is designed for real-world field conditions . not just textbook scenarios.
       Guided parameter selection for evaluators at any experience level.
     </p>
 
@@ -489,7 +505,7 @@ footer {
         <h3>Sample Size Calculator</h3>
         <p class="tool-desc">
           Rigorous sample size estimation for 8 evaluation designs. Real-time calculation
-          with guided parameter selection &mdash; click the recommended presets if you're
+          with guided parameter selection . click the recommended presets if you're
           unsure which values to use.
         </p>
         <div class="tool-features">
@@ -514,7 +530,7 @@ footer {
         <h3>Evaluation Design Advisor</h3>
         <p class="tool-desc">
           Answer 10 context questions about your programme and get scored recommendations
-          across 16 evaluation designs &mdash; with trade-offs, validity threats, and
+          across 16 evaluation designs . with trade-offs, validity threats, and
           justification for each.
         </p>
         <div class="tool-features">
@@ -652,7 +668,7 @@ footer {
       <div class="use-case-card">
         <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
         <h4>Writing a TOR</h4>
-        <p>Use the Design Advisor to justify your methodology choice. Run the Sample Size Calculator to include a defensible sample size in the TOR &mdash; not just &ldquo;approximately 400 households.&rdquo;</p>
+        <p>Use the Design Advisor to justify your methodology choice. Run the Sample Size Calculator to include a defensible sample size in the TOR . not just &ldquo;approximately 400 households.&rdquo;</p>
       </div>
       <div class="use-case-card">
         <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
@@ -667,7 +683,7 @@ footer {
       <div class="use-case-card">
         <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
         <h4>Choosing an evaluation approach</h4>
-        <p>Input your context &mdash; budget, timeline, comparison group feasibility, programme complexity &mdash; and get a ranked list of designs with trade-offs.</p>
+        <p>Input your context . budget, timeline, comparison group feasibility, programme complexity . and get a ranked list of designs with trade-offs.</p>
       </div>
       <div class="use-case-card">
         <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
@@ -677,7 +693,7 @@ footer {
       <div class="use-case-card">
         <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
         <h4>Planning in FCV settings</h4>
-        <p>The Design Advisor specifically accounts for fragile and conflict-affected contexts &mdash; downranking designs that require stable access.</p>
+        <p>The Design Advisor specifically accounts for fragile and conflict-affected contexts . downranking designs that require stable access.</p>
       </div>
       <div class="use-case-card">
         <span class="use-case-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></span>
@@ -692,7 +708,7 @@ footer {
 <section class="cta">
   <h2 class="reveal">Built on PRAXIS Methodology</h2>
   <p class="reveal">
-    These tools are powered by the same methodological framework behind PRAXIS &mdash;
+    These tools are powered by the same methodological framework behind PRAXIS .
     the open-source evaluation system used by M&amp;E professionals worldwide.
   </p>
   <div class="cta-actions reveal">
