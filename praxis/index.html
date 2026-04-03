@@ -95,12 +95,14 @@
     }
     .hero-bg {
       position: absolute; inset: 0;
-      background: url('./hero-bg.png') center right / cover no-repeat;
+      background: url('./hero-bg.png') center 30% / cover no-repeat;
       opacity: 0.6;
     }
     .hero-bg::after {
       content: ''; position: absolute; inset: 0;
-      background: linear-gradient(90deg, var(--navy-deep) 0%, var(--navy-deep) 30%, rgba(6,12,23,0.4) 60%, rgba(6,12,23,0.2) 100%);
+      background:
+        linear-gradient(90deg, var(--navy-deep) 0%, var(--navy-deep) 30%, rgba(6,12,23,0.4) 60%, rgba(6,12,23,0.2) 100%),
+        linear-gradient(to top, var(--navy-deep) 0%, transparent 25%);
     }
     .hero-inner {
       max-width: 1200px; margin: 0 auto; padding: 80px 40px 60px;
@@ -389,6 +391,7 @@
       <a href="./evaluation/">Evaluation</a>
       <a href="./tools/">Tools</a>
       <a href="./360/">360</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="nav-github">GitHub</a>
     </div>
   </div>
 </nav>
