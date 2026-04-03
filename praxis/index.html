@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PRAXIS AI for Good Lab | Early Warning &amp; Programme Evaluation</title>
-  <meta name="description" content="PRAXIS AI for Good Lab — open-source AI for programme evaluation and conflict early warning. Built by a practitioner, not a product team.">
+  <meta name="description" content="PRAXIS AI for Good Lab. Open-source AI for programme evaluation and conflict early warning. Built by a practitioner, not a product team.">
   <meta property="og:title" content="PRAXIS AI for Good Lab">
   <meta property="og:description" content="Open-source AI tools for programme evaluation and conflict early warning. 100,184 events analyzed. 230+ countries. 29 peer-reviewed papers.">
   <meta property="og:type" content="website">
@@ -90,20 +90,22 @@
 
     /* === HERO === */
     .hero {
-      background: linear-gradient(170deg, var(--navy-deep) 0%, var(--navy) 60%, var(--navy-mid) 100%);
       position: relative; overflow: hidden;
+      background: var(--navy-deep);
     }
-    .hero::before {
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('./hero-bg.png') center right / cover no-repeat;
+      opacity: 0.6;
+    }
+    .hero-bg::after {
       content: ''; position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse 600px 500px at 25% 40%, rgba(46,196,182,0.04) 0%, transparent 70%),
-        radial-gradient(ellipse 500px 400px at 75% 50%, rgba(232,168,56,0.03) 0%, transparent 70%);
-      pointer-events: none;
+      background: linear-gradient(90deg, var(--navy-deep) 0%, var(--navy-deep) 30%, rgba(6,12,23,0.4) 60%, rgba(6,12,23,0.2) 100%);
     }
     .hero-inner {
       max-width: 1200px; margin: 0 auto; padding: 80px 40px 60px;
       display: grid; grid-template-columns: 1fr 0.8fr; gap: 40px;
-      align-items: center; position: relative; z-index: 1;
+      align-items: center; position: relative; z-index: 2;
     }
     .hero h1 {
       font-family: 'Fraunces', Georgia, serif;
@@ -132,7 +134,8 @@
       position: relative;
     }
     .globe-wrap canvas {
-      width: 100%; max-width: 400px; height: auto; aspect-ratio: 1;
+      width: 100%; max-width: 480px; height: auto; aspect-ratio: 1;
+      filter: brightness(1.3) contrast(1.1);
     }
 
     /* Stats bar */
@@ -393,6 +396,7 @@
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-bg"></div>
   <div class="hero-inner">
     <div class="hero-text">
       <p class="overline teal" style="margin-bottom:20px;">AI FOR GOOD LAB</p>
@@ -431,7 +435,7 @@
 <section class="problem">
   <div class="section-narrow reveal">
     <p class="overline amber">THE GAP</p>
-    <p class="problem-text">Evaluation tools designed for stable contexts fail in conflict zones. Early warning systems that detect individual threats miss the compound signals that actually predict violence. PRAXIS was built to close both gaps — with methods tested in the field, not the lab.</p>
+    <p class="problem-text">Evaluation tools designed for stable contexts fail in conflict zones. Early warning systems that detect individual threats miss the compound signals that actually predict violence. PRAXIS was built to close both gaps. Methods tested in the field, not the lab.</p>
   </div>
 </section>
 
@@ -443,13 +447,13 @@
       <div class="track-card teal">
         <p class="overline teal" style="font-size:10px;margin-bottom:12px;">TRACK 1</p>
         <h3>Programme Evaluation</h3>
-        <p>Six open-source tools covering the full evaluation workflow — from sample size calculation and Theory of Change to evaluation matrices and indicator selection. 298 indicators across 11 sectors. Every tool runs client-side, offline capable, zero data transmission.</p>
+        <p>Six open-source tools covering the full evaluation workflow. From sample size calculation and Theory of Change to evaluation matrices and indicator selection. 298 indicators across 11 sectors. Every tool runs client-side, offline capable, zero data transmission.</p>
         <a href="./tools/" class="track-link">Open the toolkit &rarr;</a>
       </div>
       <div class="track-card amber">
         <p class="overline amber" style="font-size:10px;margin-bottom:12px;">TRACK 2</p>
         <h3>Conflict Early Warning</h3>
-        <p>Composite co-occurrence model built on ACLED event data. Epidemiological surveillance logic and econometric methods detect multi-type escalation pathways before crisis onset. Validated across the Sahel. Applicable wherever ACLED operates — 230+ countries.</p>
+        <p>Composite co-occurrence model built on ACLED event data. Epidemiological surveillance logic and econometric methods detect multi-type escalation pathways before crisis onset. Validated across the Sahel. Applicable wherever ACLED operates. 230+ countries.</p>
         <a href="./ews/" class="track-link">PRAXIS EWS &rarr;</a>
       </div>
     </div>
@@ -634,7 +638,7 @@
         <h2>Built from field reality</h2>
         <div class="credentials-text">
           <p>PRAXIS is grounded in 12 years of programme evaluation across conflict-affected settings including Burkina Faso, Mali, Niger, South Sudan, and Burundi. The methodology draws on epidemiology, econometrics, and applied M&E practice.</p>
-          <p><strong>Emmanuel Nene Odjidja</strong> — Founder and Director. Section Editor, Journal of MultiDisciplinary Evaluation. 29 peer-reviewed publications.</p>
+          <p><strong>Emmanuel Nene Odjidja</strong>, Founder and Director. Section Editor, Journal of MultiDisciplinary Evaluation. 29 peer-reviewed publications.</p>
         </div>
         <div class="cred-links">
           <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Publications &rarr;</a>
@@ -668,7 +672,7 @@
   <div class="section-inner reveal" style="position:relative;z-index:1;">
     <p class="overline teal">OPEN SOURCE</p>
     <h2>Where PRAXIS is going</h2>
-    <p>The Sahel is the proof of concept. The methodology transfers wherever ACLED operates — roughly 230 countries. The evaluation tools are MIT licensed and built to be forked, adapted, and extended. This is an open invitation.</p>
+    <p>The Sahel is the proof of concept. The methodology transfers wherever ACLED operates. Roughly 230 countries. The evaluation tools are MIT licensed and built to be forked, adapted, and extended. This is an open invitation.</p>
     <div class="vision-ctas">
       <a href="https://github.com/emmaodjidja-sys/praxis" class="btn btn-teal" target="_blank" rel="noopener">View on GitHub</a>
       <a href="./research/" class="btn btn-outline">Read the methodology</a>
@@ -868,9 +872,9 @@
     }
     if (started) {
       ctx.closePath();
-      ctx.fillStyle = 'rgba(46,196,182,0.04)';
+      ctx.fillStyle = 'rgba(46,196,182,0.06)';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(46,196,182,0.12)';
+      ctx.strokeStyle = 'rgba(46,196,182,0.2)';
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -900,7 +904,7 @@
     var p = project(2, 14);
     if (!p) return;
     var grad = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 60);
-    grad.addColorStop(0, 'rgba(232,168,56,0.15)');
+    grad.addColorStop(0, 'rgba(232,168,56,0.25)');
     grad.addColorStop(1, 'rgba(232,168,56,0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
@@ -955,7 +959,7 @@
       var fadeIn = Math.min(pt.age / 30, 1);
       var fadeOut = Math.max(1 - (pt.age - (pt.maxLife - 40)) / 40, 0);
       if (pt.age < pt.maxLife - 40) fadeOut = 1;
-      var alpha = fadeIn * fadeOut * 0.7 * p[2];
+      var alpha = fadeIn * fadeOut * 0.9 * (0.3 + p[2] * 0.7);
       if (alpha <= 0) continue;
       var c = lerpColor(pt.colorMix);
       ctx.beginPath();
@@ -972,9 +976,9 @@
     /* Globe circle */
     ctx.beginPath();
     ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(11,26,46,0.3)';
+    ctx.fillStyle = 'rgba(11,26,46,0.5)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(46,196,182,0.06)';
+    ctx.strokeStyle = 'rgba(46,196,182,0.12)';
     ctx.lineWidth = 1;
     ctx.stroke();
 
