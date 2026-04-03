@@ -15,54 +15,65 @@
   <meta name="theme-color" content="#0B1A2E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    /* === VARIABLES === */
     :root {
       --navy: #0B1A2E;
-      --navy-mid: #122240;
-      --navy-light: #1a3050;
+      --navy-deep: #060c17;
+      --navy-mid: #132238;
       --teal: #2EC4B6;
-      --teal-dark: #1a9e92;
-      --teal-glow: rgba(46,196,182,0.12);
+      --teal-dim: rgba(46,196,182,0.12);
+      --amber: #E8A838;
+      --amber-dim: rgba(232,168,56,0.12);
       --slate: #8899AA;
       --slate-light: #A4B3C2;
       --off-white: #E8ECF0;
       --warm: #FAFBFC;
       --surface: #FFFFFF;
-      --border: rgba(11,26,46,0.08);
     }
 
+    /* === RESET + BASE === */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; scroll-padding-top: 72px; }
-
+    html { scroll-behavior: smooth; scroll-padding-top: 56px; }
     body {
       font-family: 'DM Sans', -apple-system, sans-serif;
-      color: var(--navy);
-      background: var(--warm);
+      color: var(--navy); background: var(--warm);
       -webkit-font-smoothing: antialiased;
-      line-height: 1.75;
-      font-size: 16px;
-      overflow-x: hidden;
+      line-height: 1.65; font-size: 16px; overflow-x: hidden;
     }
-
     a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; display: block; }
 
-    /* NAV */
+    /* === UTILITY === */
+    .overline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.15em; text-transform: uppercase;
+    }
+    .overline.teal { color: var(--teal); }
+    .overline.amber { color: var(--amber); }
+    .section-narrow { max-width: 720px; margin: 0 auto; padding: 0 40px; }
+    .section-inner { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
+    .section-wide { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+
+    /* === NAV === */
     nav {
       position: sticky; top: 0; z-index: 100;
-      border-bottom: 1px solid var(--border);
-      background: rgba(11,26,46,0.97);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      background: rgba(6,12,23,0.95);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(46,196,182,0.06);
     }
     .nav-inner {
-      max-width: 1040px; margin: 0 auto; padding: 0 32px;
+      max-width: 1200px; margin: 0 auto; padding: 0 40px;
       height: 56px; display: flex; align-items: center; justify-content: space-between;
     }
     .nav-brand {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13px; font-weight: 500; color: var(--teal);
-      letter-spacing: 0.06em;
+      font-size: 14px; font-weight: 600; color: var(--teal);
+      letter-spacing: 0.06em; display: flex; align-items: center; gap: 8px;
     }
+    .nav-brand img { width: 22px; height: 22px; }
     .nav-links { display: flex; gap: 24px; align-items: center; }
     .nav-links a { font-size: 13px; color: var(--slate-light); transition: color 0.2s; }
     .nav-links a:hover { color: white; }
@@ -70,319 +81,304 @@
     .nav-github {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px; font-weight: 500;
-      color: var(--navy) !important; background: var(--teal);
+      background: var(--teal); color: var(--navy);
       padding: 5px 14px; transition: opacity 0.2s;
     }
     .nav-github:hover { opacity: 0.85; }
     .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
     .hamburger svg { width: 22px; height: 22px; stroke: var(--slate-light); stroke-width: 2; fill: none; }
 
-    /* LAYOUT */
-    .container { max-width: 760px; margin: 0 auto; padding: 0 32px; }
-    .container-wide { max-width: 1040px; margin: 0 auto; padding: 0 32px; }
-
-    /* HERO */
+    /* === HERO === */
     .hero {
-      background: linear-gradient(170deg, var(--navy) 0%, var(--navy-light) 100%);
-      padding: 120px 0 80px;
+      background: linear-gradient(170deg, var(--navy-deep) 0%, var(--navy) 60%, var(--navy-mid) 100%);
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 600px 500px at 25% 40%, rgba(46,196,182,0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 400px at 75% 50%, rgba(232,168,56,0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1200px; margin: 0 auto; padding: 80px 40px 60px;
+      display: grid; grid-template-columns: 1fr 0.8fr; gap: 40px;
+      align-items: center; position: relative; z-index: 1;
     }
     .hero h1 {
       font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(3rem, 6.5vw, 4.8rem);
-      font-weight: 400;
-      line-height: 1.02;
-      color: white;
-      margin-bottom: 32px;
-      max-width: 700px;
+      font-weight: 300; font-size: clamp(2.5rem, 5vw, 3.8rem);
+      line-height: 1.08; letter-spacing: -0.025em;
+      color: white; margin-bottom: 24px;
     }
     .hero h1 em { font-style: italic; color: var(--teal); }
     .hero-sub {
-      font-size: 18px;
-      line-height: 1.7;
-      color: var(--slate-light);
-      max-width: 540px;
-      margin-bottom: 40px;
+      font-size: 16px; color: var(--slate-light);
+      line-height: 1.7; max-width: 460px; margin-bottom: 32px;
     }
-    .hero-ctas {
-      display: flex; flex-wrap: wrap; gap: 12px;
-      margin-bottom: 80px;
-    }
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
     .btn {
-      display: inline-block;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 500;
-      padding: 11px 24px;
-      transition: all 0.2s;
+      display: inline-block; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 500; padding: 11px 24px; transition: all 0.2s;
     }
-    .btn-warm { background: var(--teal); color: var(--navy); }
-    .btn-warm:hover { opacity: 0.85; }
-    .btn-outline { border: 1px solid rgba(255,255,255,0.2); color: var(--slate-light); }
+    .btn-teal { background: var(--teal); color: var(--navy); }
+    .btn-teal:hover { opacity: 0.85; }
+    .btn-outline { border: 1px solid rgba(255,255,255,0.15); color: var(--slate-light); }
     .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
 
-    /* LEDE (opening narrative) */
-    .lede {
-      padding: 80px 0;
-      background: var(--warm);
-      border-top: 1px solid var(--off-white);
-      border-bottom: 1px solid var(--off-white);
+    /* Globe */
+    .globe-wrap {
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
     }
-    .lede-quote {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      font-weight: 400;
-      font-style: italic;
-      line-height: 1.4;
-      color: var(--navy);
-      max-width: 640px;
-      margin-bottom: 20px;
-    }
-    .lede-attribution {
-      font-size: 14px;
-      color: var(--slate);
+    .globe-wrap canvas {
+      width: 100%; max-width: 400px; height: auto; aspect-ratio: 1;
     }
 
-    /* RESEARCH SHOWCASE */
-    .showcase {
-      padding: 80px 0;
-      background: var(--surface);
-      border-bottom: 1px solid var(--off-white);
+    /* Stats bar */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid rgba(46,196,182,0.08);
+      position: relative; z-index: 1;
+      max-width: 1200px; margin: 0 auto;
     }
-    .showcase-label {
+    .stat-cell {
+      padding: 20px 40px;
+      border-right: 1px solid rgba(46,196,182,0.06);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-value {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      color: var(--teal);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
+      font-size: 24px; font-weight: 500; color: var(--amber);
     }
-    .showcase-heading {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.5rem, 3.5vw, 2.2rem);
-      font-weight: 400;
-      line-height: 1.15;
-      color: var(--navy);
-      margin-bottom: 20px;
-    }
-    .showcase-prose {
-      color: var(--slate);
-      font-size: 16px;
-      line-height: 1.8;
-      max-width: 600px;
-      margin-bottom: 40px;
-    }
-    .showcase-chart {
-      background: var(--navy);
-      border: 1px solid rgba(46,196,182,0.15);
-      padding: 24px 20px 16px;
-      margin-bottom: 20px;
-      overflow-x: auto;
-    }
-    .showcase-chart svg { display: block; width: 100%; height: auto; }
-    .showcase-stats {
-      display: flex; flex-wrap: wrap; gap: 16px;
-      margin-bottom: 20px;
-    }
-    .showcase-stat {
-      padding: 10px 14px;
-      border-left: 2px solid var(--teal);
-    }
-    .showcase-stat-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 17px; font-weight: 500;
-      color: var(--teal);
-    }
-    .showcase-stat-label { font-size: 13px; color: var(--navy); margin-top: 2px; }
-    .showcase-stat-sub { font-size: 11px; color: var(--slate); }
-    .showcase-caption {
-      font-size: 14px;
-      color: var(--slate);
-      line-height: 1.65;
-      max-width: 600px;
-    }
-    .showcase-cta {
-      display: inline-block;
-      margin-top: 28px;
-      font-size: 14px; font-weight: 500;
-      color: var(--teal);
-      transition: color 0.2s;
-    }
-    .showcase-cta:hover { color: var(--navy); }
+    .stat-label { font-size: 12px; color: var(--slate); margin-top: 2px; }
 
-    /* SECTIONS */
-    .section {
-      padding: 80px 0;
-      border-bottom: 1px solid var(--off-white);
+    /* === PROBLEM === */
+    .problem { padding: 80px 0; background: var(--warm); border-bottom: 1px solid var(--off-white); }
+    .problem-text {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+      font-weight: 400; line-height: 1.45; color: var(--navy);
+      max-width: 680px; margin-top: 16px;
     }
-    .section:last-of-type { border-bottom: none; }
-    .section-heading {
+
+    /* === TRACKS === */
+    .tracks { padding: 80px 0; background: var(--surface); border-bottom: 1px solid var(--off-white); }
+    .tracks-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px; margin-top: 32px;
+    }
+    .track-card {
+      background: var(--surface); border: 1px solid var(--off-white);
+      padding: 32px; transition: border-color 0.2s;
+    }
+    .track-card:hover { border-color: var(--teal); }
+    .track-card.teal { border-top: 3px solid var(--teal); }
+    .track-card.amber { border-top: 3px solid var(--amber); }
+    .track-card.amber .track-link { color: var(--amber); }
+    .track-card h3 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.3rem; font-weight: 400; color: var(--navy);
+      margin-bottom: 12px;
+    }
+    .track-card p { font-size: 15px; color: var(--slate); line-height: 1.75; }
+    .track-link {
+      display: inline-block; margin-top: 16px;
+      font-size: 14px; font-weight: 500; color: var(--teal); transition: opacity 0.2s;
+    }
+    .track-link:hover { opacity: 0.7; }
+
+    /* === EVIDENCE === */
+    .evidence {
+      padding: 80px 0; background: var(--navy); position: relative;
+    }
+    .evidence::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 500px 400px at 30% 50%, rgba(46,196,182,0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 300px at 70% 40%, rgba(232,168,56,0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .evidence h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 400; color: white; margin: 16px 0 12px;
+    }
+    .evidence h2 em { color: var(--teal); font-style: italic; }
+    .evidence-sub {
+      font-size: 15px; color: var(--slate-light);
+      max-width: 560px; line-height: 1.7; margin-bottom: 40px;
+    }
+
+    /* Staircase */
+    .staircase {
+      display: flex; align-items: flex-end; gap: 12px;
+      min-height: 260px; padding: 24px;
+      background: rgba(46,196,182,0.03);
+      border: 1px solid rgba(46,196,182,0.08);
+      position: relative; z-index: 1;
+    }
+    .stair {
+      flex: 1; border-radius: 3px 3px 0 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-end;
+      padding-bottom: 10px;
+      transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .stair-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px; font-weight: 600; color: white;
+    }
+    .stair-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; color: var(--slate-light);
+      margin-top: 4px;
+    }
+
+    .evidence-note {
+      font-size: 13px; color: var(--slate); margin-top: 16px;
+      position: relative; z-index: 1;
+    }
+    .evidence-link {
+      display: inline-block; margin-top: 20px;
+      font-size: 14px; font-weight: 500; color: var(--teal);
+      position: relative; z-index: 1; transition: opacity 0.2s;
+    }
+    .evidence-link:hover { opacity: 0.7; }
+
+    /* === TOOLS === */
+    .tools { padding: 80px 0; background: var(--warm); border-bottom: 1px solid var(--off-white); }
+    .tools h2 {
       font-family: 'Fraunces', Georgia, serif;
       font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 400; line-height: 1.15;
-      color: var(--navy);
-      margin-bottom: 28px;
+      font-weight: 400; color: var(--navy); margin: 16px 0 8px;
     }
-    .prose { color: var(--slate); line-height: 1.8; }
-    .prose p + p { margin-top: 18px; }
-    .prose strong { color: var(--navy); font-weight: 500; }
+    .tools-sub { font-size: 15px; color: var(--slate); margin-bottom: 32px; }
+    .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .tool-card {
+      background: var(--surface); border: 1px solid var(--off-white);
+      overflow: hidden; transition: border-color 0.2s;
+    }
+    .tool-card:hover { border-color: var(--teal); }
+    .tool-preview {
+      background: var(--navy); padding: 16px;
+      min-height: 90px; border-bottom: 1px solid rgba(46,196,182,0.08);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--slate);
+    }
+    .tool-body { padding: 16px; }
+    .tool-body h4 { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+    .tool-body p { font-size: 13px; color: var(--slate); line-height: 1.6; }
+    .tool-body .try-link {
+      display: inline-block; margin-top: 10px;
+      font-size: 13px; font-weight: 500; color: var(--teal); transition: opacity 0.2s;
+    }
+    .tool-body .try-link:hover { opacity: 0.7; }
+    .tool-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; background: var(--teal-dim);
+      color: var(--teal); font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 600; margin-right: 8px;
+      flex-shrink: 0;
+    }
 
-    /* TRACKS (asymmetric) */
-    .tracks {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0;
-    }
-    .track {
-      padding: 36px 0;
-      border-bottom: 1px solid var(--off-white);
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    .track:last-child { border-bottom: none; }
-    @media (min-width: 700px) {
-      .track {
-        grid-template-columns: 200px 1fr;
-        gap: 40px;
-      }
-    }
-    .track-meta {}
-    .track-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    .track-ews .track-label { color: var(--teal); }
-    .track-eval .track-label { color: var(--teal-dark); }
-    .track-title {
+    /* === CREDENTIALS === */
+    .credentials { padding: 80px 0; background: var(--surface); border-bottom: 1px solid var(--off-white); }
+    .credentials h2 {
       font-family: 'Fraunces', Georgia, serif;
-      font-size: 1.25rem;
-      font-weight: 400;
-      color: var(--navy);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 400; color: var(--navy); margin: 16px 0 24px;
     }
-    .track-body { color: var(--slate); font-size: 15px; line-height: 1.75; }
-    .track-link {
-      display: inline-block;
-      margin-top: 14px;
-      font-size: 14px; font-weight: 500;
-      transition: color 0.2s;
+    .credentials-grid {
+      display: grid; grid-template-columns: 1fr 300px; gap: 48px;
     }
-    .track-ews .track-link { color: var(--teal); }
-    .track-eval .track-link { color: var(--teal); }
-    .track-link:hover { color: var(--navy); }
+    .credentials-text { font-size: 15px; color: var(--slate); line-height: 1.8; }
+    .credentials-text strong { color: var(--navy); font-weight: 600; }
+    .credentials-text p + p { margin-top: 16px; }
+    .cred-links { margin-top: 24px; display: flex; gap: 24px; }
+    .cred-links a { font-size: 14px; color: var(--teal); font-weight: 500; transition: opacity 0.2s; }
+    .cred-links a:hover { opacity: 0.7; }
+    .credentials-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .cred-stat {
+      padding: 20px; border: 1px solid var(--off-white); text-align: center;
+    }
+    .cred-stat-num {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 2rem; font-weight: 300; color: var(--amber); line-height: 1;
+    }
+    .cred-stat-label { font-size: 12px; color: var(--slate); margin-top: 6px; }
 
-    /* PRACTITIONER */
-    .practitioner {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 32px;
+    /* === VISION === */
+    .vision {
+      padding: 80px 0; background: var(--navy); position: relative;
     }
-    @media (min-width: 700px) {
-      .practitioner { grid-template-columns: 1fr 280px; gap: 48px; }
+    .vision::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(46,196,182,0.03) 0%, transparent 70%);
+      pointer-events: none;
     }
-    .practitioner-text {
-      color: var(--slate);
-      font-size: 16px;
-      line-height: 1.8;
+    .vision h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 400; color: white; margin: 16px 0 20px;
     }
-    .practitioner-text p + p { margin-top: 18px; }
-    .practitioner-aside {
-      padding-top: 4px;
-    }
-    .practitioner-aside-item {
-      padding: 14px 0;
-      border-bottom: 1px solid var(--off-white);
-    }
-    .practitioner-aside-item:first-child { border-top: 1px solid var(--off-white); }
-    .practitioner-aside-num {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 20px; font-weight: 500;
-      color: var(--navy);
-    }
-    .practitioner-aside-label {
-      font-size: 13px;
-      color: var(--slate);
-      margin-top: 2px;
-    }
+    .vision p { font-size: 15px; color: var(--slate-light); line-height: 1.7; max-width: 600px; }
+    .vision-ctas { display: flex; gap: 12px; margin-top: 32px; }
 
-    /* ROADMAP */
-    .roadmap-list { margin-top: 32px; }
-    .roadmap-item {
-      padding: 16px 0;
-      border-bottom: 1px solid var(--off-white);
-      display: grid;
-      grid-template-columns: 100px 1fr;
-      gap: 16px; align-items: baseline;
-    }
-    .roadmap-item:first-child { border-top: 1px solid var(--off-white); }
-    .roadmap-status {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      color: var(--slate); letter-spacing: 0.04em;
-    }
-    .roadmap-status-live { color: var(--teal); }
-    .roadmap-status-progress { color: var(--teal-dark); }
-    .roadmap-name { font-size: 15px; color: var(--navy); font-weight: 500; }
-    .roadmap-desc { font-size: 14px; color: var(--slate); margin-top: 2px; }
-    .roadmap-track {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; letter-spacing: 0.04em;
-      margin-left: 8px; padding: 1px 6px;
-    }
-    .roadmap-track-ews { color: var(--teal); background: var(--teal-glow); }
-    .roadmap-track-eval { color: var(--teal-dark); background: rgba(26,158,146,0.12); }
-
-    /* FOOTER */
+    /* === FOOTER === */
     footer {
-      background: var(--navy);
-      padding: 28px 0;
+      background: var(--navy-deep); padding: 24px 0;
+      border-top: 1px solid rgba(46,196,182,0.06);
     }
     .footer-inner {
-      max-width: 760px; margin: 0 auto; padding: 0 32px;
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 12px;
+      max-width: 1200px; margin: 0 auto; padding: 0 40px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
     }
     .footer-links { display: flex; gap: 20px; }
-    .footer-links a { font-size: 13px; color: var(--slate-light); transition: color 0.2s; }
+    .footer-links a { font-size: 13px; color: var(--slate); transition: color 0.2s; }
     .footer-links a:hover { color: var(--teal); }
     .footer-copy { font-size: 12px; color: var(--slate); }
 
-    /* MOBILE */
-    @media (max-width: 640px) {
-      .nav-links { display: none; }
-      .nav-links.open {
-        display: flex; flex-direction: column;
-        position: absolute; top: 56px; left: 0; right: 0;
-        background: rgba(11,26,46,0.97);
-        padding: 16px 28px; gap: 16px;
-        border-bottom: 1px solid var(--border);
-      }
-      .hamburger { display: block; }
-      .hero { padding: 80px 0 0; }
-      .hero-ctas { margin-bottom: 56px; }
-      .lede { padding: 56px 0; }
-      .showcase { padding: 56px 0; }
-      .section { padding: 56px 0; }
-      .roadmap-item { grid-template-columns: 1fr; gap: 4px; }
-      .footer-inner { flex-direction: column; align-items: flex-start; }
-    }
-
-    /* REVEAL */
+    /* === REVEAL === */
     .reveal {
       opacity: 0; transform: translateY(12px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
     .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* === MOBILE === */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 56px; left: 0; right: 0;
+        background: rgba(6,12,23,0.97);
+        padding: 16px 28px; gap: 16px;
+        border-bottom: 1px solid rgba(46,196,182,0.06);
+      }
+      .hamburger { display: block; }
+      .hero-inner { grid-template-columns: 1fr; padding: 60px 24px 40px; }
+      .globe-wrap { display: none; }
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+      .stat-cell { padding: 16px 24px; }
+      .section-narrow, .section-inner, .section-wide { padding: 0 24px; }
+      .tracks-grid { grid-template-columns: 1fr; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .credentials-grid { grid-template-columns: 1fr; gap: 32px; }
+      .problem, .tracks, .evidence, .tools, .credentials, .vision { padding: 56px 0; }
+      .hero h1 { font-size: 2rem; }
+      .footer-inner { flex-direction: column; align-items: flex-start; padding: 0 24px; }
+    }
   </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav>
   <div class="nav-inner">
-    <a href="./" class="nav-brand"><img src="./logo.svg" alt="" style="width:22px;height:22px;margin-right:6px;vertical-align:middle"> PRAXIS</a>
-    <button class="hamburger" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
-      <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    <a href="./" class="nav-brand"><img src="./logo.svg" alt="PRAXIS" width="22" height="22">PRAXIS</a>
+    <button class="hamburger" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="nav-links">
       <a href="./" class="active">Lab</a>
@@ -390,181 +386,297 @@
       <a href="./evaluation/">Evaluation</a>
       <a href="./tools/">Tools</a>
       <a href="./360/">360</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="nav-github">GitHub</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" class="nav-github" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
 </nav>
 
-<main>
-
 <!-- HERO -->
-<section class="hero reveal">
-  <div class="container">
-    <h1>PRAXIS <em>AI for Good</em> Lab</h1>
-    <p class="hero-sub">Open-source AI for programme evaluation and conflict early warning. Twelve years of field experience in the Sahel, encoded into tools that work offline in Ouagadougou.</p>
-    <div class="hero-ctas">
-      <a href="./tools/" class="btn btn-warm">Evaluation Tools</a>
-      <a href="./ews/" class="btn btn-outline">PRAXIS EWS</a>
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <p class="overline teal" style="margin-bottom:20px;">AI FOR GOOD LAB</p>
+      <h1>Predicting violence before it satisfies.<br><em>Evaluating what prevents it.</em></h1>
+      <p class="hero-sub">Open-source AI tools for programme evaluation and conflict early warning. Built by a practitioner, not a product team.</p>
+      <div class="hero-ctas">
+        <a href="./tools/" class="btn btn-teal">Explore Tools</a>
+        <a href="./ews/" class="btn btn-outline">Early Warning System</a>
+      </div>
+    </div>
+    <div class="globe-wrap">
+      <canvas id="globe" width="800" height="800"></canvas>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-cell">
+      <div class="stat-value" data-target="100184">100,184</div>
+      <div class="stat-label">conflict events analyzed</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-value" data-target="230">230+</div>
+      <div class="stat-label">countries addressable</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-value" data-target="29">29</div>
+      <div class="stat-label">peer-reviewed papers</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-value">MIT</div>
+      <div class="stat-label">open source license</div>
     </div>
   </div>
 </section>
 
-<!-- OPENING NARRATIVE -->
-<div class="container">
-  <section class="lede reveal">
-    <p class="lede-quote">"I spent years looking for evaluation tools built by someone who had actually run an evaluation in a conflict zone. I could not find them. So I built them."</p>
-    <p class="lede-attribution">Emmanuel Nene Odjidja</p>
-  </section>
-</div>
-
+<!-- THE PROBLEM -->
+<section class="problem">
+  <div class="section-narrow reveal visible">
+    <p class="overline amber">THE GAP</p>
+    <p class="problem-text">Evaluation tools designed for stable contexts fail in conflict zones. Early warning systems that detect individual threats miss the compound signals that actually predict violence. PRAXIS was built to close both gaps — with methods tested in the field, not the lab.</p>
+  </div>
+</section>
 
 <!-- TWO TRACKS -->
-<div class="container">
-  <section class="section" id="tracks">
-    <div class="reveal">
-      <h2 class="section-heading">What the lab works on</h2>
-    </div>
-
-    <div class="tracks">
-      <div class="track track-eval reveal">
-        <div class="track-meta">
-          <p class="track-label">Track 1</p>
-          <p class="track-title">Evaluation</p>
-        </div>
-        <div class="track-body">
-          Twelve years of field evaluation experience encoded into free, open-source browser tools. Six live tools covering 298 indicators across 11 sectors. Sample size calculation, evaluation design advising, data exploration, Theory of Change building, evaluation matrix construction, and an indicator bank. Every tool runs client-side with zero data transmission. The methodology modules work offline in Juba and Ouagadougou, not just in offices with reliable internet.
-          <br><a href="./tools/" class="track-link">Open the toolkit &rarr;</a>
-        </div>
+<section class="tracks">
+  <div class="section-inner reveal visible">
+    <p class="overline teal">WHAT THE LAB DOES</p>
+    <div class="tracks-grid">
+      <div class="track-card teal">
+        <p class="overline teal" style="font-size:10px;margin-bottom:12px;">TRACK 1</p>
+        <h3>Programme Evaluation</h3>
+        <p>Six open-source tools covering the full evaluation workflow — from sample size calculation and Theory of Change to evaluation matrices and indicator selection. 298 indicators across 11 sectors. Every tool runs client-side, offline capable, zero data transmission.</p>
+        <a href="./tools/" class="track-link">Open the toolkit &rarr;</a>
       </div>
-
-      <div class="track track-ews reveal">
-        <div class="track-meta">
-          <p class="track-label">Track 2</p>
-          <p class="track-title">Early Warning</p>
-        </div>
-        <div class="track-body">
-          PRAXIS applies epidemiological surveillance logic and econometric methods to ACLED event data to predict escalation in violent extremism. The composite co-occurrence model detects multi-type escalation pathways, and the platform translates those signals into structured alerts for P/CVE programme managers, humanitarian agencies, and security coordination bodies. The Sahel is the proof of concept. 100,184 events across 13 countries confirm the model. Wherever ACLED operates, roughly 230 countries, is the addressable scope.
-          <br><a href="./ews/" class="track-link">PRAXIS EWS &rarr;</a>
-        </div>
+      <div class="track-card amber">
+        <p class="overline amber" style="font-size:10px;margin-bottom:12px;">TRACK 2</p>
+        <h3>Conflict Early Warning</h3>
+        <p>Composite co-occurrence model built on ACLED event data. Epidemiological surveillance logic and econometric methods detect multi-type escalation pathways before crisis onset. Validated across the Sahel. Applicable wherever ACLED operates — 230+ countries.</p>
+        <a href="./ews/" class="track-link">PRAXIS EWS &rarr;</a>
       </div>
     </div>
-  </section>
-</div>
+  </div>
+</section>
 
-<!-- BUILT BY A PRACTITIONER -->
-<div class="container">
-  <section class="section reveal" id="about">
-    <h2 class="section-heading">Who built this</h2>
+<!-- THE EVIDENCE -->
+<section class="evidence">
+  <div class="section-wide reveal visible" style="position:relative;z-index:1;">
+    <p class="overline amber">FEATURED RESEARCH</p>
+    <h2>No single event type predicts violence.<br><em>Co-occurrence does.</em></h2>
+    <p class="evidence-sub">When individual conflict event types occur in isolation, next-week attack rates drop to baseline. When two or more types co-occur in the same district-week, lethal violence follows within 7 days.</p>
 
-    <div class="practitioner">
-      <div class="practitioner-text">
-        <p>I design and manage evaluations of programmes aimed at preventing violent extremism across Burkina Faso, Mali, and Niger. Before the Sahel, I ran health systems research in South Sudan and Burundi. My training is in epidemiology. I serve as section editor for case-based evaluations at the Journal of MultiDisciplinary Evaluation.</p>
-        <p>The conflict early warning work comes from the same gap that produced the evaluation tools. I needed a way to anticipate where VE would escalate so that programme design could get ahead of events instead of reacting to them. I could not find it, so I built it. The prediction model uses the same econometric rigour I would apply to an impact evaluation. The difference is that instead of measuring what happened, it tries to tell you what is about to.</p>
+    <div class="staircase" id="staircase">
+      <div class="stair" data-height="40" data-value="1x" data-label="Baseline" style="height:40px;background:var(--teal);opacity:0.4;">
+        <span class="stair-value" style="color:var(--slate-light);">1x</span>
+        <span class="stair-label">Baseline</span>
       </div>
-      <aside class="practitioner-aside">
-        <div class="practitioner-aside-item">
-          <div class="practitioner-aside-num">12+</div>
-          <div class="practitioner-aside-label">years in the field</div>
-        </div>
-        <div class="practitioner-aside-item">
-          <div class="practitioner-aside-num">29</div>
-          <div class="practitioner-aside-label">peer-reviewed papers</div>
-        </div>
-        <div class="practitioner-aside-item">
-          <div class="practitioner-aside-num">6</div>
-          <div class="practitioner-aside-label">countries</div>
-        </div>
-        <div class="practitioner-aside-item">
-          <div class="practitioner-aside-num">MIT</div>
-          <div class="practitioner-aside-label">open source license</div>
-        </div>
-      </aside>
-    </div>
-  </section>
-</div>
-
-<!-- ROADMAP -->
-<div class="container">
-  <section class="section reveal" id="roadmap">
-    <h2 class="section-heading">Roadmap</h2>
-    <div class="roadmap-list">
-      <div class="roadmap-item">
-        <span class="roadmap-status roadmap-status-live">Live</span>
-        <div>
-          <span class="roadmap-name">Browser Toolkit</span>
-          <span class="roadmap-track roadmap-track-eval">eval</span>
-          <div class="roadmap-desc">Six evaluation tools, 298 indicators, 11 sectors. All client-side.</div>
-        </div>
+      <div class="stair" data-height="80" data-value="2.3x" data-label="2 types" style="height:80px;background:linear-gradient(to top,var(--teal),rgba(46,196,182,0.7));">
+        <span class="stair-value">2.3x</span>
+        <span class="stair-label">2 types</span>
       </div>
-      <div class="roadmap-item">
-        <span class="roadmap-status roadmap-status-live">Live</span>
-        <div>
-          <span class="roadmap-name">PRAXIS Core + Health Module</span>
-          <span class="roadmap-track roadmap-track-eval">eval</span>
-          <div class="roadmap-desc">AI evaluation skills with 6 core and sector-specific methodology modules.</div>
-        </div>
+      <div class="stair" data-height="130" data-value="4.0x" data-label="3 types" style="height:130px;background:linear-gradient(to top,var(--teal),var(--amber));">
+        <span class="stair-value">4.0x</span>
+        <span class="stair-label">3 types</span>
       </div>
-      <div class="roadmap-item">
-        <span class="roadmap-status roadmap-status-progress">In progress</span>
-        <div>
-          <span class="roadmap-name">Composite Escalation Research</span>
-          <span class="roadmap-track roadmap-track-ews">ews</span>
-          <div class="roadmap-desc">Multi-type conflict co-occurrence patterns predict violent escalation across 13 Sahel countries. Manuscript in preparation.</div>
-        </div>
+      <div class="stair" data-height="180" data-value="5.7x" data-label="4 types" style="height:180px;background:linear-gradient(to top,var(--amber),#d4882a);">
+        <span class="stair-value">5.7x</span>
+        <span class="stair-label">4 types</span>
       </div>
-      <div class="roadmap-item">
-        <span class="roadmap-status roadmap-status-progress">In progress</span>
-        <div>
-          <span class="roadmap-name">ACLED Data Pipeline</span>
-          <span class="roadmap-track roadmap-track-ews">ews</span>
-          <div class="roadmap-desc">Automated ingestion and alert generation from ACLED API.</div>
-        </div>
-      </div>
-      <div class="roadmap-item">
-        <span class="roadmap-status roadmap-status-progress">In progress</span>
-        <div>
-          <span class="roadmap-name">PRAXIS 360 Workbench</span>
-          <span class="roadmap-track roadmap-track-eval">eval</span>
-          <div class="roadmap-desc">End-to-end evaluation workflow. Launching at Glocal 2026.</div>
-        </div>
-      </div>
-      <div class="roadmap-item">
-        <span class="roadmap-status roadmap-status-progress">In progress</span>
-        <div>
-          <span class="roadmap-name">French Translation</span>
-          <div class="roadmap-desc">Full localisation of tools and methodology modules.</div>
-        </div>
-      </div>
-      <div class="roadmap-item">
-        <span class="roadmap-status">Planned</span>
-        <div>
-          <span class="roadmap-name">PRAXIS EWS Platform v1</span>
-          <span class="roadmap-track roadmap-track-ews">ews</span>
-          <div class="roadmap-desc">Predict-alert-respond system for fragile and conflict-affected contexts.</div>
-        </div>
-      </div>
-      <div class="roadmap-item">
-        <span class="roadmap-status">Planned</span>
-        <div>
-          <span class="roadmap-name">PVE Evaluation Module</span>
-          <span class="roadmap-track roadmap-track-eval">eval</span>
-          <div class="roadmap-desc">Evaluation methodology for preventing violent extremism programmes.</div>
-        </div>
-      </div>
-      <div class="roadmap-item">
-        <span class="roadmap-status">Planned</span>
-        <div>
-          <span class="roadmap-name">ML Extension</span>
-          <span class="roadmap-track roadmap-track-ews">ews</span>
-          <div class="roadmap-desc">XGBoost on multi-source event features, actor-network analysis, temporal sequence modelling.</div>
-        </div>
+      <div class="stair" data-height="240" data-value="7.5x" data-label="5+ types" style="height:240px;background:linear-gradient(to top,#d4882a,#c06a20);">
+        <span class="stair-value">7.5x</span>
+        <span class="stair-label">5+ types</span>
       </div>
     </div>
-  </section>
-</div>
+    <p class="evidence-note">100,184 events. 13 countries. 15 years. All p &lt; 0.001 after Bonferroni correction.</p>
+    <a href="./research/" class="evidence-link">Explore the full dataset &rarr;</a>
+  </div>
+</section>
 
-</main>
+<!-- TOOLS -->
+<section class="tools">
+  <div class="section-inner reveal visible">
+    <p class="overline teal">OPEN-SOURCE TOOLKIT</p>
+    <h2>6 tools. Free. Offline capable.</h2>
+    <p class="tools-sub">Built for evaluators working where connectivity is unreliable and generic frameworks don't fit.</p>
 
+    <div class="tools-grid">
+      <!-- Tool 1: Sample Size Calculator -->
+      <div class="tool-card">
+        <div class="tool-preview">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+            <span style="font-size:10px;color:var(--slate);">Design:</span>
+            <span style="font-size:10px;background:var(--teal-dim);color:var(--teal);padding:2px 8px;">Cluster-RCT</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <div>
+              <div style="font-size:20px;color:var(--amber);font-weight:500;">24</div>
+              <div style="font-size:9px;color:var(--slate);">clusters needed</div>
+            </div>
+            <div>
+              <div style="font-size:20px;color:var(--amber);font-weight:500;">30</div>
+              <div style="font-size:9px;color:var(--slate);">per cluster</div>
+            </div>
+            <div>
+              <div style="font-size:20px;color:var(--teal);font-weight:500;">80%</div>
+              <div style="font-size:9px;color:var(--slate);">power</div>
+            </div>
+          </div>
+        </div>
+        <div class="tool-body">
+          <div style="display:flex;align-items:center;margin-bottom:8px;">
+            <span class="tool-icon">Ss</span>
+            <h4 style="margin-bottom:0;">Sample Size Calculator</h4>
+          </div>
+          <p>Cluster-RCT, stratified, MDES. Handles ICC, attrition, and finite population corrections.</p>
+          <a href="./tools/" class="try-link">Try it &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Tool 2: Theory of Change Builder -->
+      <div class="tool-card">
+        <div class="tool-preview">
+          <div style="display:flex;gap:4px;margin-bottom:8px;">
+            <span style="font-size:9px;background:var(--teal-dim);color:var(--teal);padding:2px 6px;">Input</span>
+            <span style="font-size:9px;background:var(--teal-dim);color:var(--teal);padding:2px 6px;">Activity</span>
+            <span style="font-size:9px;background:var(--teal-dim);color:var(--teal);padding:2px 6px;">Output</span>
+            <span style="font-size:9px;background:var(--amber-dim);color:var(--amber);padding:2px 6px;">Outcome</span>
+            <span style="font-size:9px;background:var(--amber-dim);color:var(--amber);padding:2px 6px;">Impact</span>
+          </div>
+          <div style="font-size:10px;color:var(--slate);margin-top:6px;">Health &rarr; Nutrition &rarr; CMAM programme</div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <div style="width:40px;height:3px;background:var(--teal);border-radius:2px;"></div>
+            <div style="width:30px;height:3px;background:var(--teal);border-radius:2px;opacity:0.7;"></div>
+            <div style="width:35px;height:3px;background:var(--amber);border-radius:2px;opacity:0.6;"></div>
+          </div>
+        </div>
+        <div class="tool-body">
+          <div style="display:flex;align-items:center;margin-bottom:8px;">
+            <span class="tool-icon">Tc</span>
+            <h4 style="margin-bottom:0;">Theory of Change Builder</h4>
+          </div>
+          <p>Visual drag-drop canvas. Auto-link inputs through impact. Export to PDF and share.</p>
+          <a href="./tools/" class="try-link">Try it &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Tool 3: Evaluation Matrix -->
+      <div class="tool-card">
+        <div class="tool-preview">
+          <table style="width:100%;font-size:10px;color:var(--slate);border-collapse:collapse;">
+            <tr style="border-bottom:1px solid rgba(46,196,182,0.08);">
+              <td style="color:var(--teal);padding:4px 0;">EQ1</td>
+              <td>Relevance</td>
+              <td>2 indicators</td>
+              <td style="color:var(--amber);">Doc review</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(46,196,182,0.08);">
+              <td style="color:var(--teal);padding:4px 0;">EQ2</td>
+              <td>Effectiveness</td>
+              <td>4 indicators</td>
+              <td style="color:var(--amber);">Mixed methods</td>
+            </tr>
+            <tr>
+              <td style="color:var(--teal);padding:4px 0;">EQ3</td>
+              <td>Impact</td>
+              <td>3 indicators</td>
+              <td style="color:var(--amber);">Quasi-experimental</td>
+            </tr>
+          </table>
+        </div>
+        <div class="tool-body">
+          <div style="display:flex;align-items:center;margin-bottom:8px;">
+            <span class="tool-icon">Em</span>
+            <h4 style="margin-bottom:0;">Evaluation Matrix</h4>
+          </div>
+          <p>Evaluation questions, judgement criteria, indicators, and data collection methods in one structured table.</p>
+          <a href="./tools/" class="try-link">Try it &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Tool 4: +3 more tools -->
+      <div class="tool-card" style="display:flex;flex-direction:column;justify-content:center;">
+        <div class="tool-body" style="padding:32px;">
+          <h4 style="font-size:16px;margin-bottom:16px;">+ 3 more tools</h4>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;">
+              <span class="tool-icon">Da</span>
+              <div>
+                <span style="font-size:14px;color:var(--navy);font-weight:500;">Design Advisor</span>
+                <span style="font-size:12px;color:var(--slate);margin-left:8px;">8 questions &rarr; recommended design</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <span class="tool-icon">Ib</span>
+              <div>
+                <span style="font-size:14px;color:var(--navy);font-weight:500;">Indicator Bank</span>
+                <span style="font-size:12px;color:var(--slate);margin-left:8px;">298 indicators, 11 sectors</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <span class="tool-icon">Dx</span>
+              <div>
+                <span style="font-size:14px;color:var(--navy);font-weight:500;">Data Explorer</span>
+                <span style="font-size:12px;color:var(--slate);margin-left:8px;">Upload, detect, summarize</span>
+              </div>
+            </div>
+          </div>
+          <a href="./tools/" class="try-link" style="margin-top:16px;display:inline-block;">View all tools &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CREDENTIALS -->
+<section class="credentials">
+  <div class="section-inner reveal visible">
+    <p class="overline" style="color:var(--navy);">THE LAB</p>
+    <div class="credentials-grid">
+      <div>
+        <h2>Built from field reality</h2>
+        <div class="credentials-text">
+          <p>PRAXIS is grounded in 12 years of programme evaluation across conflict-affected settings including Burkina Faso, Mali, Niger, South Sudan, and Burundi. The methodology draws on epidemiology, econometrics, and applied M&E practice.</p>
+          <p><strong>Emmanuel Nene Odjidja</strong> — Founder and Director. Section Editor, Journal of MultiDisciplinary Evaluation. 29 peer-reviewed publications.</p>
+        </div>
+        <div class="cred-links">
+          <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Publications &rarr;</a>
+          <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Google Scholar &rarr;</a>
+        </div>
+      </div>
+      <div class="credentials-stats">
+        <div class="cred-stat">
+          <div class="cred-stat-num">12+</div>
+          <div class="cred-stat-label">years in the field</div>
+        </div>
+        <div class="cred-stat">
+          <div class="cred-stat-num">29</div>
+          <div class="cred-stat-label">publications</div>
+        </div>
+        <div class="cred-stat">
+          <div class="cred-stat-num">6</div>
+          <div class="cred-stat-label">countries</div>
+        </div>
+        <div class="cred-stat">
+          <div class="cred-stat-num">MIT</div>
+          <div class="cred-stat-label">open source</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISION -->
+<section class="vision">
+  <div class="section-inner reveal visible" style="position:relative;z-index:1;">
+    <p class="overline teal">OPEN SOURCE</p>
+    <h2>Where PRAXIS is going</h2>
+    <p>The Sahel is the proof of concept. The methodology transfers wherever ACLED operates — roughly 230 countries. The evaluation tools are MIT licensed and built to be forked, adapted, and extended. This is an open invitation.</p>
+    <div class="vision-ctas">
+      <a href="https://github.com/emmaodjidja-sys/praxis" class="btn btn-teal" target="_blank" rel="noopener">View on GitHub</a>
+      <a href="./research/" class="btn btn-outline">Read the methodology</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
 <footer>
   <div class="footer-inner">
     <div class="footer-links">
@@ -572,27 +684,12 @@
       <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Publications</a>
       <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>
     </div>
-    <span class="footer-copy">&copy; 2026 PRAXIS. Open source. MIT licensed.</span>
+    <span class="footer-copy">2026 PRAXIS. Open source. MIT licensed. ACLED data used under license.</span>
   </div>
 </footer>
 
 <script>
-(function() {
-  var els = document.querySelectorAll('.reveal');
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    els.forEach(function(el) { el.classList.add('visible'); });
-    return;
-  }
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  els.forEach(function(el) { observer.observe(el); });
-})();
+  /* Tasks 4-6: Animated counters, staircase animation, canvas particle globe */
 </script>
 </body>
 </html>
