@@ -544,40 +544,6 @@
   </div>
 </section>
 
-<!-- THE PLATFORM -->
-<div class="container">
-  <section class="section reveal" id="platform">
-    <h2 class="section-heading">The platform</h2>
-    <div class="prose">
-      <p>The research produces a signal. The platform turns that signal into something a protection officer, a programme manager, or a humanitarian coordinator can act on. Three layers, each with a clear function.</p>
-    </div>
-
-    <div class="layer layer-active">
-      <p class="layer-name">Layer 1: Predict</p>
-      <p>Composite co-occurrence detection from ACLED API data at weekly resolution. The spike detector triggers on convergence of 2+ distinct conflict event sub-types in the same admin2-week. The primary signal is KAFD + IED co-occurrence (5.5x next-week attacks). The output is an escalation alert at admin2 level with a 7-day forward window.</p>
-    </div>
-
-    <div class="layer">
-      <p class="layer-name">Layer 2: Alert</p>
-      <p>Signal translation into structured alerts for defined stakeholder groups. Each alert includes severity classification (Watch / Elevated / High / Critical), geographic targeting to the district level, the specific event type combination that triggered the signal, and the regional baseline comparison.</p>
-    </div>
-
-    <div class="layer">
-      <p class="layer-name">Layer 3: Respond</p>
-      <p>Decision pathways for different users:</p>
-      <ul>
-        <li>Community protection activation for local civil society actors</li>
-        <li>Programme adaptation guidance for P/CVE implementers</li>
-        <li>Pre-positioning recommendations for humanitarian agencies</li>
-        <li>Threat briefing structure for security coordination bodies</li>
-      </ul>
-    </div>
-
-    <div class="status-note">
-      <strong>Where this stands:</strong> Layer 1 is grounded in completed analysis across 100,184 events and 13 countries. The composite co-occurrence signal has been validated with exclusive signal tests, regional replication, and escalation ladder analysis. The ACLED data pipeline for automated weekly ingestion is architecturally specified. The full system architecture is complete.
-    </div>
-  </section>
-</div>
 
 <!-- THE SCIENCE -->
 <div class="container">
