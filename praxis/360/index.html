@@ -1,630 +1,387 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PRAXIS 360° | End-to-End Evaluation Workflow</title>
-  <meta name="description" content="PRAXIS 360° is the integrated evaluation workflow built on the .praxis file format. Theory of Change through to reporting, with every finding traceable back to the evaluation framework. Launching at Glocal 2026.">
-  <meta property="og:title" content="PRAXIS 360° | The evaluation loop that never breaks">
-  <meta property="og:description" content="End-to-end AI evaluation workflow. Theory of Change to findings and back. Open source. Launching June 2026 at Glocal Evaluation Week.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/360/">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/svg+xml" href="../logo.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #1a1f2e;
-      --bg-surface: #212738;
-      --warm: #c4704b;
-      --warm-dim: rgba(196,112,75,0.10);
-      --cool: #2a7d6e;
-      --cool-dim: rgba(42,125,110,0.10);
-      --text: #e8e4df;
-      --text-secondary: #a09b94;
-      --text-muted: #6b665f;
-      --border: rgba(232,228,223,0.08);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRAXIS 360° | The Unbroken Evaluation Loop</title>
+    <meta name="description" content="PRAXIS 360° keeps the entire evaluation pipeline in one traceable .praxis file. Theory of Change to findings and back, in one unbroken chain.">
+    <meta property="og:title" content="PRAXIS 360° | The Unbroken Evaluation Loop">
+    <meta property="og:description" content="Six stages. One file. Every output feeds the next. Launching at Glocal Evaluation Week, June 2026.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/360/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0B1120">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='32' y2='32' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230B1120'/%3E%3Cstop offset='1' stop-color='%23162032'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Crect x='7' y='7' width='3.5' height='18' rx='1' fill='%2314b8a6'/%3E%3Cpath d='M10.5 7h7c4.5 0 8 3 8 7.5s-3.5 7.5-8 7.5h-7' fill='none' stroke='%2314b8a6' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='25' r='1.5' fill='%2314b8a6' opacity='.5'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        p_navy: '#0B1120',
+                        p_surface: '#162032',
+                        p_teal: '#14b8a6',
+                        p_teal_light: '#5eead4',
+                        p_amber: '#f59e0b',
+                        p_paper: '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::selection { background: #14b8a6; color: #0B1120; }
+        body { background-color: #0B1120; color: #f8fafc; overflow-x: hidden; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+        .bg-tactical {
+            background-image:
+                linear-gradient(rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
 
-    body {
-      font-family: 'IBM Plex Sans', -apple-system, sans-serif;
-      color: var(--text);
-      background: var(--bg);
-      -webkit-font-smoothing: antialiased;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-    }
+        .ring-container {
+            position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0);
+            width: 800px; height: 800px; pointer-events: none; z-index: 0; opacity: 0.4;
+        }
+        .ring-1 { position: absolute; inset: 0; border-radius: 50%; border: 1px dashed rgba(20, 184, 166, 0.3); animation: spin 80s linear infinite; }
+        .ring-2 { position: absolute; inset: 150px; border-radius: 50%; border: 1px solid rgba(245, 158, 11, 0.1); animation: spin 50s linear infinite reverse; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    a { text-decoration: none; color: inherit; }
+        .key { color: #5eead4; }
+        .string { color: #f59e0b; }
+        .number { color: #ef4444; }
+        .boolean { color: #3b82f6; }
+        .null { color: #64748b; }
 
-    .skip { position: absolute; top: -100px; left: 8px; padding: 8px 16px; background: var(--cool); color: var(--bg); font-weight: 700; font-size: 13px; border-radius: 0; z-index: 200; }
-    .skip:focus { top: 0; }
+        .step-transition { transition: all 0.3s ease-in-out; }
 
-    /* NAV */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      border-bottom: 1px solid var(--border);
-      background: rgba(26,31,46,0.8);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    }
-    .nav-inner {
-      max-width: 1000px; margin: 0 auto; padding: 0 32px;
-      height: 56px; display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-brand {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 700; font-size: 14px; color: #fff;
-      letter-spacing: 0.06em;
-    }
-    .nav-brand img { width: 24px; height: 24px; border-radius: 0; }
-    .nav-360 {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      color: var(--cool);
-      background: var(--cool-dim);
-      padding: 2px 8px;
-      letter-spacing: 0.04em;
-    }
-    .nav-links { display: flex; gap: 20px; align-items: center; }
-    .nav-links a { font-size: 13px; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
-    .nav-links a:hover { color: var(--cool); }
-    .nav-links a.active { color: var(--text); }
-    .nav-github {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--bg) !important;
-      background: var(--warm);
-      padding: 5px 14px;
-    }
-    .nav-github:hover { filter: brightness(1.1); }
-
-    /* HERO */
-    .hero {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 80px 32px 100px;
-      min-height: 90vh;
-    }
-    .hero-content {
-      max-width: 680px;
-      text-align: center;
-    }
-
-    /* Loop visual */
-    .loop {
-      width: 130px; height: 130px;
-      margin: 0 auto 44px;
-      position: relative;
-    }
-    .loop svg {
-      width: 100%; height: 100%;
-    }
-    .loop-center {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 26px; font-weight: 500;
-      color: var(--cool);
-      letter-spacing: -0.02em;
-      opacity: 0;
-      animation: fadeIn 0.6s ease forwards 1.8s;
-    }
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-
-    .badge {
-      display: inline-block;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-      padding: 5px 14px;
-      margin-bottom: 32px;
-    }
-
-    .hero h1 {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-weight: 400;
-      font-size: clamp(32px, 5.5vw, 56px);
-      line-height: 1.1;
-      color: #fff;
-      margin-bottom: 24px;
-    }
-
-    .hero-date {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px; font-weight: 500;
-      color: var(--warm);
-      margin-bottom: 32px;
-      letter-spacing: 0.02em;
-    }
-    .hero-date .sep { color: var(--text-muted); margin: 0 8px; }
-
-    .hero-desc {
-      font-size: 16px; line-height: 1.8;
-      color: var(--text-secondary);
-      max-width: 520px; margin: 0 auto 40px;
-    }
-
-    .hero-actions {
-      display: flex; gap: 10px;
-      justify-content: center; flex-wrap: wrap;
-      margin-bottom: 64px;
-    }
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 11px 24px; border-radius: 0;
-      font-size: 13px; font-weight: 600;
-      transition: all 0.2s; cursor: pointer; border: none;
-    }
-    .btn-amber { background: var(--warm); color: var(--bg); }
-    .btn-amber:hover { filter: brightness(1.1); }
-    .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-    .btn-ghost:hover { border-color: var(--cool); color: var(--cool); }
-    .btn-text { background: transparent; color: var(--text-muted); font-size: 13px; padding: 11px 16px; }
-    .btn-text:hover { color: var(--text-secondary); }
-
-    /* WHAT IT DOES */
-    .section {
-      padding: 100px 32px;
-      border-top: 1px solid var(--border);
-    }
-    .section-inner {
-      max-width: 800px; margin: 0 auto;
-    }
-    .overline {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
-    .section-title {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-weight: 400;
-      font-size: clamp(24px, 3.5vw, 36px);
-      color: #fff;
-      margin-bottom: 24px;
-      line-height: 1.2;
-    }
-    .section-desc {
-      font-size: 15.5px; line-height: 1.8;
-      color: var(--text-secondary);
-      max-width: 600px;
-      margin-bottom: 48px;
-    }
-
-    /* Pipeline steps */
-    .pipeline {
-      display: flex; flex-direction: column; gap: 0;
-    }
-    .pipe-step {
-      display: grid; grid-template-columns: 48px 1fr; gap: 20px;
-      padding: 28px 0;
-      border-bottom: 1px solid var(--border);
-      align-items: start;
-      opacity: 0;
-      transform: translateX(-20px);
-      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .pipe-step.visible {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    .pipe-step:last-child { border-bottom: none; }
-    .pipe-num {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 14px; font-weight: 500;
-      color: var(--cool);
-      padding-top: 2px;
-      opacity: 0.4;
-      transition: opacity 0.4s ease, color 0.4s ease, transform 0.3s ease;
-    }
-    .pipe-step.visible .pipe-num {
-      opacity: 1;
-    }
-    .pipe-step:hover .pipe-num {
-      transform: scale(1.15);
-    }
-    .pipe-step:hover .pipe-title {
-      color: var(--cool);
-    }
-    .pipe-title {
-      font-size: 16px; font-weight: 600; color: #fff;
-      margin-bottom: 4px;
-      transition: color 0.3s ease;
-    }
-    .pipe-desc {
-      font-size: 14px; color: var(--text-secondary); line-height: 1.6;
-    }
-    .pipe-step {
-      cursor: default;
-    }
-    .pipe-step:hover {
-      background: rgba(255,255,255,0.02);
-    }
-
-    /* THE DIFFERENCE */
-    .diff-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
-    }
-    .diff-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      padding: 32px 28px;
-      opacity: 0;
-      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .diff-card.old-card {
-      transform: translateX(-16px);
-    }
-    .diff-card.new-card {
-      transform: translateX(16px);
-    }
-    .diff-card.visible {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    .diff-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px; font-weight: 500;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-    .diff-label.old { color: var(--text-muted); }
-    .diff-label.new { color: var(--cool); }
-    .diff-item {
-      font-size: 14px; color: var(--text-secondary); line-height: 1.7;
-      padding: 6px 0;
-    }
-    .diff-card.new-card .diff-item { color: var(--text); }
-
-    /* CTA */
-    .cta {
-      padding: 100px 32px;
-      border-top: 1px solid var(--border);
-      text-align: center;
-    }
-    .cta h2 {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-weight: 400;
-      font-size: clamp(24px, 3.5vw, 36px);
-      color: #fff;
-      margin-bottom: 12px;
-    }
-    .reveal-scale {
-      opacity: 0;
-      transform: scale(0.95);
-      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .reveal-scale.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
-    .cta p {
-      font-size: 15px; color: var(--text-secondary);
-      margin-bottom: 32px;
-    }
-    .cta-actions {
-      display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-    }
-
-    /* FOOTER */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 24px 32px;
-    }
-    .footer-inner {
-      max-width: 1000px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .footer-left {
-      font-size: 11px; color: var(--text-muted);
-      display: flex; align-items: center; gap: 12px;
-    }
-    .footer-left a { color: var(--text-secondary); transition: color 0.2s; }
-    .footer-left a:hover { color: var(--cool); }
-    .footer-badges { display: flex; gap: 6px; }
-    .footer-badge {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 9px; font-weight: 500;
-      letter-spacing: 0.04em; text-transform: uppercase;
-      padding: 3px 7px;
-    }
-    .fb-free { color: var(--text-muted); border: 1px solid var(--border); }
-    .fb-oss { color: var(--text-muted); border: 1px solid var(--border); }
-    .footer-right { display: flex; gap: 16px; }
-    .footer-right a { font-size: 12px; color: var(--text-muted); transition: color 0.2s; }
-    .footer-right a:hover { color: var(--cool); }
-
-    /* ANIMATIONS */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .reveal {
-      opacity: 0;
-      transform: translateY(16px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    .hero-content > * {
-      opacity: 0;
-      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    .hero-content > :nth-child(1) { animation-delay: 0s; }
-    .hero-content > :nth-child(2) { animation-delay: 0.15s; }
-    .hero-content > :nth-child(3) { animation-delay: 0.3s; }
-    .hero-content > :nth-child(4) { animation-delay: 0.45s; }
-    .hero-content > :nth-child(5) { animation-delay: 0.55s; }
-    .hero-content > :nth-child(6) { animation-delay: 0.65s; }
-
-    /* RESPONSIVE */
-    @media (max-width: 640px) {
-      .hero { padding: 60px 20px 80px; min-height: auto; }
-      .section { padding: 72px 20px; }
-      .cta { padding: 72px 20px; }
-      .diff-grid { grid-template-columns: 1fr; }
-      .diff-card.old-card, .diff-card.new-card { transform: translateY(16px); }
-      .pipe-step { grid-template-columns: 36px 1fr; gap: 14px; }
-      .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
-      .footer-left { flex-direction: column; gap: 8px; }
-      .footer-right { justify-content: center; }
-      .hero-actions { flex-direction: column; align-items: center; }
-      .nav-links { gap: 14px; }
-      .nav-links a { font-size: 12px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-  </style>
+        @media (max-width: 767px) {
+            .nav-links-desktop { display: none !important; }
+            .hamburger { display: flex !important; }
+            .mobile-menu.open { display: flex !important; }
+        }
+    </style>
 </head>
-<body>
+<body class="antialiased bg-tactical relative">
 
-<a href="#main" class="skip">Skip to content</a>
-
-<nav aria-label="Main navigation">
-  <div class="nav-inner">
-    <a href="../" class="nav-brand">
-      <img src="../logo.svg" alt="PRAXIS logo">
-      PRAXIS
-      <span class="nav-360">360°</span>
-    </a>
-    <div class="nav-links">
-      <a href="../">Lab</a>
-      <a href="../ews/">EWS</a>
-      <a href="../evaluation/">Evaluation</a>
-      <a href="../tools/">Tools</a>
-      <a href="./" class="active">360</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" class="nav-github">GitHub</a>
-    </div>
-  </div>
-</nav>
-
-<section class="hero" id="main" role="main">
-  <div class="hero-content">
-
-    <div class="loop" aria-hidden="true">
-      <svg viewBox="0 0 140 140">
-        <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(42,125,110,0.12)" stroke-width="1"/>
-        <circle cx="70" cy="70" r="54" fill="none"
-          stroke="#2a7d6e" stroke-width="1.5"
-          stroke-dasharray="339.3" stroke-dashoffset="339.3"
-          stroke-linecap="round">
-          <animate attributeName="stroke-dashoffset" from="339.3" to="0" dur="2s" fill="freeze" begin="0.5s" calcMode="spline" keySplines="0.16 1 0.3 1"/>
-        </circle>
-      </svg>
-      <div class="loop-center">360°</div>
+    <div class="ring-container">
+        <div class="ring-1"></div>
+        <div class="ring-2"></div>
     </div>
 
-    <div class="badge">Launching at Glocal 2026</div>
-
-    <h1>The evaluation loop<br>that never breaks</h1>
-
-    <div class="hero-date">
-      June 3, 2026<span class="sep">/</span>Glocal Evaluation Week
-    </div>
-
-    <p class="hero-desc">
-      Every evaluation quality standard requires one unbroken chain: Theory of Change to findings and back. Current tools fragment the process across disconnected documents. PRAXIS 360° keeps the entire evaluation pipeline in one traceable workflow.
-    </p>
-
-    <div class="hero-actions">
-      <a href="https://www.linkedin.com/in/emmanuel-odjidja/" class="btn btn-amber" target="_blank">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-        Follow for Updates
-      </a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" class="btn btn-ghost" target="_blank">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-        GitHub
-      </a>
-      <a href="../tools/" class="btn btn-text">Try Free Tools &rarr;</a>
-    </div>
-
-  </div>
-</section>
-
-<section class="section">
-  <div class="section-inner">
-    <div class="overline reveal">The Pipeline</div>
-    <h2 class="section-title reveal">What 360° connects</h2>
-    <p class="section-desc reveal">
-      Six stages. One file. Every output feeds the next. Every finding traces back to the question that generated it.
-    </p>
-
-    <div class="pipeline">
-      <div class="pipe-step">
-        <div class="pipe-num">01</div>
-        <div>
-          <div class="pipe-title">Theory of Change</div>
-          <div class="pipe-desc">Structured causal pathways with assumptions, evidence ratings, and risk flags. The foundation every subsequent step references.</div>
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-lg bg-p_navy/80 border-b border-white/5">
+        <div class="flex items-center gap-4">
+            <div class="w-2 h-2 rounded-full bg-p_teal shadow-[0_0_10px_#14b8a6]"></div>
+            <a href="../" class="text-xl font-bold tracking-tight text-white">PRAXIS.</a>
         </div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-num">02</div>
-        <div>
-          <div class="pipe-title">Evaluation Matrix</div>
-          <div class="pipe-desc">Questions linked to OECD-DAC criteria, indicators, data sources, and methods. Each row traces back to a ToC pathway.</div>
+        <button class="hamburger hidden items-center justify-center w-8 h-8" aria-label="Toggle menu" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="nav-links-desktop hidden md:flex space-x-8 text-xs font-mono tracking-widest text-slate-400 items-center">
+            <a href="../" class="hover:text-p_teal transition-colors">LAB</a>
+            <a href="../research/" class="hover:text-p_teal transition-colors">RESEARCH</a>
+            <a href="../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
+            <a href="../evaluation/" class="hover:text-p_teal transition-colors">EVALUATION</a>
+            <a href="./" class="text-p_teal">360</a>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="px-4 py-2 border border-slate-700 rounded hover:border-p_teal hover:text-p_teal transition-colors ml-4 text-white">GitHub</a>
         </div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-num">03</div>
-        <div>
-          <div class="pipe-title">Sampling &amp; Design</div>
-          <div class="pipe-desc">Sample size calculation, design selection, and power analysis informed by the evaluation questions and context constraints.</div>
+        <div id="mobile-menu" class="mobile-menu hidden flex-col absolute top-full left-0 right-0 bg-p_navy/95 backdrop-blur-lg border-b border-white/5 px-8 py-6 gap-4 text-sm font-mono tracking-widest text-slate-400">
+            <a href="../" class="hover:text-p_teal transition-colors">LAB</a>
+            <a href="../research/" class="hover:text-p_teal transition-colors">RESEARCH</a>
+            <a href="../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
+            <a href="../evaluation/" class="hover:text-p_teal transition-colors">EVALUATION</a>
+            <a href="./" class="text-p_teal">360</a>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">GITHUB</a>
         </div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-num">04</div>
-        <div>
-          <div class="pipe-title">Instruments</div>
-          <div class="pipe-desc">Data collection tools generated from the matrix. Every question on every form maps to an indicator, which maps to a ToC assumption.</div>
-        </div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-num">05</div>
-        <div>
-          <div class="pipe-title">Analysis Plan</div>
-          <div class="pipe-desc">Statistical and qualitative analysis methods pre-registered against each evaluation question. No post-hoc fishing.</div>
-        </div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-num">06</div>
-        <div>
-          <div class="pipe-title">Findings to Framework</div>
-          <div class="pipe-desc">Results mapped back to the Theory of Change. Assumptions confirmed, contested, or revised. The loop closes.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+    </nav>
 
-<section class="section">
-  <div class="section-inner">
-    <div class="overline reveal">The Difference</div>
-    <h2 class="section-title reveal">What breaks today vs. what 360° fixes</h2>
-    <div class="diff-grid">
-      <div class="diff-card old-card">
-        <div class="diff-label old">Current practice</div>
-        <div class="diff-item">ToC in PowerPoint, matrix in Excel, instruments in Word, analysis in Stata, report in another Word file</div>
-        <div class="diff-item">No traceability between stages</div>
-        <div class="diff-item">Findings disconnected from the questions that generated them</div>
-        <div class="diff-item">Methodology lives in consultant reports that nobody reads twice</div>
-      </div>
-      <div class="diff-card new-card">
-        <div class="diff-label new">PRAXIS 360°</div>
-        <div class="diff-item">One .praxis file. Every stage linked. Every output traceable.</div>
-        <div class="diff-item">Change a ToC assumption and the downstream instruments, indicators, and analysis plan update</div>
-        <div class="diff-item">Every finding maps back to the evaluation question and ToC pathway that produced it</div>
-        <div class="diff-item">Methodology becomes structured, portable, and reusable</div>
-      </div>
-    </div>
-  </div>
-</section>
+    <!-- HERO -->
+    <header class="pt-36 pb-20 px-8 max-w-7xl mx-auto relative z-10 text-center">
+        <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 font-mono text-[10px] uppercase tracking-widest mb-8 backdrop-blur">
+            <span class="w-2 h-2 bg-p_amber rounded-full animate-pulse shadow-[0_0_8px_#f59e0b]"></span>
+            <span>Launching: Glocal Evaluation Week | June 3, 2026</span>
+        </div>
 
-<!-- CTA -->
-<section class="cta">
-  <h2 class="reveal-scale">Live demo. June 3, 2026.</h2>
-  <p class="reveal">Glocal Evaluation Week. Open source. Free forever.</p>
-  <div class="cta-actions reveal">
-    <a href="https://www.linkedin.com/in/emmanuel-odjidja/" class="btn btn-amber" target="_blank">Follow for Updates</a>
-    <a href="https://github.com/emmaodjidja-sys/praxis" class="btn btn-ghost" target="_blank">View on GitHub</a>
-    <a href="../tools/" class="btn btn-text">Try Free Tools &rarr;</a>
-  </div>
-</section>
+        <h1 class="text-6xl md:text-8xl font-bold tracking-tighter mb-8 text-white leading-none">
+            The evaluation loop<br/>
+            <span class="font-serif italic text-slate-400 font-normal">that never breaks.</span>
+        </h1>
 
-<footer>
-  <div class="footer-inner">
-    <div class="footer-left">
-      <span>PRAXIS 360° &middot; Built by <a href="https://www.emmanuelneneodjidja.org/">Emmanuel Nene Odjidja</a></span>
-      <div class="footer-badges">
-        <span class="footer-badge fb-free">MIT License</span>
-        <span class="footer-badge fb-oss">Open Source</span>
-      </div>
-    </div>
-    <div class="footer-right">
-      <a href="https://github.com/emmaodjidja-sys/praxis">GitHub</a>
-      <a href="../">PRAXIS</a>
-    </div>
-  </div>
-</footer>
+        <p class="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-3xl mx-auto mb-10">
+            Every evaluation quality standard requires one unbroken chain: Theory of Change to findings and back. Current tools fragment the process across disconnected documents. <strong class="text-white">PRAXIS 360 keeps the entire evaluation pipeline in one traceable <code class="text-p_teal">.praxis</code> file.</strong>
+        </p>
+
+        <div class="flex justify-center gap-4 flex-wrap">
+            <button onclick="document.getElementById('simulator').scrollIntoView({behavior: 'smooth'})" class="bg-p_teal text-p_navy px-8 py-4 rounded font-bold tracking-wide hover:bg-p_teal_light transition-colors shadow-[0_0_20px_rgba(20,184,166,0.3)]">View the Pipeline</button>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="border border-slate-700 text-white px-8 py-4 rounded font-bold tracking-wide hover:border-p_teal transition-colors bg-p_surface">GitHub Repository</a>
+        </div>
+    </header>
+
+    <!-- SIMULATOR -->
+    <section id="simulator" class="py-20 px-4 md:px-8 max-w-7xl mx-auto relative z-10">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-white">The 360 Architecture</h2>
+                <p class="text-slate-400 font-mono text-sm mt-2">Six stages. One file. Every output feeds the next.</p>
+            </div>
+            <button id="cascade-btn" onclick="simulateCascade()" class="hidden md:flex items-center gap-2 bg-slate-800 border border-slate-600 hover:border-p_amber text-p_amber px-4 py-2 rounded text-xs font-mono tracking-widest uppercase transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <span id="cascade-text">Simulate Assumption Change</span>
+            </button>
+        </div>
+
+        <div class="grid lg:grid-cols-12 border border-slate-700 rounded-xl bg-[#0f172a] shadow-2xl overflow-hidden h-[650px]">
+
+            <div class="lg:col-span-5 bg-[#1e293b] border-r border-slate-700 p-6 flex flex-col relative">
+                <div class="absolute left-10 top-12 bottom-12 w-[1px] bg-slate-700"></div>
+                <div id="progress-line" class="absolute left-10 top-12 w-[1px] bg-p_teal step-transition shadow-[0_0_10px_#14b8a6]" style="height: 0%;"></div>
+                <div class="space-y-4 relative z-10" id="step-buttons"></div>
+            </div>
+
+            <div class="lg:col-span-7 bg-[#0b1120] relative flex flex-col">
+                <div class="px-6 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-900">
+                    <div class="flex gap-2 items-center">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span class="text-xs font-mono text-slate-400">programme_eval_v1.praxis</span>
+                    </div>
+                    <div id="sync-status" class="text-[10px] font-mono text-p_teal tracking-widest uppercase opacity-0 transition-opacity duration-300">Syncing downstream...</div>
+                </div>
+                <div class="p-6 overflow-y-auto flex-1 font-mono text-sm leading-relaxed" id="code-viewer"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PARADIGM SHIFT -->
+    <section class="py-24 px-8 max-w-7xl mx-auto relative z-10">
+        <div class="text-center mb-16">
+            <h2 class="text-sm font-mono tracking-widest text-slate-500 uppercase mb-4">The Paradigm Shift</h2>
+            <h3 class="text-4xl font-bold text-white">What breaks today vs. what 360 fixes.</h3>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-10 opacity-80">
+                <div class="text-xs font-mono tracking-widest text-slate-500 uppercase mb-6">Current Practice</div>
+                <div class="flex items-center gap-3 mb-10 overflow-x-auto pb-4">
+                    <div class="px-3 py-1 bg-blue-900/30 border border-blue-800 rounded text-xs font-mono text-blue-400 shrink-0">ToC (.ppt)</div>
+                    <div class="w-4 border-b border-dashed border-red-500/50 shrink-0"></div>
+                    <div class="px-3 py-1 bg-green-900/30 border border-green-800 rounded text-xs font-mono text-green-400 shrink-0">Matrix (.xls)</div>
+                    <div class="w-4 border-b border-dashed border-red-500/50 shrink-0"></div>
+                    <div class="px-3 py-1 bg-blue-900/30 border border-blue-800 rounded text-xs font-mono text-blue-400 shrink-0">Tools (.doc)</div>
+                </div>
+                <ul class="space-y-4 text-slate-400 text-sm">
+                    <li class="flex gap-3"><span class="text-red-500 flex-shrink-0">x</span> No traceability between stages.</li>
+                    <li class="flex gap-3"><span class="text-red-500 flex-shrink-0">x</span> Findings disconnected from the questions that generated them.</li>
+                    <li class="flex gap-3"><span class="text-red-500 flex-shrink-0">x</span> Methodology lives in PDF consultant reports that nobody reads twice.</li>
+                </ul>
+            </div>
+
+            <div class="bg-p_surface border border-p_teal/30 rounded-2xl p-10 shadow-[0_0_30px_rgba(20,184,166,0.05)]">
+                <div class="text-xs font-mono tracking-widest text-p_teal uppercase mb-6">PRAXIS 360</div>
+                <div class="bg-p_navy border border-p_teal/50 rounded-lg p-3 flex justify-center items-center gap-6 mb-10">
+                    <div class="w-3 h-3 bg-p_teal rounded-full animate-pulse shadow-[0_0_10px_#14b8a6]"></div>
+                    <div class="text-sm font-mono text-white tracking-widest">ONE .PRAXIS FILE</div>
+                    <div class="w-3 h-3 bg-p_teal rounded-full animate-pulse shadow-[0_0_10px_#14b8a6]"></div>
+                </div>
+                <ul class="space-y-4 text-slate-300 text-sm">
+                    <li class="flex gap-3"><span class="text-p_teal flex-shrink-0">.</span> Change a ToC assumption, and downstream instruments automatically update.</li>
+                    <li class="flex gap-3"><span class="text-p_teal flex-shrink-0">.</span> Every finding maps back to the evaluation question and ToC pathway.</li>
+                    <li class="flex gap-3"><span class="text-p_teal flex-shrink-0">.</span> Methodology becomes structured, portable, and mathematically reusable.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pt-20 pb-12 px-8 max-w-7xl mx-auto border-t border-slate-800 relative z-10">
+        <div class="text-center mb-24">
+            <h2 class="text-4xl font-bold text-white mb-6">Live demo. June 3, 2026.</h2>
+            <p class="text-slate-400 mb-8 font-mono uppercase tracking-widest text-sm">Glocal Evaluation Week. Open source. Free forever.</p>
+            <div class="flex justify-center gap-6 text-sm font-bold flex-wrap">
+                <a href="https://www.linkedin.com/in/emmanuel-odjidja/" target="_blank" rel="noopener" class="text-p_teal hover:text-p_teal_light transition-colors">Follow for Updates &rarr;</a>
+                <a href="../evaluation/" class="text-white hover:text-p_teal transition-colors">Evaluation Tools &rarr;</a>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-16 border-t border-slate-800 pt-12">
+            <div>
+                <div class="text-3xl font-bold text-white tracking-tight mb-2">PRAXIS 360</div>
+                <p class="text-slate-500 font-mono text-xs uppercase tracking-widest">
+                    MIT License &middot; Open Source &middot; &copy; 2026
+                </p>
+            </div>
+            <div class="md:text-right">
+                <p class="text-slate-400 text-sm mb-2">Built by <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener" class="text-white font-bold hover:text-p_teal transition-colors">Emmanuel Nene Odjidja</a></p>
+                <div class="flex md:justify-end gap-4 text-xs text-slate-500 font-mono uppercase tracking-widest mt-4">
+                    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a>
+                    <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="hover:text-white transition-colors">Publications</a>
+                    <a href="../" class="hover:text-white transition-colors">Lab Home</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
 <script>
-// General reveals (section titles, descriptions, CTA)
-var revealObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.25, rootMargin: '0px 0px -60px 0px' });
-document.querySelectorAll('.reveal, .reveal-scale').forEach(function(el) { revealObserver.observe(el); });
-
-// Pipeline steps — staggered cascade
-var pipeSteps = document.querySelectorAll('.pipe-step');
-var pipeObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      // Find this step's index among all pipe-steps
-      var idx = Array.prototype.indexOf.call(pipeSteps, entry.target);
-      // Count how many previous siblings are already visible
-      var visibleBefore = 0;
-      for (var i = 0; i < idx; i++) {
-        if (pipeSteps[i].classList.contains('visible')) visibleBefore++;
-      }
-      var delay = (idx - visibleBefore) * 120;
-      setTimeout(function() {
-        entry.target.classList.add('visible');
-      }, delay);
-      pipeObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.3, rootMargin: '0px 0px -40px 0px' });
-pipeSteps.forEach(function(el) { pipeObserver.observe(el); });
-
-// Diff cards — old card first, new card follows
-var diffCards = document.querySelectorAll('.diff-card');
-var diffObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      var card = entry.target;
-      if (card.classList.contains('old-card')) {
-        card.classList.add('visible');
-        // Reveal the new card 200ms later
-        var newCard = card.parentElement.querySelector('.new-card');
-        if (newCard) {
-          setTimeout(function() { newCard.classList.add('visible'); }, 200);
-          diffObserver.unobserve(newCard);
+var pipelineSteps = [
+    {
+        id: 1, title: "01 Theory of Change",
+        desc: "Structured causal pathways with assumptions, evidence ratings, and risk flags.",
+        code: {
+            stage: "01_TheoryOfChange",
+            pathway_01: { input: "Funding", activity: "Training", outcome: "Capacity Built" },
+            assumptions: [
+                { id: "A_01", risk: "High", text: "Security permits safe field travel", status: "Active" }
+            ]
         }
-      } else if (!card.classList.contains('visible')) {
-        card.classList.add('visible');
-      }
-      diffObserver.unobserve(card);
+    },
+    {
+        id: 2, title: "02 Evaluation Matrix",
+        desc: "Questions linked to OECD-DAC criteria. Each row traces back to a ToC pathway.",
+        code: {
+            stage: "02_EvaluationMatrix",
+            auto_imported_from: "01_TheoryOfChange.assumptions",
+            questions: [
+                {
+                    q_id: "EQ_1", criteria: "Relevance",
+                    text: "How did security context affect delivery?",
+                    traces_to_assumption: "A_01"
+                }
+            ]
+        }
+    },
+    {
+        id: 3, title: "03 Sampling & Design",
+        desc: "Sample size calculation and power analysis informed by the context constraints.",
+        code: {
+            stage: "03_SamplingDesign",
+            methodology: "Cluster-RCT",
+            parameters: { clusters: 24, power: 0.80, attrition_buffer: 0.15 },
+            linked_questions: ["EQ_1"]
+        }
+    },
+    {
+        id: 4, title: "04 Instruments",
+        desc: "Data collection tools generated from the matrix. Every question maps to a ToC assumption.",
+        code: {
+            stage: "04_Instruments",
+            form_name: "Key_Informant_Interview",
+            items: [
+                { id: "KII_Q1", text: "Did security impact your access?", maps_to_indicator: "IND_01", traces_to: "A_01" }
+            ]
+        }
+    },
+    {
+        id: 5, title: "05 Analysis Plan",
+        desc: "Statistical methods pre-registered against each evaluation question. No post-hoc fishing.",
+        code: {
+            stage: "05_AnalysisPlan",
+            pre_registered_models: [
+                { model: "Difference-in-Differences", variables: ["Treatment", "Time", "Security_Index"], tests_assumption: "A_01" }
+            ]
+        }
+    },
+    {
+        id: 6, title: "06 Findings to Framework",
+        desc: "Results mapped back to the Theory of Change. Assumptions confirmed or revised. The loop closes.",
+        code: {
+            stage: "06_FindingsToFramework",
+            loop_status: "Closed",
+            evaluative_judgement: {
+                assumption_tested: "A_01",
+                result: "Contested / Requires Revision",
+                evidence_rating: "Strong",
+                system_action: "Trigger automated ToC update"
+            }
+        }
     }
-  });
-}, { threshold: 0.25, rootMargin: '0px 0px -40px 0px' });
-diffCards.forEach(function(el) { diffObserver.observe(el); });
-</script>
+];
 
+var btnContainer = document.getElementById('step-buttons');
+pipelineSteps.forEach(function(step, index) {
+    var btn = document.createElement('button');
+    btn.className = 'w-full text-left p-4 rounded-lg border step-transition flex items-start gap-4 relative z-10 ' + (index === 0 ? 'bg-slate-800 border-p_teal shadow-[0_0_15px_rgba(20,184,166,0.1)]' : 'bg-transparent border-transparent hover:bg-slate-800/50 hover:border-slate-700');
+    btn.onclick = function() { activateStep(index); };
+    btn.id = 'btn-step-' + index;
+    btn.innerHTML = '<div class="w-3 h-3 rounded-full mt-1.5 step-transition ' + (index === 0 ? 'bg-p_teal shadow-[0_0_10px_#14b8a6]' : 'bg-slate-600') + '"></div><div><div class="text-sm font-bold text-white mb-1">' + step.title + '</div><div class="text-xs text-slate-400 leading-relaxed">' + step.desc + '</div></div>';
+    btnContainer.appendChild(btn);
+});
+
+function syntaxHighlight(json) {
+    if (typeof json !== 'string') json = JSON.stringify(json, undefined, 2);
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+        var cls = 'number';
+        if (/^"/.test(match)) { cls = /:$/.test(match) ? 'key' : 'string'; }
+        else if (/true|false/.test(match)) { cls = 'boolean'; }
+        else if (/null/.test(match)) { cls = 'null'; }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
+function activateStep(index) {
+    pipelineSteps.forEach(function(_, i) {
+        var btn = document.getElementById('btn-step-' + i);
+        var dot = btn.querySelector('div:first-child');
+        if (i === index) {
+            btn.className = 'w-full text-left p-4 rounded-lg border step-transition flex items-start gap-4 relative z-10 bg-slate-800 border-p_teal shadow-[0_0_15px_rgba(20,184,166,0.1)]';
+            dot.className = 'w-3 h-3 rounded-full mt-1.5 step-transition bg-p_teal shadow-[0_0_10px_#14b8a6]';
+        } else {
+            btn.className = 'w-full text-left p-4 rounded-lg border step-transition flex items-start gap-4 relative z-10 bg-transparent border-transparent hover:bg-slate-800/50 hover:border-slate-700';
+            dot.className = 'w-3 h-3 rounded-full mt-1.5 step-transition bg-slate-600';
+        }
+    });
+
+    var pct = (index / (pipelineSteps.length - 1)) * 100;
+    document.getElementById('progress-line').style.height = pct + '%';
+
+    var sync = document.getElementById('sync-status');
+    sync.style.opacity = '1';
+    setTimeout(function() { sync.style.opacity = '0'; }, 600);
+
+    var raw = pipelineSteps[index].code;
+    var display = '<span class="text-slate-500">// Auto-generated payload for PRAXIS 360 Core</span>\n';
+    display += '<span class="text-p_teal">const</span> praxisPayload = {\n';
+    var body = syntaxHighlight(raw).split('\n').map(function(line) { return '  ' + line; }).join('\n');
+    display += body.substring(3, body.length - 1);
+    display += '\n};\n\n<span class="text-slate-500">// System Check: Traceability Verified.</span>';
+    document.getElementById('code-viewer').innerHTML = '<pre><code>' + display + '</code></pre>';
+}
+
+function simulateCascade() {
+    var btn = document.getElementById('cascade-btn');
+    var txt = document.getElementById('cascade-text');
+    btn.disabled = true;
+    txt.innerHTML = '<span class="animate-pulse">Updating dependencies...</span>';
+    btn.classList.add('border-p_amber', 'bg-p_amber/10');
+
+    var i = 0;
+    function next() {
+        if (i < pipelineSteps.length) {
+            activateStep(i);
+            i++;
+            setTimeout(next, 900);
+        } else {
+            btn.disabled = false;
+            txt.innerHTML = 'Simulation Complete';
+            setTimeout(function() {
+                btn.classList.remove('border-p_amber', 'bg-p_amber/10');
+                txt.innerHTML = 'Simulate Assumption Change';
+            }, 3000);
+        }
+    }
+    next();
+}
+
+activateStep(0);
+</script>
 </body>
 </html>
