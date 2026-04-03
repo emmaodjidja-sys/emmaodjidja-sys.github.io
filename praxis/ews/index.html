@@ -11,30 +11,32 @@
   <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/ews/">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="../logo.svg">
+  <meta name="theme-color" content="#0B1A2E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <style>
     :root {
-      --bg: #1a1f2e;
-      --bg-surface: #212738;
-      --warm: #c4704b;
-      --warm-dim: rgba(196,112,75,0.12);
-      --bg-accent: #1e2435;
-      --cool: #2a7d6e;
-      --text: #e8e4df;
-      --text-secondary: #a09b94;
-      --text-muted: #6b665f;
-      --border: rgba(232,228,223,0.08);
+      --bg: #0B1A2E;
+      --bg-surface: #132238;
+      --warm: #E8A838;
+      --warm-dim: rgba(232,168,56,0.12);
+      --bg-accent: #0e1d33;
+      --cool: #2EC4B6;
+      --text: #E8ECF0;
+      --text-secondary: #A4B3C2;
+      --text-muted: #8899AA;
+      --border: rgba(46,196,182,0.08);
+      --navy-deep: #060c17;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 
     body {
-      font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+      font-family: 'DM Sans', -apple-system, sans-serif;
       color: var(--text);
       background: var(--bg);
       -webkit-font-smoothing: antialiased;
@@ -48,32 +50,32 @@
     /* NAV */
     nav {
       position: sticky; top: 0; z-index: 100;
-      border-bottom: 1px solid var(--border);
-      background: rgba(26,31,46,0.85);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      background: rgba(6,12,23,0.95);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(46,196,182,0.06);
     }
     .nav-inner {
-      max-width: 920px; margin: 0 auto; padding: 0 28px;
+      max-width: 1200px; margin: 0 auto; padding: 0 40px;
       height: 56px; display: flex; align-items: center; justify-content: space-between;
     }
     .nav-brand {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px; font-weight: 500; color: var(--text);
-      letter-spacing: 0.06em;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px; font-weight: 600; color: var(--cool);
+      letter-spacing: 0.06em; display: flex; align-items: center; gap: 8px;
     }
-    .nav-brand span { color: var(--warm); }
+    .nav-brand img { width: 22px; height: 22px; }
     .nav-links { display: flex; gap: 24px; align-items: center; }
     .nav-links a {
       font-size: 13px; color: var(--text-secondary);
       transition: color 0.2s;
     }
-    .nav-links a:hover { color: var(--text); }
-    .nav-links a.active { color: var(--warm); }
+    .nav-links a:hover { color: white; }
+    .nav-links a.active { color: var(--cool); }
     .nav-github {
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px; font-weight: 500;
       color: var(--bg) !important;
-      background: var(--warm);
+      background: var(--cool);
       padding: 5px 14px;
       transition: opacity 0.2s;
     }
@@ -84,46 +86,60 @@
     .hamburger svg { width: 22px; height: 22px; stroke: var(--text-secondary); stroke-width: 2; fill: none; }
 
     /* MAIN */
-    .container { max-width: 760px; margin: 0 auto; padding: 0 32px; }
-    .container-wide { max-width: 1040px; margin: 0 auto; padding: 0 32px; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 40px; }
+    .container-wide { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
 
     /* HERO */
     .hero {
-      padding: 120px 0 80px;
-      background: var(--bg-accent);
-      border-bottom: 1px solid var(--border);
+      position: relative; overflow: hidden;
+      background: var(--navy-deep);
+      padding: 100px 0 72px;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('../hero-bg.png') center right / cover no-repeat;
+      opacity: 0.5;
+    }
+    .hero-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, var(--navy-deep) 0%, var(--navy-deep) 35%, rgba(6,12,23,0.5) 65%, rgba(6,12,23,0.3) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 1200px; margin: 0 auto; padding: 0 40px;
     }
     .hero-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px; font-weight: 500;
-      color: var(--text-muted);
-      letter-spacing: 0.08em;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: var(--warm);
+      letter-spacing: 0.15em;
       text-transform: uppercase;
       margin-bottom: 20px;
     }
     .hero h1 {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-size: clamp(3rem, 6.5vw, 4.8rem);
-      font-weight: 400;
-      line-height: 1.02;
-      color: var(--text);
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 300;
+      font-size: clamp(2.5rem, 5vw, 3.8rem);
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: white;
       margin-bottom: 12px;
     }
     .hero h1 em {
       font-style: italic;
-      color: var(--warm);
+      color: var(--cool);
     }
     .hero-descriptor {
-      font-family: 'IBM Plex Sans', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px;
       color: var(--text-secondary);
       margin-bottom: 32px;
     }
     .hero-sub {
-      font-size: 17px;
+      font-size: 16px;
       line-height: 1.7;
       color: var(--text-secondary);
-      max-width: 600px;
+      max-width: 560px;
     }
 
     /* PULL QUOTE */
@@ -133,14 +149,14 @@
       border-bottom: 1px solid var(--border);
     }
     .pull-quote blockquote {
-      font-family: 'Instrument Serif', Georgia, serif;
+      font-family: 'Fraunces', Georgia, serif;
       font-size: clamp(1.3rem, 2.8vw, 1.9rem);
       font-style: italic; font-weight: 400;
       line-height: 1.4; color: var(--text);
       max-width: 600px; margin-bottom: 16px;
     }
     .pull-quote cite {
-      font-family: 'IBM Plex Sans', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-style: normal; font-size: 14px;
       color: var(--text-muted);
     }
@@ -157,7 +173,7 @@
     }
     .stat { text-align: center; }
     .stat-num {
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 28px; font-weight: 500;
       color: var(--warm); line-height: 1;
     }
@@ -175,7 +191,7 @@
     .section-alt { background: var(--bg-accent); }
 
     .section-heading {
-      font-family: 'Instrument Serif', Georgia, serif;
+      font-family: 'Fraunces', Georgia, serif;
       font-size: clamp(1.6rem, 3.5vw, 2.2rem);
       font-weight: 400;
       line-height: 1.15;
@@ -194,7 +210,7 @@
       border-top: 1px solid var(--border);
     }
     .research-label {
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px; font-weight: 500;
       color: var(--text-muted);
       letter-spacing: 0.1em;
@@ -218,7 +234,7 @@
       margin-top: 48px;
     }
     .figure-title {
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px; font-weight: 500;
       color: var(--text-muted);
       letter-spacing: 0.1em;
@@ -253,7 +269,7 @@
       border-left: 2px solid var(--warm);
     }
     .figure-stat-value {
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 18px; font-weight: 500;
       color: var(--warm);
     }
@@ -275,7 +291,7 @@
     }
     .figure-table th {
       text-align: left;
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px; font-weight: 500;
       color: var(--text-muted);
       letter-spacing: 0.06em;
@@ -291,7 +307,7 @@
     .figure-table .highlight { color: var(--warm); font-weight: 500; }
     .figure-meta {
       margin-top: 10px;
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       color: var(--text-muted);
     }
@@ -304,7 +320,7 @@
     }
     .layer-active { border-left-color: var(--warm); }
     .layer-name {
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 13px; font-weight: 500;
       color: var(--warm);
       letter-spacing: 0.04em;
@@ -358,7 +374,7 @@
       max-width: 600px;
     }
     .closer-heading {
-      font-family: 'Instrument Serif', Georgia, serif;
+      font-family: 'Fraunces', Georgia, serif;
       font-size: clamp(1.4rem, 3vw, 1.8rem);
       font-weight: 400;
       color: var(--text);
@@ -367,11 +383,11 @@
 
     /* FOOTER */
     footer {
-      border-top: 1px solid var(--border);
-      padding: 28px 0;
+      background: var(--navy-deep); padding: 24px 0;
+      border-top: 1px solid rgba(46,196,182,0.06);
     }
     .footer-inner {
-      max-width: 720px; margin: 0 auto; padding: 0 28px;
+      max-width: 1200px; margin: 0 auto; padding: 0 40px;
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 12px;
     }
@@ -380,7 +396,7 @@
       font-size: 13px; color: var(--text-muted);
       transition: color 0.2s;
     }
-    .footer-links a:hover { color: var(--text-secondary); }
+    .footer-links a:hover { color: var(--cool); }
     .footer-copy {
       font-size: 12px; color: var(--text-muted);
     }
@@ -391,7 +407,7 @@
       .nav-links.open {
         display: flex; flex-direction: column;
         position: absolute; top: 56px; left: 0; right: 0;
-        background: rgba(26,31,46,0.97);
+        background: rgba(6,12,23,0.97);
         padding: 16px 28px; gap: 16px;
         border-bottom: 1px solid var(--border);
       }
@@ -399,7 +415,7 @@
       .hero { padding: 80px 0 60px; }
       .section { padding: 52px 0; }
       .layer { padding-left: 16px; }
-      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-inner { flex-direction: column; align-items: flex-start; padding: 0 24px; }
     }
 
     /* SCROLL REVEAL */
@@ -418,16 +434,17 @@
 
 <nav>
   <div class="nav-inner">
-    <a href="../" class="nav-brand"><img src="../logo.svg" alt="" style="width:22px;height:22px;margin-right:6px;vertical-align:middle"> PRAXIS <span>EWS</span></a>
-    <button class="hamburger" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
-      <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    <a href="../" class="nav-brand"><img src="../logo.svg" alt="PRAXIS" width="22" height="22">PRAXIS</a>
+    <button class="hamburger" aria-label="Toggle menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="nav-links">
       <a href="../">Lab</a>
       <a href="./" class="active">EWS</a>
       <a href="../evaluation/">Evaluation</a>
+      <a href="../tools/">Tools</a>
       <a href="../360/">360</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="nav-github">GitHub</a>
+      <a href="https://github.com/emmaodjidja-sys/praxis" class="nav-github" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
 </nav>
@@ -436,10 +453,10 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="container reveal">
-    <p class="hero-label">PRAXIS Research Track</p>
-    <h1>PRAXIS <em>EWS</em></h1>
-    <p class="hero-descriptor">Early Warning System</p>
+  <div class="hero-bg"></div>
+  <div class="hero-content reveal">
+    <p class="hero-label">EARLY WARNING SYSTEM</p>
+    <h1>Composite <em>co-occurrence</em> detection for conflict escalation</h1>
     <p class="hero-sub">Econometric research and open-source tooling to detect composite escalation signals in ACLED conflict data. When multiple conflict event types converge in the same district-week, lethal violence follows within 7 days. Built by someone who works in the places where the escalation happens.</p>
   </div>
 </section>
@@ -587,12 +604,11 @@
 <footer>
   <div class="footer-inner">
     <div class="footer-links">
-      <a href="../">PRAXIS Lab</a>
-      <a href="../evaluation/">Evaluation</a>
       <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Publications</a>
       <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>
     </div>
-    <span class="footer-copy">PRAXIS EWS. Open source. MIT licensed.</span>
+    <span class="footer-copy">2026 PRAXIS. Open source. MIT licensed. ACLED data used under license.</span>
   </div>
 </footer>
 
@@ -654,7 +670,7 @@ const SENS = {
     }, {
       label: '\u22653 types',
       n: 4312,
-      color: '#2a7d6e',
+      color: '#2EC4B6',
       pts: THREE
     }, {
       label: '\u22654 types',
@@ -674,7 +690,7 @@ const SENS = {
     series: [{
       label: 'Central Sahel',
       n: 156,
-      color: '#2a7d6e',
+      color: '#2EC4B6',
       pts: [[1.577, 1.23, 1.924], [1.596, 1.26, 1.932], [1.654, 1.31, 1.998], [1.75, 1.4, 2.1], [2.628, 2.28, 2.976], [1.712, 1.37, 2.054], [1.628, 1.3, 1.956], [1.596, 1.26, 1.932], [1.571, 1.24, 1.902], [1.609, 1.27, 1.948]]
     }, {
       label: 'Lake Chad Basin',
@@ -700,7 +716,7 @@ const SENS = {
     }, {
       label: '2020-22',
       n: 127,
-      color: '#2a7d6e',
+      color: '#2EC4B6',
       pts: [[1.89, 1.54, 2.24], [1.937, 1.58, 2.294], [1.969, 1.61, 2.328], [2.071, 1.71, 2.432], [3.165, 2.8, 3.53], [2.063, 1.71, 2.416], [1.835, 1.5, 2.17], [1.866, 1.52, 2.212], [1.858, 1.51, 2.206], [1.803, 1.46, 2.146]]
     }, {
       label: '2023-25',
@@ -720,7 +736,7 @@ const SENS = {
     }, {
       label: 'KAFD+Clash',
       n: 1662,
-      color: '#2a7d6e',
+      color: '#2EC4B6',
       pts: [[1.729, 1.64, 1.818], [1.752, 1.662, 1.842], [1.794, 1.704, 1.884], [1.901, 1.809, 1.993], [3.167, 3.074, 3.26], [2.111, 2.018, 2.204], [2.005, 1.914, 2.096], [1.966, 1.876, 2.056], [1.929, 1.839, 2.019], [1.904, 1.814, 1.994]]
     }, {
       label: 'IED+Clash',
@@ -875,21 +891,21 @@ const COASTAL_IED = [{
   m: 7.3
 }];
 const C = {
-  bg: "#212738",
-  bgA: "#1e2435",
-  bgC: "#1a1f2e",
-  bdr: "rgba(232,228,223,0.08)",
-  cool: "#2a7d6e",
-  warm: "#c4704b",
-  warmLight: "#d4835f",
+  bg: "#132238",
+  bgA: "#0e1d33",
+  bgC: "#0B1A2E",
+  bdr: "rgba(46,196,182,0.08)",
+  cool: "#2EC4B6",
+  warm: "#E8A838",
+  warmLight: "#F0BE5E",
   blue: "#5b8a9a",
   gold: "#d4a04a",
   purple: "#8b5a9e",
   grey: "#3a3d4a",
-  txM: "#6b665f",
-  txS: "#a09b94",
-  tx: "#e8e4df",
-  txW: "#e8e4df"
+  txM: "#8899AA",
+  txS: "#A4B3C2",
+  tx: "#E8ECF0",
+  txW: "#E8ECF0"
 };
 const ACTOR_TACTICS = [
   {name:"JNIM/AQIM",events:14144,mix:[33.9,14.9,11.7,8.6,12.5,0.1],fatPerEvent:2.5},
@@ -1014,7 +1030,7 @@ const PlotSVG = React.memo(function PlotSVG({
     y: g.y + 3,
     fill: C.txM,
     fontSize: 9,
-    fontFamily: "'IBM Plex Mono',monospace",
+    fontFamily: "'JetBrains Mono',monospace",
     textAnchor: "end"
   }, g.label))), LAGS.map((l, i) => /*#__PURE__*/React.createElement("g", {
     key: "x" + i
@@ -1024,7 +1040,7 @@ const PlotSVG = React.memo(function PlotSVG({
     fill: l === 0 ? C.txW : C.txM,
     fontSize: l === 0 ? 10 : 9,
     fontWeight: l === 0 ? 600 : 400,
-    fontFamily: "'IBM Plex Mono',monospace",
+    fontFamily: "'JetBrains Mono',monospace",
     textAnchor: "middle"
   }, XLAB[i]), l === 0 && /*#__PURE__*/React.createElement("line", {
     x1: xS(i),
@@ -1039,7 +1055,7 @@ const PlotSVG = React.memo(function PlotSVG({
     y: P.t + ch / 2,
     fill: C.txM,
     fontSize: 8,
-    fontFamily: "'IBM Plex Sans',sans-serif",
+    fontFamily: "'DM Sans',sans-serif",
     textAnchor: "middle",
     transform: "rotate(-90,10," + (P.t + ch / 2) + ")"
   }, isRatio ? "Ratio to baseline" : "Attacks per district-week"), /*#__PURE__*/React.createElement("text", {
@@ -1047,7 +1063,7 @@ const PlotSVG = React.memo(function PlotSVG({
     y: h - 2,
     fill: C.txM,
     fontSize: 8,
-    fontFamily: "'IBM Plex Sans',sans-serif",
+    fontFamily: "'DM Sans',sans-serif",
     textAnchor: "middle"
   }, "Weeks relative to signal"), isRatio && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("line", {
     x1: P.l,
@@ -1062,7 +1078,7 @@ const PlotSVG = React.memo(function PlotSVG({
     y: yS(1) + 3,
     fill: C.txM,
     fontSize: 8,
-    fontFamily: "'IBM Plex Mono',monospace"
+    fontFamily: "'JetBrains Mono',monospace"
   }, "1.0x")), showBase && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("rect", {
     x: P.l,
     y: yS(FLAT_BASE * 1.06),
@@ -1138,7 +1154,7 @@ const PlotSVG = React.memo(function PlotSVG({
     y: P.t + 16,
     fill: C.txS,
     fontSize: 8,
-    fontFamily: "'IBM Plex Mono',monospace"
+    fontFamily: "'JetBrains Mono',monospace"
   }, "t" + (LAGS[hoverIdx] >= 0 ? "+" : "") + LAGS[hoverIdx]), series.map((sr, si) => {
     const v = sr.pts[hoverIdx]?.[0];
     const display = v === 0 && hoverIdx === 4 && sr.skipZero ? '--' : v?.toFixed(2);
@@ -1149,7 +1165,7 @@ const PlotSVG = React.memo(function PlotSVG({
       fill: sr.color,
       fontSize: 9,
       fontWeight: 600,
-      fontFamily: "'IBM Plex Mono',monospace"
+      fontFamily: "'JetBrains Mono',monospace"
     }, display);
   })), /*#__PURE__*/React.createElement("rect", {
     x: P.l,
@@ -1271,11 +1287,11 @@ function EWSViz() {
     background: active ? C.bgC : "transparent",
     color: active ? C.txW : C.txM,
     fontWeight: active ? 600 : 400,
-    fontFamily: "'IBM Plex Mono',monospace",
+    fontFamily: "'JetBrains Mono',monospace",
     transition: "all 0.15s"
   });
   const mono9 = {
-    fontFamily: "'IBM Plex Mono',monospace",
+    fontFamily: "'JetBrains Mono',monospace",
     fontSize: 9,
     fontWeight: 600,
     letterSpacing: 1,
@@ -1283,7 +1299,7 @@ function EWSViz() {
     textTransform: "uppercase"
   };
   const panelTitle = {
-    fontFamily: "'IBM Plex Sans',sans-serif",
+    fontFamily: "'DM Sans',sans-serif",
     fontSize: 13,
     fontWeight: 600,
     color: C.tx,
@@ -1314,7 +1330,7 @@ function EWSViz() {
       border: "1px solid " + C.bdr,
       maxWidth: 760,
       margin: "0 auto",
-      fontFamily: "'IBM Plex Sans',sans-serif"
+      fontFamily: "'DM Sans',sans-serif"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1329,7 +1345,7 @@ function EWSViz() {
     }
   }, "Methodology"), /*#__PURE__*/React.createElement("h3", {
     style: {
-      fontFamily: "'Instrument Serif',serif",
+      fontFamily: "'Fraunces',serif",
       fontSize: 20,
       fontWeight: 400,
       color: C.txW,
@@ -1448,7 +1464,7 @@ function EWSViz() {
   }), "Baseline")), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "0 14px",
-      fontFamily: "'IBM Plex Mono',monospace",
+      fontFamily: "'JetBrains Mono',monospace",
       fontSize: 11,
       fontWeight: 600,
       color: curMain.series[0].color
@@ -1504,7 +1520,7 @@ function EWSViz() {
   }), sr.label))), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "0 14px",
-      fontFamily: "'IBM Plex Mono',monospace",
+      fontFamily: "'JetBrains Mono',monospace",
       fontSize: 10,
       fontWeight: 500,
       color: C.cool
@@ -1544,7 +1560,7 @@ function EWSViz() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: "'IBM Plex Mono',monospace",
+      fontFamily: "'JetBrains Mono',monospace",
       fontSize: 22,
       fontWeight: 700,
       color: card.color
@@ -1579,7 +1595,7 @@ function EWSViz() {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      fontFamily: "'IBM Plex Sans',sans-serif",
+      fontFamily: "'DM Sans',sans-serif",
       fontSize: 12,
       fontWeight: 500,
       color: C.txS,
@@ -1606,7 +1622,7 @@ function EWSViz() {
       background: "none",
       border: "none",
       cursor: "pointer",
-      fontFamily: "'IBM Plex Sans',sans-serif",
+      fontFamily: "'DM Sans',sans-serif",
       fontSize: 11,
       fontWeight: methTab === id ? 600 : 400,
       color: methTab === id ? C.txW : C.txM,
@@ -1724,7 +1740,7 @@ function EWSViz() {
       style: {
         width: 32,
         fontSize: 10,
-        fontFamily: "'IBM Plex Mono',monospace",
+        fontFamily: "'JetBrains Mono',monospace",
         fontWeight: 600,
         color: d.excl <= 1.0 ? C.txM : C.cool,
         textAlign: "right"
@@ -1757,7 +1773,7 @@ function EWSViz() {
       style: {
         width: 32,
         fontSize: 10,
-        fontFamily: "'IBM Plex Mono',monospace",
+        fontFamily: "'JetBrains Mono',monospace",
         fontWeight: 600,
         color: C.warmLight,
         textAlign: "right"
@@ -1838,7 +1854,7 @@ function EWSViz() {
         padding: "5px 6px",
         textAlign: "right",
         color: C.txS,
-        fontFamily: "'IBM Plex Mono',monospace",
+        fontFamily: "'JetBrains Mono',monospace",
         fontSize: 10
       }
     }, d.e.toLocaleString()), /*#__PURE__*/React.createElement("td", {
@@ -1846,7 +1862,7 @@ function EWSViz() {
         padding: "5px 6px",
         textAlign: "right",
         color: C.txS,
-        fontFamily: "'IBM Plex Mono',monospace",
+        fontFamily: "'JetBrains Mono',monospace",
         fontSize: 10
       }
     }, d.k.toLocaleString()), /*#__PURE__*/React.createElement("td", {
@@ -1854,7 +1870,7 @@ function EWSViz() {
         padding: "5px 6px",
         textAlign: "right",
         color: C.txS,
-        fontFamily: "'IBM Plex Mono',monospace",
+        fontFamily: "'JetBrains Mono',monospace",
         fontSize: 10
       }
     }, d.i.toLocaleString()), /*#__PURE__*/React.createElement("td", {
@@ -1864,7 +1880,7 @@ function EWSViz() {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        fontFamily: "'IBM Plex Mono',monospace",
+        fontFamily: "'JetBrains Mono',monospace",
         fontSize: 12,
         fontWeight: 700,
         color: d.cr >= 2.5 ? C.warm : d.cr >= 1.5 ? C.cool : C.txM
@@ -1906,7 +1922,7 @@ function EWSViz() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: "'IBM Plex Mono',monospace",
+      fontFamily: "'JetBrains Mono',monospace",
       fontSize: i === 0 ? 16 : 22,
       fontWeight: 700,
       color: i === 0 ? C.txM : i === 3 ? C.warm : C.gold
@@ -1962,7 +1978,7 @@ function EWSViz() {
 
 // ─── TACTICAL MIX ANIMATED BARS ───
 /*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
-  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 8}}, "Tactical mix by armed group"),
+  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'JetBrains Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 8}}, "Tactical mix by armed group"),
   // Inline legend header
   /*#__PURE__*/React.createElement("div", {style: {display: "flex", alignItems: "center", gap: 6, marginBottom: 6, paddingLeft: 78}},
     TACTIC_LABELS.map(function(l, i) {
@@ -1997,7 +2013,7 @@ function EWSViz() {
             }) : null;
           })
         ),
-        /*#__PURE__*/React.createElement("div", {style: {width: 32, fontSize: 9, color: C.txM, fontFamily: "'IBM Plex Mono',monospace", textAlign: "right"}},
+        /*#__PURE__*/React.createElement("div", {style: {width: 32, fontSize: 9, color: C.txM, fontFamily: "'JetBrains Mono',monospace", textAlign: "right"}},
           show ? (a.events / 1000).toFixed(1) + "k" : ""
         )
       )
@@ -2009,14 +2025,14 @@ function EWSViz() {
   },
     /*#__PURE__*/React.createElement("span", {style: {color: C.txW, fontWeight: 600}}, actorHover.actor),
     /*#__PURE__*/React.createElement("span", {style: {color: C.txS, marginLeft: 6}}, actorHover.tactic + ": "),
-    /*#__PURE__*/React.createElement("span", {style: {color: C.warm, fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600}}, actorHover.pct.toFixed(1) + "%"),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.warm, fontFamily: "'JetBrains Mono',monospace", fontWeight: 600}}, actorHover.pct.toFixed(1) + "%"),
     /*#__PURE__*/React.createElement("span", {style: {color: C.txM, marginLeft: 6}}, "(" + actorHover.events.toLocaleString() + " events)")
   ),
 ),
 
 // ─── JNIM COUNTRY RATIOS ───
 /*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
-  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "JNIM KAFD:IED ratio by country"),
+  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'JetBrains Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "JNIM KAFD:IED ratio by country"),
   /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "IED-dominant in established zones; abduction-dominant in frontier zones."),
   JNIM_RATIO.map(function(r, i) {
     var show = animStep >= 1;
@@ -2045,7 +2061,7 @@ function EWSViz() {
           background: C.txM, opacity: 0.3
         }})
       ),
-      /*#__PURE__*/React.createElement("div", {style: {width: 35, fontSize: 9, color: show ? C.txS : "transparent", fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, transition: "color 0.3s"}}, r.ratio.toFixed(1) + ":1")
+      /*#__PURE__*/React.createElement("div", {style: {width: 35, fontSize: 9, color: show ? C.txS : "transparent", fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, transition: "color 0.3s"}}, r.ratio.toFixed(1) + ":1")
     );
   }),
   // Hover tooltip
@@ -2054,7 +2070,7 @@ function EWSViz() {
   },
     /*#__PURE__*/React.createElement("span", {style: {color: C.txW, fontWeight: 600}}, actorHover.country),
     /*#__PURE__*/React.createElement("span", {style: {color: C.txS, marginLeft: 8}}, "KAFD:IED = "),
-    /*#__PURE__*/React.createElement("span", {style: {color: C.warm, fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600}}, actorHover.ratio.toFixed(2) + ":1"),
+    /*#__PURE__*/React.createElement("span", {style: {color: C.warm, fontFamily: "'JetBrains Mono',monospace", fontWeight: 600}}, actorHover.ratio.toFixed(2) + ":1"),
     /*#__PURE__*/React.createElement("span", {style: {color: C.txM, marginLeft: 8}}, "IED " + actorHover.ied.toFixed(0) + "% \u00b7 KAFD " + actorHover.kafd.toFixed(0) + "%"),
     /*#__PURE__*/React.createElement("span", {style: {color: C.txM, marginLeft: 8}}, "N=" + actorHover.n.toLocaleString())
   )
@@ -2062,7 +2078,7 @@ function EWSViz() {
 
 // ─── BF TRANSITION ARC ───
 /*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
-  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "Burkina Faso transition arc"),
+  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'JetBrains Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "Burkina Faso transition arc"),
   /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "KAFD:IED peaked 4.3:1 in 2021 (expansion), fell to 0.0:1 by 2025 (IED supply chains matured)."),
   (function() {
     var W = 600, H = 130, Pad = {t: 16, r: 14, b: 28, l: 36};
@@ -2104,7 +2120,7 @@ function EWSViz() {
       [0, 1, 2, 3, 4].map(function(v) {
         return /*#__PURE__*/React.createElement("g", {key: v},
           /*#__PURE__*/React.createElement("line", {x1: Pad.l, y1: yS(v), x2: W - Pad.r, y2: yS(v), stroke: C.bdr, strokeWidth: 0.3}),
-          v > 0 && /*#__PURE__*/React.createElement("text", {x: Pad.l - 4, y: yS(v) + 3, fill: C.txM, fontSize: 7, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "end"}, v + ":1")
+          v > 0 && /*#__PURE__*/React.createElement("text", {x: Pad.l - 4, y: yS(v) + 3, fill: C.txM, fontSize: 7, fontFamily: "'JetBrains Mono',monospace", textAnchor: "end"}, v + ":1")
         );
       }),
       // 1:1 reference
@@ -2124,7 +2140,7 @@ function EWSViz() {
       BF_ARC.map(function(d, i) {
         return /*#__PURE__*/React.createElement("g", {key: i},
           /*#__PURE__*/React.createElement("circle", {cx: xS(i), cy: yS(d.ratio), r: 3, fill: d.ratio > 2 ? C.warm : C.cool, stroke: C.bgA, strokeWidth: 1}),
-          /*#__PURE__*/React.createElement("text", {x: xS(i), y: H - 8, fill: C.txM, fontSize: 7, fontFamily: "'IBM Plex Mono',monospace", textAnchor: "middle"}, String(d.year).slice(2))
+          /*#__PURE__*/React.createElement("text", {x: xS(i), y: H - 8, fill: C.txM, fontSize: 7, fontFamily: "'JetBrains Mono',monospace", textAnchor: "middle"}, String(d.year).slice(2))
         );
       }),
       // Hover crosshair
@@ -2144,11 +2160,11 @@ function EWSViz() {
         }),
         /*#__PURE__*/React.createElement("text", {
           x: xS(actorHover.idx) + 14, y: Pad.t + 10,
-          fill: C.txS, fontSize: 8, fontFamily: "'IBM Plex Mono',monospace"
+          fill: C.txS, fontSize: 8, fontFamily: "'JetBrains Mono',monospace"
         }, actorHover.year),
         /*#__PURE__*/React.createElement("text", {
           x: xS(actorHover.idx) + 14, y: Pad.t + 21,
-          fill: C.warm, fontSize: 9, fontWeight: 600, fontFamily: "'IBM Plex Mono',monospace"
+          fill: C.warm, fontSize: 9, fontWeight: 600, fontFamily: "'JetBrains Mono',monospace"
         }, actorHover.ratio.toFixed(1) + ":1")
       ),
       // Invisible rect for hover capture
@@ -2159,7 +2175,7 @@ function EWSViz() {
 
 // ─── SIGNAL STRENGTH TABLE WITH HOVER ───
 /*#__PURE__*/React.createElement("div", {style: {background: C.bgA, border: "1px solid " + C.bdr, padding: "12px 14px", marginBottom: 12, overflow: "hidden"}},
-  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "Signal strength by actor type"),
+  /*#__PURE__*/React.createElement("div", {style: {fontFamily: "'JetBrains Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: 1, color: C.cool, textTransform: "uppercase", marginBottom: 4}}, "Signal strength by actor type"),
   /*#__PURE__*/React.createElement("div", {style: {fontSize: 11, color: C.txS, marginBottom: 8}}, "Inverse relationship: high-frequency composite actors \u2192 strong \"where\" / weak \"when\". Low-frequency \u2192 weak \"where\" / strong \"when\"."),
   /*#__PURE__*/React.createElement("table", {style: {width: "100%", borderCollapse: "collapse", fontSize: 10}},
     /*#__PURE__*/React.createElement("thead", null,
@@ -2181,9 +2197,9 @@ function EWSViz() {
           onMouseLeave: function() { setActorHover(null); }
         },
           /*#__PURE__*/React.createElement("td", {style: {padding: "5px 6px", color: isHov ? C.txW : C.txS, fontWeight: isHov ? 600 : 400, transition: "all 0.15s"}}, a.name),
-          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: a.incr > 2 ? C.warm : C.txS, fontFamily: "'IBM Plex Mono',monospace"}}, a.incr.toFixed(2) + "x"),
-          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: a.dist > 6 ? C.warm : C.txS, fontFamily: "'IBM Plex Mono',monospace"}}, a.dist.toFixed(1) + "x"),
-          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: C.txM, fontFamily: "'IBM Plex Mono',monospace"}}, a.n.toLocaleString()),
+          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: a.incr > 2 ? C.warm : C.txS, fontFamily: "'JetBrains Mono',monospace"}}, a.incr.toFixed(2) + "x"),
+          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: a.dist > 6 ? C.warm : C.txS, fontFamily: "'JetBrains Mono',monospace"}}, a.dist.toFixed(1) + "x"),
+          /*#__PURE__*/React.createElement("td", {style: {textAlign: "right", padding: "5px 6px", color: C.txM, fontFamily: "'JetBrains Mono',monospace"}}, a.n.toLocaleString()),
           /*#__PURE__*/React.createElement("td", {style: {padding: "5px 6px", color: C.txM, fontSize: 9}}, a.dist > 6 ? "STRATEGIC" : a.incr > 2 ? "CONCURRENT" : "Both")
         );
       })
@@ -2207,7 +2223,7 @@ function EWSViz() {
       background: "none",
       border: "none",
       cursor: "pointer",
-      fontFamily: "'IBM Plex Sans',sans-serif"
+      fontFamily: "'DM Sans',sans-serif"
     }
   }, "Collapse methodology ", "\u25B2")))), /*#__PURE__*/React.createElement("div", {
     style: {
