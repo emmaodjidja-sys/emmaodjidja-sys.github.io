@@ -1,517 +1,410 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Programme Evaluation — PRAXIS AI for Good Lab</title>
-  <meta name="description" content="PRAXIS evaluation track: open-source browser tools encoding 12 years of field evaluation experience. Six tools, 298 indicators, 11 sectors. Everything runs client-side.">
-  <meta property="og:title" content="Programme Evaluation — PRAXIS">
-  <meta property="og:description" content="Open-source evaluation infrastructure built on 12 years of field experience. Six live tools, 298 indicators, zero data transmission.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/evaluation/">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/svg+xml" href="../logo.svg">
-  <link rel="alternate icon" type="image/png" href="../logo-32.png">
-  <meta name="theme-color" content="#0B1A2E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    /* === VARIABLES === */
-    :root {
-      --navy: #0B1A2E;
-      --navy-deep: #060c17;
-      --navy-mid: #132238;
-      --teal: #2EC4B6;
-      --teal-dim: rgba(46,196,182,0.12);
-      --amber: #E8A838;
-      --amber-dim: rgba(232,168,56,0.12);
-      --slate: #8899AA;
-      --slate-light: #A4B3C2;
-      --off-white: #E8ECF0;
-      --warm: #FAFBFC;
-      --surface: #FFFFFF;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRAXIS | Evaluation Infrastructure &amp; Tools</title>
+    <meta name="description" content="Open-source evaluation tools built for the field. 6 tools, 298 indicators, 11 sectors. Runs offline, zero data transmission. MIT licensed.">
+    <meta property="og:title" content="Evaluation Infrastructure | PRAXIS">
+    <meta property="og:description" content="12 years of field evaluation experience encoded into open-source tools. Runs entirely in your browser.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/evaluation/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0B1120">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='32' y2='32' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230B1120'/%3E%3Cstop offset='1' stop-color='%23162032'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Crect x='7' y='7' width='3.5' height='18' rx='1' fill='%2314b8a6'/%3E%3Cpath d='M10.5 7h7c4.5 0 8 3 8 7.5s-3.5 7.5-8 7.5h-7' fill='none' stroke='%2314b8a6' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='25' r='1.5' fill='%2314b8a6' opacity='.5'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        p_navy: '#0B1120',
+                        p_surface: '#162032',
+                        p_teal: '#14b8a6',
+                        p_teal_light: '#5eead4',
+                        p_amber: '#f59e0b',
+                        p_paper: '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::selection { background: #14b8a6; color: #0B1120; }
+        body { background-color: #0B1120; color: #f8fafc; overflow-x: hidden; }
 
-    /* === RESET + BASE === */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; scroll-padding-top: 56px; }
-    body {
-      font-family: 'DM Sans', -apple-system, sans-serif;
-      color: var(--navy); background: var(--warm);
-      -webkit-font-smoothing: antialiased;
-      line-height: 1.65; font-size: 16px; overflow-x: hidden;
-    }
-    a { text-decoration: none; color: inherit; }
-    img { max-width: 100%; display: block; }
+        .bg-tactical {
+            background-image:
+                linear-gradient(rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
 
-    /* === UTILITY === */
-    .overline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      letter-spacing: 0.15em; text-transform: uppercase;
-    }
-    .overline.teal { color: var(--teal); }
-    .overline.amber { color: var(--amber); }
-    .section-narrow { max-width: 720px; margin: 0 auto; padding: 0 40px; }
-    .section-inner { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
-    .section-wide { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+        .tool-pane { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
+        .tool-pane.active { display: block; opacity: 1; animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    /* === NAV === */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(6,12,23,0.95);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(46,196,182,0.06);
-    }
-    .nav-inner {
-      max-width: 1200px; margin: 0 auto; padding: 0 40px;
-      height: 56px; display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-brand {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px; font-weight: 600; color: var(--teal);
-      letter-spacing: 0.06em; display: flex; align-items: center; gap: 8px;
-    }
-    .nav-brand img { width: 22px; height: 22px; }
-    .nav-links { display: flex; gap: 24px; align-items: center; }
-    .nav-links a { font-size: 13px; color: var(--slate-light); transition: color 0.2s; }
-    .nav-links a:hover { color: white; }
-    .nav-links a.active { color: var(--teal); }
-    .nav-github {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px; font-weight: 500;
-      background: var(--teal); color: var(--navy);
-      padding: 5px 14px; transition: opacity 0.2s;
-    }
-    .nav-github:hover { opacity: 0.85; }
-    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
-    .hamburger svg { width: 22px; height: 22px; stroke: var(--slate-light); stroke-width: 2; fill: none; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(20, 184, 166, 0.3); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(20, 184, 166, 0.6); }
 
-    /* === HERO === */
-    .hero {
-      position: relative; overflow: hidden;
-      background: var(--navy-deep);
-    }
-    .hero-bg {
-      position: absolute; inset: 0;
-      background: url('../hero-bg.png') center 30% / cover no-repeat;
-      opacity: 0.6;
-    }
-    .hero-bg::after {
-      content: ''; position: absolute; inset: 0;
-      background:
-        linear-gradient(90deg, var(--navy-deep) 0%, var(--navy-deep) 30%, rgba(6,12,23,0.4) 60%, rgba(6,12,23,0.2) 100%),
-        linear-gradient(to top, var(--navy-deep) 0%, transparent 25%);
-    }
-    .hero-content {
-      max-width: 1200px; margin: 0 auto; padding: 80px 40px 60px;
-      position: relative; z-index: 2;
-    }
-    .hero h1 {
-      font-family: 'Fraunces', Georgia, serif;
-      font-weight: 300; font-size: clamp(2.5rem, 5vw, 3.8rem);
-      line-height: 1.08; letter-spacing: -0.025em;
-      color: white; margin-bottom: 24px;
-    }
-    .hero h1 em { font-style: italic; color: var(--teal); }
-    .hero-sub {
-      font-size: 16px; color: var(--slate-light);
-      line-height: 1.7; max-width: 540px; margin-bottom: 32px;
-    }
-    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
-    .btn {
-      display: inline-block; font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 500; padding: 11px 24px; transition: all 0.2s;
-    }
-    .btn-teal { background: var(--teal); color: var(--navy); }
-    .btn-teal:hover { opacity: 0.85; }
-    .btn-outline { border: 1px solid rgba(255,255,255,0.15); color: var(--slate-light); }
-    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+        .reveal {
+            opacity: 0; transform: translateY(16px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* Stats bar inside hero */
-    .stats-bar {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      border-top: 1px solid rgba(46,196,182,0.08);
-      position: relative; z-index: 2;
-      max-width: 1200px; margin: 0 auto;
-    }
-    .stat-cell {
-      padding: 20px 40px;
-      border-right: 1px solid rgba(46,196,182,0.06);
-    }
-    .stat-cell:last-child { border-right: none; }
-    .stat-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 24px; font-weight: 500; color: var(--amber);
-    }
-    .stat-label { font-size: 12px; color: var(--slate); margin-top: 2px; }
-
-    /* === LIGHT BODY SECTIONS === */
-    .section-light {
-      padding: 80px 0;
-      background: var(--warm);
-      border-bottom: 1px solid var(--off-white);
-    }
-    .section-white {
-      padding: 80px 0;
-      background: var(--surface);
-      border-bottom: 1px solid var(--off-white);
-    }
-    .section-heading {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.5rem, 3vw, 2.2rem);
-      font-weight: 400; color: var(--navy);
-      margin: 16px 0 20px;
-    }
-    .prose { color: var(--slate); line-height: 1.8; font-size: 15px; }
-    .prose p + p { margin-top: 16px; }
-
-    /* === PULL QUOTE === */
-    .pull-quote {
-      padding: 64px 0;
-      background: var(--surface);
-      border-bottom: 1px solid var(--off-white);
-    }
-    .pull-quote blockquote {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(1.3rem, 2.8vw, 1.9rem);
-      font-style: italic; font-weight: 400;
-      line-height: 1.4; color: var(--navy);
-      max-width: 620px; margin-bottom: 16px;
-    }
-    .pull-quote cite {
-      font-family: 'DM Sans', sans-serif;
-      font-style: normal; font-size: 14px; color: var(--slate);
-    }
-
-    /* === ECOSYSTEM CARDS === */
-    .eco-grid {
-      display: grid; grid-template-columns: 1fr;
-      gap: 0; margin-top: 32px;
-    }
-    @media (min-width: 700px) {
-      .eco-grid { grid-template-columns: 1fr 1fr; }
-      .eco-card-featured { grid-column: 1 / -1; }
-    }
-    .eco-card {
-      display: block; padding: 32px 24px;
-      border: 1px solid var(--off-white); border-top: none;
-      background: var(--surface); transition: border-color 0.2s;
-    }
-    .eco-card:first-child { border-top: 1px solid var(--off-white); }
-    @media (min-width: 700px) {
-      .eco-card:nth-child(2) { border-top: 1px solid var(--off-white); }
-    }
-    .eco-card:hover { border-color: var(--teal); }
-    .eco-card-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      color: var(--teal); letter-spacing: 0.15em;
-      text-transform: uppercase; margin-bottom: 10px;
-    }
-    .eco-card-title {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 1.25rem; font-weight: 400;
-      color: var(--navy); margin-bottom: 10px;
-    }
-    .eco-card-featured .eco-card-title { font-size: 1.5rem; }
-    .eco-card-desc { font-size: 15px; color: var(--slate); line-height: 1.7; }
-    .eco-card-cta {
-      display: inline-block; margin-top: 14px;
-      font-size: 13px; font-weight: 500; color: var(--teal);
-      transition: opacity 0.2s;
-    }
-    .eco-card-cta:hover { opacity: 0.7; }
-
-    /* === TOOLS SECTION === */
-    .tool-featured {
-      display: grid; grid-template-columns: 1fr;
-      gap: 24px; padding: 32px 0;
-      border-bottom: 1px solid var(--off-white);
-    }
-    @media (min-width: 700px) {
-      .tool-featured { grid-template-columns: 240px 1fr; gap: 40px; }
-    }
-    .tool-featured-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500;
-      color: var(--amber); letter-spacing: 0.15em;
-      text-transform: uppercase; margin-bottom: 6px;
-    }
-    .tool-featured-name {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 1.4rem; font-weight: 400; color: var(--navy);
-    }
-    .tool-featured-body {
-      font-size: 15px; color: var(--slate); line-height: 1.75;
-    }
-    .tool-featured-cta {
-      display: inline-block; margin-top: 12px;
-      font-size: 14px; font-weight: 500; color: var(--teal);
-      transition: opacity 0.2s;
-    }
-    .tool-featured-cta:hover { opacity: 0.7; }
-
-    .tools-grid {
-      display: grid; grid-template-columns: 1fr;
-      gap: 0; margin-top: 0;
-    }
-    @media (min-width: 600px) {
-      .tools-grid { grid-template-columns: 1fr 1fr; }
-    }
-    .tool-compact {
-      display: block; padding: 24px 0;
-      border-bottom: 1px solid var(--off-white);
-      transition: background 0.2s;
-    }
-    @media (min-width: 600px) {
-      .tool-compact { padding: 24px 16px; border-right: 1px solid var(--off-white); }
-      .tool-compact:nth-child(even) { border-right: none; }
-    }
-    .tool-compact:hover { background: rgba(46,196,182,0.04); }
-    .tool-compact-name {
-      font-size: 15px; font-weight: 500; color: var(--navy);
-      margin-bottom: 4px;
-    }
-    .tool-compact-desc { font-size: 13px; color: var(--slate); line-height: 1.6; }
-
-    /* === FOOTER === */
-    footer {
-      background: var(--navy-deep); padding: 24px 0;
-      border-top: 1px solid rgba(46,196,182,0.06);
-    }
-    .footer-inner {
-      max-width: 1200px; margin: 0 auto; padding: 0 40px;
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 12px;
-    }
-    .footer-links { display: flex; gap: 20px; }
-    .footer-links a { font-size: 13px; color: var(--slate); transition: color 0.2s; }
-    .footer-links a:hover { color: var(--teal); }
-    .footer-copy { font-size: 12px; color: var(--slate); }
-
-    /* === REVEAL === */
-    .reveal {
-      opacity: 0; transform: translateY(12px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    /* === MOBILE === */
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .nav-links.open {
-        display: flex; flex-direction: column;
-        position: absolute; top: 56px; left: 0; right: 0;
-        background: rgba(6,12,23,0.97);
-        padding: 16px 28px; gap: 16px;
-        border-bottom: 1px solid rgba(46,196,182,0.06);
-      }
-      .hamburger { display: block; }
-      .hero-content { padding: 60px 24px 40px; }
-      .hero h1 { font-size: 2rem; }
-      .stats-bar { grid-template-columns: 1fr 1fr; }
-      .stat-cell { padding: 16px 24px; }
-      .section-narrow, .section-inner, .section-wide { padding: 0 24px; }
-      .section-light, .section-white, .pull-quote { padding: 56px 0; }
-      .eco-grid { grid-template-columns: 1fr; }
-      .tools-grid { grid-template-columns: 1fr; }
-      .footer-inner { flex-direction: column; align-items: flex-start; padding: 0 24px; }
-    }
-  </style>
+        @media (max-width: 767px) {
+            .nav-links-desktop { display: none !important; }
+            .hamburger { display: flex !important; }
+            .mobile-menu.open { display: flex !important; }
+        }
+    </style>
 </head>
-<body>
+<body class="antialiased bg-tactical relative">
 
-<!-- NAV -->
-<nav>
-  <div class="nav-inner">
-    <a href="../" class="nav-brand"><img src="../logo.svg" alt="PRAXIS" width="22" height="22">PRAXIS</a>
-    <button class="hamburger" aria-label="Toggle menu">
-      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <div class="nav-links">
-      <a href="../">Lab</a>
-      <a href="../ews/">EWS</a>
-      <a href="./" class="active">Evaluation</a>
-      <a href="../tools/">Tools</a>
-      <a href="../360/">360</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="nav-github">GitHub</a>
-    </div>
-  </div>
-</nav>
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-lg bg-p_navy/80 border-b border-white/5">
+        <div class="flex items-center gap-4">
+            <div class="w-2 h-2 rounded-full bg-p_teal animate-pulse shadow-[0_0_10px_#14b8a6]"></div>
+            <a href="../" class="text-xl font-bold tracking-tight text-white">PRAXIS.</a>
+        </div>
+        <button class="hamburger hidden items-center justify-center w-8 h-8" aria-label="Toggle menu" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="nav-links-desktop hidden md:flex space-x-8 text-xs font-mono tracking-widest text-slate-400 items-center">
+            <a href="../" class="hover:text-p_teal transition-colors">LAB</a>
+            <a href="../research/" class="hover:text-p_teal transition-colors">RESEARCH</a>
+            <a href="../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
+            <a href="./" class="text-p_teal">EVALUATION</a>
+            <a href="../360/" class="hover:text-p_teal transition-colors">360</a>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="px-4 py-2 border border-slate-700 rounded hover:border-p_teal hover:text-p_teal transition-colors ml-4 text-white">GitHub</a>
+        </div>
+        <div id="mobile-menu" class="mobile-menu hidden flex-col absolute top-full left-0 right-0 bg-p_navy/95 backdrop-blur-lg border-b border-white/5 px-8 py-6 gap-4 text-sm font-mono tracking-widest text-slate-400">
+            <a href="../" class="hover:text-p_teal transition-colors">LAB</a>
+            <a href="../research/" class="hover:text-p_teal transition-colors">RESEARCH</a>
+            <a href="../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
+            <a href="./" class="text-p_teal">EVALUATION</a>
+            <a href="../360/" class="hover:text-p_teal transition-colors">360</a>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">GITHUB</a>
+        </div>
+    </nav>
 
-<main>
+    <!-- HERO -->
+    <header class="pt-36 pb-16 px-8 max-w-7xl mx-auto reveal">
+        <div class="grid lg:grid-cols-12 gap-12 items-end">
+            <div class="lg:col-span-8">
+                <div class="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-p_surface border border-slate-700 text-slate-300 font-mono text-[10px] uppercase tracking-widest mb-8">
+                    <span class="w-1.5 h-1.5 bg-p_teal rounded-full"></span>
+                    <span>Evaluation Infrastructure</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[1.05] text-white">
+                    Built for the field.<br/>
+                    <span class="font-serif italic text-slate-400 font-normal">Runs on your machine.</span>
+                </h1>
+                <p class="text-xl text-slate-300 font-light leading-relaxed max-w-2xl">
+                    Twelve years of field evaluation experience, from pastoralist communities in South Sudan to health facilities in rural Burundi, encoded into open-source tools.
+                </p>
+            </div>
+            <div class="lg:col-span-4 lg:text-right space-y-4 font-mono text-sm tracking-widest uppercase text-slate-500">
+                <div class="flex justify-between lg:justify-end gap-8 border-b border-slate-800 pb-2"><span class="text-white font-bold">6</span> <span>Live Tools</span></div>
+                <div class="flex justify-between lg:justify-end gap-8 border-b border-slate-800 pb-2"><span class="text-white font-bold">298</span> <span>Indicators</span></div>
+                <div class="flex justify-between lg:justify-end gap-8 border-b border-slate-800 pb-2"><span class="text-white font-bold">11</span> <span>Sectors</span></div>
+                <div class="flex justify-between lg:justify-end gap-8 border-b border-p_teal/30 pb-2"><span class="text-p_teal font-bold">0</span> <span class="text-p_teal">Data Transmitted</span></div>
+            </div>
+        </div>
+    </header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-content reveal">
-    <p class="overline amber" style="margin-bottom:20px;">PROGRAMME EVALUATION</p>
-    <h1>Programme <em>evaluation</em><br>infrastructure</h1>
-    <p class="hero-sub">Twelve years of field evaluation experience, from pastoralist communities in South Sudan to health facilities in rural Burundi, encoded into open-source tools that run on your machine.</p>
-    <div class="hero-ctas">
-      <a href="../tools/" class="btn btn-teal">Open the toolkit</a>
-      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="btn btn-outline">View on GitHub</a>
-    </div>
-  </div>
-  <div class="stats-bar">
-    <div class="stat-cell">
-      <div class="stat-value">6</div>
-      <div class="stat-label">live tools</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-value">298</div>
-      <div class="stat-label">indicators</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-value">11</div>
-      <div class="stat-label">sectors covered</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-value">0</div>
-      <div class="stat-label">data transmitted</div>
-    </div>
-  </div>
-</section>
+    <!-- WHY THIS EXISTS -->
+    <section class="py-12 px-8 max-w-7xl mx-auto mb-16 reveal">
+        <div class="bg-p_surface border border-slate-800 rounded-2xl p-8 md:p-12 relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-64 h-64 bg-p_teal/5 rounded-full blur-[80px] pointer-events-none"></div>
+            <div class="grid md:grid-cols-2 gap-12 items-center relative z-10">
+                <div>
+                    <h2 class="text-xs font-mono tracking-widest text-slate-500 uppercase mb-4">Why This Exists</h2>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        I kept running into the same problem. You find a useful tool, you build your workflow around it, and then the pricing changes. Or the platform pivots. <strong class="text-white font-medium">Or the internet goes down in the middle of a field visit and you lose access to your own work.</strong>
+                    </p>
+                    <p class="text-slate-300 leading-relaxed">
+                        PRAXIS runs entirely in your browser. Everything stays on your machine. No server calls, no tracking. If the wifi cuts out in Juba or Ouagadougou, the tools still work. MIT licensed, permanently free, fully yours.
+                    </p>
+                </div>
+                <div class="border-l-2 border-p_teal pl-8">
+                    <p class="text-2xl font-serif italic text-white leading-snug mb-4">
+                        "I spent years looking for evaluation tools built by someone who had actually run an evaluation in a conflict zone. I could not find them. So I built them."
+                    </p>
+                    <footer class="text-xs font-mono text-slate-500 uppercase tracking-widest">Emmanuel Nene Odjidja</footer>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<!-- WHY THIS EXISTS -->
-<section class="section-light">
-  <div class="section-narrow reveal">
-    <p class="overline amber">THE GAP</p>
-    <h2 class="section-heading">Why this exists</h2>
-    <div class="prose">
-      <p>I kept running into the same problem. You find a useful tool, you build your workflow around it, and then the pricing changes. Or the platform pivots. Or the internet goes down in the middle of a field visit and you lose access to your own work. It happened enough times that I stopped trusting tools I could not control.</p>
-      <p>PRAXIS runs entirely in your browser. Everything stays on your machine. No server calls, no accounts, no tracking. If the wifi cuts out in Juba or Ouagadougou, the tools still work. If PRAXIS disappears tomorrow, you still have your files. MIT licensed, permanently free, fully yours.</p>
-    </div>
-  </div>
-</section>
+    <!-- WORKBENCH -->
+    <section id="workbench" class="py-16 px-8 max-w-7xl mx-auto reveal">
+        <h2 class="text-3xl font-bold text-white mb-8">The Local Toolkit</h2>
 
-<!-- PULL QUOTE -->
-<section class="pull-quote">
-  <div class="section-narrow reveal">
-    <blockquote>"I spent years looking for evaluation tools built by someone who had actually run an evaluation in a conflict zone. I could not find them. So I built them."</blockquote>
-    <cite>Emmanuel Nene Odjidja</cite>
-  </div>
-</section>
+        <div class="border border-slate-700 rounded-xl bg-[#0f172a] shadow-2xl overflow-hidden flex flex-col md:flex-row h-[600px]">
 
-<!-- THE ECOSYSTEM -->
-<section class="section-white">
-  <div class="section-inner">
-    <div class="reveal">
-      <p class="overline teal">EVALUATION ECOSYSTEM</p>
-      <h2 class="section-heading">The ecosystem</h2>
-    </div>
+            <div class="w-full md:w-1/3 bg-[#1e293b] border-r border-slate-700 flex flex-col">
+                <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-[#0f172a]/50">
+                    <span class="text-xs font-mono text-slate-400 tracking-widest uppercase">Select Module</span>
+                    <span class="w-2 h-2 bg-p_teal rounded-full shadow-[0_0_8px_#14b8a6]"></span>
+                </div>
 
-    <div class="eco-grid reveal">
-      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="eco-card eco-card-featured">
-        <p class="eco-card-label">Foundation</p>
-        <h3 class="eco-card-title">AI Evaluation Skills</h3>
-        <p class="eco-card-desc">Claude Project knowledge modules encoding validated evaluation methodology. Six core modules plus sector-specific extensions covering over 20 evaluation designs and 16 validated scales. The AI applies structured methodology to your specific context, programme type, and operating environment.</p>
-        <span class="eco-card-cta">View on GitHub &rarr;</span>
-      </a>
+                <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-2" id="tool-menu">
+                    <button class="w-full text-left p-4 rounded-lg border border-slate-600 bg-slate-700/50 hover:border-p_teal transition-all flex flex-col gap-1 group" onclick="switchTool('tool-advisor', this)">
+                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
+                            <span class="font-mono text-[10px] bg-p_teal/20 text-p_teal px-1 rounded">01</span> Design Advisor
+                        </span>
+                        <span class="text-xs text-slate-400 line-clamp-1">AI-scored recommendations across 16 designs.</span>
+                    </button>
 
-      <a href="../tools/" class="eco-card">
-        <p class="eco-card-label">Tools</p>
-        <h3 class="eco-card-title">Browser Toolkit</h3>
-        <p class="eco-card-desc">Six tools covering the full evaluation lifecycle. Sample size calculation, design advising, data exploration, Theory of Change building, evaluation matrices, and an indicator bank. Zero data transmission. Works offline.</p>
-        <span class="eco-card-cta">Open toolkit &rarr;</span>
-      </a>
+                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-sample', this)">
+                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
+                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">02</span> Sample Size Calculator
+                        </span>
+                        <span class="text-xs text-slate-400 line-clamp-1">8 designs: RCT, Cluster, Stepped-Wedge, DiD.</span>
+                    </button>
 
-      <a href="../360/" class="eco-card">
-        <p class="eco-card-label">Workflow</p>
-        <h3 class="eco-card-title">PRAXIS 360</h3>
-        <p class="eco-card-desc">The integrated end-to-end evaluation workflow built on the .praxis file format. Theory of Change through to reporting, with every finding traceable back to the evaluation framework. Launching at Glocal 2026.</p>
-        <span class="eco-card-cta">Learn more &rarr;</span>
-      </a>
-    </div>
-  </div>
-</section>
+                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-toc', this)">
+                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
+                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">03</span> Theory of Change
+                        </span>
+                        <span class="text-xs text-slate-400 line-clamp-1">Visual canvas with assumptions mapping.</span>
+                    </button>
 
-<!-- LIVE TOOLS -->
-<section class="section-light">
-  <div class="section-inner">
-    <div class="reveal">
-      <p class="overline teal">OPEN-SOURCE TOOLKIT</p>
-      <h2 class="section-heading">Live tools</h2>
-    </div>
+                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-matrix', this)">
+                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
+                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">04</span> Evaluation Matrix
+                        </span>
+                        <span class="text-xs text-slate-400 line-clamp-1">Link criteria, indicators, and methods.</span>
+                    </button>
 
-    <!-- Featured tool -->
-    <div class="tool-featured reveal">
-      <div>
-        <p class="tool-featured-label">Flagship</p>
-        <h3 class="tool-featured-name">Evaluation Design Advisor</h3>
-      </div>
-      <div>
-        <p class="tool-featured-body">Answer 10 context questions about your programme and get scored recommendations across 16 evaluation designs. The advisor accounts for data availability, ethical constraints, programme maturity, and operational context to suggest designs that will actually work in the field, not just in a textbook.</p>
-        <a href="../tools/evaluation-design-advisor/" class="tool-featured-cta">Get recommendations &rarr;</a>
-      </div>
-    </div>
+                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-data', this)">
+                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
+                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">05</span> Data Explorer
+                        </span>
+                        <span class="text-xs text-slate-400 line-clamp-1">Instant stats, regression, and Likert analysis.</span>
+                    </button>
 
-    <!-- Rest of tools in compact grid -->
-    <div class="tools-grid reveal">
-      <a href="../tools/sample-size-calculator/" class="tool-compact">
-        <div class="tool-compact-name">Sample Size Calculator</div>
-        <div class="tool-compact-desc">8 evaluation designs. RCT, cluster, stepped-wedge, DiD, LQAS. Guided parameter selection.</div>
-      </a>
-      <a href="../tools/data-explorer/" class="tool-compact">
-        <div class="tool-compact-name">Data Explorer</div>
-        <div class="tool-compact-desc">Upload CSV/XLSX for instant stats, regression, Likert analysis, and Word export.</div>
-      </a>
-      <a href="../tools/toc-builder/" class="tool-compact">
-        <div class="tool-compact-name">Theory of Change Builder</div>
-        <div class="tool-compact-desc">Structured ToCs with assumptions mapping and causal pathway visualisation.</div>
-      </a>
-      <a href="../tools/eval-matrix-builder/" class="tool-compact">
-        <div class="tool-compact-name">Evaluation Matrix Builder</div>
-        <div class="tool-compact-desc">Link questions to criteria, indicators, data sources, and methods. Word export.</div>
-      </a>
-      <a href="../tools/indicator-bank/" class="tool-compact">
-        <div class="tool-compact-name">Indicator Bank</div>
-        <div class="tool-compact-desc">298 indicators across 11 sectors. PEPFAR MER codes, validated instruments. CSV export.</div>
-      </a>
-    </div>
-  </div>
-</section>
+                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-bank', this)">
+                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
+                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">06</span> Indicator Bank
+                        </span>
+                        <span class="text-xs text-slate-400 line-clamp-1">298 indicators, PEPFAR MER codes.</span>
+                    </button>
+                </div>
+            </div>
 
-</main>
+            <div class="w-full md:w-2/3 p-8 relative overflow-y-auto custom-scroll">
 
-<footer>
-  <div class="footer-inner">
-    <div class="footer-links">
-      <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener">Publications</a>
-      <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>
-    </div>
-    <span class="footer-copy">2026 PRAXIS. Open source. MIT licensed.</span>
-  </div>
-</footer>
+                <div id="tool-advisor" class="tool-pane active h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white mb-2">Evaluation Design Advisor</h3>
+                    <p class="text-slate-400 text-sm mb-8">Answer 10 context questions about your programme and get scored recommendations. The advisor accounts for data availability, ethical constraints, and operational context to suggest designs that will actually work in the field.</p>
+                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-tactical opacity-50"></div>
+                        <div class="relative z-10 w-full max-w-sm">
+                            <div class="text-[10px] font-mono text-p_teal uppercase tracking-widest mb-4 border border-p_teal/30 bg-p_teal/10 inline-block px-3 py-1 rounded">Algorithm Output Preview</div>
+                            <div class="flex justify-between items-center bg-slate-800 p-4 rounded mb-2 border border-slate-700">
+                                <span class="text-white font-medium text-sm">Cluster-RCT</span>
+                                <span class="text-p_teal font-mono font-bold">92%</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-800 p-4 rounded mb-2 border border-slate-700 opacity-70">
+                                <span class="text-white font-medium text-sm">Stepped-Wedge</span>
+                                <span class="text-slate-400 font-mono font-bold">85%</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-800 p-4 rounded border border-slate-700 opacity-50">
+                                <span class="text-white font-medium text-sm">Diff-in-Diff</span>
+                                <span class="text-slate-500 font-mono font-bold">40%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <a href="../tools/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Advisor</a>
+                    </div>
+                </div>
+
+                <div id="tool-sample" class="tool-pane h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white mb-2">Sample Size Calculator</h3>
+                    <p class="text-slate-400 text-sm mb-8">Guided parameter selection for 8 evaluation designs. Handles Intraclass Correlation Coefficients (ICC) and expected attrition rates completely offline.</p>
+                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6 flex flex-col justify-center items-center relative">
+                        <div class="flex gap-8 items-end flex-wrap justify-center">
+                            <div class="text-center"><div class="text-4xl font-mono text-white mb-2">24</div><div class="text-xs text-slate-500 font-mono uppercase">Clusters</div></div>
+                            <div class="text-4xl font-light text-slate-700 pb-2">&times;</div>
+                            <div class="text-center"><div class="text-4xl font-mono text-white mb-2">30</div><div class="text-xs text-slate-500 font-mono uppercase">Per Cluster</div></div>
+                            <div class="text-4xl font-light text-slate-700 pb-2">=</div>
+                            <div class="text-center"><div class="text-5xl font-mono text-p_teal mb-2">720</div><div class="text-xs text-p_teal font-mono uppercase font-bold">Total N (80% Power)</div></div>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <a href="../tools/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Calculator</a>
+                    </div>
+                </div>
+
+                <div id="tool-toc" class="tool-pane h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white mb-2">Theory of Change Builder</h3>
+                    <p class="text-slate-400 text-sm mb-8">Visual drag-and-drop canvas. Build your programme's logic model with auto-linked nodes from inputs through to impact.</p>
+                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg flex items-center justify-center">
+                        <div class="flex items-center gap-3">
+                            <div class="px-4 py-2 bg-slate-800 border border-slate-600 rounded text-sm text-slate-300">Inputs</div>
+                            <div class="w-8 h-[1px] bg-slate-600"></div>
+                            <div class="px-4 py-2 bg-p_teal/10 border border-p_teal/40 rounded text-sm text-p_teal">Activities</div>
+                            <div class="w-8 h-[1px] bg-slate-600"></div>
+                            <div class="px-4 py-2 bg-p_amber/10 border border-p_amber/40 rounded text-sm text-p_amber">Impact</div>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <a href="../tools/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Canvas</a>
+                    </div>
+                </div>
+
+                <div id="tool-matrix" class="tool-pane h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white mb-2">Evaluation Matrix Builder</h3>
+                    <p class="text-slate-400 text-sm mb-8">Compile evaluation questions, judgement criteria, indicators, and data collection methods into a structured, exportable table.</p>
+                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6">
+                        <table class="w-full text-xs font-mono text-slate-500 mt-4">
+                            <tr class="border-b border-slate-700/50"><td class="text-p_teal py-2 pr-4">EQ1</td><td class="pr-4">Relevance</td><td>2 indicators</td><td class="text-right text-p_amber">Doc review</td></tr>
+                            <tr class="border-b border-slate-700/50"><td class="text-p_teal py-2 pr-4">EQ2</td><td class="pr-4">Effectiveness</td><td>4 indicators</td><td class="text-right text-p_amber">Mixed methods</td></tr>
+                            <tr class="border-b border-slate-700/50"><td class="text-p_teal py-2 pr-4">EQ3</td><td class="pr-4">Impact</td><td>3 indicators</td><td class="text-right text-p_amber">Quasi-exp.</td></tr>
+                            <tr><td class="text-p_teal py-2 pr-4">EQ4</td><td class="pr-4">Sustainability</td><td>2 indicators</td><td class="text-right text-p_amber">KII + FGD</td></tr>
+                        </table>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <a href="../tools/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Matrix</a>
+                    </div>
+                </div>
+
+                <div id="tool-data" class="tool-pane h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white mb-2">Data Explorer</h3>
+                    <p class="text-slate-400 text-sm mb-8">Offline CSV/XLSX analysis engine. Upload, auto-detect types, summarize distributions, run regressions, and flag quality issues.</p>
+                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg flex items-center justify-center flex-col gap-4">
+                        <svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        <span class="text-sm text-slate-500 font-mono">Select file to analyze locally</span>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <a href="../tools/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Explorer</a>
+                    </div>
+                </div>
+
+                <div id="tool-bank" class="tool-pane h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white mb-2">Indicator Bank</h3>
+                    <p class="text-slate-400 text-sm mb-8">Search 298 indicators across 11 sectors. Filter by PEPFAR MER codes, sector, or keyword.</p>
+                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6">
+                        <div class="w-full bg-slate-900 border border-slate-700 p-3 rounded mb-6 text-slate-500 text-sm font-mono flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Search PEPFAR MER codes...
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>Health</span><span class="text-p_teal">47</span></div>
+                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>Education</span><span class="text-p_teal">38</span></div>
+                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>Protection</span><span class="text-p_teal">31</span></div>
+                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>WASH</span><span class="text-p_teal">28</span></div>
+                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>Governance</span><span class="text-p_teal">24</span></div>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <a href="../tools/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Open Bank</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- BEYOND THE TOOLKIT -->
+    <section class="py-24 px-8 max-w-7xl mx-auto border-t border-slate-800 mt-16 reveal">
+        <h2 class="text-sm font-mono tracking-widest text-slate-500 uppercase mb-12 text-center">Beyond the Toolkit</h2>
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-p_navy border border-slate-800 p-10 rounded-2xl">
+                <div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center mb-6">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-4">AI Evaluation Skills</h3>
+                <p class="text-slate-400 mb-6 leading-relaxed">
+                    Claude Project knowledge modules encoding validated evaluation methodology. Six core modules plus sector-specific extensions covering over 20 evaluation designs and 16 validated scales.
+                </p>
+                <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="text-p_teal font-mono text-sm uppercase tracking-widest hover:text-white transition-colors">View on GitHub &rarr;</a>
+            </div>
+            <div class="bg-p_surface border border-slate-700 p-10 rounded-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 text-[150px] font-black text-slate-800/30 select-none">360</div>
+                <div class="relative z-10">
+                    <div class="inline-block px-2 py-1 bg-slate-800 text-slate-400 rounded text-[10px] font-mono tracking-widest uppercase mb-4">Coming 2026</div>
+                    <h3 class="text-2xl font-bold text-white mb-4">PRAXIS 360 Workflow</h3>
+                    <p class="text-slate-400 mb-6 leading-relaxed">
+                        The integrated end-to-end evaluation workflow built on the <code class="text-p_teal">.praxis</code> file format. From Theory of Change through to reporting, with every finding traceable back to the evaluation framework.
+                    </p>
+                    <a href="../360/" class="text-white font-mono text-sm uppercase tracking-widest border-b border-white pb-1 hover:text-p_teal hover:border-p_teal transition-colors">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pt-20 pb-12 px-8 max-w-7xl mx-auto border-t border-slate-800">
+        <div class="grid md:grid-cols-2 gap-16 mb-20">
+            <div>
+                <div class="text-5xl font-bold text-white tracking-tight mb-6">PRAXIS.</div>
+                <p class="text-slate-400 font-mono text-xs uppercase tracking-widest leading-loose">
+                    Open-Source AI for Programme Evaluation <br/>
+                    and Conflict Early Warning. <br/>
+                    &copy; 2026. MIT Licensed.
+                </p>
+            </div>
+            <div class="md:text-right">
+                <h4 class="text-lg font-bold text-white">Emmanuel Nene Odjidja</h4>
+                <p class="text-p_teal font-mono text-sm mt-1 mb-4">Principal Researcher &amp; Founder</p>
+                <div class="flex md:justify-end gap-4 text-sm text-slate-500 font-mono">
+                    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a>
+                    <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="hover:text-white transition-colors">Publications</a>
+                    <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener" class="hover:text-white transition-colors">emmanuelneneodjidja.org</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
 <script>
-(function() {
-  /* Hamburger */
-  var hamburger = document.querySelector('.hamburger');
-  if (hamburger) {
-    hamburger.addEventListener('click', function() {
-      document.querySelector('.nav-links').classList.toggle('open');
-    });
-  }
+function switchTool(toolId, btn) {
+    document.querySelectorAll('.tool-pane').forEach(function(p) { p.classList.remove('active'); });
+    var t = document.getElementById(toolId);
+    if (t) t.classList.add('active');
 
-  /* Scroll reveal */
-  var els = document.querySelectorAll('.reveal');
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    els.forEach(function(el) { el.classList.add('visible'); });
-    return;
-  }
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
+    document.querySelectorAll('#tool-menu button').forEach(function(b) {
+        b.classList.remove('border-slate-600', 'bg-slate-700/50');
+        b.classList.add('border-transparent');
+        var badge = b.querySelector('.font-mono');
+        if (badge) { badge.classList.remove('bg-p_teal/20', 'text-p_teal'); badge.classList.add('bg-slate-800', 'text-slate-400'); }
     });
-  }, { threshold: 0.1 });
-  els.forEach(function(el) { observer.observe(el); });
+
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-slate-600', 'bg-slate-700/50');
+    var ab = btn.querySelector('.font-mono');
+    if (ab) { ab.classList.remove('bg-slate-800', 'text-slate-400'); ab.classList.add('bg-p_teal/20', 'text-p_teal'); }
+}
+
+(function() {
+    var pr = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var els = document.querySelectorAll('.reveal');
+    if (els.length) {
+        if (pr) { els.forEach(function(e) { e.classList.add('visible'); }); }
+        else {
+            var obs = new IntersectionObserver(function(entries) {
+                entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+            }, { threshold: 0.1 });
+            els.forEach(function(e) { obs.observe(e); });
+        }
+    }
 })();
 </script>
 </body>
