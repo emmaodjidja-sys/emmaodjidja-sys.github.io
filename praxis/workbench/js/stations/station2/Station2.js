@@ -16,12 +16,11 @@
 
     // Upstream gate
     if (!meta.programme_name) {
-      return h('div', { className: 'wb-station-empty' },
-        h('div', { className: 'wb-station-empty-title' }, 'Complete Station 0 first'),
-        h('div', { className: 'wb-station-empty-desc' },
-          'The Evaluation Matrix requires programme details and evaluability assessment from Station 0.'),
-        h('button', { className: 'wb-btn wb-btn-primary',
-          onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 0 }); } }, 'Go to Station 0'));
+      return h(SectionCard, { title: 'Evaluation Matrix', bodyType: 'empty' },
+        h('div', { className: 'wb-sec-empty-text' }, 'The Evaluation Matrix requires programme details and evaluability assessment from Station 0.'),
+        h('button', { className: 'wb-btn wb-btn-teal',
+          onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 0 }); } }, 'Go to Station 0')
+      );
     }
 
     function generate() {
@@ -59,11 +58,10 @@
 
     // Empty state
     if (rows.length === 0) {
-      return h('div', { className: 'wb-station-empty' },
-        h('div', { className: 'wb-station-empty-title' }, 'Build Your Evaluation Matrix'),
-        h('div', { className: 'wb-station-empty-desc' },
-          'Generate evaluation questions matched to your Theory of Change and DAC criteria, with auto-linked indicators from the PRAXIS indicator bank.'),
-        h('button', { className: 'wb-btn wb-btn-primary', onClick: generate }, 'Generate Matrix'));
+      return h(SectionCard, { title: 'Evaluation Matrix', bodyType: 'empty' },
+        h('div', { className: 'wb-sec-empty-text' }, 'Generate evaluation questions matched to your Theory of Change and DAC criteria, with auto-linked indicators from the PRAXIS indicator bank.'),
+        h('button', { className: 'wb-btn wb-btn-teal', onClick: generate }, 'Generate Matrix')
+      );
     }
 
     var indCount = rows.reduce(function(s, r) { return s + (r.indicators || []).length; }, 0);
@@ -71,14 +69,15 @@
     var selRow = selectedId ? rows.filter(function(r) { return r.id === selectedId; })[0] : null;
 
     return h('div', null,
-      h('div', { className: 'wb-toolbar' },
-        h('span', { className: 'wb-field-helper', style: { margin: 0 } },
-          rows.length + ' EQs \u00b7 ' + indCount + ' indicators \u00b7 ' + Object.keys(critSet).length + ' criteria'),
-        h('div', { className: 'wb-toolbar-spacer' }),
-        h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: saveStation }, 'Save Matrix')),
-      h(MatrixTable, { rows: rows, selectedId: selectedId, criterionFilter: criterionFilter,
-        onSelect: function(id) { setSelectedId(selectedId === id ? null : id); }, onFilterChange: setCriterionFilter,
-        onAdd: function() { setShowAddModal(true); }, onExport: function() { setShowExport(!showExport); } }),
+      h(SectionCard, { title: 'Evaluation Matrix', badge: rows.length + ' EQs \u00b7 ' + indCount + ' indicators', bodyType: 'table' },
+        h('div', { className: 'wb-toolbar', style: { padding: '0 0 8px', margin: 0 } },
+          h('div', { className: 'wb-toolbar-spacer' }),
+          h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: saveStation }, 'Save Matrix')
+        ),
+        h(MatrixTable, { rows: rows, selectedId: selectedId, criterionFilter: criterionFilter,
+          onSelect: function(id) { setSelectedId(selectedId === id ? null : id); }, onFilterChange: setCriterionFilter,
+          onAdd: function() { setShowAddModal(true); }, onExport: function() { setShowExport(!showExport); } })
+      ),
       showExport ? h('div', { style: { position: 'relative' } },
         h('div', { className: 'wb-export-menu' },
           ['word', 'excel', 'json'].map(function(f) {
