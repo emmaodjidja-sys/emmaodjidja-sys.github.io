@@ -78,16 +78,22 @@
 .wb-field { margin-bottom: 0; }
 .wb-field-label {
   display: block; font-size: 11px; font-weight: 600;
-  color: var(--text); margin-bottom: 5px;
-  letter-spacing: 0.01em;
+  color: var(--wb-text-secondary, #64748B); margin-bottom: 5px;
+  letter-spacing: 0.08em; text-transform: uppercase;
 }
 .wb-field-hint {
   font-size: 10px; color: var(--slate-light);
   font-weight: 400; margin-left: 4px;
 }
 .wb-field-helper {
-  font-size: 10px; color: var(--slate-light); margin-top: 4px;
-  line-height: 1.4;
+  font-size: 12px; font-weight: 400; color: var(--wb-text-secondary, #64748B);
+  line-height: 1.4; margin-top: 4px;
+}
+
+.wb-mono {
+  font-family: var(--font-mono);
+  font-size: 12px; line-height: 1.15;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Option cards (single/multi select) ─────────────────── */
@@ -735,4 +741,9 @@
   .wb-dimension-label { width: 100px; font-size: 11px; }
   .wb-review-grid { grid-template-columns: 1fr; }
   .wb-question-grid { grid-template-columns: 1fr; }
+  .wb-sec-header { padding: 10px 14px; }
+  .wb-sec-body { padding: 14px; }
+  .wb-sec-body--table { padding: 8px; }
+  .wb-summary-bar { flex-direction: column; height: auto; padding: 8px 12px; gap: 4px; }
+  .wb-summary-stats { flex-wrap: wrap; }
 }
