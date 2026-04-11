@@ -596,7 +596,6 @@
               : null
           );
         })
-        )
       ),
 
       // Bottom actions
