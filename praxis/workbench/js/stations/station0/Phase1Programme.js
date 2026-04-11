@@ -42,6 +42,7 @@
     }
 
     return h('div', null,
+      h(SectionCard, { title: 'Programme Details', badge: data.programme_name ? 'Editing' : 'New' },
       // Guidance banner
       showGuide ? h('div', { className: 'wb-guidance' },
         h('span', { className: 'wb-guidance-text' }, 'Start by entering basic programme details. These inform the evaluability scoring in Phase 3 and carry forward to every downstream station.'),
@@ -125,7 +126,8 @@
             { value: 'long', label: 'Long', desc: '>12 months' }
           ] })
         )
-      ),
+      )
+      ), // end SectionCard
 
       // Bottom bar
       h('div', { className: 'wb-panel-footer' },

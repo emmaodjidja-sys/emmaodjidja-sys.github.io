@@ -26,37 +26,39 @@
       return String(val);
     }
 
-    return h('div', { className: 'wb-card wb-review-card' },
-      // Header
-      h('div', { className: 'wb-review-header' },
-        h('span', { className: 'wb-review-header-check' }, '\u2713'),
-        h('h3', { className: 'wb-review-header-title' },
-          'Phase ' + phaseNumber + ' Complete \u2014 ' + phaseTitle
-        )
+    return h('div', null,
+      h(SectionCard, { title: 'Review: ' + phaseTitle, variant: 'complete' },
+        // Header
+        h('div', { className: 'wb-review-header' },
+          h('span', { className: 'wb-review-header-check' }, '\u2713'),
+          h('h3', { className: 'wb-review-header-title' },
+            'Phase ' + phaseNumber + ' Complete \u2014 ' + phaseTitle
+          )
+        ),
+
+        // 3-column grid of values
+        h('div', { className: 'wb-review-grid' },
+          fields.map(function(key) {
+            var val = formatValue(data[key]);
+            return h('div', { key: key },
+              h('div', { className: 'wb-review-label' }, formatLabel(key)),
+              val
+                ? h('div', { className: 'wb-review-value' }, val)
+                : h('a', { className: 'wb-review-add-link', onClick: onEdit }, 'Not yet specified \u2190 Add')
+            );
+          })
+        ),
+
+        // Early signals
+        earlySignals.length > 0 ? h('div', { className: 'wb-guidance--signal' },
+          h('div', { className: 'wb-guidance--signal-title' }, 'EARLY SIGNAL'),
+          earlySignals.map(function(s, i) {
+            return h('p', { key: i, className: 'wb-guidance--signal-text' }, s);
+          })
+        ) : null
       ),
 
-      // 3-column grid of values
-      h('div', { className: 'wb-review-grid' },
-        fields.map(function(key) {
-          var val = formatValue(data[key]);
-          return h('div', { key: key },
-            h('div', { className: 'wb-review-label' }, formatLabel(key)),
-            val
-              ? h('div', { className: 'wb-review-value' }, val)
-              : h('a', { className: 'wb-review-add-link', onClick: onEdit }, 'Not yet specified \u2190 Add')
-          );
-        })
-      ),
-
-      // Early signals
-      earlySignals.length > 0 ? h('div', { className: 'wb-guidance--signal' },
-        h('div', { className: 'wb-guidance--signal-title' }, 'EARLY SIGNAL'),
-        earlySignals.map(function(s, i) {
-          return h('p', { key: i, className: 'wb-guidance--signal-text' }, s);
-        })
-      ) : null,
-
-      // Action buttons
+      // Action buttons (outside SectionCard)
       h('div', { className: 'wb-review-actions' },
         h('button', { className: 'wb-btn wb-btn-outline', onClick: onEdit }, '\u2190 Edit Phase ' + phaseNumber),
         h('button', { className: 'wb-btn wb-btn-primary', onClick: onContinue }, continueLabel + ' \u2192')

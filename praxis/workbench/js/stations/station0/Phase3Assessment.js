@@ -55,13 +55,14 @@
     }
 
     return h('div', null,
-      // Score display — uses .wb-score design-system classes
-      h('div', { style: { textAlign: 'center', padding: '20px 0 8px' } },
-        h('div', { className: 'wb-score', style: { justifyContent: 'center' } },
-          h('span', { className: 'wb-score-number' }, adjustedTotal),
-          h('span', { className: 'wb-score-label' }, 'out of 100')
+      // Score display — composite card
+      h('div', { className: 'wb-composite-card' },
+        h('span', { className: 'wb-composite-score' }, adjustedTotal),
+        h('div', null,
+          h('div', { className: 'wb-composite-label' }, 'Overall Evaluability'),
+          h('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: 2 } }, 'out of 100')
         ),
-        h('div', { style: { marginTop: 8 } },
+        h('div', { className: 'wb-composite-band' },
           h('span', { className: 'wb-score-band ' + band.css }, band.label)
         )
       ),
@@ -74,7 +75,7 @@
       ) : null,
 
       // Dimension breakdown — uses .wb-dimension design-system classes
-      h('div', { style: { margin: '16px 0 20px' } },
+      h(SectionCard, { title: 'Dimension Scores', badge: scoringResult.dimensions.length + ' dimensions', bodyType: 'scoring' },
         scoringResult.dimensions.map(function(dim) {
           var isExpanded = expandedDim === dim.id;
           var ov = overrides[dim.id];
@@ -92,11 +93,28 @@
                   transform: isExpanded ? 'rotate(90deg)' : 'none',
                   transition: 'transform 0.15s', display: 'inline-block' }
               }, '\u25B6'),
-              h('span', { className: 'wb-dimension-label' }, dim.label),
-              h('div', { className: 'wb-dimension-bar' },
-                h('div', { className: 'wb-dimension-fill', style: { width: pct + '%', background: dimFillColor(pct) } })
+              h('span', { className: 'wb-dimension-label' },
+                dim.label,
+                ov && ov.adjustedScore != null
+                  ? h('span', { className: 'wb-override-badge' }, 'Override')
+                  : null
               ),
-              h('span', { className: 'wb-dimension-score' }, displayScore + '/' + dim.max)
+              h('div', { className: 'wb-dimension-bar' },
+                h('div', {
+                  className: 'wb-dimension-fill' + (ov && ov.adjustedScore != null ? ' wb-dimension-fill--fast' : ''),
+                  style: { width: pct + '%', background: dimFillColor(pct) }
+                })
+              ),
+              ov && ov.adjustedScore != null
+                ? h('span', null,
+                    h('span', { className: 'wb-dimension-original' }, dim.system_score + '/' + dim.max),
+                    h('span', {
+                      className: 'wb-dimension-score wb-dimension-score--' + (pct > 75 ? 'green' : pct >= 50 ? 'amber' : 'red')
+                    }, displayScore + '/' + dim.max)
+                  )
+                : h('span', {
+                    className: 'wb-dimension-score wb-dimension-score--' + (pct > 75 ? 'green' : pct >= 50 ? 'amber' : 'red')
+                  }, displayScore + '/' + dim.max)
             ),
 
             // Expanded detail
@@ -148,8 +166,7 @@
       ),
 
       // Blockers
-      scoringResult.blockers.length > 0 ? h('div', { className: 'wb-card', style: { borderLeft: '3px solid var(--amber)', marginBottom: 16 } },
-        h('div', { className: 'wb-badge wb-badge-amber', style: { marginBottom: 8 } }, 'CONSTRAINTS'),
+      scoringResult.blockers.length > 0 ? h(SectionCard, { title: 'Constraints', variant: 'warning' },
         scoringResult.blockers.map(function(b, i) {
           return h('p', { key: i, style: { fontSize: '12px', color: '#92400E', margin: '4px 0', lineHeight: '1.5' } },
             b.label + ' scored ' + b.score + '/' + b.max + ' \u2014 below the 40\u2009% threshold.'
@@ -158,8 +175,7 @@
       ) : null,
 
       // Recommendations
-      scoringResult.recommendations.length > 0 ? h('div', { className: 'wb-card', style: { borderLeft: '3px solid var(--green)', marginBottom: 16 } },
-        h('div', { className: 'wb-badge wb-badge-green', style: { marginBottom: 8 } }, 'RECOMMENDATIONS'),
+      scoringResult.recommendations.length > 0 ? h(SectionCard, { title: 'Recommendations', variant: 'complete' },
         scoringResult.recommendations.map(function(r, i) {
           return h('p', { key: i, style: { fontSize: '12px', color: '#065F46', margin: '4px 0', lineHeight: '1.5' } }, r);
         })
