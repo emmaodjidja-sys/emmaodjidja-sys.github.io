@@ -71,6 +71,10 @@
           h('div', { className: 'wb-panel' },
             h(StationHeader, { stationId: activeStation, context: context }),
             h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }),
+            typeof SummaryBar !== 'undefined'
+              ? h('div', { style: { padding: '0 20px' } },
+                  h(SummaryBar, { stationId: activeStation, context: context }))
+              : null,
             h('div', { className: 'wb-panel-content' }, stationContent)
           )
         ),

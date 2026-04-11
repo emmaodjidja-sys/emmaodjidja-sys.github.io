@@ -18,6 +18,42 @@
   line-height: 1.5; max-width: 600px;
 }
 
+/* ── Summary bar ── */
+.wb-summary-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--wb-summary-bg, #1a3050);
+  border-radius: var(--radius-md);
+  padding: 0 16px; height: 40px;
+  margin-bottom: 20px;
+}
+.wb-summary-primary {
+  font-size: 14px; font-weight: 700; color: white;
+  font-family: var(--font-mono); line-height: 1.15;
+}
+.wb-summary-label {
+  font-size: 10px; font-weight: 600; color: var(--teal);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-right: 8px;
+}
+.wb-summary-stats {
+  display: flex; align-items: center; gap: 12px;
+}
+.wb-summary-stat {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+  font-size: 11px; color: rgba(255,255,255,0.85);
+  font-family: var(--font-mono); line-height: 1.15;
+}
+.wb-summary-stat-label {
+  font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.5);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.wb-summary-empty {
+  font-size: 11px; color: rgba(255,255,255,0.4);
+  font-style: italic;
+}
+
 /* ── Empty/gated states ─────────────────────────────────── */
 .wb-station-empty {
   display: flex; flex-direction: column;
