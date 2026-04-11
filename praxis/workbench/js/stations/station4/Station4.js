@@ -56,15 +56,17 @@
 
     // ── No design selected ──
     if (!topDesign) {
-      return h('div', { className: 'wb-station-empty' },
-        h('div', { className: 'wb-station-empty-title' },
-          'No Evaluation Design Selected'),
-        h('p', { className: 'wb-station-empty-desc' },
-          'Complete Station 3 first to select an evaluation design. The sample size calculator will be pre-configured based on your chosen design.'),
-        h('button', {
-          className: 'wb-btn wb-btn-primary',
-          onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 3 }); }
-        }, 'Go to Station 3')
+      return h(SectionCard, { title: 'Sample Parameters', bodyType: 'empty' },
+        h('div', { className: 'wb-station-empty' },
+          h('div', { className: 'wb-station-empty-title' },
+            'No Evaluation Design Selected'),
+          h('p', { className: 'wb-station-empty-desc' },
+            'Complete Station 3 first to select an evaluation design. The sample size calculator will be pre-configured based on your chosen design.'),
+          h('button', {
+            className: 'wb-btn wb-btn-primary',
+            onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 3 }); }
+          }, 'Go to Station 3')
+        )
       );
     }
 
@@ -110,47 +112,49 @@
 
     // ── Main layout ──
     return h('div', null,
-      // Selected design card
-      h('div', { className: 'wb-card' },
-        h('div', { className: 'wb-design-card' },
-          h('div', { className: 'wb-station-icon' }, 'S4'),
-          h('div', null,
-            h('div', { className: 'wb-design-card-header' },
-              h('h3', { className: 'wb-design-card-title' },
-                formatDesignName(designId)),
-              h('a', {
-                href: '#',
-                className: 'wb-design-card-link',
-                onClick: function (e) {
-                  e.preventDefault();
-                  dispatch({ type: 'SET_ACTIVE_STATION', station: 3 });
-                }
-              }, 'Change design \u2192')
-            ),
-            topDesign.family
-              ? h('span', { className: 'wb-badge' }, topDesign.family)
-              : null,
-            topDesign.score != null
-              ? h('span', { className: 'wb-pill' },
-                  'Score: ' + (typeof topDesign.score === 'number' ? topDesign.score.toFixed(1) : topDesign.score))
-              : null
-          )
-        ),
-        h('p', { className: 'wb-helper' },
-          'This design was selected in Station 3. Use the calculator below to determine appropriate sample sizes.')
-      ),
 
-      // Action button
-      h('div', { className: 'wb-param-grid' },
-        h('button', {
-          className: 'wb-btn wb-btn-primary',
-          onClick: function () { setShowCalculator(true); }
-        }, sampleParams ? 'Recalculate' : 'Open Calculator')
+      h(SectionCard, { title: 'Sample Parameters' },
+        // Selected design card
+        h('div', { className: 'wb-card' },
+          h('div', { className: 'wb-design-card' },
+            h('div', { className: 'wb-station-icon' }, 'S4'),
+            h('div', null,
+              h('div', { className: 'wb-design-card-header' },
+                h('h3', { className: 'wb-design-card-title' },
+                  formatDesignName(designId)),
+                h('a', {
+                  href: '#',
+                  className: 'wb-design-card-link',
+                  onClick: function (e) {
+                    e.preventDefault();
+                    dispatch({ type: 'SET_ACTIVE_STATION', station: 3 });
+                  }
+                }, 'Change design \u2192')
+              ),
+              topDesign.family
+                ? h('span', { className: 'wb-badge' }, topDesign.family)
+                : null,
+              topDesign.score != null
+                ? h('span', { className: 'wb-pill' },
+                    'Score: ' + (typeof topDesign.score === 'number' ? topDesign.score.toFixed(1) : topDesign.score))
+                : null
+            )
+          ),
+          h('p', { className: 'wb-helper' },
+            'This design was selected in Station 3. Use the calculator below to determine appropriate sample sizes.')
+        ),
+
+        // Action button
+        h('div', { className: 'wb-param-grid' },
+          h('button', {
+            className: 'wb-btn wb-btn-primary',
+            onClick: function () { setShowCalculator(true); }
+          }, sampleParams ? 'Recalculate' : 'Open Calculator')
+        )
       ),
 
       // Sample parameters summary (if saved)
-      sampleParams ? h('div', { className: 'wb-card' },
-        h('h4', { className: 'wb-station-title' }, 'Sample Parameters Summary'),
+      sampleParams ? h(SectionCard, { title: 'Sample Parameters Summary' },
         h('div', { className: 'wb-param-grid' },
           // Design
           h('div', { className: 'wb-param-card' },
@@ -186,7 +190,7 @@
         )
       ) : null,
 
-      // Calculator overlay
+      // Calculator overlay (full-screen, stays outside SectionCard)
       calculatorOverlay,
 
       typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 4, dispatch: dispatch }) : null

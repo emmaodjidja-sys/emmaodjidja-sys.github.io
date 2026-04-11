@@ -309,23 +309,26 @@
       ),
 
       // Question grid
-      h('div', { className: 'wb-question-grid' },
-        ALL_QUESTION_IDS.map(function(id) {
-          return h(QuestionCard, {
-            key: id,
-            id: id,
-            value: prefillAnswers[id] || null,
-            onChangeAnswer: handleChangeAnswer
-          });
-        })
+      h(SectionCard, { title: 'Design Parameters' },
+        h('div', { className: 'wb-question-grid' },
+          ALL_QUESTION_IDS.map(function(id) {
+            return h(QuestionCard, {
+              key: id,
+              id: id,
+              value: prefillAnswers[id] || null,
+              onChangeAnswer: handleChangeAnswer
+            });
+          })
+        )
       ),
 
       // Existing design results summary
-      rankedDesigns.length > 0 && h('div', { className: 'wb-design-results' },
-        h('h3', { className: 'wb-design-results-title' }, 'Recommended Designs'),
-        rankedDesigns.map(function(design, i) {
-          return h(DesignSummaryCard, { key: i, design: design, rank: i + 1 });
-        })
+      rankedDesigns.length > 0 && h(SectionCard, { title: 'Recommended Designs' },
+        h('div', { className: 'wb-design-results' },
+          rankedDesigns.map(function(design, i) {
+            return h(DesignSummaryCard, { key: i, design: design, rank: i + 1 });
+          })
+        )
       ),
 
       // Primary action

@@ -280,41 +280,45 @@
     // ── Landing mode ──
     return h('div', { style: { maxWidth: 620 } },
 
-      // Station intro
-      h('p', { className: 'wb-station-desc', style: { marginBottom: 20 } },
-        'Define the causal pathway from programme activities to intended impact. ' +
-        'Your Theory of Change anchors every downstream evaluation decision\u2014design, ' +
-        'matrix, indicators, and data collection all trace back to what you build here.'),
+      h(SectionCard, { title: 'Theory of Change' },
 
-      // If ToC data exists, show summary
-      hasData
-        ? h(TocSummary, {
-            toc: toc,
-            onEditCanvas: function() { setMode('canvas'); },
-            onEditGuided: function() { setMode('inline'); },
-            onExport: handleExport
-          })
-        : h('div', null,
-            // Option cards
-            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 } },
-              h(OptionCard, {
-                badge: 'Recommended', badgeBg: '#D1FAE5', badgeColor: '#065F46',
-                accent: '#10B981',
-                title: 'Guided Builder',
-                description: 'Step-by-step structured form. Best for straightforward programmes or if you\'re new to Theories of Change.',
-                onClick: function() { setMode('inline'); }
-              }),
-              h(OptionCard, {
-                badge: 'Advanced', badgeBg: '#EDE9FE', badgeColor: '#6D28D9',
-                accent: '#8B5CF6',
-                title: 'Full Canvas',
-                description: 'Visual node-and-connection builder with drag-and-drop. Best for complex programmes with multiple causal pathways.',
-                onClick: function() { setMode('canvas'); }
-              })
-            ),
-            h('p', { className: 'wb-helper', style: { fontSize: 12, textAlign: 'center' } },
-              'You can switch between builders at any time. Both produce the same underlying data.')
-          ),
+        // Station intro
+        h('p', { className: 'wb-station-desc', style: { marginBottom: 20 } },
+          'Define the causal pathway from programme activities to intended impact. ' +
+          'Your Theory of Change anchors every downstream evaluation decision\u2014design, ' +
+          'matrix, indicators, and data collection all trace back to what you build here.'),
+
+        // If ToC data exists, show summary
+        hasData
+          ? h(TocSummary, {
+              toc: toc,
+              onEditCanvas: function() { setMode('canvas'); },
+              onEditGuided: function() { setMode('inline'); },
+              onExport: handleExport
+            })
+          : h('div', null,
+              // Option cards
+              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 } },
+                h(OptionCard, {
+                  badge: 'Recommended', badgeBg: '#D1FAE5', badgeColor: '#065F46',
+                  accent: '#10B981',
+                  title: 'Guided Builder',
+                  description: 'Step-by-step structured form. Best for straightforward programmes or if you\'re new to Theories of Change.',
+                  onClick: function() { setMode('inline'); }
+                }),
+                h(OptionCard, {
+                  badge: 'Advanced', badgeBg: '#EDE9FE', badgeColor: '#6D28D9',
+                  accent: '#8B5CF6',
+                  title: 'Full Canvas',
+                  description: 'Visual node-and-connection builder with drag-and-drop. Best for complex programmes with multiple causal pathways.',
+                  onClick: function() { setMode('canvas'); }
+                })
+              ),
+              h('p', { className: 'wb-helper', style: { fontSize: 12, textAlign: 'center' } },
+                'You can switch between builders at any time. Both produce the same underlying data.')
+            )
+
+      ),
 
       typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 1, dispatch: dispatch }) : null
     );
