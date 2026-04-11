@@ -61,17 +61,23 @@
 .wb-select-card {
   flex: 1; min-width: 120px;
   padding: 10px 14px; border-radius: 5px;
-  border: 1.5px solid var(--border);
+  border: 2px solid var(--wb-input-border, #CBD5E1);
   background: var(--surface);
-  cursor: pointer; transition: all 0.12s;
-  text-align: left;
+  cursor: pointer; transition: all 0.15s;
+  text-align: left; position: relative;
 }
 .wb-select-card:hover {
   border-color: var(--navy); background: #FAFBFC;
+  transform: scale(1.01);
 }
 .wb-select-card--active {
   border-color: var(--navy); background: var(--navy);
   color: white;
+}
+.wb-select-card--active::after {
+  content: ''; position: absolute; top: 6px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal);
 }
 .wb-select-card--active .wb-select-card-label { color: white; }
 .wb-select-card--active .wb-select-card-hint { color: rgba(255,255,255,0.7); }

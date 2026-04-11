@@ -75,4 +75,24 @@
   --shadow-md: 0 2px 8px rgba(11,26,46,0.08);
   --shadow-lg: 0 4px 20px rgba(11,26,46,0.12);
   --shadow-xl: 0 24px 80px rgba(0,0,0,0.4);
+
+  /* ── Summary bar ── */
+  --wb-summary-bg: #1a3050;
+  --wb-summary-height: 40px;
+
+  /* ── Section card ── */
+  --wb-card-header-bg: #F8FAFC;
+  --wb-card-accent: var(--teal);
+  --wb-card-accent-warning: var(--amber);
+  --wb-card-accent-complete: var(--green);
+
+  /* ── Input variants ── */
+  --wb-input-border: #CBD5E1;
+  --wb-input-focus-ring: rgba(46,196,182,0.2);
+  --wb-input-compact-padding: 6px 10px;
+
+  /* ── Typography hierarchy ── */
+  --wb-text-primary: #334155;
+  --wb-text-secondary: #64748B;
+  --wb-text-heading: #0F172A;
 }

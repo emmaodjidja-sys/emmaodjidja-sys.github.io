@@ -1,20 +1,34 @@
 /* ── Buttons ── */
 .wb-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 16px; border-radius: var(--radius-sm);
-  font-size: 12px; font-weight: 600; border: none;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; border: none;
   transition: all 0.15s; white-space: nowrap;
+  width: auto; cursor: pointer;
+}
+.wb-btn:disabled, .wb-btn[disabled] {
+  opacity: 0.4; pointer-events: none; cursor: not-allowed;
 }
 .wb-btn-primary { background: var(--navy); color: white; }
-.wb-btn-primary:hover { background: var(--navy-light); }
+.wb-btn-primary:hover { background: var(--navy-mid); }
 .wb-btn-teal { background: var(--teal); color: white; }
 .wb-btn-teal:hover { background: var(--teal-dark); }
-.wb-btn-outline { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-.wb-btn-outline:hover { border-color: var(--navy); background: #F5F5F5; }
-.wb-btn-ghost { background: transparent; color: var(--slate); }
-.wb-btn-ghost:hover { background: rgba(0,0,0,0.04); }
-.wb-btn-sm { padding: 5px 12px; font-size: 11px; }
-.wb-btn-danger { background: var(--red-light); color: var(--red); border: 1px solid #FECACA; }
+.wb-btn-outline {
+  background: transparent; color: var(--wb-text-primary, #334155);
+  border: 1px solid var(--wb-input-border, #CBD5E1);
+  font-weight: 500;
+}
+.wb-btn-outline:hover { background: var(--wb-card-header-bg, #F8FAFC); }
+.wb-btn-ghost {
+  background: transparent; color: var(--teal); font-weight: 500;
+}
+.wb-btn-ghost:hover { background: rgba(46,196,182,0.08); }
+.wb-btn-danger {
+  background: transparent; color: var(--red);
+  border: 1px solid var(--red);
+}
+.wb-btn-danger:hover { background: var(--red); color: white; }
+.wb-btn-sm { padding: 6px 14px; font-size: 12px; }
 
 /* ── Badges & Pills ── */
 .wb-badge {
@@ -46,17 +60,37 @@
 /* ── Form elements ── */
 .wb-label {
   display: block; font-size: 11px; font-weight: 600;
-  color: var(--slate); margin-bottom: 6px;
-  letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--wb-text-secondary, #64748B); margin-bottom: 6px;
+  letter-spacing: 0.08em; text-transform: uppercase;
 }
 .wb-input {
-  width: 100%; padding: 8px 12px; border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border); font-size: 13px;
-  background: #F8FAFC; color: var(--text); transition: border-color 0.15s;
+  width: 100%; padding: 10px 12px; border-radius: var(--radius-sm);
+  border: 1px solid var(--wb-input-border, #CBD5E1);
+  font-size: 13px; font-family: var(--font-sans);
+  background: var(--surface); color: var(--wb-text-primary, #334155);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.wb-input:focus { outline: none; border-color: var(--teal); }
+.wb-input:focus {
+  outline: none; border-color: var(--teal);
+  box-shadow: 0 0 0 2px var(--wb-input-focus-ring, rgba(46,196,182,0.2));
+}
+.wb-input:disabled {
+  opacity: 0.5; pointer-events: none; cursor: not-allowed;
+  border-color: var(--border);
+}
+.wb-input::placeholder { font-style: italic; color: var(--slate-light); }
+.wb-input--compact { padding: var(--wb-input-compact-padding, 6px 10px); }
 .wb-textarea { resize: vertical; min-height: 60px; }
 .wb-helper { font-size: 10px; color: var(--slate-light); margin-top: 4px; }
+
+/* Custom select */
+.wb-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748B' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
 
 /* ── Chip (multi-select pills) ── */
 .wb-chip {
@@ -71,6 +105,48 @@
   background: var(--navy); color: white; border-color: var(--navy); font-weight: 600;
 }
 
+/* ── Custom checkbox ── */
+.wb-checkbox {
+  appearance: none; width: 16px; height: 16px;
+  border: 1px solid var(--wb-input-border, #CBD5E1);
+  border-radius: 3px; background: var(--surface);
+  cursor: pointer; position: relative;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.wb-checkbox:checked {
+  background: var(--teal); border-color: var(--teal);
+}
+.wb-checkbox:checked::after {
+  content: ''; position: absolute;
+  left: 4.5px; top: 1.5px; width: 5px; height: 9px;
+  border: solid white; border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ── Toggle switch ── */
+.wb-toggle {
+  appearance: none; width: 32px; height: 18px;
+  border-radius: 9px; background: var(--wb-input-border, #CBD5E1);
+  cursor: pointer; position: relative;
+  transition: background 0.15s ease; flex-shrink: 0;
+  border: none;
+}
+.wb-toggle:checked { background: var(--teal); }
+.wb-toggle::after {
+  content: ''; position: absolute;
+  top: 2px; left: 2px; width: 14px; height: 14px;
+  border-radius: 50%; background: white;
+  transition: transform 0.15s ease;
+}
+.wb-toggle:checked::after { transform: translateX(14px); }
+
+/* ── Teal link ── */
+.wb-link {
+  color: var(--teal); text-decoration: none; cursor: pointer;
+  transition: color 0.15s;
+}
+.wb-link:hover { color: var(--teal-dark); }
+
 /* ── Cards ── */
 .wb-card {
   background: var(--surface); border-radius: var(--radius-md);
@@ -84,13 +160,28 @@
 /* ── Option card selector ── */
 .wb-option-card {
   flex: 1; padding: 10px; border-radius: var(--radius-md);
-  border: 1.5px solid var(--border); text-align: center;
+  border: 2px solid var(--wb-input-border, #CBD5E1);
+  text-align: center; position: relative;
   cursor: pointer; transition: all 0.15s;
 }
-.wb-option-card:hover { border-color: var(--navy); }
-.wb-option-card--selected { border: 2px solid var(--navy); background: var(--bg); }
-.wb-option-card--amber { border-color: var(--amber); background: #FFFBEB; }
-.wb-option-card--red { border-color: var(--red); background: var(--red-light); }
+.wb-option-card:hover {
+  border-color: var(--navy);
+  transform: scale(1.01);
+}
+.wb-option-card--selected {
+  border-color: var(--navy); background: var(--navy); color: white;
+}
+.wb-option-card--selected::after {
+  content: ''; position: absolute; top: 6px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal);
+}
+.wb-option-card--amber.wb-option-card--selected {
+  border-color: #D97706; background: #FFFBEB; color: #92400E;
+}
+.wb-option-card--red.wb-option-card--selected {
+  border-color: var(--red); background: var(--red-light); color: #991B1B;
+}
 
 /* ── Modal ── */
 .wb-modal-overlay {
