@@ -162,24 +162,44 @@
   font-size: 12px; color: var(--slate); line-height: 1.5;
 }
 
-/* ── Data tables ────────────────────────────────────────── */
+/* ── Data tables ── */
 .wb-table {
   width: 100%; border-collapse: collapse;
-  font-size: 12px;
+  font-size: 13px;
 }
 .wb-table th {
-  text-align: left; padding: 8px 10px;
-  font-size: 10px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.04em;
-  color: var(--slate); background: #F8FAFC;
-  border-bottom: 2px solid var(--border);
+  text-align: left; padding: 8px 12px;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--wb-text-secondary, #64748B);
+  background: var(--wb-card-header-bg, #F8FAFC);
+  border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.wb-table th.wb-th--numeric { text-align: right; }
 .wb-table td {
-  padding: 8px 10px; border-bottom: 1px solid var(--border);
+  padding: 8px 12px; border-bottom: 1px solid #F1F5F9;
   vertical-align: top; line-height: 1.5;
+  min-height: 40px;
 }
-.wb-table tr:hover td { background: #FAFBFC; }
+.wb-table td.wb-td--numeric {
+  text-align: right; font-family: var(--font-mono);
+  font-size: 12px; line-height: 1.15;
+}
+.wb-table tr:hover td { background: var(--wb-card-header-bg, #F8FAFC); transition: background 0.1s; }
+
+/* Table container with scroll fade */
+.wb-table-wrap {
+  overflow-x: auto; position: relative;
+}
+.wb-table-wrap::after {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0;
+  width: 24px; pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--surface));
+  opacity: 0; transition: opacity 0.2s;
+}
+.wb-table-wrap--scrollable::after { opacity: 1; }
 
 /* ── Criterion badges ───────────────────────────────────── */
 .wb-criterion {
@@ -215,28 +235,77 @@
 .wb-score-band--amber { background: #FEF3C7; color: #92400E; }
 .wb-score-band--red { background: #FEE2E2; color: #991B1B; }
 
-/* ── Dimension bars ─────────────────────────────────────── */
+/* ── Dimension bars ── */
 .wb-dimension {
   display: flex; align-items: center; gap: 12px;
-  padding: 10px 0; border-bottom: 1px solid #F1F5F9;
+  padding: 0; height: 44px;
+  border-bottom: 1px solid #F1F5F9;
 }
 .wb-dimension:last-child { border-bottom: none; }
 .wb-dimension-label {
-  width: 160px; font-size: 12px; font-weight: 500;
-  color: var(--text); flex-shrink: 0;
+  width: 160px; font-size: 11px; font-weight: 600;
+  color: var(--wb-text-secondary, #64748B);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  flex-shrink: 0;
 }
 .wb-dimension-bar {
-  flex: 1; height: 6px; background: #F1F5F9;
-  border-radius: 3px; overflow: hidden;
+  flex: 1; height: 8px; background: #E2E8F0;
+  border-radius: 4px; overflow: hidden;
+  min-width: 120px;
 }
 .wb-dimension-fill {
-  height: 100%; border-radius: 3px;
+  height: 100%; border-radius: 4px;
   transition: width 0.4s ease;
 }
+.wb-dimension-fill--fast { transition-duration: 0.15s; }
 .wb-dimension-score {
-  width: 48px; text-align: right;
-  font-size: 12px; font-weight: 700;
+  width: 56px; text-align: right;
+  font-family: var(--font-mono);
+  font-size: 14px; font-weight: 700;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums;
+}
+.wb-dimension-score--green { color: var(--green); }
+.wb-dimension-score--amber { color: var(--amber); }
+.wb-dimension-score--red { color: var(--red); }
+
+/* Override badge */
+.wb-override-badge {
+  display: inline-block; padding: 2px 6px;
+  border-radius: 3px; font-size: 11px;
+  font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--amber); background: rgba(245,158,11,0.12);
+  margin-left: 8px;
+}
+
+/* Original score (strikethrough) */
+.wb-dimension-original {
+  font-family: var(--font-mono);
+  font-size: 12px; font-weight: 400;
+  color: var(--wb-text-secondary, #64748B);
+  text-decoration: line-through;
+  margin-right: 6px;
+}
+
+/* Composite score card */
+.wb-composite-card {
+  background: var(--navy); border-radius: var(--radius-md);
+  padding: 16px 20px; display: flex;
+  align-items: center; gap: 16px;
+  margin-bottom: 16px; height: 80px;
+}
+.wb-composite-score {
+  font-family: var(--font-mono);
+  font-size: 32px; font-weight: 700;
+  color: white; line-height: 1.15;
+}
+.wb-composite-label {
+  font-size: 12px; color: var(--teal);
+  font-weight: 500;
+}
+.wb-composite-band {
+  margin-left: auto;
 }
 
 /* ── Section card system ── */
@@ -440,12 +509,12 @@
 /* ── Table container ───────────────────────────────────── */
 .wb-table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
 
-/* ── Matrix table row states ───────────────────────────── */
+/* ── Matrix table row states ── */
 .wb-table tr.wb-table-row { cursor: pointer; border-left: 3px solid transparent; transition: background 0.1s; }
-.wb-table tr.wb-table-row:nth-child(even) { background: #FAFBFC; }
-.wb-table tr.wb-table-row:nth-child(odd) { background: var(--surface); }
-.wb-table tr.wb-table-row--selected { border-left: 3px solid var(--blue); background: var(--blue-light) !important; }
-.wb-table tr.wb-table-row:not(.wb-table-row--selected):hover { background: #F1F5F9; }
+.wb-table tr.wb-table-row--selected {
+  border-left-color: var(--teal); background: #F0FDFA !important;
+}
+.wb-table tr.wb-table-row:not(.wb-table-row--selected):hover { background: var(--wb-card-header-bg, #F8FAFC); }
 
 /* ── Table cell sizing helpers ─────────────────────────── */
 .wb-td--num { font-size: 11px; color: var(--slate); }
