@@ -666,15 +666,20 @@
 
     // ── No matrix data ──
     if (!hasMatrix) {
-      return h('div', { className: 'wb-station-empty' },
-        h('div', { className: 'wb-station-empty-title' },
-          'No Evaluation Matrix Available'),
-        h('p', { className: 'wb-station-empty-desc' },
-          'Complete Station 2 first to define your evaluation questions. The analysis framework will suggest methods based on your matrix.'),
-        h('button', {
-          className: 'wb-btn wb-btn-primary',
-          onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 2 }); }
-        }, 'Go to Station 2')
+      return h('div', null,
+        h(SectionCard, { title: 'Analysis Plan', bodyType: 'empty' },
+          h('div', { className: 'wb-station-empty' },
+            h('div', { className: 'wb-station-empty-title' },
+              'No Evaluation Matrix Available'),
+            h('p', { className: 'wb-station-empty-desc' },
+              'Complete Station 2 first to define your evaluation questions. The analysis framework will suggest methods based on your matrix.'),
+            h('button', {
+              className: 'wb-btn wb-btn-primary',
+              onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 2 }); }
+            }, 'Go to Station 2')
+          )
+        ),
+        typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 6, dispatch: dispatch }) : null
       );
     }
 
@@ -750,25 +755,12 @@
         )
       ) : null,
 
-      // Main card container
-      h('div', { className: 'wb-card' },
-        // Toolbar
-        h('div', { className: 'wb-toolbar' },
-          h('h4', { className: 'wb-station-title' }, 'Analysis Framework'),
-          h('span', { className: 'wb-toolbar-spacer' }),
-          generated ? h('div', { style: { display: 'flex', gap: '8px' } },
-            h('button', {
-              className: 'wb-btn',
-              onClick: handleExport,
-              title: 'Export as Word document'
-            }, 'Export Analysis Plan'),
-            h('button', {
-              className: 'wb-btn',
-              onClick: handleGenerate
-            }, 'Regenerate')
-          ) : null
-        ),
-
+      // Main section card
+      h(SectionCard, {
+        title: 'Analysis Plan',
+        badge: generated ? cards.length + ' EQs' : null,
+        bodyType: generated ? 'table' : 'empty'
+      },
         !generated
           ? h('div', { className: 'wb-station-empty' },
               h('p', { className: 'wb-station-empty-desc' },
@@ -780,6 +772,22 @@
               }, 'Generate Analysis Framework')
             )
           : h('div', null,
+              // Toolbar actions row
+              h('div', { className: 'wb-toolbar', style: { marginBottom: '12px' } },
+                h('span', { className: 'wb-toolbar-spacer' }),
+                h('div', { style: { display: 'flex', gap: '8px' } },
+                  h('button', {
+                    className: 'wb-btn',
+                    onClick: handleExport,
+                    title: 'Export as Word document'
+                  }, 'Export Analysis Plan'),
+                  h('button', {
+                    className: 'wb-btn',
+                    onClick: handleGenerate
+                  }, 'Regenerate')
+                )
+              ),
+
               // Summary bar
               h(SummaryBar, { cards: cards }),
 

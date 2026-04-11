@@ -12,6 +12,9 @@
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
 
+  // Capture global SectionCard before the local one shadows it
+  var GlobalSectionCard = window.SectionCard;
+
   function uid(prefix) {
     if (typeof PraxisUtils !== 'undefined' && PraxisUtils.uid) return PraxisUtils.uid(prefix);
     return prefix + '-' + Math.random().toString(36).substr(2, 9);
@@ -548,16 +551,18 @@
     // ── Empty state ──
     if (!generated) {
       return h('div', null,
-        h('div', { className: 'wb-card wb-station-empty' },
-          h('div', { className: 'wb-station-empty-title' }, 'Report Builder'),
-          h('p', { className: 'wb-station-empty-desc' },
+        h(GlobalSectionCard, { title: 'Report Structure', bodyType: 'empty' },
+          h('div', { className: 'wb-station-empty' },
+            h('div', { className: 'wb-station-empty-title' }, 'Report Builder'),
+            h('p', { className: 'wb-station-empty-desc' },
+              hasMatrix
+                ? 'Generate a structured evaluation report outline pre-populated with data from all upstream stations. Your ' + matrix.rows.length + ' evaluation questions will become findings sections with linked indicators, data sources, and judgement criteria.'
+                : 'Complete Station 2 (Evaluation Matrix) first to generate an outline from your evaluation questions.'
+            ),
             hasMatrix
-              ? 'Generate a structured evaluation report outline pre-populated with data from all upstream stations. Your ' + matrix.rows.length + ' evaluation questions will become findings sections with linked indicators, data sources, and judgement criteria.'
-              : 'Complete Station 2 (Evaluation Matrix) first to generate an outline from your evaluation questions.'
-          ),
-          hasMatrix
-            ? h('button', { className: 'wb-btn wb-btn-primary', onClick: handleGenerate }, 'Generate Outline')
-            : h('button', { className: 'wb-btn wb-btn-primary', onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 2 }); } }, 'Go to Station 2')
+              ? h('button', { className: 'wb-btn wb-btn-primary', onClick: handleGenerate }, 'Generate Outline')
+              : h('button', { className: 'wb-btn wb-btn-primary', onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 2 }); } }, 'Go to Station 2')
+          )
         ),
         typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 7, dispatch: dispatch }) : null
       );
@@ -570,39 +575,45 @@
     var annexCount = sections.filter(function (s) { return s.type === 'annex'; }).length;
 
     return h('div', null,
-      // Progress bar
-      h(ProgressBar, { sections: sections }),
+      // Wrap progress bar + header row in global SectionCard
+      h(GlobalSectionCard, {
+        title: 'Report Structure',
+        badge: sections.length + ' sections'
+      },
+        // Progress bar
+        h(ProgressBar, { sections: sections }),
 
-      // Header row
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
-        h('div', null,
-          h('span', { style: { fontSize: 13, fontWeight: 600, color: 'var(--text, #0F172A)' } },
-            sections.length + ' sections'),
-          h('span', { style: { fontSize: 11, color: 'var(--slate, #64748B)', marginLeft: 8 } },
-            standardCount + ' standard \u00B7 ' + findingsCount + ' findings \u00B7 ' + annexCount + ' annex')
+        // Header row
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
+          h('div', null,
+            h('span', { style: { fontSize: 13, fontWeight: 600, color: 'var(--text, #0F172A)' } },
+              sections.length + ' sections'),
+            h('span', { style: { fontSize: 11, color: 'var(--slate, #64748B)', marginLeft: 8 } },
+              standardCount + ' standard \u00B7 ' + findingsCount + ' findings \u00B7 ' + annexCount + ' annex')
+          ),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            h('button', { className: 'wb-btn', style: { fontSize: 11 }, onClick: addSection }, '+ Add Section'),
+            h('button', { className: 'wb-btn', style: { fontSize: 11 }, onClick: handleGenerate }, 'Regenerate'),
+            h('button', { className: 'wb-btn wb-btn-primary', style: { fontSize: 11 }, onClick: handleExport }, 'Export Outline')
+          )
         ),
-        h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-          h('button', { className: 'wb-btn', style: { fontSize: 11 }, onClick: addSection }, '+ Add Section'),
-          h('button', { className: 'wb-btn', style: { fontSize: 11 }, onClick: handleGenerate }, 'Regenerate'),
-          h('button', { className: 'wb-btn wb-btn-primary', style: { fontSize: 11 }, onClick: handleExport }, 'Export Outline')
-        )
-      ),
 
-      // Section cards
-      sections.map(function (sec, i) {
-        return h(SectionCard, {
-          key: sec.id,
-          section: sec,
-          index: i,
-          total: sections.length,
-          isEditing: editingId === sec.id,
-          onEdit: function () { setEditingId(sec.id); },
-          onDone: function () { setEditingId(null); },
-          onUpdate: updateSection,
-          onRemove: removeSection,
-          onMove: moveSection
-        });
-      }),
+        // Section cards
+        sections.map(function (sec, i) {
+          return h(SectionCard, {
+            key: sec.id,
+            section: sec,
+            index: i,
+            total: sections.length,
+            isEditing: editingId === sec.id,
+            onEdit: function () { setEditingId(sec.id); },
+            onDone: function () { setEditingId(null); },
+            onUpdate: updateSection,
+            onRemove: removeSection,
+            onMove: moveSection
+          });
+        })
+      ),
 
       // Save bar
       h('div', { className: 'wb-action-bar', style: { marginTop: 16 } },
