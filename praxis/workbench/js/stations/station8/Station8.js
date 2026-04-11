@@ -516,23 +516,19 @@
 
     return h('div', { className: 's8-print-root' },
 
-      h(SectionCard, {
-        title: 'Presentation Deck',
-        badge: includedCount + ' of ' + slides.length + ' slides'
-      },
+      // Toolbar
+      h('div', { className: 'wb-toolbar s8-no-print' },
+        h('span', { style: { fontSize: 12, fontWeight: 600, color: 'var(--text)' } }, includedCount + ' of ' + slides.length + ' slides included'),
+        h('div', { className: 'wb-toolbar-spacer' }),
+        h('button', { className: 'wb-btn', onClick: handleRegenerate, style: { fontSize: 11 } }, '\u21BB Regenerate'),
+        h('div', { className: 'wb-toolbar-divider' }),
+        h('button', { className: 'wb-btn', onClick: handlePrint }, '\u2399 Download PDF'),
+        h('button', { className: 'wb-btn wb-btn-primary', onClick: handleOpenDeckTool }, 'Open Deck Tool \u2197')
+      ),
 
-        // Toolbar
-        h('div', { className: 'wb-toolbar s8-no-print', style: { marginBottom: 12 } },
-          h('div', { className: 'wb-toolbar-spacer' }),
-          h('button', { className: 'wb-btn', onClick: handleRegenerate, style: { fontSize: 11 } }, '\u21BB Regenerate'),
-          h('div', { className: 'wb-toolbar-divider' }),
-          h('button', { className: 'wb-btn', onClick: handlePrint }, '\u2399 Download PDF'),
-          h('button', { className: 'wb-btn wb-btn-primary', onClick: handleOpenDeckTool }, 'Open Deck Tool \u2197')
-        ),
-
-        // Slide cards
-        h('div', { style: { display: 'grid', gap: 10 } },
-          slides.map(function (slide, si) {
+      // Slide cards
+      h('div', { style: { display: 'grid', gap: 10 } },
+        slides.map(function (slide, si) {
           var excluded = !slide.included;
           return h('div', {
             key: slide.id,
@@ -601,7 +597,7 @@
           );
         })
         )
-      ), // end SectionCard
+      ),
 
       // Bottom actions
       h('div', { className: 'wb-toolbar s8-no-print', style: { marginTop: 16 } },
