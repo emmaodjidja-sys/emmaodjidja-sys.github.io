@@ -12,9 +12,6 @@
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
 
-  // Capture global SectionCard before the local one shadows it
-  var GlobalSectionCard = window.SectionCard;
-
   function uid(prefix) {
     if (typeof PraxisUtils !== 'undefined' && PraxisUtils.uid) return PraxisUtils.uid(prefix);
     return prefix + '-' + Math.random().toString(36).substr(2, 9);
@@ -330,7 +327,7 @@
 
   // ── Section card component ──
 
-  function SectionCard(props) {
+  function ReportSectionCard(props) {
     var sec = props.section;
     var index = props.index;
     var total = props.total;
@@ -551,7 +548,7 @@
     // ── Empty state ──
     if (!generated) {
       return h('div', null,
-        h(GlobalSectionCard, { title: 'Report Structure', bodyType: 'empty' },
+        h(SectionCard,{ title: 'Report Structure', bodyType: 'empty' },
           h('div', { className: 'wb-station-empty' },
             h('div', { className: 'wb-station-empty-title' }, 'Report Builder'),
             h('p', { className: 'wb-station-empty-desc' },
@@ -576,7 +573,7 @@
 
     return h('div', null,
       // Wrap progress bar + header row in global SectionCard
-      h(GlobalSectionCard, {
+      h(SectionCard,{
         title: 'Report Structure',
         badge: sections.length + ' sections'
       },
@@ -600,7 +597,7 @@
 
         // Section cards
         sections.map(function (sec, i) {
-          return h(SectionCard, {
+          return h(ReportSectionCard, {
             key: sec.id,
             section: sec,
             index: i,

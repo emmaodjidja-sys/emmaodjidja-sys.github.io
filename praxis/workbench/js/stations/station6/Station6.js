@@ -473,43 +473,6 @@
     );
   }
 
-  // ── Summary Bar ──
-
-  function SummaryBar(props) {
-    var cards = props.cards;
-    var quantCount = 0;
-    var qualCount = 0;
-    var allDisaggs = {};
-
-    cards.forEach(function (c) {
-      if (c.analysisType === 'quantitative') quantCount++;
-      else qualCount++;
-      (c.disaggregations || []).forEach(function (d) { allDisaggs[d] = true; });
-    });
-
-    var disaggCount = Object.keys(allDisaggs).length;
-
-    return h('div', {
-      style: {
-        display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap',
-        padding: '10px 16px', marginBottom: '16px',
-        background: '#F8FAFC', borderRadius: '6px', border: '1px solid var(--border)'
-      }
-    },
-      h('span', { style: { fontSize: '13px', fontWeight: 600, color: 'var(--navy)' } },
-        cards.length + ' EQ' + (cards.length !== 1 ? 's' : '')),
-      h('span', { style: { width: '1px', height: '16px', background: 'var(--border)' } }),
-      h('span', { style: { fontSize: '12px', color: '#1E40AF', fontWeight: 500 } },
-        quantCount + ' quantitative'),
-      h('span', { style: { width: '1px', height: '16px', background: 'var(--border)' } }),
-      h('span', { style: { fontSize: '12px', color: '#9D174D', fontWeight: 500 } },
-        qualCount + ' qualitative'),
-      h('span', { style: { width: '1px', height: '16px', background: 'var(--border)' } }),
-      h('span', { style: { fontSize: '12px', color: 'var(--slate)', fontWeight: 500 } },
-        disaggCount + ' disaggregation dimension' + (disaggCount !== 1 ? 's' : ''))
-    );
-  }
-
   // ── Word Export ──
 
   function esc(s) {
@@ -787,9 +750,6 @@
                   }, 'Regenerate')
                 )
               ),
-
-              // Summary bar
-              h(SummaryBar, { cards: cards }),
 
               // Tab buttons
               h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
