@@ -111,94 +111,76 @@
     <section class="pt-36 pb-20 px-8 max-w-7xl mx-auto border-b border-white/5">
         <div class="grid lg:grid-cols-2 gap-16 items-center reveal" id="hero-reveal">
             <div>
-                <div class="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-p_amber/10 border border-p_amber/20 text-p_amber font-mono text-[10px] uppercase tracking-widest mb-8">
-                    <span class="w-2 h-2 bg-p_amber rounded-full animate-pulse"></span>
-                    <span>System Active: 13 Countries</span>
+                <div class="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-p_teal/10 border border-p_teal/20 text-p_teal font-mono text-[10px] uppercase tracking-widest mb-8">
+                    <span class="w-2 h-2 bg-p_teal rounded-full"></span>
+                    <span>Conflict Intelligence · Open-Source · Production-Grade</span>
                 </div>
 
-                <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1] text-white">
-                    TREMOR tells you which districts are about to escalate, <span class="text-slate-400 font-light text-4xl md:text-5xl">seven days before it happens.</span>
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.05] text-white">
+                    TREMOR: composite conflict intelligence
+                    <span class="text-slate-400 font-light text-4xl md:text-5xl block mt-3">at admin-2 resolution.</span>
                 </h1>
 
-                <p class="text-lg text-slate-400 font-light leading-relaxed max-w-xl mb-10">
-                    The system runs on ACLED event data. It detects when specific conflict event types converge in the same district and week — a pattern that precedes large-scale violence at up to 8.8 times the baseline rate. When that signal fires, you get a structured alert with the location, the trigger combination, and the forward window.
+                <p class="text-lg text-slate-400 font-light leading-relaxed max-w-xl mb-6">
+                    Detects when two or more distinct conflict sub-types converge in the same district &times; ISO-week on ACLED event data &mdash; and routes structured alerts through a hardened multi-channel pipeline.
                 </p>
 
-                <div class="flex flex-wrap gap-4">
-                    <a href="#pipeline" class="bg-p_amber text-p_navy px-8 py-4 rounded font-semibold tracking-wide hover:bg-yellow-400 transition-colors">Explore the Pipeline</a>
-                    <span class="bg-transparent border border-slate-700 text-slate-500 px-8 py-4 rounded font-semibold tracking-wide cursor-default">Coming Soon</span>
+                <p class="text-base text-slate-500 font-light leading-relaxed max-w-xl mb-10">
+                    Open-source. Reproducible. Built from open data. Not a forecast &mdash; a signal.
+                </p>
+
+                <div class="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-500 uppercase tracking-widest">
+                    <span class="text-p_amber">Sahel + Lake Chad Basin</span>
+                    <span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+                    <span>13 countries</span>
+                    <span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+                    <span>v1.0</span>
                 </div>
             </div>
 
-            <!-- Live Signal Panel -->
-            <div class="bg-p_surface rounded-xl border border-slate-700/50 shadow-2xl overflow-hidden relative">
-                <div class="bg-slate-800/50 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
-                    <div class="flex items-center gap-3 text-xs font-mono text-slate-400">
-                        <svg class="w-4 h-4 text-p_teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        ACLED API INGESTION: <span class="text-p_teal ml-1">SYNCED (2m ago)</span>
+            <!-- Dual artifact: operator bulletin (top) + JSON payload (bottom) -->
+            <div class="space-y-0 rounded-xl border border-slate-700/50 shadow-2xl overflow-hidden">
+                <!-- Operator bulletin -->
+                <div class="bg-p_surface border-l-[3px] border-l-p_amber p-6 relative">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Operator Bulletin · Rendered from alert.json</div>
+                        <div class="text-[10px] font-mono text-p_teal bg-p_teal/10 border border-p_teal/20 px-2 py-0.5 rounded">2026-W16 · FROZEN SAMPLE</div>
                     </div>
-                    <div class="text-[10px] font-mono text-slate-500">TREMOR v1.0</div>
+                    <h3 class="font-serif italic text-2xl text-white leading-tight mb-5">Composite escalation signal &mdash; Soum, Burkina Faso</h3>
+                    <div class="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 text-sm">
+                        <div class="font-mono text-[11px] uppercase tracking-widest text-slate-500 pt-0.5">District</div>
+                        <div class="font-mono text-slate-200">Soum &middot; Sahel &middot; Burkina Faso (admin-2)</div>
+                        <div class="font-mono text-[11px] uppercase tracking-widest text-slate-500 pt-0.5">Trigger</div>
+                        <div class="font-mono text-slate-200">5 sub-types converging &middot; 4.2&times; regional baseline</div>
+                        <div class="font-mono text-[11px] uppercase tracking-widest text-slate-500 pt-0.5">Severity</div>
+                        <div class="font-mono text-p_alert">CRITICAL &middot; function_tag CONCURRENT</div>
+                        <div class="font-mono text-[11px] uppercase tracking-widest text-slate-500 pt-0.5">Verification</div>
+                        <div class="font-mono text-slate-200">detected 2026-W16 &middot; visible through 2026-04-26</div>
+                    </div>
                 </div>
-
-                <div class="p-6 bg-radar relative">
-                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-p_surface"></div>
-
-                    <div class="relative z-10 space-y-4">
-                        <div class="text-xs font-mono text-slate-500 tracking-widest uppercase mb-4">Latest Co-occurrence Signals</div>
-
-                        <!-- Active Alert -->
-                        <div class="bg-[#1e293b] border border-p_amber/50 rounded-lg p-4 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="relative flex h-3 w-3">
-                                      <span class="animate-ping-slow absolute inline-flex h-full w-full rounded-full bg-p_amber opacity-75"></span>
-                                      <span class="relative inline-flex rounded-full h-3 w-3 bg-p_amber"></span>
-                                    </div>
-                                    <span class="text-sm font-bold text-white tracking-wide">REGION: TILLABERI (NE)</span>
-                                </div>
-                                <span class="text-[10px] font-mono bg-p_amber/20 text-p_amber px-2 py-1 rounded">ACTION WINDOW: 7 DAYS</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-4 text-xs font-mono mt-4 border-t border-slate-700 pt-3">
-                                <div>
-                                    <div class="text-slate-500 mb-1">DETECTION</div>
-                                    <div class="text-p_alert font-bold">KAFD + IED</div>
-                                </div>
-                                <div>
-                                    <div class="text-slate-500 mb-1">ESCALATION PROB.</div>
-                                    <div class="text-white font-bold">8.8x Baseline</div>
-                                </div>
-                                <div>
-                                    <div class="text-slate-500 mb-1">STATUS</div>
-                                    <div class="text-p_teal">Alert Dispatched</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Monitoring -->
-                        <div class="bg-[#1e293b] border border-slate-700 rounded-lg p-4 opacity-70">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-3 h-3 rounded-full bg-slate-500"></div>
-                                    <span class="text-sm font-bold text-slate-300 tracking-wide">REGION: MOPTI (ML)</span>
-                                </div>
-                                <span class="text-[10px] font-mono bg-slate-800 text-slate-400 px-2 py-1 rounded">MONITORING</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-4 text-xs font-mono mt-4 border-t border-slate-700 pt-3">
-                                <div>
-                                    <div class="text-slate-500 mb-1">DETECTION</div>
-                                    <div class="text-slate-300">Isolated IED</div>
-                                </div>
-                                <div>
-                                    <div class="text-slate-500 mb-1">ESCALATION PROB.</div>
-                                    <div class="text-slate-300">0.9x Baseline</div>
-                                </div>
-                                <div>
-                                    <div class="text-slate-500 mb-1">STATUS</div>
-                                    <div class="text-slate-500">Logged</div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- JSON payload -->
+                <div class="bg-[#0a0f1c] border-t border-slate-700/50">
+                    <div class="bg-slate-900/70 px-5 py-2.5 border-b border-slate-700/50 flex items-center justify-between">
+                        <div class="font-mono text-[11px] text-slate-400">alert.json &middot; <span class="text-slate-600">schema v1.0</span></div>
+                        <div class="font-mono text-[10px] text-slate-600">row of alerts table</div>
                     </div>
+                    <pre class="text-xs font-mono text-slate-400 p-5 leading-relaxed overflow-x-auto"><code>{
+  <span class="text-slate-500">"geo_key"</span>:             <span class="text-p_teal">"BF-Sahel-Soum"</span>,
+  <span class="text-slate-500">"admin2"</span>:              <span class="text-p_teal">"Soum"</span>,
+  <span class="text-slate-500">"admin1"</span>:              <span class="text-p_teal">"Sahel"</span>,
+  <span class="text-slate-500">"country"</span>:             <span class="text-p_teal">"Burkina Faso"</span>,
+  <span class="text-slate-500">"region"</span>:              <span class="text-p_teal">"Central Sahel"</span>,
+  <span class="text-slate-500">"composite_types"</span>:     <span class="text-p_amber">5</span>,
+  <span class="text-slate-500">"baseline_multiplier"</span>: <span class="text-p_amber">4.2</span>,
+  <span class="text-slate-500">"surprise_score"</span>:      <span class="text-p_amber">0.87</span>,
+  <span class="text-slate-500">"empirical_probability"</span>: <span class="text-p_amber">0.018</span>,
+  <span class="text-slate-500">"is_novel"</span>:            <span class="text-p_amber">true</span>,
+  <span class="text-slate-500">"severity"</span>:            <span class="text-p_alert">"critical"</span>,
+  <span class="text-slate-500">"function_tag"</span>:        <span class="text-p_teal">"CONCURRENT"</span>,
+  <span class="text-slate-500">"detected_week"</span>:       <span class="text-p_teal">"2026-W16"</span>,
+  <span class="text-slate-500">"status"</span>:              <span class="text-p_teal">"active"</span>,
+  <span class="text-slate-500">"expires_at"</span>:          <span class="text-p_teal">"2026-04-26T00:00:00Z"</span>
+}</code></pre>
                 </div>
             </div>
         </div>
