@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TREMOR | Composite Conflict Intelligence — PRAXIS</title>
+    <title>TREMOR | Composite Conflict Intelligence | PRAXIS</title>
     <meta name="description" content="TREMOR: composite conflict intelligence at admin-2 resolution. Production-grade open-source system detecting co-occurring conflict sub-types across 13 countries in West Africa and the Sahel, built on ACLED data with Poisson PPML econometric core.">
     <meta property="og:title" content="TREMOR | Composite Conflict Intelligence">
     <meta property="og:description" content="Production-grade composite conflict intelligence, built from open data. 13 countries, admin-2 × ISO-week resolution, hardened multi-channel alert dispatch.">
@@ -122,11 +122,11 @@
                 </h1>
 
                 <p class="text-lg text-slate-400 font-light leading-relaxed max-w-xl mb-6">
-                    Detects when two or more distinct conflict sub-types converge in the same district &times; ISO-week on ACLED event data &mdash; and routes structured alerts through a hardened multi-channel pipeline.
+                    Detects when two or more distinct conflict sub-types converge in the same district &times; ISO-week on ACLED event data, then routes structured alerts through a hardened multi-channel pipeline.
                 </p>
 
                 <p class="text-base text-slate-500 font-light leading-relaxed max-w-xl mb-10">
-                    Open-source. Reproducible. Built from open data. Not a forecast &mdash; a signal.
+                    Open-source. Reproducible. Built from open data. Not a forecast. A signal.
                 </p>
 
                 <div class="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-500 uppercase tracking-widest">
@@ -146,7 +146,7 @@
                         <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Operator Bulletin · Rendered from alert.json</div>
                         <div class="text-[10px] font-mono text-p_teal bg-p_teal/10 border border-p_teal/20 px-2 py-0.5 rounded">2026-W16 · FROZEN SAMPLE</div>
                     </div>
-                    <h3 class="font-serif italic text-2xl text-white leading-tight mb-5">Composite escalation signal &mdash; Soum, Burkina Faso</h3>
+                    <h3 class="font-serif italic text-2xl text-white leading-tight mb-5">Composite escalation signal &middot; Soum, Burkina Faso</h3>
                     <div class="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 text-sm">
                         <div class="font-mono text-[11px] uppercase tracking-widest text-slate-500 pt-0.5">District</div>
                         <div class="font-mono text-slate-200">Soum &middot; Sahel &middot; Burkina Faso (admin-2)</div>
@@ -192,7 +192,7 @@
             <h2 class="text-sm font-mono tracking-widest text-p_amber uppercase mb-4">Methodology</h2>
             <h3 class="text-4xl font-bold text-white mb-4">Detection performance, not forecasting.</h3>
             <p class="text-slate-400 max-w-3xl leading-relaxed">
-                TREMOR does not predict violence. It detects a specific, historically rare pattern &mdash; the convergence of two or more conflict sub-types in a single district-week &mdash; and measures how reliably that pattern precedes next-week escalation.
+                TREMOR does not predict violence. It detects a specific, historically rare pattern: the convergence of two or more conflict sub-types in a single district-week. It measures how reliably that pattern precedes next-week escalation.
             </p>
         </div>
 
@@ -388,7 +388,7 @@ SE clustering   district (geo_key)</code></pre>
 
             <div class="bg-p_navy border border-dashed border-slate-700 rounded-xl p-6 flex items-center">
                 <p class="text-[11px] font-mono text-slate-500 leading-relaxed">
-                    All dispatch outcomes &mdash; success, failure, partial &mdash; are recorded in <code class="text-p_amber">notification_log</code> with per-channel status. The <code class="text-p_amber">audit_log</code> table is append-only and mirrors every dispatch, form submission, and decision.
+                    All dispatch outcomes (success, failure, partial) are recorded in <code class="text-p_amber">notification_log</code> with per-channel status. The <code class="text-p_amber">audit_log</code> table is append-only and mirrors every dispatch, form submission, and decision.
                 </p>
             </div>
         </div>
@@ -422,9 +422,9 @@ SE clustering   district (geo_key)</code></pre>
 <span class="text-p_amber">Dashboard</span> (React + i18n, 9 stations)</code></pre>
 
                 <div class="mt-6 space-y-3 text-sm text-slate-400 leading-relaxed">
-                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">admin-2 &times; ISO-week resolution</span> &mdash; ACLED geocoding is consistent at admin-2; ISO-week matches the ACLED update cycle and avoids day-of-week noise.</p>
-                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">Named RLS policies</span> &mdash; <code class="text-p_amber">alerts</code> SELECT is scoped by <code class="text-p_amber">country &isin; user.countries</code>; all writes are via edge functions using <code class="text-p_amber">SERVICE_ROLE_KEY</code>; <code class="text-p_amber">audit_log</code> is append-only.</p>
-                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">First-class audit</span> &mdash; <code class="text-p_amber">audit_log</code> and <code class="text-p_amber">notification_log</code> are first-class tables, not side effects.</p>
+                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">admin-2 &times; ISO-week resolution</span>. ACLED geocoding is consistent at admin-2; ISO-week matches the ACLED update cycle and avoids day-of-week noise.</p>
+                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">Named RLS policies</span>. <code class="text-p_amber">alerts</code> SELECT is scoped by <code class="text-p_amber">country &isin; user.countries</code>; all writes are via edge functions using <code class="text-p_amber">SERVICE_ROLE_KEY</code>; <code class="text-p_amber">audit_log</code> is append-only.</p>
+                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">First-class audit</span>. <code class="text-p_amber">audit_log</code> and <code class="text-p_amber">notification_log</code> are first-class tables, not side effects.</p>
                 </div>
             </div>
 
@@ -470,7 +470,7 @@ SE clustering   district (geo_key)</code></pre>
     <section id="integrity-limits" class="py-32 px-8 max-w-7xl mx-auto">
         <div class="mb-16 reveal">
             <h2 class="text-sm font-mono tracking-widest text-p_amber uppercase mb-4">Integrity &amp; Limits</h2>
-            <h3 class="text-4xl font-bold text-white mb-4">What the system guarantees &mdash; and what it refuses to claim.</h3>
+            <h3 class="text-4xl font-bold text-white mb-4">What the system guarantees, and what it refuses to claim.</h3>
         </div>
 
         <div class="grid md:grid-cols-2 gap-8 reveal">
