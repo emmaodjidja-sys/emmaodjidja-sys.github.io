@@ -394,6 +394,78 @@ SE clustering   district (geo_key)</code></pre>
         </div>
     </section>
 
+    <!-- ARCHITECTURE -->
+    <section id="architecture" class="py-32 px-8 max-w-7xl mx-auto border-b border-white/5">
+        <div class="mb-16 reveal">
+            <h2 class="text-sm font-mono tracking-widest text-p_amber uppercase mb-4">Architecture</h2>
+            <h3 class="text-4xl font-bold text-white mb-4">Open data in. Structured alerts out. Every write audited.</h3>
+        </div>
+
+        <div class="grid lg:grid-cols-[1.4fr_1fr] gap-12 reveal">
+            <div>
+                <pre class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-[11px] md:text-xs font-mono text-slate-300 leading-relaxed overflow-x-auto"><code>ACLED API
+    &darr; weekly pull &middot; ISO-week cadence
+<span class="text-p_amber">pipeline.py</span>
+    &darr; admin-2 boundary join
+    &darr; Poisson PPML + composite-type detector
+<span class="text-p_amber">Parquet / CSV staging</span>
+    &darr;
+<span class="text-p_amber">Supabase</span> (Postgres + RLS)
+    tables: alerts, notification_log, audit_log
+    &darr;
+<span class="text-p_amber">5 edge functions</span>
+    &darr;                &darr;              &darr;
+<span class="text-p_teal">ntfy.sh</span>         <span class="text-p_teal">Africa&rsquo;s</span>      <span class="text-p_teal">USSD</span>
+(push)          <span class="text-p_teal">Talking</span>       (sandbox)
+                <span class="text-p_teal">(SMS)</span>
+    &darr;
+<span class="text-p_amber">Dashboard</span> (React + i18n, 9 stations)</code></pre>
+
+                <div class="mt-6 space-y-3 text-sm text-slate-400 leading-relaxed">
+                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">admin-2 &times; ISO-week resolution</span> &mdash; ACLED geocoding is consistent at admin-2; ISO-week matches the ACLED update cycle and avoids day-of-week noise.</p>
+                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">Named RLS policies</span> &mdash; <code class="text-p_amber">alerts</code> SELECT is scoped by <code class="text-p_amber">country &isin; user.countries</code>; all writes are via edge functions using <code class="text-p_amber">SERVICE_ROLE_KEY</code>; <code class="text-p_amber">audit_log</code> is append-only.</p>
+                    <p><span class="font-mono text-xs text-p_teal uppercase tracking-widest">First-class audit</span> &mdash; <code class="text-p_amber">audit_log</code> and <code class="text-p_amber">notification_log</code> are first-class tables, not side effects.</p>
+                </div>
+            </div>
+
+            <aside class="bg-p_surface border border-slate-700/50 rounded-xl p-6">
+                <h4 class="text-xs font-mono tracking-widest text-p_amber uppercase mb-4">Scope &amp; Deployment</h4>
+
+                <div class="mb-6">
+                    <div class="text-[11px] font-mono text-slate-500 uppercase tracking-widest mb-2">Current coverage &middot; 13 countries</div>
+                    <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-sm font-mono text-slate-300">
+                        <div><span class="text-p_teal">Central Sahel</span></div>
+                        <div class="text-slate-400 text-xs self-center">BF &middot; ML &middot; NE</div>
+                        <div><span class="text-p_teal">Lake Chad</span></div>
+                        <div class="text-slate-400 text-xs self-center">NG &middot; CM &middot; TD</div>
+                        <div><span class="text-p_teal">Coastal</span></div>
+                        <div class="text-slate-400 text-xs self-center">TG &middot; BJ &middot; GH &middot; CI</div>
+                        <div><span class="text-p_teal">Western</span></div>
+                        <div class="text-slate-400 text-xs self-center">MR &middot; SN &middot; GN</div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <div class="text-[11px] font-mono text-slate-500 uppercase tracking-widest mb-2">Addressable</div>
+                    <p class="text-sm text-slate-400 leading-relaxed">~230 countries/territories in ACLED coverage. Detector is rule-based (no retraining); Poisson PPML is re-fit per region.</p>
+                </div>
+
+                <div>
+                    <div class="text-[11px] font-mono text-slate-500 uppercase tracking-widest mb-2">Replication prereqs</div>
+                    <ol class="text-sm text-slate-400 leading-relaxed list-decimal pl-5 space-y-1">
+                        <li>ACLED institutional-tier subscription.</li>
+                        <li>Admin-2 boundary shapefiles (<code class="text-xs text-p_amber">download_boundaries.py</code>).</li>
+                        <li>Supabase project with RLS policies cloned.</li>
+                        <li>Per-region baseline re-estimation (~1 CPU-hour/country).</li>
+                        <li>Translation pass for operating languages.</li>
+                        <li>Host-country data-protection approval.</li>
+                        <li>ACLED Terms-of-Use compliance for derivatives.</li>
+                    </ol>
+                </div>
+            </aside>
+        </div>
+    </section>
+
     <!-- GLOBAL SCOPE -->
     <section class="py-32 px-8 max-w-7xl mx-auto">
         <div class="bg-p_surface rounded-2xl p-12 md:p-20 flex flex-col md:flex-row gap-12 items-center justify-between border border-slate-700 reveal">
