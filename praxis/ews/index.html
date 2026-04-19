@@ -186,115 +186,84 @@
         </div>
     </section>
 
-    <!-- PIPELINE -->
-    <section id="pipeline" class="py-32 px-8 max-w-7xl mx-auto border-b border-white/5">
-        <div class="text-center mb-20 reveal">
-            <h2 class="text-sm font-mono tracking-widest text-p_amber uppercase mb-4">Architecture</h2>
-            <h3 class="text-4xl font-bold text-white">How It Works</h3>
-            <p class="text-slate-400 max-w-2xl mx-auto mt-4">TREMOR is a three-stage pipeline: ingest, model, alert. Each stage is automated and runs at weekly, district-level resolution across 13 countries.</p>
+    <!-- METHODOLOGY -->
+    <section id="methodology" class="py-32 px-8 max-w-7xl mx-auto border-b border-white/5">
+        <div class="mb-16 reveal">
+            <h2 class="text-sm font-mono tracking-widest text-p_amber uppercase mb-4">Methodology</h2>
+            <h3 class="text-4xl font-bold text-white mb-4">Detection performance, not forecasting.</h3>
+            <p class="text-slate-400 max-w-3xl leading-relaxed">
+                TREMOR does not predict violence. It detects a specific, historically rare pattern &mdash; the convergence of two or more conflict sub-types in a single district-week &mdash; and measures how reliably that pattern precedes next-week escalation.
+            </p>
         </div>
 
-        <!-- 3-step overview -->
-        <div class="grid md:grid-cols-3 gap-8 relative reveal mb-24">
-            <div class="hidden md:block absolute top-12 left-[15%] right-[15%] h-[1px] bg-slate-700 z-0"></div>
+        <div class="grid lg:grid-cols-2 gap-12 mb-16 reveal">
+            <div>
+                <h4 class="text-xs font-mono tracking-widest text-p_teal uppercase mb-4">The estimator &middot; Poisson PPML</h4>
+                <pre class="bg-p_surface border border-slate-700/50 rounded-lg p-5 text-xs font-mono text-slate-300 leading-relaxed overflow-x-auto"><code>attacks<sub>i,t+1</sub> = exp( &alpha;<sub>i</sub> + &gamma;<sub>ct</sub>
+  + &beta; &middot; composite<sub>i,t</sub>
+  + &delta; &middot; L.non_outcome<sub>i,t</sub> )
 
-            <div class="relative z-10 bg-p_navy p-8 rounded-xl border border-slate-800 text-center group hover:border-p_teal transition-colors">
-                <div class="w-16 h-16 mx-auto bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center mb-6 text-slate-400 group-hover:bg-p_teal/10 group-hover:text-p_teal transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
-                </div>
-                <h4 class="text-xl font-bold text-white mb-3">1. Data Ingestion</h4>
-                <p class="text-sm text-slate-400 leading-relaxed">
-                    The system pulls event-level data from the ACLED API on a weekly cycle. Each record is geocoded to admin-2 level and tagged by event sub-type.
+&alpha;<sub>i</sub>            district fixed effects
+&gamma;<sub>ct</sub>           country &times; year-quarter fixed effects
+composite       1 if &ge;2 event sub-types in (district &times; ISO-week)
+L.non_outcome   lagged count of non-outcome events (t-1)
+SE clustering   district (geo_key)</code></pre>
+                <p class="text-sm text-slate-500 mt-4 leading-relaxed">
+                    Outcome is <em>next week&rsquo;s</em> attack count, giving a T+1 ISO-week evaluation horizon. Fixed effects absorb time-invariant district characteristics and country-specific seasonality. District-clustered SEs correct for the serial correlation standard in conflict count data.
                 </p>
             </div>
-
-            <div class="relative z-10 bg-p_navy p-8 rounded-xl border border-slate-800 text-center group hover:border-p_amber transition-colors">
-                <div class="w-16 h-16 mx-auto bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center mb-6 text-slate-400 group-hover:bg-p_amber/10 group-hover:text-p_amber transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
-                </div>
-                <h4 class="text-xl font-bold text-white mb-3">2. Econometric Modelling</h4>
-                <p class="text-sm text-slate-400 leading-relaxed">
-                    A composite co-occurrence detector flags district-weeks where two or more distinct conflict event sub-types converge. The primary validated signal is KAFD + IED co-occurrence, which produces an 8.8x escalation probability relative to the regional baseline. The detection window is seven days forward.
+            <div>
+                <h4 class="text-xs font-mono tracking-widest text-p_teal uppercase mb-4">The detector &middot; composite co-occurrence</h4>
+                <p class="text-slate-300 leading-relaxed mb-4">
+                    A district-week fires when &ge;2 distinct ACLED event sub-types are observed in the same <code class="font-mono text-p_amber text-sm">admin2 &times; ISO-week</code> cell. Severity scales with three signals on the alert payload:
                 </p>
-            </div>
-
-            <div class="relative z-10 bg-p_navy p-8 rounded-xl border border-slate-800 text-center group hover:border-p_teal transition-colors">
-                <div class="w-16 h-16 mx-auto bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center mb-6 text-slate-400 group-hover:bg-p_teal/10 group-hover:text-p_teal transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                <div class="space-y-3 text-sm">
+                    <div class="bg-p_surface border border-slate-700/50 rounded-lg px-4 py-3">
+                        <div class="font-mono text-[11px] uppercase tracking-widest text-p_amber mb-1">composite_types</div>
+                        <div class="text-slate-300">Count of distinct sub-types (higher &rarr; more severe).</div>
+                    </div>
+                    <div class="bg-p_surface border border-slate-700/50 rounded-lg px-4 py-3">
+                        <div class="font-mono text-[11px] uppercase tracking-widest text-p_amber mb-1">surprise_score</div>
+                        <div class="text-slate-300">Historical rarity of this exact type-combination at this location.</div>
+                    </div>
+                    <div class="bg-p_surface border border-slate-700/50 rounded-lg px-4 py-3">
+                        <div class="font-mono text-[11px] uppercase tracking-widest text-p_amber mb-1">empirical_probability</div>
+                        <div class="text-slate-300">Base-rate frequency of this composite across the panel.</div>
+                    </div>
                 </div>
-                <h4 class="text-xl font-bold text-white mb-3">3. Structured Alerts</h4>
-                <p class="text-sm text-slate-400 leading-relaxed">
-                    When a signal crosses threshold, TREMOR generates a structured alert. Each alert carries four fields: severity (Watch / Elevated / High / Critical), geographic target (admin-2 district), trigger (the specific event type combination), and baseline comparison.
-                </p>
             </div>
         </div>
 
-        <!-- Platform Layers -->
-        <div class="max-w-4xl mx-auto reveal">
-            <h3 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-12 text-center">Platform Layers</h3>
-
-            <div class="space-y-0">
-                <!-- Layer 1: Predict -->
-                <div class="relative pl-10 pb-16 border-l-2 border-p_amber/40 group">
-                    <div class="absolute left-0 top-0 -translate-x-1/2 w-8 h-8 rounded-full bg-p_amber/20 border-2 border-p_amber flex items-center justify-center">
-                        <svg class="w-4 h-4 text-p_amber" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        <div class="grid lg:grid-cols-[1.3fr_1fr] gap-12 reveal">
+            <div>
+                <h4 class="text-xs font-mono tracking-widest text-p_teal uppercase mb-4">Detection performance &middot; robustness check at N=2</h4>
+                <p class="text-slate-400 leading-relaxed mb-4">
+                    A spot-check at the minimum composite (N=2 sub-types) reproduces an 8.8&times; lift in next-week attack incidence versus district-weeks without composite co-occurrence. This is one point on the detection-performance curve, not a headline statistic, and is reported with the honest limitations below.
+                </p>
+                <ul class="text-sm text-slate-500 space-y-2 leading-relaxed list-disc pl-5">
+                    <li>Lift reported as a sample-wide in-sample point estimate; bootstrapped 95% CI pending the forthcoming identification-robustness tab.</li>
+                    <li>Evaluation horizon: T+1 ISO-week (next-week attack count).</li>
+                    <li>Rare-events / class-imbalance context applies.</li>
+                    <li>The regression tests signal rarity (robustness), not causal identification of violence.</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-xs font-mono tracking-widest text-p_teal uppercase mb-4">Spot-check matrix &middot; N=2</h4>
+                <div class="bg-p_surface border border-slate-700/50 rounded-lg p-5">
+                    <div class="grid grid-cols-3 gap-0 text-xs font-mono">
+                        <div></div>
+                        <div class="text-center text-slate-500 uppercase tracking-widest py-2">Attack t+1</div>
+                        <div class="text-center text-slate-500 uppercase tracking-widest py-2">No attack</div>
+                        <div class="text-right text-slate-500 uppercase tracking-widest py-2 pr-3">Composite</div>
+                        <div class="text-center py-3 bg-p_teal/10 border border-p_teal/30 text-p_teal font-bold">TP</div>
+                        <div class="text-center py-3 bg-slate-800/50 border border-slate-700 text-slate-300">FP</div>
+                        <div class="text-right text-slate-500 uppercase tracking-widest py-2 pr-3">No composite</div>
+                        <div class="text-center py-3 bg-slate-800/50 border border-slate-700 text-slate-300">FN</div>
+                        <div class="text-center py-3 bg-slate-800/50 border border-slate-700 text-slate-400">TN</div>
                     </div>
-                    <div class="ml-4">
-                        <h4 class="text-lg font-bold text-p_amber font-mono tracking-wide mb-3">Layer 1: Predict</h4>
-                        <p class="text-slate-400 leading-relaxed">
-                            Composite co-occurrence detection from ACLED API data at weekly resolution. The spike detector triggers on convergence of 2+ distinct conflict event sub-types in the same admin2-week. The primary signal is KAFD + IED co-occurrence (8.8x baseline). The output is an escalation alert at admin2 level with a 7-day forward window.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Layer 2: Alert -->
-                <div class="relative pl-10 pb-16 border-l-2 border-p_teal/40 group">
-                    <div class="absolute left-0 top-0 -translate-x-1/2 w-8 h-8 rounded-full bg-p_teal/20 border-2 border-p_teal flex items-center justify-center">
-                        <svg class="w-4 h-4 text-p_teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    </div>
-                    <div class="ml-4">
-                        <h4 class="text-lg font-bold text-p_teal font-mono tracking-wide mb-3">Layer 2: Alert</h4>
-                        <p class="text-slate-400 leading-relaxed mb-4">
-                            Signal translation into structured alerts for defined stakeholder groups. Each alert includes:
-                        </p>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-p_navy/80 border border-slate-700/50 rounded-lg px-4 py-3">
-                                <div class="text-xs font-mono text-p_amber uppercase tracking-widest mb-1">Severity</div>
-                                <div class="text-sm text-slate-300">Watch / Elevated / High / Critical</div>
-                            </div>
-                            <div class="bg-p_navy/80 border border-slate-700/50 rounded-lg px-4 py-3">
-                                <div class="text-xs font-mono text-p_amber uppercase tracking-widest mb-1">Targeting</div>
-                                <div class="text-sm text-slate-300">Geographic precision to district level</div>
-                            </div>
-                            <div class="bg-p_navy/80 border border-slate-700/50 rounded-lg px-4 py-3">
-                                <div class="text-xs font-mono text-p_amber uppercase tracking-widest mb-1">Trigger</div>
-                                <div class="text-sm text-slate-300">Specific event type combination</div>
-                            </div>
-                            <div class="bg-p_navy/80 border border-slate-700/50 rounded-lg px-4 py-3">
-                                <div class="text-xs font-mono text-p_amber uppercase tracking-widest mb-1">Baseline</div>
-                                <div class="text-sm text-slate-300">Regional baseline comparison</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Layer 3: Respond -->
-                <div class="relative pl-10 group">
-                    <div class="absolute left-0 top-0 -translate-x-1/2 w-8 h-8 rounded-full bg-white/10 border-2 border-white/40 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                    </div>
-                    <div class="ml-4">
-                        <h4 class="text-lg font-bold text-white font-mono tracking-wide mb-3">Layer 3: Respond (Roadmap)</h4>
-                        <p class="text-slate-400 leading-relaxed mb-4">
-                            This layer is not yet built. The plan is to attach decision pathways to each alert tier so that different users receive guidance matched to their mandate. What that looks like in practice:
-                        </p>
-                        <p class="text-slate-400 leading-relaxed mb-4">
-                            A P/CVE implementer running community dialogue in Tillaberi gets an alert that says "pause planned field activities in these three communes for seven days." A humanitarian logistics officer in Mopti gets a prompt to verify pre-positioned stock levels in the flagged corridor. A security coordination body gets a structured threat brief they can fold into their weekly sitrep.
-                        </p>
-                        <p class="text-slate-400 leading-relaxed">
-                            None of this exists yet. Right now, TREMOR produces the alert. What users do with it is on them.
-                        </p>
-                    </div>
+                    <p class="text-[11px] font-mono text-slate-600 mt-4 leading-relaxed">
+                        Counts pending identification-robustness tab (Tab 9 of the workbench). Lift 8.8&times; corresponds to TP / (TP+FN) relative to base rate in no-composite cells.
+                    </p>
                 </div>
             </div>
         </div>
