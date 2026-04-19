@@ -466,27 +466,53 @@ SE clustering   district (geo_key)</code></pre>
         </div>
     </section>
 
-    <!-- GLOBAL SCOPE -->
-    <section class="py-32 px-8 max-w-7xl mx-auto">
-        <div class="bg-p_surface rounded-2xl p-12 md:p-20 flex flex-col md:flex-row gap-12 items-center justify-between border border-slate-700 reveal">
-            <div class="md:w-1/2">
-                <h3 class="text-3xl md:text-4xl font-bold text-white mb-6">The Sahel is the proof of concept. The model works anywhere ACLED does.</h3>
-                <p class="text-slate-400 mb-8 leading-relaxed">
-                    The co-occurrence detection logic is not region-specific. It runs on event sub-type convergence patterns, which ACLED codes consistently across all its coverage areas. The Sahel is where the 8.8x signal was validated, but the same pipeline can deploy to any ACLED-covered context without retraining. That's currently 13 countries. ACLED covers roughly 230.
-                </p>
-                <div class="flex items-center gap-4 text-p_teal font-mono text-sm uppercase tracking-widest">
-                    <span>Current: 13 Countries</span>
-                    <span class="w-1 h-1 bg-slate-600 rounded-full"></span>
-                    <span>Addressable: ~230</span>
-                </div>
+    <!-- INTEGRITY & LIMITS -->
+    <section id="integrity-limits" class="py-32 px-8 max-w-7xl mx-auto">
+        <div class="mb-16 reveal">
+            <h2 class="text-sm font-mono tracking-widest text-p_amber uppercase mb-4">Integrity &amp; Limits</h2>
+            <h3 class="text-4xl font-bold text-white mb-4">What the system guarantees &mdash; and what it refuses to claim.</h3>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 reveal">
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-8">
+                <h4 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-6">Integrity</h4>
+                <dl class="space-y-5">
+                    <div>
+                        <dt class="font-semibold text-white mb-1">Row-level security</dt>
+                        <dd class="text-sm text-slate-400 leading-relaxed"><code class="text-p_amber">alerts</code> SELECT scoped by <code class="text-p_amber">country &isin; user.countries</code>. Writes via edge functions using service role. <code class="text-p_amber">audit_log</code> append-only.</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-white mb-1">Audit trail</dt>
+                        <dd class="text-sm text-slate-400 leading-relaxed">Every dispatch, form submission, and decision recorded in <code class="text-p_amber">audit_log</code>. Append-only, retained for the operating lifetime of the deployment.</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-white mb-1">Internationalisation</dt>
+                        <dd class="text-sm text-slate-400 leading-relaxed">English and French primary. Extensible to Arabic, Hausa. Monolingual tooling is a non-starter in the target region.</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-white mb-1">Multi-operator coordination</dt>
+                        <dd class="text-sm text-slate-400 leading-relaxed">Alerts broadcast via Supabase Realtime. Concurrent-write reconciliation on the dossier is a known consistency gap, P2 on roadmap.</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-white mb-1">Data governance</dt>
+                        <dd class="text-sm text-slate-400 leading-relaxed">ACLED licensing compliance for derivatives. RLS admin role held by maintainer. Data-steward responsibility named in <code class="text-p_amber">CONTRIBUTING.md</code>.</dd>
+                    </div>
+                </dl>
             </div>
-            <div class="md:w-5/12 w-full">
-                <div class="bg-p_navy p-6 rounded-lg border border-slate-700">
-                    <h4 class="text-white font-bold mb-4 font-mono text-sm uppercase tracking-widest">Planned Extensions</h4>
-                    <p class="text-sm text-slate-400 leading-relaxed">
-                        Three additions are scoped but not yet in development: XGBoost classification on multi-source event features to improve signal precision beyond the current rule-based detector; automated actor-network extraction to identify which armed groups are co-present in flagged district-weeks; and deep temporal sequence modelling to extend the forward window beyond seven days.
-                    </p>
-                </div>
+
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-8">
+                <h4 class="text-sm font-mono tracking-widest text-p_alert uppercase mb-6">Limits &middot; what TREMOR does not do</h4>
+                <ul class="space-y-3 text-sm text-slate-400 leading-relaxed">
+                    <li><span class="font-semibold text-white">Not causal attribution.</span> Detects co-occurrence; does not claim a specific event caused escalation.</li>
+                    <li><span class="font-semibold text-white">Not incident-level.</span> admin-2 &times; ISO-week resolution. Cannot answer &ldquo;which village next Tuesday.&rdquo;</li>
+                    <li><span class="font-semibold text-white">Not ML.</span> Detector is a rule; regression is for robustness. XGBoost / deep temporal on roadmap.</li>
+                    <li><span class="font-semibold text-white">Not actor-aware.</span> Does not identify which armed groups are co-present. Roadmap.</li>
+                    <li><span class="font-semibold text-white">Not an intelligence product.</span> No classified inputs. No indications-and-warning outputs. Civilian open-source.</li>
+                    <li><span class="font-semibold text-white">Not an acknowledgement system of record.</span> Integrates with organisational comms, does not replace them.</li>
+                    <li><span class="font-semibold text-white">Not integrated with UNDSS / INSO / Humanitarian Access Working Group feeds.</span> Roadmap.</li>
+                    <li><span class="font-semibold text-white">Bound by ACLED.</span> Coverage, lag, and known coding biases (urban, English-language, conflict-salience) propagate.</li>
+                    <li><span class="font-semibold text-white">Rare-events context.</span> Class-imbalance applies to all detection-performance metrics.</li>
+                </ul>
             </div>
         </div>
     </section>
