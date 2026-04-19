@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Composite Co-occurrence Research | PRAXIS</title>
-    <meta name="description" content="Econometric research on composite escalation signals in ACLED conflict data. When multiple conflict event types converge in the same district-week, lethal violence follows within 7 days.">
+    <meta name="description" content="Econometric research on composite escalation detection in ACLED conflict data. When multiple armed event types converge in the same district-week, the district sits in a cluster averaging 8.8 times the Sahel-wide baseline attack rate.">
     <meta property="og:title" content="Co-occurrence Research | PRAXIS">
-    <meta property="og:description" content="No single event type predicts violence. Co-occurrence does. 100,184 events analyzed across 13 countries over 15 years.">
+    <meta property="og:description" content="No single event type carries the signal. Co-occurrence does. Districts at 8.8x the Sahel baseline, N=292, p < 0.001. 100,184 events across 13 countries.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/research/">
     <meta name="twitter:card" content="summary_large_image">
@@ -44,7 +44,20 @@
     </script>
     <style>
         ::selection { background: #14b8a6; color: #0B1120; }
-        body { background-color: #0B1120; color: #f8fafc; overflow-x: hidden; }
+        body { background-color: #0B1120; color: #f8fafc; }
+
+        .ambient-glow {
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(20,184,166,0.1) 0%, rgba(11,17,32,0) 70%);
+            top: -200px; right: -100px;
+            z-index: 0; pointer-events: none;
+        }
+
+        .bg-topo {
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%2314b8a6' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
         .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
         @media (max-width: 767px) {
@@ -54,234 +67,366 @@
         }
     </style>
 </head>
-<body class="font-sans antialiased relative">
+<body class="antialiased bg-topo relative">
+    <div class="ambient-glow"></div>
 
-<!-- NAV -->
-<nav class="fixed top-0 left-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-lg bg-p_navy/80 border-b border-white/5">
-    <div class="flex items-center gap-4">
-        <div class="w-2 h-2 rounded-full bg-p_teal animate-pulse shadow-[0_0_10px_#14b8a6]"></div>
-        <a href="../" class="text-xl font-bold tracking-tight text-white">PRAXIS.</a>
-    </div>
-    <button class="hamburger hidden items-center justify-center w-8 h-8" aria-label="Toggle menu" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <div class="nav-links-desktop hidden md:flex space-x-8 text-xs font-mono tracking-widest text-slate-400 items-center">
-        <a href="../" class="hover:text-p_teal transition-colors">LAB</a>
-        <a href="./" class="text-p_teal">RESEARCH</a>
-        <a href="../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
-        <a href="../evaluation/" class="hover:text-p_teal transition-colors">EVALUATION</a>
-        <a href="../360/" class="hover:text-p_teal transition-colors">360</a>
-        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="px-4 py-2 border border-slate-700 rounded hover:border-p_teal hover:text-p_teal transition-colors ml-4 text-white">GitHub</a>
-    </div>
-    <div id="mobile-menu" class="mobile-menu hidden flex-col absolute top-full left-0 right-0 bg-p_navy/95 backdrop-blur-lg border-b border-white/5 px-8 py-6 gap-4 text-sm font-mono tracking-widest text-slate-400">
-        <a href="../" class="hover:text-p_teal transition-colors">LAB</a>
-        <a href="./" class="text-p_teal">RESEARCH</a>
-        <a href="../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
-        <a href="../evaluation/" class="hover:text-p_teal transition-colors">EVALUATION</a>
-        <a href="../360/" class="hover:text-p_teal transition-colors">360</a>
-        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">GITHUB</a>
-    </div>
-</nav>
-
-<main>
-
-<!-- HERO -->
-<section class="relative overflow-hidden pt-36 pb-20" style="background: #060c17;">
-    <div class="absolute inset-0 opacity-50" style="background: url('../hero-bg.png') center right / cover no-repeat;"></div>
-    <div class="absolute inset-0" style="background: linear-gradient(90deg, #060c17 0%, #060c17 35%, rgba(6,12,23,0.5) 65%, rgba(6,12,23,0.3) 100%);"></div>
-    <div class="relative z-10 max-w-7xl mx-auto px-8 reveal">
-        <p class="font-mono text-xs font-medium text-p_amber tracking-[0.15em] uppercase mb-5">FEATURED RESEARCH</p>
-        <h1 class="font-serif font-light text-white leading-[1.08] tracking-tight mb-3" style="font-size: clamp(2.5rem, 5vw, 3.8rem);">Composite <em class="italic text-p_teal">co-occurrence</em> detection for conflict escalation</h1>
-        <p class="text-slate-400 text-base leading-relaxed max-w-xl">Econometric research and open-source tooling to detect composite escalation signals in ACLED conflict data. When multiple conflict event types converge in the same district-week, lethal violence follows within 7 days. Built by someone who works in the places where the escalation happens.</p>
-    </div>
-</section>
-
-<!-- STATS -->
-<div class="py-10 border-b border-white/5 bg-p_surface/50">
-    <div class="flex flex-wrap justify-center gap-12 reveal">
-        <div class="text-center">
-            <div class="font-mono text-[28px] font-medium text-p_amber leading-none">100,184</div>
-            <div class="text-xs text-slate-500 mt-1.5 tracking-wide">events analysed</div>
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-lg bg-p_navy/80 border-b border-white/5">
+        <div class="flex items-center gap-4">
+            <div class="w-2 h-2 rounded-full bg-p_teal animate-pulse shadow-[0_0_10px_#14b8a6]"></div>
+            <a href="../" class="text-xl font-bold tracking-tight text-white">PRAXIS.</a>
         </div>
-        <div class="text-center">
-            <div class="font-mono text-[28px] font-medium text-p_amber leading-none">13</div>
-            <div class="text-xs text-slate-500 mt-1.5 tracking-wide">Sahel countries</div>
+        <button class="hamburger hidden items-center justify-center w-8 h-8" aria-label="Toggle menu" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="nav-links-desktop hidden md:flex space-x-8 text-xs font-mono tracking-widest text-slate-400 items-center">
+            <a href="./" class="text-p_teal">RESEARCH</a>
+            <a href="../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
+            <a href="../evaluation/" class="hover:text-p_teal transition-colors">EVALUATION</a>
+            <a href="../360/" class="hover:text-p_teal transition-colors">360</a>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="px-4 py-2 border border-slate-700 rounded hover:border-p_teal hover:text-p_teal transition-colors ml-4 text-white">GitHub</a>
         </div>
-        <div class="text-center">
-            <div class="font-mono text-[28px] font-medium text-p_amber leading-none">1,503</div>
-            <div class="text-xs text-slate-500 mt-1.5 tracking-wide">districts</div>
+        <div id="mobile-menu" class="mobile-menu hidden flex-col absolute top-full left-0 right-0 bg-p_navy/95 backdrop-blur-lg border-b border-white/5 px-8 py-6 gap-4 text-sm font-mono tracking-widest text-slate-400">
+            <a href="./" class="text-p_teal">RESEARCH</a>
+            <a href="../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
+            <a href="../evaluation/" class="hover:text-p_teal transition-colors">EVALUATION</a>
+            <a href="../360/" class="hover:text-p_teal transition-colors">360</a>
+            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">GITHUB</a>
         </div>
-        <div class="text-center">
-            <div class="font-mono text-[28px] font-medium text-p_amber leading-none">5.5x</div>
-            <div class="text-xs text-slate-500 mt-1.5 tracking-wide">next-week attack prediction</div>
-        </div>
-    </div>
-</div>
+    </nav>
 
-<!-- THE RESEARCH -->
-<div class="max-w-3xl mx-auto px-8">
-    <section class="py-20 border-b border-white/5 reveal" id="research">
-        <h2 class="font-serif text-p_paper leading-snug mb-7" style="font-size: clamp(1.6rem, 3.5vw, 2.2rem);">The research</h2>
-        <div class="text-slate-400 leading-relaxed space-y-5">
-            <p>The core question was straightforward: can we predict where violent extremism will escalate before it does? The original study examined whether kidnapping spikes alone could serve as an early warning signal. The answer, after rigorous testing, was no. Single-type event thresholds do not predict next-week violence when isolated from concurrent attacks. The within-month temporal ordering test showed zero lead: KAFD events do not precede VE attacks within spike-months (Wilcoxon p = 0.68).</p>
-            <p>But the expanded analysis across 13 countries and 100,184 events revealed a stronger and genuinely predictive signal. When two or more distinct conflict event types co-occur in the same district-week, next-week attacks surge 4-6x above baseline. The signal is not carried by any single event type. It emerges from the convergence of multiple armed group capabilities deployed simultaneously.</p>
-        </div>
-
-        <div class="mt-9 pt-7 border-t border-white/5">
-            <p class="font-mono text-[11px] font-medium text-slate-500 tracking-[0.1em] uppercase mb-2.5">Method</p>
-            <p class="text-slate-400 text-[15px] leading-relaxed">Weekly district-level panel across 13 countries (Burkina Faso, Mali, Niger, Nigeria, Chad, Cameroon, Mauritania, Togo, Benin, Ghana, Senegal, Guinea, C&ocirc;te d'Ivoire), 1,503 admin2 districts, January 2010 to March 2025. ACLED event data classified by sub-event type. Composite signal defined as 2+ distinct conflict sub-event types in the same district-week. Next-week attack rates compared using Mann-Whitney U tests. Exclusive signal tests isolate each event type by removing district-weeks with concurrent attacks.</p>
-        </div>
-
-        <div class="mt-9 pt-7 border-t border-white/5">
-            <p class="font-mono text-[11px] font-medium text-slate-500 tracking-[0.1em] uppercase mb-5">Key findings</p>
-            <div class="space-y-3">
-                <div class="border-l-2 border-slate-700 pl-4 py-2">
-                    <div class="flex items-baseline gap-3 mb-1">
-                        <span class="font-mono text-sm font-semibold text-slate-500">0.8&ndash;1.3x</span>
-                        <span class="text-[13px] text-slate-400 font-medium">No single type predicts</span>
-                    </div>
-                    <p class="text-slate-500 text-[13px] leading-relaxed">KAFD alone: 0.8x baseline. IED alone: 1.3x. All at or below baseline when concurrent attacks are excluded.</p>
+    <!-- HERO -->
+    <section class="pt-36 pb-20 px-8 max-w-7xl mx-auto border-b border-white/5">
+        <div class="grid lg:grid-cols-12 gap-12 items-start reveal" id="hero-reveal">
+            <div class="lg:col-span-8">
+                <div class="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-p_teal/10 border border-p_teal/20 text-p_teal font-mono text-[10px] uppercase tracking-widest mb-8">
+                    <span>Featured Research</span>
+                    <span class="w-1 h-1 bg-p_teal rounded-full"></span>
+                    <span>p &lt; 0.001</span>
+                    <span class="w-1 h-1 bg-p_teal rounded-full"></span>
+                    <span>Bonferroni Corrected</span>
                 </div>
-                <div class="border-l-2 border-p_amber pl-4 py-2">
-                    <div class="flex items-baseline gap-3 mb-1">
-                        <span class="font-mono text-sm font-semibold text-p_amber">5.5x</span>
-                        <span class="text-[13px] text-p_paper font-medium">Co-occurrence is the signal</span>
-                    </div>
-                    <p class="text-slate-400 text-[13px] leading-relaxed">KAFD + IED co-occurrence: 5.5x next-week attacks, 4.6x fatalities (N=292, p &lt; 0.001). Any 3+ types: 5.5x.</p>
-                </div>
-                <div class="border-l-2 border-p_teal pl-4 py-2">
-                    <div class="flex items-baseline gap-3 mb-1">
-                        <span class="font-mono text-sm font-semibold text-p_teal">2.6&ndash;10.2x</span>
-                        <span class="text-[13px] text-slate-400 font-medium">Replicates across every region</span>
-                    </div>
-                    <p class="text-slate-500 text-[13px] leading-relaxed">Central Sahel: 2.6x. Lake Chad Basin: 8.3x. Coastal West Africa: 10.2x. All p &lt; 0.001.</p>
-                </div>
-                <div class="border-l-2 border-p_amber pl-4 py-2">
-                    <div class="flex items-baseline gap-3 mb-1">
-                        <span class="font-mono text-sm font-semibold text-p_amber">5.2&ndash;7.3x</span>
-                        <span class="text-[13px] text-p_paper font-medium">Coastal frontier discovery</span>
-                    </div>
-                    <p class="text-slate-500 text-[13px] leading-relaxed">IEDs in Togo, Benin, Ghana, C&ocirc;te d'Ivoire predict escalating violence over 3 weeks. 28 of 38 district-weeks in 2023&ndash;2025.</p>
-                </div>
-                <div class="border-l-2 border-slate-700 pl-4 py-2">
-                    <p class="text-slate-400 text-[13px] leading-relaxed">The escalation ladder is driven by convergence of multiple types, not any single type spiking.</p>
+
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[1.05] text-white text-balance">
+                    Composite co-occurrence<br/>
+                    <span class="text-p_teal">identifies escalation districts.</span>
+                </h1>
+
+                <p class="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl mb-12">
+                    Econometric research and open-source tooling for composite escalation detection in ACLED conflict data. When multiple armed event types converge in the same district-week, the district sits in a small cluster of persistently elevated violence, averaging 8.8 times the Sahel-wide baseline attack rate. The signal identifies where. It does not specify when. Built by someone who works in the places where the escalation happens.
+                </p>
+
+                <div class="flex flex-wrap gap-x-4 gap-y-3 items-center">
+                    <a href="#visualization" class="bg-p_teal text-p_navy px-8 py-4 rounded font-semibold tracking-wide hover:bg-p_teal_light transition-colors">Explore the Signal</a>
+                    <a href="#citation" class="bg-p_surface border border-slate-700 text-white px-8 py-4 rounded font-semibold tracking-wide hover:border-p_teal transition-colors">How to cite</a>
+                    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="text-slate-400 px-2 py-4 font-mono text-sm tracking-wide hover:text-p_teal transition-colors inline-flex items-center">Open-source code &rarr;</a>
                 </div>
             </div>
-        </div>
 
-        <!-- INTERACTIVE VISUALIZATION -->
-        <div id="ews-viz-root" class="overflow-x-auto my-10 min-h-[300px]">Loading visualization...</div>
-
-        <div class="mt-4 flex flex-wrap gap-4">
-            <div class="py-3 px-4 border-l-2 border-p_amber">
-                <div class="font-mono text-lg font-medium text-p_amber">8.8x</div>
-                <div class="text-[13px] text-slate-400 mt-0.5">District identification</div>
-                <div class="text-xs text-slate-500">KAFD+IED districts vs clean baseline (excl. triggering types)</div>
-            </div>
-            <div class="py-3 px-4 border-l-2 border-p_teal">
-                <div class="font-mono text-lg font-medium text-p_teal">1.2x</div>
-                <div class="text-[13px] text-slate-400 mt-0.5">Temporal escalation</div>
-                <div class="text-xs text-slate-500">Signal week spike in non-triggering violence above pre-signal corridor</div>
-            </div>
-            <div class="py-3 px-4 border-l-2 border-p_teal">
-                <div class="font-mono text-lg font-medium text-p_teal">13</div>
-                <div class="text-[13px] text-slate-400 mt-0.5">Countries replicated</div>
-                <div class="text-xs text-slate-500">Central Sahel, Lake Chad, Coastal</div>
-            </div>
-        </div>
-
-        <p class="mt-4 text-sm text-slate-400 leading-relaxed">The composite co-occurrence signal operates on two levels. First, as a district identifier: districts where KAFD and IED co-occur in the same week are persistently high-conflict, averaging 8.8 times the clean baseline attack rate (excluding triggering event types). Second, as a temporal escalation indicator: within those already-violent districts, the signal week produces a further 1.2-fold spike in non-triggering violence above the pre-signal corridor. Both dimensions are operationally valuable.</p>
-
-        <div class="mt-6 pt-6 border-t border-white/5">
-            <p class="font-mono text-[11px] font-medium text-slate-500 tracking-[0.1em] uppercase mb-2.5">Status</p>
-            <p class="text-slate-400 text-[15px] leading-relaxed">Expanded analysis across 13 countries complete. Manuscript in preparation. Platform architecture specified.</p>
-        </div>
-
-        <div class="mt-6 pt-6 border-t border-white/5">
-            <p class="font-mono text-[11px] font-medium text-slate-500 tracking-[0.1em] uppercase mb-2.5">Data &amp; reproducibility</p>
-            <p class="text-slate-400 text-[15px] leading-relaxed">ACLED event data used under license. Analysis code and methodology available on <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="text-p_teal hover:text-p_teal_light transition-colors">GitHub</a>. MIT licensed.</p>
-        </div>
-    </section>
-</div>
-
-<!-- METHODOLOGICAL FOUNDATION -->
-<div class="max-w-3xl mx-auto px-8">
-    <section class="py-20 border-b border-white/5 reveal" id="science">
-        <h2 class="font-serif text-p_paper leading-snug mb-7" style="font-size: clamp(1.6rem, 3.5vw, 2.2rem);">Methodological foundation</h2>
-        <div class="text-slate-400 leading-relaxed space-y-5">
-            <p>The methodological foundation is composite signal detection at weekly temporal resolution. The analysis pipeline classifies ACLED events by sub-event type and evaluates whether specific combinations co-occurring in the same admin2-week predict elevated violence in the following week. The exclusive signal test strips away concurrent attacks to isolate whether any individual event type carries standalone predictive power. The answer is no: the signal is emergent, arising from the convergence of multiple armed group capabilities.</p>
-            <p>The Central Sahel was the initial proof of concept. The expanded analysis confirms the signal across 13 countries, with the strongest effects in the Lake Chad Basin and Coastal West Africa.</p>
-            <p>Wherever ACLED operates, roughly 230 countries and territories, is the addressable scope. The Central Sahel is the proof of concept because the data is richest there for the composite co-occurrence pathway. It is not the ceiling.</p>
-        </div>
-    </section>
-</div>
-
-<!-- RESEARCHER -->
-<div class="max-w-3xl mx-auto px-8">
-    <section class="py-20 reveal">
-        <h2 class="font-serif text-p_paper leading-snug mb-5" style="font-size: clamp(1.4rem, 3vw, 1.8rem);">Principal researcher</h2>
-        <div class="flex flex-col sm:flex-row sm:items-start gap-6">
-            <div class="flex-1">
-                <p class="text-white font-semibold text-lg mb-1">Emmanuel Nene Odjidja</p>
-                <p class="text-p_teal font-mono text-xs tracking-wider mb-4">P/CVE Evaluation Specialist &middot; Sahel</p>
-                <p class="text-slate-400 text-[15px] leading-relaxed">12+ years designing and managing evaluations of programmes aimed at preventing violent extremism across Burkina Faso, Mali, and Niger. 29 peer-reviewed publications spanning health systems, programme evaluation, and the climate-conflict nexus. Six countries of field experience.</p>
-                <div class="flex gap-4 mt-4 text-xs font-mono text-slate-500">
-                    <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">Publications</a>
-                    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">GitHub</a>
+            <div class="lg:col-span-4 flex flex-col border-l border-white/5 pl-8">
+                <div class="pb-5 border-b border-white/5">
+                    <div class="text-2xl font-mono font-bold text-white mb-1" data-target="100184">0</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Events analysed</div>
                 </div>
-            </div>
-            <div class="sm:text-right flex-shrink-0">
-                <div class="font-mono text-2xl font-bold text-p_amber">29</div>
-                <div class="text-xs text-slate-500 mt-0.5">peer-reviewed papers</div>
-                <div class="font-mono text-2xl font-bold text-p_teal mt-3">6</div>
-                <div class="text-xs text-slate-500 mt-0.5">countries of field work</div>
+                <div class="py-5 border-b border-white/5">
+                    <div class="text-2xl font-mono font-bold text-white mb-1">13</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Sahel countries</div>
+                </div>
+                <div class="py-5 border-b border-white/5">
+                    <div class="text-2xl font-mono font-bold text-white mb-1">1,503</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Admin2 districts</div>
+                </div>
+                <div class="pt-5">
+                    <div class="text-5xl md:text-6xl font-mono font-bold text-p_amber leading-none mb-2">8.8x</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">District identification (N=292)</div>
+                </div>
             </div>
         </div>
     </section>
-</div>
 
-</main>
+    <!-- RESEARCH NARRATIVE -->
+    <section id="research" class="py-32 px-8 max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-20 items-start reveal">
+            <div>
+                <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">The Research</h2>
+                <h3 class="text-4xl font-bold mb-6 text-white leading-tight">No single event type carries the signal. <span class="text-p_amber">Co-occurrence does.</span></h3>
+                <p class="text-slate-400 leading-relaxed mb-6">
+                    The original research hypothesis, that kidnapping spikes alone would function as an early warning signal for violent extremism, was falsified. A within-month temporal ordering test found no lead: kidnapping events do not precede violent extremism attacks within spike-months (Wilcoxon p = 0.68). The original finding reflected conflict autocorrelation, not a lead signal.
+                </p>
+                <p class="text-slate-400 leading-relaxed mb-8">
+                    The expanded analysis across 13 countries and 100,184 events revealed a different structure. When two or more distinct conflict event types converge in the same district-week, that district sits in a small cluster averaging 8.8 times the Sahel-wide clean baseline attack rate (N=292, p &lt; 0.001, exclusive of triggering types). The signal is not carried by any single event type. It emerges from the convergence of multiple armed group capabilities operating simultaneously in the same geography. It identifies where persistent violence concentrates.
+                </p>
 
-<!-- FOOTER -->
-<footer class="pt-20 pb-12 px-8 max-w-7xl mx-auto border-t border-slate-800">
-    <div class="grid md:grid-cols-2 gap-16 mb-20">
-        <div>
-            <div class="text-5xl font-bold text-white tracking-tight mb-6">PRAXIS.</div>
-            <p class="text-slate-400 font-mono text-xs uppercase tracking-widest leading-loose">
-                Open-Source AI for Programme Evaluation <br/>
-                and Conflict Early Warning. <br/>
-                &copy; 2026. MIT Licensed.
+                <div class="pt-6 border-t border-slate-700/50 mt-8">
+                    <h4 class="text-xs font-mono tracking-widest text-slate-500 uppercase mb-3">Method</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed">Weekly district-level panel across 13 countries (Burkina Faso, Mali, Niger, Nigeria, Chad, Cameroon, Mauritania, Togo, Benin, Ghana, Senegal, Guinea, C&ocirc;te d'Ivoire), 1,503 admin2 districts, January 2010 to March 2025. ACLED event data classified by sub-event type. Composite signal defined as two or more distinct conflict sub-event types co-occurring in the same district-week. District-week outcome rates compared using Mann-Whitney U tests against a clean baseline of non-composite district-weeks. Exclusive signal tests remove the triggering types (KAFD, IED) from the outcome set to eliminate predictor-outcome overlap.</p>
+                </div>
+
+                <div id="citation" class="pt-6 border-t border-slate-700/50 mt-6">
+                    <h4 class="text-xs font-mono tracking-widest text-slate-500 uppercase mb-3">Status &amp; Reproducibility</h4>
+
+                    <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-p_amber/10 border border-p_amber/20 text-p_amber font-mono text-[10px] uppercase tracking-widest mb-4">
+                        <span class="w-1.5 h-1.5 bg-p_amber rounded-full animate-pulse"></span>
+                        <span>Working Paper 01 &middot; v0.1 &middot; Pre-review</span>
+                    </div>
+
+                    <p class="text-sm text-slate-400 leading-relaxed mb-5">Full study design, variable definitions, statistical methods, and complete results tables are documented in the accompanying methods note. Analysis code is MIT-licensed on <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="text-p_teal hover:text-p_teal_light transition-colors">GitHub</a>; ACLED event data used under licence.</p>
+
+                    <div class="flex flex-wrap gap-3 mb-5">
+                        <a href="./methods/" class="bg-p_teal text-p_navy px-5 py-2.5 rounded font-semibold text-sm tracking-wide hover:bg-p_teal_light transition-colors inline-flex items-center gap-2">
+                            Read the methods note <span>&rarr;</span>
+                        </a>
+                        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="border border-slate-700 text-white px-5 py-2.5 rounded font-semibold text-sm tracking-wide hover:border-p_teal hover:text-p_teal transition-colors">Replication package &rarr;</a>
+                    </div>
+
+                    <div class="bg-p_navy border border-slate-700/50 rounded-md p-4 mb-4">
+                        <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">Suggested citation</div>
+                        <p class="text-[13px] text-slate-300 font-mono leading-relaxed">Odjidja, E.N. (2026). <em class="text-p_paper not-italic">Methods Note: Composite co-occurrence detection for conflict escalation in the Sahel.</em> <span class="text-p_teal">PRAXIS Working Paper 01, v0.1.</span></p>
+                    </div>
+
+                    <a href="mailto:emmaodjidja@gmail.com?subject=PRAXIS%20manuscript%20updates&amp;body=Please%20notify%20me%20when%20a%20new%20PRAXIS%20working%20paper%20version%20is%20published." class="inline-flex items-center gap-2 text-p_teal font-mono text-xs tracking-wide hover:text-p_teal_light transition-colors">Notify me on new versions <span>&rarr;</span></a>
+                </div>
+            </div>
+
+            <!-- Key Findings Card -->
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-8 shadow-2xl">
+                <div class="text-xs font-mono text-slate-500 uppercase tracking-widest mb-8 border-b border-slate-700/50 pb-4">Key Findings</div>
+                <div class="divide-y divide-white/5">
+                    <!-- Card 1: the null -->
+                    <div class="flex items-start gap-6 pb-8 opacity-75">
+                        <div class="text-2xl font-mono font-bold text-slate-500 leading-none whitespace-nowrap shrink-0 min-w-[8rem]">0.8 to 1.3x</div>
+                        <div class="min-w-0">
+                            <div class="text-slate-300 text-sm font-semibold mb-1.5">No single type carries the signal</div>
+                            <div class="text-sm text-slate-500 leading-relaxed">KAFD alone: 0.8x baseline. IED alone: 1.3x. All at or below baseline when concurrent attacks are excluded.</div>
+                        </div>
+                    </div>
+                    <!-- Card 2: the headline -->
+                    <div class="flex items-center gap-6 py-10">
+                        <div class="text-5xl md:text-6xl font-mono font-bold text-p_amber leading-none shrink-0 min-w-[8rem]">8.8x</div>
+                        <div class="min-w-0">
+                            <div class="text-white text-base font-semibold mb-2">Where to look</div>
+                            <div class="text-sm text-slate-400 leading-relaxed">KAFD+IED districts at 8.8x clean baseline, excluding triggering types. N=292, p &lt; 0.001.</div>
+                        </div>
+                    </div>
+                    <!-- Card 3: regional replication -->
+                    <div class="flex items-start gap-6 py-8">
+                        <div class="text-3xl font-mono font-bold text-p_teal leading-none whitespace-nowrap shrink-0 min-w-[8rem]">2.6 to 10.2x</div>
+                        <div class="min-w-0">
+                            <div class="text-white font-semibold mb-1.5">Replicates across every region</div>
+                            <div class="text-sm text-slate-400 leading-relaxed">Central Sahel: 2.6x. Lake Chad Basin: 8.3x. Coastal West Africa: 10.2x. All p &lt; 0.001.</div>
+                        </div>
+                    </div>
+                    <!-- Card 4: coastal indicative -->
+                    <div class="flex items-start gap-6 pt-8">
+                        <div class="text-3xl font-mono font-bold text-p_teal leading-none whitespace-nowrap shrink-0 min-w-[8rem]">5.2 to 7.3x</div>
+                        <div class="min-w-0">
+                            <div class="text-white font-semibold mb-1.5">Coastal frontier (indicative)</div>
+                            <div class="text-sm text-slate-400 leading-relaxed">IED-only weeks in Togo, Benin, Ghana, C&ocirc;te d'Ivoire show elevated violence across the following three weeks (t+1: 5.2x, t+2: 5.8x, t+3: 7.3x). 28 of 38 district-weeks occurred in 2023 to 2025. Labelled indicative pending validation against additional 2025 to 2026 data.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTERACTIVE VIZ -->
+    <section id="visualization" class="py-32 bg-p_surface border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-8">
+
+            <!-- Transition above viz -->
+            <p class="text-lg md:text-xl text-slate-300 font-serif italic leading-relaxed text-center max-w-3xl mx-auto mb-14 reveal">
+                The signal is emergent: convergence of multiple event types in the same district-week, not any single type spiking.
+            </p>
+
+            <div class="text-center mb-12 reveal">
+                <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">Interactive Analysis</h2>
+                <h3 class="text-4xl font-bold text-white mb-6">The more types converge, the harder the spike.</h3>
+                <p class="text-slate-400 max-w-2xl mx-auto">Each coloured line shows next-week attack rate for district-weeks where that many distinct event types co-occurred. Grey is the baseline for districts with no composite signal. The dose-response is monotonic: 2 types to 2.3x, 5+ types to 7.5x.</p>
+                <p class="text-slate-500 text-xs font-mono tracking-wide mt-4 max-w-2xl mx-auto">100,184 ACLED events &middot; 2010 to 2025 &middot; All calculations client-side.</p>
+            </div>
+
+            <div class="reveal">
+                <div id="ews-viz-root" class="overflow-x-auto min-h-[300px] text-white">Loading visualization&hellip;</div>
+            </div>
+
+            <!-- Viz stat cards -->
+            <div class="mt-14 grid md:grid-cols-3 gap-4 max-w-5xl mx-auto reveal">
+                <div class="bg-p_navy border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-3xl font-mono font-bold text-p_amber mb-1">8.8x</div>
+                    <div class="text-sm text-white font-semibold mb-1.5">Where to look</div>
+                    <div class="text-xs text-slate-400 leading-relaxed">KAFD+IED districts vs clean baseline (excl. triggering types). N=292, p &lt; 0.001.</div>
+                </div>
+                <div class="bg-p_navy border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-3xl font-mono font-bold text-p_teal mb-1">1.2x</div>
+                    <div class="text-sm text-white font-semibold mb-1.5">Temporal escalation <span class="text-slate-500 font-normal text-xs font-mono">(provisional)</span></div>
+                    <div class="text-xs text-slate-400 leading-relaxed">Signal week shows 18% more non-triggering violence than the pre-signal corridor. Pending panel regression with district fixed effects.</div>
+                </div>
+                <div class="bg-p_navy border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-3xl font-mono font-bold text-p_teal mb-1">13</div>
+                    <div class="text-sm text-white font-semibold mb-1.5">Countries replicated</div>
+                    <div class="text-xs text-slate-400 leading-relaxed">Central Sahel, Lake Chad Basin, Coastal West Africa. All at p &lt; 0.001.</div>
+                </div>
+            </div>
+
+            <!-- Two-level signal explanation -->
+            <p class="mt-10 text-slate-400 leading-relaxed max-w-3xl mx-auto reveal">
+                The composite co-occurrence signal operates on two levels. First, as a district identifier: districts where KAFD and IED co-occur in the same week sit in a persistently high-conflict cluster, averaging 8.8 times the Sahel-wide clean baseline attack rate, exclusive of triggering types. This dimension is robust. Second, as a concurrent intensity indicator: within those already-violent districts, the signal week shows an 18 percent increase in non-triggering violence above the pre-signal corridor. This second dimension is provisional pending a panel regression with district fixed effects and time-varying controls. The district identification metric does not depend on the temporal finding.
             </p>
         </div>
-        <div class="md:text-right">
-            <h4 class="text-lg font-bold text-white">Emmanuel Nene Odjidja</h4>
-            <p class="text-p_teal font-mono text-sm mt-1 mb-4">Principal Researcher &amp; Founder</p>
-            <div class="flex md:justify-end gap-4 text-sm text-slate-500 font-mono">
-                <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a>
-                <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="hover:text-white transition-colors">Publications</a>
-                <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener" class="hover:text-white transition-colors">emmanuelneneodjidja.org</a>
+    </section>
+
+    <!-- METHODOLOGICAL FOUNDATION -->
+    <section id="science" class="py-32 px-8 max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-20 items-center reveal">
+            <div>
+                <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">Methodology</h2>
+                <h3 class="text-4xl font-bold text-white mb-6 leading-tight">Composite signal detection.</h3>
+                <p class="text-slate-400 leading-relaxed mb-6">
+                    The methodological foundation is composite signal detection at weekly temporal resolution. The analysis pipeline classifies ACLED events by sub-event type and tests whether combinations of types co-occurring in the same admin2-week identify districts with elevated violence. The exclusive signal test strips out concurrent events and removes the triggering types themselves from the outcome set to isolate whether any individual event type carries a standalone signal. It does not. The finding is emergent, arising from the convergence of multiple armed group capabilities operating in the same geography in the same week.
+                </p>
+                <div class="bg-p_surface/60 border-l-2 border-p_amber rounded-r-md px-5 py-4 mb-6">
+                    <p class="font-mono text-[11px] font-semibold text-p_amber tracking-[0.1em] uppercase mb-2">A note on the predictor-outcome set</p>
+                    <p class="text-sm text-slate-300 leading-relaxed">The exclusive metrics (8.8x district identification, 1.2x temporal escalation) remove KAFD and IED from the outcome count. This eliminates mechanical double-counting of the triggering events inside the outcome variable and produces the methodologically conservative headline. The inclusive metrics are available in the manuscript appendix.</p>
+                </div>
+                <p class="text-slate-400 leading-relaxed mb-8">
+                    The Central Sahel was the initial proof of concept. The expanded 13-country analysis confirms the district-level signal, with strongest effects in the Lake Chad Basin and Coastal West Africa. Wherever ACLED operates, roughly 230 countries and territories, is the addressable scope. The Central Sahel is the proof of concept because the data is richest there for the composite co-occurrence pathway. It is not the ceiling.
+                </p>
+                <div class="flex gap-6 text-sm">
+                    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="text-p_teal font-mono hover:text-p_teal_light transition-colors">Analysis code on GitHub &rarr;</a>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                    <div class="text-3xl font-mono font-bold text-p_teal mb-1">15</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Years of data</div>
+                </div>
+                <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                    <div class="text-3xl font-mono font-bold text-p_teal mb-1">44</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Bonferroni tests</div>
+                </div>
+                <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                    <div class="text-3xl font-mono font-bold text-p_amber mb-1">8.8x</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">District baseline lift</div>
+                </div>
+                <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                    <div class="text-3xl font-mono font-bold text-white mb-1">MIT</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Open source</div>
+                </div>
             </div>
         </div>
-    </div>
-</footer>
+    </section>
 
-<!-- SCROLL REVEAL -->
+    <!-- PRINCIPAL RESEARCHER -->
+    <section class="py-32 px-8 max-w-7xl mx-auto">
+        <div class="reveal">
+            <div class="grid lg:grid-cols-2 gap-20 items-center">
+                <div>
+                    <h2 class="text-sm font-mono tracking-widest text-p_teal uppercase mb-4">Principal Researcher</h2>
+                    <h3 class="text-4xl font-bold text-white mb-2 leading-tight">Emmanuel Nene Odjidja</h3>
+                    <p class="text-p_teal font-mono text-xs tracking-widest uppercase mb-6">Principal Investigator &middot; Violence Prevention Econometrics</p>
+                    <p class="text-slate-400 leading-relaxed mb-8">
+                        12+ years designing and managing evaluations of programmes aimed at preventing violent extremism across Burkina Faso, Mali, and Niger. 29 peer-reviewed publications spanning health systems, programme evaluation, and the climate-conflict nexus. Six countries of field experience. Section Editor, Journal of MultiDisciplinary Evaluation.
+                    </p>
+                    <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                        <a href="mailto:emmaodjidja@gmail.com" class="text-p_teal font-mono hover:text-p_teal_light transition-colors">Contact &rarr;</a>
+                        <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="text-p_teal font-mono hover:text-p_teal_light transition-colors">Publications &rarr;</a>
+                        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="text-p_teal font-mono hover:text-p_teal_light transition-colors">GitHub &rarr;</a>
+                        <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener" class="text-p_teal font-mono hover:text-p_teal_light transition-colors">Personal site &rarr;</a>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                        <div class="text-3xl font-mono font-bold text-p_amber mb-1">29</div>
+                        <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Publications</div>
+                    </div>
+                    <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                        <div class="text-3xl font-mono font-bold text-p_teal mb-1">12+</div>
+                        <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Years field work</div>
+                    </div>
+                    <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                        <div class="text-3xl font-mono font-bold text-p_teal mb-1">6</div>
+                        <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Countries</div>
+                    </div>
+                    <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6 text-center">
+                        <div class="text-3xl font-mono font-bold text-white mb-1 leading-tight">JME</div>
+                        <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Section Editor</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pt-32 pb-12 px-8 max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-16 mb-20 border-b border-slate-800 pb-20">
+            <div>
+                <div class="text-5xl font-bold text-white tracking-tight mb-6">PRAXIS.</div>
+                <p class="text-slate-400 font-mono text-xs uppercase tracking-widest leading-loose">
+                    Open-Source AI for Programme Evaluation <br/>
+                    and Conflict Early Warning. <br/>
+                    &copy; 2026. MIT Licensed.
+                </p>
+            </div>
+            <div class="md:text-right">
+                <h4 class="text-lg font-bold text-white">Emmanuel Nene Odjidja</h4>
+                <p class="text-p_teal font-mono text-sm mt-1 mb-4">Principal Investigator</p>
+                <div class="flex md:justify-end gap-4 text-sm text-slate-500 font-mono">
+                    <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a>
+                    <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&hl=en" target="_blank" rel="noopener" class="hover:text-white transition-colors">Publications</a>
+                    <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener" class="hover:text-white transition-colors">emmanuelneneodjidja.org</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
 <script>
 (function() {
-    var els = document.querySelectorAll('.reveal');
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        els.forEach(function(el) { el.classList.add('visible'); });
-        return;
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Scroll Reveal */
+    var reveals = document.querySelectorAll('.reveal');
+    if (reveals.length) {
+        if (prefersReduced) {
+            reveals.forEach(function(el) { el.classList.add('visible'); });
+        } else {
+            var revealObs = new IntersectionObserver(function(entries) {
+                entries.forEach(function(e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        revealObs.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            reveals.forEach(function(el) { revealObs.observe(el); });
+        }
     }
-    var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.15 });
-    els.forEach(function(el) { observer.observe(el); });
+
+    /* Animated Counters */
+    var counters = document.querySelectorAll('[data-target]');
+    if (counters.length) {
+        var counterObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (!e.isIntersecting) return;
+                counterObs.unobserve(e.target);
+                var el = e.target;
+                var target = parseInt(el.getAttribute('data-target'), 10);
+                if (isNaN(target)) return;
+                if (prefersReduced) { el.textContent = target.toLocaleString(); return; }
+                var duration = 1800;
+                var start = null;
+                function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+                function step(ts) {
+                    if (!start) start = ts;
+                    var p = Math.min((ts - start) / duration, 1);
+                    el.textContent = Math.round(easeOut(p) * target).toLocaleString();
+                    if (p < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            });
+        }, { threshold: 0.3 });
+        counters.forEach(function(el) { counterObs.observe(el); });
+    }
+
 })();
 </script>
 
@@ -547,7 +692,7 @@ const C = {
   bg: "#162032",
   bgA: "#0f1729",
   bgC: "#0B1120",
-  bdr: "rgba(20,184,166,0.08)",
+  bdr: "rgba(148,163,184,0.12)",
   cool: "#14b8a6",
   warm: "#f59e0b",
   warmLight: "#fbbf24",
@@ -569,7 +714,7 @@ const ACTOR_TACTICS = [
   {name:"Communal",events:11885,mix:[35.0,44.5,0.0,11.5,3.1,0.0],fatPerEvent:3.6},
 ];
 const TACTIC_LABELS = ["Clash","Attack","IED","Abduction","Looting","Suicide bomb"];
-const TACTIC_COLORS = [C.blue,"#73726c",C.gold,"#993556",C.cool,"#E24B4A"];
+const TACTIC_COLORS = [C.blue,"#73726c",C.gold,"#B85042",C.cool,"#B85042"];
 const JNIM_RATIO = [
   {country:"Togo",ratio:0.08,ied:21.0,kafd:1.6,n:62},
   {country:"Mali",ratio:0.46,ied:16.9,kafd:7.8,n:5330},
@@ -935,7 +1080,7 @@ function EWSViz() {
     fontSize: 10,
     padding: "3px 8px",
     cursor: "pointer",
-    borderRadius: 3,
+    borderRadius: 6,
     border: "none",
     background: active ? C.bgC : "transparent",
     color: active ? C.txW : C.txM,
@@ -1366,7 +1511,7 @@ function EWSViz() {
         flex: 1,
         height: 16,
         background: C.bgC,
-        borderRadius: 3,
+        borderRadius: 6,
         overflow: "hidden",
         position: "relative"
       }
@@ -1375,7 +1520,7 @@ function EWSViz() {
         width: show ? Math.max(2, d.excl / 5 * 100) + "%" : "0%",
         height: "100%",
         background: d.excl <= 1.0 ? C.grey : C.blue,
-        borderRadius: 3,
+        borderRadius: 6,
         transition: "width 0.6s ease",
         transitionDelay: i * 50 + "ms"
       }
@@ -1410,7 +1555,7 @@ function EWSViz() {
         flex: 1,
         height: 16,
         background: C.bgC,
-        borderRadius: 3,
+        borderRadius: 6,
         overflow: "hidden"
       }
     }, /*#__PURE__*/React.createElement("div", {
@@ -1418,7 +1563,7 @@ function EWSViz() {
         width: show ? Math.max(2, d.conc / 5 * 100) + "%" : "0%",
         height: "100%",
         background: C.warm,
-        borderRadius: 3,
+        borderRadius: 6,
         transition: "width 0.6s ease",
         transitionDelay: i * 50 + 200 + "ms"
       }
@@ -1636,7 +1781,7 @@ function EWSViz() {
   /*#__PURE__*/React.createElement("div", {style: {display: "flex", alignItems: "center", gap: 6, marginBottom: 6, paddingLeft: 78}},
     TACTIC_LABELS.map(function(l, i) {
       return /*#__PURE__*/React.createElement("span", {key: i, style: {display: "flex", alignItems: "center", gap: 3, fontSize: 8, color: C.txS}},
-        /*#__PURE__*/React.createElement("span", {style: {width: 6, height: 6, borderRadius: 1, background: TACTIC_COLORS[i], display: "inline-block", opacity: 0.8}}),
+        /*#__PURE__*/React.createElement("span", {style: {width: 6, height: 6, borderRadius: 2, background: TACTIC_COLORS[i], display: "inline-block", opacity: 0.8}}),
         l
       );
     })
@@ -1648,7 +1793,7 @@ function EWSViz() {
         /*#__PURE__*/React.createElement("div", {style: {width: 72, textAlign: "right", flexShrink: 0}},
           /*#__PURE__*/React.createElement("div", {style: {fontSize: 10, color: C.tx, fontWeight: 500}}, a.name)
         ),
-        /*#__PURE__*/React.createElement("div", {style: {flex: 1, height: 16, display: "flex", borderRadius: 1, overflow: "hidden", background: C.bgC}},
+        /*#__PURE__*/React.createElement("div", {style: {flex: 1, height: 16, display: "flex", borderRadius: 2, overflow: "hidden", background: C.bgC}},
           a.mix.map(function(pct, ti) {
             return pct > 0.3 ? /*#__PURE__*/React.createElement("div", {
               key: ti,
@@ -1698,13 +1843,13 @@ function EWSViz() {
       onMouseLeave: function() { setActorHover(null); }
     },
       /*#__PURE__*/React.createElement("div", {style: {width: 40, fontSize: 10, color: C.txS, textAlign: "right", flexShrink: 0}}, r.country),
-      /*#__PURE__*/React.createElement("div", {style: {flex: 1, height: 14, background: C.bgC, borderRadius: 1, overflow: "hidden", position: "relative"}},
+      /*#__PURE__*/React.createElement("div", {style: {flex: 1, height: 14, background: C.bgC, borderRadius: 2, overflow: "hidden", position: "relative"}},
         /*#__PURE__*/React.createElement("div", {style: {
           width: show ? barW + "%" : "0%",
           height: "100%",
-          background: r.ratio > 1.5 ? "#993556" : C.gold,
+          background: r.ratio > 1.5 ? "#B85042" : C.gold,
           opacity: 0.75,
-          borderRadius: 1,
+          borderRadius: 2,
           transition: "width 0.6s cubic-bezier(0.4,0,0.2,1)",
           transitionDelay: (i * 80) + "ms"
         }}),

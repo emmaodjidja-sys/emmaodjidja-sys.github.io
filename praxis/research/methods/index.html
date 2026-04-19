@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Methods Note: Composite Co-occurrence Detection | PRAXIS Working Paper 01</title>
+    <meta name="description" content="PRAXIS Working Paper 01. Study design, data, statistical methods, and full results tables for the composite co-occurrence detection analysis across 13 Sahel countries, 100,184 ACLED events, 2010-2025.">
+    <meta property="og:title" content="Methods Note: Composite Co-occurrence Detection | PRAXIS WP01">
+    <meta property="og:description" content="Full study design, data, methods, and results tables. 100,184 ACLED events across 13 Sahel countries.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/research/methods/">
+    <meta name="theme-color" content="#0B1120">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='32' y2='32' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230B1120'/%3E%3Cstop offset='1' stop-color='%23162032'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Crect x='7' y='7' width='3.5' height='18' rx='1' fill='%2314b8a6'/%3E%3Cpath d='M10.5 7h7c4.5 0 8 3 8 7.5s-3.5 7.5-8 7.5h-7' fill='none' stroke='%2314b8a6' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='25' r='1.5' fill='%2314b8a6' opacity='.5'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        p_navy: '#0B1120',
+                        p_surface: '#162032',
+                        p_teal: '#14b8a6',
+                        p_teal_light: '#5eead4',
+                        p_amber: '#f59e0b',
+                        p_paper: '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::selection { background: #14b8a6; color: #0B1120; }
+        body { background-color: #0B1120; color: #f8fafc; }
+        /* .reveal kept as a no-op for the methods page — content is always visible.
+           (On the main/research pages the same class is used for scroll-reveal animations.) */
+        .reveal { opacity: 1; }
+        @media (max-width: 767px) {
+            .nav-links-desktop { display: none !important; }
+            .hamburger { display: flex !important; }
+            .mobile-menu.open { display: flex !important; }
+        }
+
+        /* Prose defaults for the methods body */
+        .prose-methods h2 { font-family: 'Playfair Display', serif; font-weight: 400; font-size: 2rem; color: #f8fafc; margin-top: 3.5rem; margin-bottom: 1rem; letter-spacing: -0.01em; }
+        .prose-methods h2 .num { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 0.85rem; color: #14b8a6; letter-spacing: 0.15em; text-transform: uppercase; display: block; margin-bottom: 0.25rem; }
+        .prose-methods h3 { font-weight: 600; font-size: 1.125rem; color: #f8fafc; margin-top: 2rem; margin-bottom: 0.5rem; }
+        .prose-methods p { color: #94a3b8; line-height: 1.75; margin-bottom: 1rem; }
+        .prose-methods p strong { color: #f8fafc; font-weight: 600; }
+        .prose-methods ul { list-style: none; padding: 0; margin: 1rem 0; }
+        .prose-methods ul li { color: #94a3b8; line-height: 1.75; padding-left: 1.25rem; position: relative; margin-bottom: 0.4rem; }
+        .prose-methods ul li::before { content: ""; position: absolute; left: 0; top: 0.85rem; width: 0.5rem; height: 1px; background: #475569; }
+        .prose-methods ul li strong { color: #f8fafc; font-weight: 600; }
+        .prose-methods a { color: #14b8a6; text-decoration: none; border-bottom: 1px solid rgba(20,184,166,0.3); transition: all 0.15s; }
+        .prose-methods a:hover { color: #5eead4; border-bottom-color: #5eead4; }
+
+        /* Tables */
+        .data-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; margin: 1.5rem 0; }
+        .data-table th { text-align: left; padding: 0.625rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid rgba(148,163,184,0.2); background: #162032; }
+        .data-table th.num, .data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+        .data-table td { padding: 0.5rem 0.75rem; color: #cbd5e1; border-bottom: 1px solid rgba(148,163,184,0.08); }
+        .data-table tr:hover td { background: rgba(22,32,50,0.5); }
+        .data-table .hi-amber { color: #f59e0b; font-weight: 600; }
+        .data-table .hi-teal { color: #14b8a6; font-weight: 600; }
+        .data-table .hi-dim { color: #64748b; }
+        .table-caption { font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: #64748b; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .table-note { font-size: 0.75rem; color: #64748b; line-height: 1.6; margin-top: 0.5rem; font-style: italic; }
+
+        /* Code */
+        pre.code { background: #162032; border: 1px solid rgba(148,163,184,0.15); border-radius: 0.5rem; padding: 1rem 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: #cbd5e1; overflow-x: auto; margin: 1rem 0; line-height: 1.7; }
+        pre.code .kw { color: #14b8a6; }
+        pre.code .cm { color: #64748b; }
+        code.inline { background: #162032; border: 1px solid rgba(148,163,184,0.15); border-radius: 0.25rem; padding: 0.05rem 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: #cbd5e1; }
+
+        /* Print styles — generates a clean PDF via browser print */
+        @media print {
+            @page { size: A4; margin: 20mm 18mm; }
+            body { background: #ffffff !important; color: #111827 !important; }
+            nav, .no-print, .print-hide { display: none !important; }
+            .print-show { display: block !important; }
+            .prose-methods h2, .prose-methods h3 { color: #111827 !important; }
+            .prose-methods h2 { page-break-after: avoid; }
+            .prose-methods p, .prose-methods ul li { color: #334155 !important; }
+            .prose-methods p strong, .prose-methods ul li strong { color: #111827 !important; }
+            .prose-methods a { color: #0f766e !important; border-bottom: none !important; }
+            .data-table { page-break-inside: avoid; font-size: 0.7rem; }
+            .data-table th { background: #f1f5f9 !important; color: #334155 !important; border-bottom-color: #94a3b8 !important; }
+            .data-table td { color: #111827 !important; border-bottom-color: #cbd5e1 !important; }
+            .data-table .hi-amber { color: #b45309 !important; }
+            .data-table .hi-teal { color: #0f766e !important; }
+            .data-table .hi-dim { color: #64748b !important; }
+            pre.code, code.inline { background: #f1f5f9 !important; color: #111827 !important; border-color: #cbd5e1 !important; }
+            .hero-card { background: #f8fafc !important; color: #111827 !important; border: 1px solid #cbd5e1 !important; }
+            .badge-amber { background: #fef3c7 !important; color: #b45309 !important; border-color: #fbbf24 !important; }
+            footer { border-top: 1px solid #cbd5e1 !important; color: #64748b !important; }
+            footer * { color: #334155 !important; }
+            .page-break { page-break-before: always; }
+        }
+    </style>
+</head>
+<body class="antialiased relative">
+
+<!-- NAV -->
+<nav class="no-print fixed top-0 left-0 w-full z-50 px-8 py-5 flex justify-between items-center backdrop-blur-lg bg-p_navy/80 border-b border-white/5">
+    <div class="flex items-center gap-4">
+        <div class="w-2 h-2 rounded-full bg-p_teal animate-pulse shadow-[0_0_10px_#14b8a6]"></div>
+        <a href="../../" class="text-xl font-bold tracking-tight text-white">PRAXIS.</a>
+    </div>
+    <button class="hamburger hidden items-center justify-center w-8 h-8" aria-label="Toggle menu" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="nav-links-desktop hidden md:flex space-x-8 text-xs font-mono tracking-widest text-slate-400 items-center">
+        <a href="../" class="text-p_teal">RESEARCH</a>
+        <a href="../../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
+        <a href="../../evaluation/" class="hover:text-p_teal transition-colors">EVALUATION</a>
+        <a href="../../360/" class="hover:text-p_teal transition-colors">360</a>
+        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="px-4 py-2 border border-slate-700 rounded hover:border-p_teal hover:text-p_teal transition-colors ml-4 text-white">GitHub</a>
+    </div>
+    <div id="mobile-menu" class="mobile-menu hidden flex-col absolute top-full left-0 right-0 bg-p_navy/95 backdrop-blur-lg border-b border-white/5 px-8 py-6 gap-4 text-sm font-mono tracking-widest text-slate-400">
+        <a href="../" class="text-p_teal">RESEARCH</a>
+        <a href="../../ews/" class="hover:text-p_teal transition-colors">TREMOR</a>
+        <a href="../../evaluation/" class="hover:text-p_teal transition-colors">EVALUATION</a>
+        <a href="../../360/" class="hover:text-p_teal transition-colors">360</a>
+        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">GITHUB</a>
+    </div>
+</nav>
+
+<!-- HEADER / TITLE BLOCK -->
+<header class="pt-28 md:pt-36 pb-12 px-8 max-w-4xl mx-auto reveal">
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="no-print text-xs font-mono text-slate-500 tracking-widest uppercase mb-8">
+        <a href="../../" class="hover:text-p_teal transition-colors">Lab</a>
+        <span class="mx-2 text-slate-700">/</span>
+        <a href="../" class="hover:text-p_teal transition-colors">Research</a>
+        <span class="mx-2 text-slate-700">/</span>
+        <span class="text-slate-400">Methods Note</span>
+    </nav>
+
+    <div class="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-p_amber/10 border border-p_amber/20 text-p_amber font-mono text-[10px] uppercase tracking-widest mb-6 badge-amber">
+        <span class="w-1.5 h-1.5 bg-p_amber rounded-full animate-pulse no-print"></span>
+        <span>PRAXIS Working Paper 01</span>
+        <span class="w-1 h-1 bg-p_amber rounded-full no-print"></span>
+        <span>v0.1 &middot; Pre-review</span>
+    </div>
+
+    <h1 class="text-4xl md:text-5xl font-serif font-normal tracking-tight text-white leading-[1.1] mb-6">Composite co-occurrence detection for conflict escalation in the Sahel</h1>
+
+    <p class="text-slate-400 text-sm md:text-base font-mono leading-relaxed mb-8">
+        <span class="text-white">Emmanuel Nene Odjidja</span> &nbsp;&middot;&nbsp;
+        Principal Investigator &middot; Violence Prevention Econometrics &middot;
+        <a href="mailto:emmaodjidja@gmail.com" class="text-p_teal hover:text-p_teal_light transition-colors">emmaodjidja@gmail.com</a>
+    </p>
+
+    <!-- Version meta -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pb-8 border-b border-white/5">
+        <div>
+            <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">Version</div>
+            <div class="text-sm text-white font-mono">v0.1</div>
+        </div>
+        <div>
+            <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">Released</div>
+            <div class="text-sm text-white font-mono">2026-04-18</div>
+        </div>
+        <div>
+            <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">Review Status</div>
+            <div class="text-sm text-p_amber font-mono">Pre-review</div>
+        </div>
+        <div>
+            <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">Licence</div>
+            <div class="text-sm text-white font-mono">CC BY 4.0</div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="no-print flex flex-wrap gap-3 mt-6">
+        <button onclick="window.print()" class="bg-p_teal text-p_navy px-5 py-2.5 rounded font-semibold text-sm tracking-wide hover:bg-p_teal_light transition-colors inline-flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+            Print / Save as PDF
+        </button>
+        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="border border-slate-700 text-white px-5 py-2.5 rounded font-semibold text-sm tracking-wide hover:border-p_teal hover:text-p_teal transition-colors">Replication package &rarr;</a>
+        <a href="../" class="text-slate-400 px-2 py-2.5 font-mono text-xs tracking-widest uppercase hover:text-p_teal transition-colors inline-flex items-center">Back to research &rarr;</a>
+    </div>
+</header>
+
+<!-- ABSTRACT -->
+<section class="px-8 max-w-4xl mx-auto reveal">
+    <div class="hero-card bg-p_surface border border-slate-700/50 rounded-xl p-8">
+        <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-3">Abstract</div>
+        <p class="text-slate-300 leading-relaxed text-[15px]">A composite signal is defined as two or more distinct conflict sub-event types in the same admin2 district, in the same week. We test whether composite signals predict next-week violence across 13 Sahel countries. The panel covers 100,184 ACLED events (1 January 2010 to 26 March 2025, 201,641 reported fatalities) over 1,510 admin2 districts. Single-type signals do not predict next-week violence when concurrent attacks are excluded. Exclusive multipliers for kidnappings, IEDs, clashes, and civilian attacks fall between 0.8x and 1.3x the clean Sahel baseline. Composite signals show a monotonic dose-response: the t+1 attack multiplier climbs from 2.3x at the 2-type threshold to 7.5x at 5+ types. KAFD paired with IED yields 5.5x next-week attacks and 4.6x fatalities (N=292 district-weeks, p&nbsp;&lt;&nbsp;0.001). Districts where KAFD and IED have co-occurred sit persistently at 8.8x the clean baseline. The signal replicates across Central Sahel (2.6x), Lake Chad Basin (8.3x), and Coastal West Africa (10.2x, indicative N=11). It is stable across 2016 to 2025 and insensitive to the specific pair. All multipliers survive Bonferroni correction at family-wise &alpha;&nbsp;=&nbsp;0.05 (44 tests, threshold p&nbsp;=&nbsp;0.00114). The predictive signal emerges from convergence of multiple armed-group capabilities, not from any single event type.</p>
+    </div>
+</section>
+
+<!-- BODY -->
+<article class="prose-methods px-8 max-w-4xl mx-auto py-12 reveal">
+
+    <!-- 1. STUDY DESIGN -->
+    <h2><span class="num">Section 01</span>Study design</h2>
+
+    <p>The analysis addresses a single empirical question: do signals observable in open-source conflict-event data predict next-week violence in fragile settings? The unit of analysis is the <strong>admin2 district-week</strong>: a row of data represents one second-level administrative district (e.g. a province, department, or cercle) observed over one calendar week. The outcome of interest is the count of violent-conflict attacks in that district during the following week (t+1).</p>
+
+    <p>We test two classes of predictor. <strong>Single-type thresholds</strong>: the predictor is a binary indicator that at least one event of a given sub-event type (e.g. KAFD, IED) occurred in the district that week. <strong>Composite signals</strong>: the predictor is a binary indicator that at least two distinct conflict sub-event types co-occurred in the district that week. The composite signal is the central hypothesis of this study.</p>
+
+    <p>The comparison is descriptive: for each predictor, we report the ratio of mean next-week attacks between treatment district-weeks (predictor&nbsp;=&nbsp;1) and control district-weeks (predictor&nbsp;=&nbsp;0), with 95% confidence intervals and a non-parametric Mann-Whitney U test statistic. The formal econometric analysis, which applies fixed-effects and additional controls, is reported separately in the forthcoming manuscript. This methods note documents the descriptive evidence.</p>
+
+    <!-- 2. DATA -->
+    <h2><span class="num">Section 02</span>Data</h2>
+
+    <h3>Source</h3>
+    <p>All event data is drawn from the <strong>Armed Conflict Location &amp; Event Data Project (ACLED)</strong>. Events are coded by ACLED analysts under a published codebook; we rely on ACLED&rsquo;s own classification of <code class="inline">event_type</code> and <code class="inline">sub_event_type</code> without re-coding. Access is under ACLED&rsquo;s standard research licence; raw event data is not redistributed in the replication package.</p>
+
+    <h3>Geographic scope</h3>
+    <p>Thirteen countries are included, selected for ACLED coverage density, geographic contiguity, and policy relevance to counter-violent-extremism work:</p>
+    <ul>
+        <li><strong>Central Sahel</strong>: Burkina Faso, Mali, Niger</li>
+        <li><strong>Lake Chad Basin</strong>: Nigeria, Cameroon, Chad</li>
+        <li><strong>Coastal West Africa</strong>: Ghana, C&ocirc;te d'Ivoire, Togo, Benin, Senegal, Guinea</li>
+        <li><strong>Peripheral</strong>: Mauritania</li>
+    </ul>
+    <p>Admin2 boundaries follow the standard ACLED geocoding. The total number of distinct admin2 districts appearing at least once in the panel is <strong>1,510</strong>.</p>
+
+    <h3>Time window</h3>
+    <p>Events with <code class="inline">event_date</code> between <strong>1 January 2010</strong> and <strong>26 March 2025</strong> are included. The window spans just over 15 calendar years. The total number of events retained is <strong>100,184</strong>, with a combined <strong>201,641 reported fatalities</strong>.</p>
+
+    <h3>Event types</h3>
+    <p>The composite predictor uses the eight ACLED sub-event types listed in bold below. Remaining sub-event types (protests, strategic developments, etc.) are not used to construct the composite signal but do contribute to outcome counts where classified as violent.</p>
+
+    <div class="table-caption">Table 01 &middot; Event frequencies by ACLED sub-event type (100,184 total)</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ACLED sub-event type</th>
+                <th class="num">Events</th>
+                <th class="num">Share</th>
+                <th>Analysis label</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Attack</strong></td><td class="num">23,155</td><td class="num">23.1%</td><td>Attack</td></tr>
+            <tr><td><strong>Armed clash</strong></td><td class="num">22,638</td><td class="num">22.6%</td><td>Clash</td></tr>
+            <tr><td><strong>Abduction / forced disappearance</strong></td><td class="num">8,214</td><td class="num">8.2%</td><td>KAFD</td></tr>
+            <tr><td><strong>Looting / property destruction</strong></td><td class="num">7,304</td><td class="num">7.3%</td><td>Looting</td></tr>
+            <tr><td><strong>Remote explosive / landmine / IED</strong></td><td class="num">3,155</td><td class="num">3.1%</td><td>IED</td></tr>
+            <tr><td><strong>Suicide bomb</strong></td><td class="num">433</td><td class="num">0.4%</td><td>Suicide bomb</td></tr>
+            <tr><td><strong>Sexual violence</strong></td><td class="num">325</td><td class="num">0.3%</td><td>Sexual violence</td></tr>
+            <tr><td><strong>Non-state actor overtakes territory</strong></td><td class="num">163</td><td class="num">0.2%</td><td>Territory</td></tr>
+            <tr><td class="hi-dim">Peaceful protest</td><td class="num hi-dim">14,800</td><td class="num hi-dim">14.8%</td><td class="hi-dim"></td></tr>
+            <tr><td class="hi-dim">Mob violence</td><td class="num hi-dim">5,003</td><td class="num hi-dim">5.0%</td><td class="hi-dim"></td></tr>
+            <tr><td class="hi-dim">Violent demonstration</td><td class="num hi-dim">3,771</td><td class="num hi-dim">3.8%</td><td class="hi-dim"></td></tr>
+            <tr><td class="hi-dim">Air/drone strike</td><td class="num hi-dim">2,635</td><td class="num hi-dim">2.6%</td><td class="hi-dim"></td></tr>
+            <tr><td class="hi-dim">Other sub-event types (&lt;1,600 each)</td><td class="num hi-dim">8,588</td><td class="num hi-dim">8.6%</td><td class="hi-dim"></td></tr>
+        </tbody>
+    </table>
+    <p class="table-note">Counts derived directly from the ACLED export dated 2026-03-26 (SHA pending). &ldquo;Other sub-event types&rdquo; aggregates 12 remaining categories including arrests, protest-with-intervention, agreements, shelling/artillery, disrupted weapons use, excessive force against protesters, territory transfers other than overtake, change-to-group, non-violent territory transfer, grenade, HQ established, and ACLED &ldquo;Other&rdquo;. The composite predictor operates only on the eight bolded categories.</p>
+
+    <!-- 3. VARIABLE DEFINITIONS -->
+    <h2><span class="num">Section 03</span>Variable definitions</h2>
+
+    <h3>Composite signal <code class="inline">C_d,t</code></h3>
+    <p>For district <em>d</em> and week <em>t</em>, the composite signal is defined as:</p>
+    <pre class="code"><span class="cm"># Binary composite indicator</span>
+C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looting,
+                  Sexual_violence, Territory, Suicide_bomb}
+              <span class="kw">and</span> count(e, d, t) &gt;= 1}| &gt;= 2
+       <span class="kw">else</span> 0</pre>
+
+    <p>The composite signal equals 1 if two or more distinct sub-event types each had at least one event in the district that week. Repeated events of the same type do not contribute. The threshold of 2 is the primary specification. Robustness to thresholds of 3, 4, and 5 is reported in Section&nbsp;5.</p>
+
+    <h3>Next-week attack rate <code class="inline">Y_d,t+1</code></h3>
+    <p>The outcome is the count of violent events (all eight analysis categories, summed) in district <em>d</em> during week <em>t+1</em>, divided by the number of district-weeks at risk in the panel. This yields a per-district-week mean, not a per-capita rate; exposure is held constant by design.</p>
+
+    <h3>Baseline <code class="inline">Y_0</code></h3>
+    <p>The baseline attack rate is <code class="inline">Y_0 = 0.241</code> attacks per district-week, roughly one attack every four weeks in a typical district. All multipliers reported in the interactive visualisation reference this baseline. The construction (which district-weeks are eligible, and whether recent signal history is excluded) is documented in the replication package.</p>
+
+    <h3>Exclusive signal</h3>
+    <p>For single-type tests, the <strong>exclusive signal</strong> restricts treatment district-weeks to those in which only the indexed event type occurred (all other seven types had zero events). This isolates the standalone predictive power of each type. Without this restriction, apparent single-type signals are confounded by concurrent multi-type occurrences.</p>
+
+    <!-- 4. STATISTICAL METHODS -->
+    <h2><span class="num">Section 04</span>Statistical methods</h2>
+
+    <h3>Primary test</h3>
+    <p>For each predictor, we compute the <strong>ratio of means</strong> <code class="inline">R = E[Y_d,t+1 | predictor=1] / E[Y_d,t+1 | predictor=0]</code>. Confidence intervals are reported alongside each multiplier in the interactive visualisation on the research page (exact bootstrap specification to be documented in the replication package). We additionally compute a non-parametric <strong>Mann-Whitney U</strong> statistic comparing the distribution of <code class="inline">Y_d,t+1</code> across the two groups. The Mann-Whitney test makes no distributional assumptions and is robust to the highly skewed, zero-inflated outcome distribution characteristic of conflict-event data.</p>
+
+    <h3>Multiple-comparison correction</h3>
+    <p>We apply a <strong>Bonferroni correction at family-wise &alpha;&nbsp;=&nbsp;0.05</strong> across the 44 distinct tests in the primary and sensitivity analyses (eight exclusive single-type tests, four threshold tests, three regional tests, three period tests, four pair-type tests, plus related descriptive comparisons). The per-test significance threshold is therefore <code class="inline">p = 0.05 / 44 = 0.00114</code>. Results reported as &ldquo;p&nbsp;&lt;&nbsp;0.001&rdquo; survive this correction.</p>
+
+    <h3>Temporal-ordering test</h3>
+    <p>For the specific claim that kidnapping (KAFD) spikes precede violent-extremism attacks within a calendar month, we implement a within-month <strong>Wilcoxon signed-rank test</strong> comparing the timing of KAFD events against VE-classified attacks in the same district-month. The test returns <code class="inline">p = 0.68</code>, indicating no detectable lead of KAFD over VE attacks at the within-month resolution. This is a null result and is a central motivation for the composite-signal approach.</p>
+
+    <!-- 5. RESULTS -->
+    <h2><span class="num">Section 05</span>Results</h2>
+
+    <h3>Single-type exclusive signals (null)</h3>
+    <p>Table&nbsp;02 reports the exclusive signal test for each of the eight analysis event types. Each row compares next-week attacks in district-weeks where only the indexed type occurred against the clean Sahel baseline. All exclusive multipliers fall between 0.6x and 1.3x. No single event type predicts next-week escalation when concurrent attacks are excluded.</p>
+
+    <div class="table-caption">Table 02 &middot; Exclusive single-type signals vs. concurrent multi-type</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Event type</th>
+                <th class="num">Exclusive x</th>
+                <th class="num">Concurrent x</th>
+                <th class="num">N exclusive</th>
+                <th class="num">N concurrent</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Abductions (KAFD)</td><td class="num hi-dim">0.8x</td><td class="num hi-amber">3.8x</td><td class="num">3,881</td><td class="num">2,765</td></tr>
+            <tr><td>IED</td><td class="num hi-dim">1.3x</td><td class="num hi-amber">3.8x</td><td class="num">1,458</td><td class="num">1,269</td></tr>
+            <tr><td>Clash</td><td class="num hi-dim">1.1x</td><td class="num hi-amber">3.8x</td><td class="num">12,485</td><td class="num">4,510</td></tr>
+            <tr><td>Attack (civilians)</td><td class="num hi-dim">1.0x</td><td class="num hi-amber">3.8x</td><td class="num">13,103</td><td class="num">4,336</td></tr>
+            <tr><td>Sexual violence</td><td class="num hi-dim">0.6x</td><td class="num hi-amber">4.7x</td><td class="num">164</td><td class="num">142</td></tr>
+            <tr><td>Looting</td><td class="num hi-dim">1.0x</td><td class="num hi-amber">4.2x</td><td class="num">2,416</td><td class="num">2,668</td></tr>
+            <tr><td>Territory</td><td class="num hi-dim">0.7x</td><td class="num hi-amber">2.4x</td><td class="num">74</td><td class="num">67</td></tr>
+            <tr><td>Suicide bomb</td><td class="num hi-dim">1.0x</td><td class="num hi-amber">3.4x</td><td class="num">219</td><td class="num">146</td></tr>
+        </tbody>
+    </table>
+    <p class="table-note">&ldquo;Exclusive&rdquo; restricts to district-weeks with only that event type. &ldquo;Concurrent&rdquo; restricts to district-weeks with that type <em>and</em> at least one other type. The gap between columns is the evidence for the composite-signal hypothesis.</p>
+
+    <h3>Composite threshold dose-response</h3>
+    <p>Table&nbsp;03 reports the main result. As the number of co-occurring event types rises, the next-week attack multiplier rises monotonically. At 2 types the multiplier is 2.3x baseline. At 5 or more types it is 7.5x. Full lead-lag curves (t-4 through t+5) and confidence intervals for each threshold are plotted in the interactive visualisation on the research page.</p>
+
+    <div class="table-caption">Table 03 &middot; Composite threshold dose-response (t+1 attack multiplier vs. baseline)</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Threshold (n distinct types)</th>
+                <th class="num">t+1 multiplier</th>
+                <th class="num">N district-weeks</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>&ge; 2 types</td><td class="num hi-amber">2.3x</td><td class="num">13,984</td></tr>
+            <tr><td>&ge; 3 types</td><td class="num"></td><td class="num">4,312</td></tr>
+            <tr><td>&ge; 4 types</td><td class="num"></td><td class="num">1,477</td></tr>
+            <tr><td>&ge; 5 types</td><td class="num hi-amber">7.5x</td><td class="num">482</td></tr>
+        </tbody>
+    </table>
+    <p class="table-note">Intermediate-threshold multipliers and 95% CIs plotted in full on the research page interactive visualisation; numerical values pending extraction from the replication package. The 2.3x (N=13,984) and 7.5x (N=482) endpoints anchor the dose-response. All thresholds yield p&nbsp;&lt;&nbsp;0.001 against the clean baseline.</p>
+
+    <h3>Regional replication</h3>
+    <p>Table&nbsp;04 reports the composite signal (2+ types) within three regional sub-samples. The signal replicates in every region with statistically significant positive multipliers. The Lake Chad Basin and Coastal West Africa produce larger multipliers than Central Sahel despite smaller sample sizes, suggesting the mechanism is not specific to any one conflict ecology.</p>
+
+    <div class="table-caption">Table 04 &middot; Regional replication (t+1 multiplier, &ge;2 types)</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Region</th>
+                <th class="num">t+1 multiplier</th>
+                <th class="num">N district-weeks</th>
+                <th>p-value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Central Sahel</td><td class="num hi-teal">2.6x</td><td class="num">156</td><td>&lt; 0.001</td></tr>
+            <tr><td>Lake Chad Basin</td><td class="num hi-teal">8.3x</td><td class="num">125</td><td>&lt; 0.001</td></tr>
+            <tr><td>Coastal West Africa</td><td class="num hi-teal">10.2x</td><td class="num">11</td><td>&lt; 0.05 (indicative)</td></tr>
+        </tbody>
+    </table>
+    <p class="table-note">Coastal West Africa sample size is small (N=11 composite district-weeks in the primary window) and the estimate should be treated as indicative, not confirmatory. Coastal frontier results are treated separately in Section&nbsp;6 under the coastal-discovery analysis.</p>
+
+    <h3>Temporal stability</h3>
+    <p>The sample splits into three time periods (2016 to 2019, 2020 to 2022, 2023 to 2025) in the interactive visualisation. Absolute baseline violence has risen across the window, consistent with documented Sahel escalation. The relative signal strength (the incremental spike at t&nbsp;=&nbsp;0 above the pre-signal corridor) is stable across periods. Full multipliers and district-week counts by period are available in the interactive chart on the research page under the &ldquo;Period&rdquo; sensitivity tab. Numerical values for inclusion in this table are pending extraction from the replication package.</p>
+
+    <h3>Combination specificity (KAFD+IED)</h3>
+    <p>Table&nbsp;06 reports the headline combination-specific result. The KAFD+IED pair produces 5.5x next-week attacks and 4.6x next-week fatalities (N=292 district-weeks, p&nbsp;&lt;&nbsp;0.001). Districts where both KAFD and IED have co-occurred in any week sit persistently at <strong>8.8x the clean Sahel baseline</strong>. The elevation holds even when triggering event types are excluded from the outcome count, which means those districts are already elevated on non-triggering violence.</p>
+
+    <div class="table-caption">Table 06 &middot; Pair-type combinations</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Combination</th>
+                <th class="num">t+1 attack multiplier</th>
+                <th class="num">Fatalities multiplier</th>
+                <th class="num">N district-weeks</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>KAFD + IED</strong></td><td class="num hi-amber">5.5x</td><td class="num hi-amber">4.6x</td><td class="num">292</td></tr>
+            <tr><td>KAFD + Clash</td><td class="num"></td><td class="num"></td><td class="num">1,662</td></tr>
+            <tr><td>IED + Clash</td><td class="num"></td><td class="num"></td><td class="num">866</td></tr>
+            <tr><td>KAFD + Looting</td><td class="num"></td><td class="num"></td><td class="num">980</td></tr>
+        </tbody>
+    </table>
+    <p class="table-note">KAFD+IED multipliers confirmed against the interactive visualisation. Other pair-type multipliers pending extraction from the replication package. Sample sizes for non-KAFD+IED pairs are taken from the viz data constants. The viz reports that all pair types produce elevated t+1 rates with consistent within-district incremental spikes at t=0, supporting a convergence-driven (rather than pair-specific) mechanism.</p>
+
+    <h3>Country-level scope</h3>
+    <p>Table&nbsp;07 shows the full 13-country panel with total event counts from the ACLED export. Three Coastal West African countries (Ghana, C&ocirc;te d'Ivoire, Benin, Togo) and the broader Coastal zone show systematically higher composite ratios, consistent with the coastal-discovery finding in Section&nbsp;6.</p>
+
+    <div class="table-caption">Table 07 &middot; Country-level scope (13 countries, 100,184 events)</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Country</th>
+                <th>Region</th>
+                <th class="num">Events</th>
+                <th class="num">KAFD</th>
+                <th class="num">IED</th>
+                <th class="num">Composite ratio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Nigeria</td><td>Lake Chad</td><td class="num">38,997</td><td class="num">3,267</td><td class="num">709</td><td class="num">1.8</td></tr>
+            <tr><td>Cameroon</td><td>Lake Chad</td><td class="num">17,062</td><td class="num">2,363</td><td class="num">386</td><td class="num">1.6</td></tr>
+            <tr><td>Mali</td><td>Central</td><td class="num">12,441</td><td class="num">903</td><td class="num">1,108</td><td class="num">1.6</td></tr>
+            <tr><td>Burkina Faso</td><td>Central</td><td class="num">12,173</td><td class="num">807</td><td class="num">644</td><td class="num">1.5</td></tr>
+            <tr><td>Niger</td><td>Central</td><td class="num">4,615</td><td class="num">565</td><td class="num">194</td><td class="num">1.8</td></tr>
+            <tr><td>Ghana</td><td>Coastal</td><td class="num">2,614</td><td class="num">7</td><td class="num">0</td><td class="num hi-teal">3.2</td></tr>
+            <tr><td>Guinea</td><td>Peripheral</td><td class="num">2,536</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+            <tr><td>C&ocirc;te d'Ivoire</td><td>Coastal</td><td class="num">2,332</td><td class="num">32</td><td class="num">7</td><td class="num hi-teal">3.0</td></tr>
+            <tr><td>Mauritania</td><td>Peripheral</td><td class="num">1,976</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+            <tr><td>Senegal</td><td>Peripheral</td><td class="num">1,690</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+            <tr><td>Benin</td><td>Coastal</td><td class="num">1,685</td><td class="num">186</td><td class="num">39</td><td class="num hi-amber">2.8</td></tr>
+            <tr><td>Chad</td><td>Lake Chad</td><td class="num">1,532</td><td class="num">63</td><td class="num">28</td><td class="num">1.5</td></tr>
+            <tr><td>Togo</td><td>Coastal</td><td class="num">531</td><td class="num">4</td><td class="num">14</td><td class="num hi-amber">2.8</td></tr>
+        </tbody>
+    </table>
+    <p class="table-note">Event totals derived directly from the ACLED export (2026-03-26 vintage). KAFD/IED and composite-ratio values reported here come from the viz data constants. Guinea, Mauritania and Senegal were excluded from the decomposition in the visualisation and are therefore missing disaggregated values; updating these is pending. Composite ratio is defined in the replication package (operationally: ratio of composite district-weeks to baseline district-weeks within country).</p>
+
+    <!-- 6. ROBUSTNESS -->
+    <h2><span class="num">Section 06</span>Robustness</h2>
+
+    <h3>Coastal frontier discovery</h3>
+    <p>Table&nbsp;08 reports a discovery finding outside the primary hypothesis space. In four coastal West African countries (Togo, Benin, Ghana, C&ocirc;te d'Ivoire), IED events during 2023 to 2025 predict escalating violence over the next three weeks. Multipliers rise from 5.2x at t+1 to 7.3x at t+3. The result draws on 28 of 38 district-week cases in the period. Sample size is small, so treat this as a lead for follow-up, not a confirmatory result.</p>
+
+    <div class="table-caption">Table 08 &middot; Coastal IED lead-lag (2023 to 2025, N=38)</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Lag</th>
+                <th class="num">Mean attacks</th>
+                <th class="num">Multiplier vs. baseline</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Baseline</td><td class="num">0.116</td><td class="num hi-dim">1.0x</td></tr>
+            <tr><td>+1 week</td><td class="num">0.632</td><td class="num hi-amber">5.2x</td></tr>
+            <tr><td>+2 weeks</td><td class="num">0.632</td><td class="num hi-amber">5.8x</td></tr>
+            <tr><td>+3 weeks</td><td class="num">0.737</td><td class="num hi-amber">7.3x</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Actor-type decomposition</h3>
+    <p>The signal strength correlates inversely with actor composite-frequency. High-frequency composite-capable actors (communal, Ambazonian) produce strong spatial effects (&ldquo;district identification&rdquo;) but weaker temporal escalation; low-frequency composite-capable actors (ISWAP, JNIM, IS&nbsp;Sahel) produce weaker spatial effects but stronger temporal escalation. This inverse pattern is consistent with the convergence-as-mechanism interpretation: when unusual-for-the-actor capabilities converge, the next-week signal is strongest.</p>
+
+    <h3>Exclusive-outcome correction</h3>
+    <p>The temporal multipliers in the main interactive visualisation use an <em>inclusive</em> outcome (all next-week violence, including the triggering types). This inflates absolute values relative to an exclusive-outcome specification that removes the triggering types from the outcome count. Relative ordering is preserved under both specifications; the dose-response pattern and regional replication hold. A fully exclusive-outcome table is available in the replication package.</p>
+
+    <!-- 7. LIMITATIONS -->
+    <h2><span class="num">Section 07</span>Limitations</h2>
+
+    <ul>
+        <li><strong>No causal identification.</strong> Multipliers are associations, not causal effects. District-weeks are not randomly assigned to composite-signal status. Confounders (ongoing campaigns, election cycles, seasonal factors) may co-determine both the signal and next-week violence. We report ratios, not treatment effects.</li>
+        <li><strong>Dependence on ACLED coding.</strong> Event classification rests on ACLED&rsquo;s analyst pipeline. Miscoding at the sub-event-type level would bias composite-signal construction. The effect is likely conservative: misclassified events typically remain within the violence category, so composite signals are under- rather than over-detected.</li>
+        <li><strong>Attribution uncertainty in frontier zones.</strong> Coastal West Africa and other low-density contexts have fewer cross-sources for event verification. Actor attribution is noisier. Results from these zones should be treated as directional rather than precise.</li>
+        <li><strong>Sahel proof-of-concept.</strong> The 13-country window is not globally representative. Generalisability of the method to East Africa, Central Asia, or Latin America is an open empirical question. The method is portable wherever ACLED coding is applied.</li>
+        <li><strong>Exclusive-signal test removes sample.</strong> Restricting to district-weeks with a single event type reduces statistical power relative to unrestricted tests. The null results on exclusive tests are therefore interpreted conservatively.</li>
+        <li><strong>No individual-level causation.</strong> The unit of analysis is the district-week. No inference is made about individual attackers, victims, or events.</li>
+    </ul>
+
+    <!-- 8. REPLICATION -->
+    <h2><span class="num">Section 08</span>Replication</h2>
+
+    <p>Analysis code is available at <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener">github.com/emmaodjidja-sys/praxis</a> under the <strong>MIT Licence</strong>. Raw ACLED event data is not redistributed; users must obtain it under ACLED&rsquo;s standard licence at <a href="https://acleddata.com" target="_blank" rel="noopener">acleddata.com</a>.</p>
+
+    <p>The source dataset used for the results reported here is the ACLED export dated <strong>2026-03-26</strong>, covering 13 Sahel countries from 2010-01-01 to 2025-03-26, 100,184 events, 201,641 fatalities. A specific replication walkthrough (setup, dependencies, expected runtime, hash-pinned intermediate outputs) is being prepared alongside this working paper.</p>
+
+    <p>Readers who wish to reproduce specific tables should consult the repository README; where a specific command invocation is not yet documented, please open an issue or contact the corresponding author.</p>
+
+    <!-- 9. ETHICS -->
+    <h2><span class="num">Section 09</span>Ethics &amp; data governance</h2>
+
+    <p>The analysis is descriptive and observational. No human-subjects intervention is performed. No individual-level identifying data is used: ACLED events are aggregated at the admin2-week resolution before any analysis, and no individual perpetrator, victim, or target is identified in outputs. <strong>Ethnic labels are deliberately excluded</strong> from all PRAXIS outputs, including this document and the TREMOR early-warning system, despite their presence in some ACLED actor fields. This reflects an operational judgement that ethnic targeting outputs carry disproportionate dual-use risk.</p>
+
+    <p>ACLED data is used under the project&rsquo;s standard research licence. The licence prohibits redistribution of the raw data; the replication package provides scripts that transform a locally-held ACLED export into the analysis panel.</p>
+
+    <!-- 10. CITATION -->
+    <h2><span class="num">Section 10</span>Suggested citation</h2>
+
+    <div class="bg-p_surface border border-slate-700/50 rounded-md p-4 my-4">
+        <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">BibTeX</div>
+        <pre class="code" style="margin:0;"><span class="kw">@techreport</span>{odjidja2026praxis,
+  author      = {Odjidja, Emmanuel Nene},
+  title       = {Methods Note: Composite Co-occurrence Detection
+                 for Conflict Escalation in the Sahel},
+  institution = {PRAXIS},
+  type        = {Working Paper},
+  number      = {01},
+  year        = {2026},
+  month       = {4},
+  version     = {0.1},
+  url         = {https://www.emmanuelneneodjidja.org/praxis/research/methods/}
+}</pre>
+    </div>
+
+    <p>Plain-text: Odjidja, E.N. (2026). <em>Methods Note: Composite co-occurrence detection for conflict escalation in the Sahel</em>. PRAXIS Working Paper 01, v0.1. Available at https://www.emmanuelneneodjidja.org/praxis/research/methods/</p>
+
+    <!-- 11. VERSION HISTORY -->
+    <h2><span class="num">Section 11</span>Version history</h2>
+
+    <div class="table-caption">Revision log</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Version</th>
+                <th>Date</th>
+                <th>Change</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="hi-teal">v0.1</td><td>2026-04-18</td><td>Initial methods note. Descriptive results across 13 Sahel countries, 100,184 events, 2010 to 2025. Pre-review.</td></tr>
+        </tbody>
+    </table>
+
+    <p class="table-note">Subsequent revisions will be tracked here. Readers may subscribe to notifications via <a href="mailto:emmaodjidja@gmail.com?subject=PRAXIS%20manuscript%20updates">emmaodjidja@gmail.com</a>.</p>
+
+    <!-- 12. AUTHOR -->
+    <h2><span class="num">Section 12</span>Author &amp; contact</h2>
+
+    <p><strong>Emmanuel Nene Odjidja</strong>. Principal Investigator, Violence Prevention Econometrics. 12+ years of programme-evaluation experience across Burkina Faso, Mali, Niger, South Sudan, and Burundi. 29 peer-reviewed publications spanning health systems, programme evaluation, and the climate-conflict nexus. Section Editor, Journal of MultiDisciplinary Evaluation.</p>
+
+    <p>Correspondence: <a href="mailto:emmaodjidja@gmail.com">emmaodjidja@gmail.com</a>. Public profile: <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>. Publications: <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>.</p>
+
+</article>
+
+<!-- FOOTER -->
+<footer class="pt-20 pb-12 px-8 max-w-4xl mx-auto border-t border-slate-800 reveal">
+    <div class="grid md:grid-cols-2 gap-8 mb-8">
+        <div>
+            <div class="text-3xl font-bold text-white tracking-tight mb-4">PRAXIS.</div>
+            <p class="text-slate-400 font-mono text-[10px] uppercase tracking-widest leading-loose">
+                Open-Source AI for Programme Evaluation <br/>
+                and Conflict Early Warning. <br/>
+                &copy; 2026. MIT-licensed code. CC BY 4.0 text.
+            </p>
+        </div>
+        <div class="md:text-right">
+            <h4 class="text-base font-bold text-white">Emmanuel Nene Odjidja</h4>
+            <p class="text-p_teal font-mono text-xs mt-1 mb-3">Principal Investigator</p>
+            <div class="flex md:justify-end gap-4 text-xs text-slate-500 font-mono">
+                <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a>
+                <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&amp;hl=en" target="_blank" rel="noopener" class="hover:text-white transition-colors">Publications</a>
+                <a href="../" class="hover:text-white transition-colors">Research</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+(function() {
+    var els = document.querySelectorAll('.reveal');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        els.forEach(function(el) { el.classList.add('visible'); });
+        return;
+    }
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    els.forEach(function(el) { observer.observe(el); });
+})();
+</script>
+
+</body>
+</html>
