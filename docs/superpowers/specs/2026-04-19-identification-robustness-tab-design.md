@@ -39,92 +39,96 @@ This is the *where*-claim analogue of a classical ML precision-recall analysis. 
 
 ## 3. Architecture & data pipeline
 
-### 3.1 File targets
+### 3.1 Strategy: extend the Tremor pipeline, do not duplicate it
 
-- **Python:** `scripts/compute_identification_robustness.py` (new).
-- **Data source:** `C:\Users\emmao\OneDrive\Desktop\Projects\KAFD-VE Project\Updated Littorals state data\ACLED Data_2026-03-26.csv` (utf-8-sig).
-- **HTML target:** `deploy-site/praxis/research/index.html`, inline `<script>` block.
-- **Output constants:** `IDENT_ROBUSTNESS`, `IDENT_PR_CURVE`.
+The page's authoritative data-prep pipeline is `C:\Users\emmao\tremor\pipeline\`. It is a full Python package (pipeline.py + src/analysis/*, src/ingest/etl.py, config.py, tests/) that produces every number on the research page via a single `pipeline.run(acled_path)` entry point. The inline JS constants on the research page (`KI`, `THREE`, `BASE_LINE`, etc.) are the serialized output of this pipeline.
 
-### 3.2 Universe & unit of analysis
+All new numbers for this tab are produced by extending the pipeline, not by writing a parallel script. This guarantees methodology parity, reuses the replication-test harness, and keeps a single source of truth for the page's figures.
+
+### 3.2 File targets
+
+- **New function:** `compute_identification_robustness(...)` added to `tremor/pipeline/src/analysis/sensitivity.py` alongside `_compute_sensitivity_period` and `_compute_sensitivity_pair_type`.
+- **Pipeline hook:** new step in `tremor/pipeline/pipeline.py run()` that calls the new function and merges `ident_robustness` and `ident_pr_curve` into the JSON output blob.
+- **Replication test:** new test in `tremor/pipeline/tests/test_replication.py` asserting N=2 lift reproduces the 8.8× headline within tolerance.
+- **Build step:** a small script (location TBD in the plan phase — likely `tremor/pipeline/scripts/inject_research_page.py` or similar) that reads the pipeline JSON output, formats `IDENT_ROBUSTNESS` and `IDENT_PR_CURVE` as JS constants, and patches them into `deploy-site/praxis/research/index.html` at a marked insertion point.
+- **HTML target:** `deploy-site/praxis/research/index.html` — inline `<script>` block (constants inserted near existing `KI`, `THREE`, `BASE_LINE`) and one new tab's JSX inside the methodology-tab component.
+
+### 3.3 Authoritative taxonomy (from `tremor/pipeline/src/config.py`)
+
+- **KAFD** = `sub_event_type == "Abduction/forced disappearance"`
+- **IED** = `sub_event_type == "Remote explosive/landmine/IED"`
+- **OUTCOME_TYPES** (page's "attack-type" set) = `{Armed clash, Attack, Remote explosive/landmine/IED, Suicide bomb, Shelling/artillery/missile attack}`
+- **Outcome-exclusive (N4 decontamination)** = OUTCOME_TYPES minus KAFD and IED = `{Armed clash, Attack, Suicide bomb, Shelling/artillery/missile attack}`. KAFD is not in OUTCOME_TYPES to begin with, so only IED is actually removed in the OUTCOME side; the stripping applies at the district-week level for both.
+- **CLEAN_BASELINE_SAMPLE** = 8,000 district-weeks sampled with `CLEAN_BASELINE_SEED = 42`. The page's "Sahel-wide clean baseline" is this random sample, not the full universe. Our lift denominator must use the same sample via the pipeline's existing `compute_clean_baseline` helper.
+- **COMPOSITE_MIN_TYPES** = 2 (page's existing composite-threshold default, not directly used here but shared context).
+
+### 3.4 Universe & unit of analysis
 
 - **Unit:** admin2 district.
-- **Universe:** all admin2 zones with ≥1 ACLED event, 2010-01-01 to 2025-03-26. Expected count: **1,510** (matches page).
+- **Universe:** all admin2 zones in the 13 countries listed in `config.COUNTRIES`, with ≥1 ACLED event, 2010-01-01 to 2025-03-26. Expected count: **1,510** (matches page).
 - **Total district-weeks:** ~1.17 million across the universe.
 
-### 3.3 Labels
+### 3.5 Labels
 
 Two binary labels per district.
 
-**`FLAGGED(N)`** — district had at least one district-week with `kafd_events ≥ N` AND `ied_events ≥ N`.
+**`FLAGGED(N)`** — district had at least one district-week where KAFD ≥ N AND IED ≥ N. N ∈ {1, 2, 3, 4, 5}.
 
-- N ∈ {1, 2, 3, 4, 5}.
-- KAFD/IED classification reuses the exact keyword-matching rules already embedded in the viz JS (see §3.7).
+**`HIGH_VIOLENCE(N)`** — district's outcome-exclusive attack rate on **non-flagged weeks only** is ≥ 8.8× the clean-baseline rate produced by `compute_clean_baseline(weekly, composite, outcome_excl)`.
 
-**`HIGH_VIOLENCE`** — district sits in the top quartile by attack-type event count over 2010–2025.
+- Rationale: using the page's 8.8× threshold keeps the tab's ground truth aligned with the page headline. Restricting to *non-flagged weeks* breaks the circularity that would otherwise exist. The question this label asks is: "in their ordinary weeks — weeks where the signal is not ringing — are these districts still violent enough to clear the 8.8× bar?"
+- Label is **dependent on N** because "non-flagged weeks" depends on which weeks got flagged at that N. Recomputed per N.
+- A district with zero non-flagged weeks (every week was a signal week at that N) is excluded from TP/FP/TN/FN at that N; count of excluded districts disclosed per-N in the footnote.
 
-- Attack-type events defined per ACLED sub-event taxonomy, with **KAFD and IED events stripped from the count** to match N4 decontamination.
-- Label is fixed across all N (not dependent on threshold).
-- Expected count: ~378 districts (25% of 1,510).
+### 3.6 Metrics (per N)
 
-### 3.4 Metrics
-
-For each N, cross-tabulate `FLAGGED(N)` × `HIGH_VIOLENCE` → {TP, FP, TN, FN}. Derive:
+For each N, cross-tabulate `FLAGGED(N)` × `HIGH_VIOLENCE(N)` → {TP, FP, TN, FN}. Derive:
 
 | Metric | Formula |
 |---|---|
 | Precision | TP / (TP + FP) |
 | Recall | TP / (TP + FN) |
 | F1 | 2·P·R / (P + R) |
-| Lift (district) | (attack rate in flagged districts) / (Sahel-wide clean baseline attack rate) |
+| Lift (district) | flagged-district outcome-exclusive attack rate / `baseline_excl` rate |
 
-**Lift methodology matches the page's 8.8× headline:** flagged-district attack rate is computed over all district-weeks in flagged districts, with KAFD and IED events stripped from the numerator. Denominator is the Sahel-wide attack rate over all district-weeks in the universe, also with KAFD/IED stripped.
+`baseline_excl` is produced by the existing `compute_clean_baseline` helper, same object used by `compute_two_metrics` to produce the page's 8.8× figure. Using the same helper guarantees methodological parity.
 
-### 3.5 Output schema
+### 3.7 Output schema (inside pipeline JSON, before HTML injection)
 
-```js
-const IDENT_ROBUSTNESS = {
-  1: {n: 1, tp: ..., fp: ..., tn: ..., fn: ...,
-      precision: 0.xxx, recall: 0.xxx, f1: 0.xxx, lift: x.x,
-      flagged: ..., high_violence: 378},
-  2: {...},
-  3: {...},
-  4: {...},
-  5: {...}
-};
-
-const IDENT_PR_CURVE = [
-  {n: 1, precision: 0.xxx, recall: 0.xxx},
-  {n: 2, precision: 0.xxx, recall: 0.xxx},
-  {n: 3, precision: 0.xxx, recall: 0.xxx},
-  {n: 4, precision: 0.xxx, recall: 0.xxx},
-  {n: 5, precision: 0.xxx, recall: 0.xxx}
-];
+```json
+{
+  "ident_robustness": {
+    "1": {"n": 1, "tp": 0, "fp": 0, "tn": 0, "fn": 0,
+          "precision": 0.000, "recall": 0.000, "f1": 0.000, "lift": 0.0,
+          "flagged": 0, "high_violence": 0, "excluded": 0, "p_value": 0.0},
+    "2": {...},
+    "3": {...},
+    "4": {...},
+    "5": {...}
+  },
+  "ident_pr_curve": [
+    {"n": 1, "precision": 0.000, "recall": 0.000},
+    {"n": 2, "precision": 0.000, "recall": 0.000},
+    {"n": 3, "precision": 0.000, "recall": 0.000},
+    {"n": 4, "precision": 0.000, "recall": 0.000},
+    {"n": 5, "precision": 0.000, "recall": 0.000}
+  ]
+}
 ```
 
-Pasted into the existing inline `<script>` block near `KI`, `THREE`, `BASE_LINE`.
+The build step serializes these as the JS constants `IDENT_ROBUSTNESS` (object) and `IDENT_PR_CURVE` (array) and injects them into the HTML.
 
-### 3.6 Significance
+### 3.8 Significance
 
-Page already discloses a Bonferroni correction at p = 0.0011 across 44 specifications. Adding 5 new specifications (one per N) brings the total to 49 → conservative threshold p < 0.0000204. The tab footer discloses the revised Bonferroni threshold and reports per-N p-values against it.
+Page-level Bonferroni threshold lives in `config.BONFERRONI_TESTS = 44` → `BONFERRONI_THRESHOLD = 0.05 / 44 ≈ 0.001136`. This tab's 5 additional specifications tighten the conservative threshold to `0.05 / 49 ≈ 0.001020`. The spec updates `config.BONFERRONI_TESTS` to `49` in the same commit so both page and tab read from a single source. Per-N p-values are computed via the same Mann-Whitney U pattern already used elsewhere in the pipeline, reported against the updated threshold.
 
-### 3.7 KAFD / IED / attack-type classification
+### 3.9 Spot-check gates (before HTML injection)
 
-The page's underlying classification rules are not visible in `deploy-site/praxis/research/index.html` itself — the inline JS only carries the pre-computed output arrays (`KI`, `THREE`, etc.), not the Python or R code that produced them. The authoritative classification lives wherever the page's original pipeline lives. Before running our script we will:
+Must pass in `tests/test_replication.py`:
 
-1. Locate the page's data-prep script (likely under the KAFD-VE Project folder on OneDrive, alongside the ACLED CSV) and read off the exact KAFD and IED keyword lists / sub_event_type filters.
-2. Read off the exact definition of "attack-type event" used to build the page's 8.8× denominator and numerator.
-3. Use those same lists in our Python script — no re-invented taxonomy.
-
-If step 1 or 2 fails to surface an authoritative definition (e.g., the data-prep script isn't recoverable), we halt and surface the choice to Emmanuel rather than guess. Getting this wrong silently would mean our 8.8× spot-check could pass or fail for the wrong reason.
-
-### 3.8 Spot-check gates
-
-Must pass before the numbers are pasted into HTML:
-
-1. **Lift at N=2 reproduces 8.8× ± 0.3.** If not, the page's methodology differs from our reimplementation — stop and reconcile with Emmanuel before publishing.
-2. **Flagged-district count at N=1 ≥ the distinct admin2 count underlying the 292 core district-weeks.** Defines a consistency floor with the on-page N=292 sample.
-3. **Precision ∈ [0,1], recall ∈ [0,1], F1 matches 2·P·R/(P+R) algebraically, TP+FP+TN+FN = 1,510 for every N.** Pure sanity.
+1. **Lift at N=2 reproduces 8.8× ± 0.3.** Exact same computation path as `P1.5 KAFD+IED exclusive dist_id ~8.8x`, restricted to the dyadic (K=1, I=1) case.
+2. **Flagged-district count at N=1 covers the `kafd_ied_weeks` host-district set** (the distinct admin2 count underlying the 292-ish core district-weeks, exposed as `output["kafd_ied_weeks"]` in the pipeline).
+3. **Precision, recall ∈ [0,1]; F1 = 2·P·R/(P+R) within 1e-6; TP+FP+TN+FN + excluded = 1,510 for every N.** Pure sanity, asserted in the test.
 
 ## 4. Visual layout & components
 
@@ -193,13 +197,15 @@ Rendered below the tab inside an expandable `<details>` block. Exact copy:
 
 ## 6. Testing & acceptance
 
-### 6.1 Pre-publish Python checks
+### 6.1 Pre-publish Python checks (new tests in `tremor/pipeline/tests/test_replication.py`)
 
 - Precision ∈ [0, 1] for every N.
 - Recall ∈ [0, 1] for every N.
 - F1 = 2·P·R/(P+R) within 1e-6 for every N.
-- TP + FP + TN + FN = 1,510 for every N.
+- TP + FP + TN + FN + excluded = 1,510 for every N.
 - Lift at N=2 ∈ [8.5, 9.1] (matches 8.8× ± 0.3).
+- `ident_pr_curve` has exactly 5 entries, one per N, in increasing order.
+- Build step is idempotent: running it twice against the same pipeline JSON produces a zero diff on `deploy-site/praxis/research/index.html`.
 
 ### 6.2 Browser checks
 
@@ -225,22 +231,41 @@ Rendered below the tab inside an expandable `<details>` block. Exact copy:
 
 ## 7. Risks & open questions
 
-- **R1.** If our N=2 lift does not reproduce 8.8×, the page's exact methodology differs from our reimplementation. Mitigation: halt, diff methodologies with Emmanuel, reconcile before publishing. Do not paper over a discrepancy.
-- **R2.** The page's inline JS carries only pre-computed output arrays, not the classification rules that generated them. The authoritative KAFD / IED / attack-type definitions live in a separate data-prep pipeline that must be located before any numbers are produced. If the pipeline is not recoverable, the tab is blocked.
-- **R3.** Top-quartile ground truth is one of several defensible choices. An alternative is "≥ 8.8× clean baseline" as a binary label. We use top-quartile because it produces a fixed class balance and is robust to definition of "high violence". Alternative is deferred.
-- **R4.** The tab adds ~250 lines to an already ~2,000-line self-contained HTML file. Future maintainability is a mild concern; if the file grows past 2,500 lines we should consider extracting the viz into its own `.js` file with a build step. Not blocking.
+- **R1.** If our N=2 lift does not reproduce 8.8×, we have either a code bug or a definition drift from `compute_two_metrics`. Because we reuse the pipeline's own helpers, this should be caught by the new replication test before HTML injection. Halt and diff rather than paper over.
+- **R2.** ~~Classification rules unrecoverable.~~ Resolved: authoritative taxonomy located at `tremor/pipeline/src/config.py`.
+- **R3.** `HIGH_VIOLENCE` label uses "non-flagged weeks only" to avoid circularity. A district where every week is a signal week gets excluded at that N. If exclusion counts grow large at high N, recall becomes hard to interpret. Footnote discloses exclusions per N; if exclusions exceed 10% of the flagged pool at any N, flag it to Emmanuel before publishing.
+- **R4.** `config.BONFERRONI_TESTS` is bumped from 44 → 49 as part of this change. The page's existing disclosure "Bonferroni correction at p = 0.0011 across 44 specifications" becomes slightly stale (should read "49 specifications, p < 0.00102"). That copy update is out of scope for this tab's commit but should be noted as a follow-up.
+- **R5.** The build step that injects constants into `deploy-site/praxis/research/index.html` must be idempotent (rerunnable without producing diffs when inputs are unchanged) and must use a clearly marked insertion region. Design of the injection markers is deferred to the implementation plan.
+- **R6.** The tab adds ~250 lines to the ~2,000-line self-contained HTML file. Mild maintainability concern. Not blocking.
 
 ## 8. Commit plan
 
-Single commit at the end of implementation:
+Two commits across two repos, in order:
+
+**1. `tremor/pipeline`** (authoritative methodology):
+
+```
+feat(sensitivity): add identification-robustness sweep across KAFD+IED thresholds
+
+- compute_identification_robustness(): FLAGGED(N) × HIGH_VIOLENCE(N) cross-tab
+  for N in {1..5}, reusing compute_clean_baseline + outcome_excl helpers
+- Hook into pipeline.run() as a new step; emit ident_robustness +
+  ident_pr_curve in the JSON output
+- Replication test: N=2 lift reproduces the 8.8x headline within ±0.3
+- Bump BONFERRONI_TESTS 44 → 49 to cover the 5 new specifications
+```
+
+**2. `deploy-site`** (page surface):
 
 ```
 feat(research): add identification-robustness tab to composite co-occurrence viz
 
 - New 9th methodology tab: confusion matrix + PR curve + threshold slider
-- Tests robustness of 8.8× district-identification claim across N ∈ {1..5}
-- Python build-time script computes IDENT_ROBUSTNESS + IDENT_PR_CURVE constants
-- N4-exclusive outcome; Sahel-wide clean baseline denominator (matches headline)
-- Bonferroni-corrected significance threshold updated to p < 0.0000204 (49 specs)
+- Injection markers in the inline <script> block for IDENT_ROBUSTNESS and
+  IDENT_PR_CURVE constants (populated from tremor pipeline JSON output)
+- Tests robustness of 8.8x district-identification claim across N in {1..5}
+- No predictive language; consistent with DETECT framing
 - No changes to other tabs, stat cards, or page copy
 ```
+
+Both commits land only after the replication test passes and the spot-check lift at N=2 reproduces the 8.8× headline.
