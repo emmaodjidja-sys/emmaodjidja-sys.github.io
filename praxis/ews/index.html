@@ -330,6 +330,70 @@ SE clustering   district (geo_key)</code></pre>
         </div>
     </section>
 
+    <!-- ALERT INFRASTRUCTURE -->
+    <section id="alert-infra" class="py-32 px-8 max-w-7xl mx-auto border-b border-white/5">
+        <div class="mb-16 reveal">
+            <h2 class="text-sm font-mono tracking-widest text-p_amber uppercase mb-4">Alert Infrastructure</h2>
+            <h3 class="text-4xl font-bold text-white mb-4">Fail-closed. Silence is failure.</h3>
+            <p class="text-slate-400 max-w-3xl leading-relaxed">
+                Five Supabase edge functions dispatch alerts across redundant channels. SMS via Africa&rsquo;s Talking is the durability tier; push via ntfy.sh is best-effort; USSD is infrastructure-ready pending per-country MNO agreements. A dead-man-switch treats pipeline silence as an outage.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 reveal">
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <code class="font-mono text-sm text-p_teal">alert-processor</code>
+                    <span class="text-[10px] font-mono bg-p_teal/10 text-p_teal border border-p_teal/20 px-2 py-0.5 rounded">Shipped</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed mb-3">Dispatches per-user with severity threshold filtering. Enforces a 20/hr global rate limit.</p>
+                <p class="text-[11px] font-mono text-slate-600">Known: global rate-limit keying; per-sender keying is P2.</p>
+            </div>
+
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <code class="font-mono text-sm text-p_teal">push-sender</code>
+                    <span class="text-[10px] font-mono bg-p_teal/10 text-p_teal border border-p_teal/20 px-2 py-0.5 rounded">Shipped</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed mb-3">Push notifications via ntfy.sh with priority tags and click-through to dashboard.</p>
+                <p class="text-[11px] font-mono text-slate-600">Tier: best-effort. No SLA. SMS is the durability fallback.</p>
+            </div>
+
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <code class="font-mono text-sm text-p_teal">ussd-handler</code>
+                    <span class="text-[10px] font-mono bg-p_amber/10 text-p_amber border border-p_amber/20 px-2 py-0.5 rounded">Sandbox-validated</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed mb-3">Serves alerts over USSD menus for feature phones and low-bandwidth field staff.</p>
+                <p class="text-[11px] font-mono text-slate-600">Live dispatch contingent on per-country MNO aggregator agreements (shortcode + regulator).</p>
+            </div>
+
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <code class="font-mono text-sm text-p_teal">dead-man-switch</code>
+                    <span class="text-[10px] font-mono bg-p_teal/10 text-p_teal border border-p_teal/20 px-2 py-0.5 rounded">Shipped</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed mb-3">Heartbeat: pipeline ETL completion. Timeout: 6 hours. Destination: SMS to maintainer.</p>
+                <p class="text-[11px] font-mono text-slate-600">Escalation: ntfy priority-5 if SMS fails. Silence = failure.</p>
+            </div>
+
+            <div class="bg-p_surface border border-slate-700/50 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <code class="font-mono text-sm text-p_teal">send-test-alert</code>
+                    <span class="text-[10px] font-mono bg-p_teal/10 text-p_teal border border-p_teal/20 px-2 py-0.5 rounded">Shipped</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed mb-3">Reproducible test harness: inserts canonical alert + dispatches + writes to audit_log.</p>
+                <p class="text-[11px] font-mono text-slate-600">No mocks. Real insert, real dispatch, real audit trail.</p>
+            </div>
+
+            <div class="bg-p_navy border border-dashed border-slate-700 rounded-xl p-6 flex items-center">
+                <p class="text-[11px] font-mono text-slate-500 leading-relaxed">
+                    All dispatch outcomes &mdash; success, failure, partial &mdash; are recorded in <code class="text-p_amber">notification_log</code> with per-channel status. The <code class="text-p_amber">audit_log</code> table is append-only and mirrors every dispatch, form submission, and decision.
+                </p>
+            </div>
+        </div>
+    </section>
+
     <!-- GLOBAL SCOPE -->
     <section class="py-32 px-8 max-w-7xl mx-auto">
         <div class="bg-p_surface rounded-2xl p-12 md:p-20 flex flex-col md:flex-row gap-12 items-center justify-between border border-slate-700 reveal">
