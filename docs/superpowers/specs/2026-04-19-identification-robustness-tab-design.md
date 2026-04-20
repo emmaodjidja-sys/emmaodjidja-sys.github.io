@@ -139,48 +139,54 @@ Must pass in `tests/test_replication.py`:
 
 ## 4. Visual layout & components
 
-### 4.1 Layout (ASCII)
+**Architecture pivot (2026-04-20):** The research page was refactored away from the inline React 18 viz described in earlier memories. Current page is ~796 lines of static HTML in a research-paper layout: `<section class="section">` blocks, a `.data-table` style, a `<div class="scale">` bar visualization, prose paragraphs. No React, no useState, no inline JSX. This tab is redesigned to fit that aesthetic: a new `<section>` with a `<table class="data-table">`, a vanilla-JS slider, and a small inline SVG PR curve. No React dependency, no external libraries.
+
+### 4.1 Layout (ASCII mockup)
+
+Placement: a new `<section class="section">` inserted between §2 (Threshold dose-response table) and §3 (Methods). Probably labelled `§2b` or `§2.5`; exact numbering TBD in implementation — match the convention of neighbours.
 
 ```
-┌─ Identification robustness ─────────────────────┐
-│ Min KAFD+IED count N: [1]─●──[5]  (default 2)   │
-│                                                 │
-│ ┌─ Districts (1,510) ────────┐ ┌─ PR curve ────┐│
-│ │         high-viol  not     │ │  •            ││
-│ │ flagged   TP       FP      │ │    •          ││
-│ │ off       FN       TN      │ │      ●← you   ││
-│ │ Precision: xx.x%           │ │        •      ││
-│ │ Recall:    xx.x%           │ │          •    ││
-│ │ F1:        0.xx            │ │ x: recall     ││
-│ │ Lift vs Sahel: x.x×        │ │ y: precision  ││
-│ └────────────────────────────┘ └───────────────┘│
-│ Universe: 1,510 admin2 · 2010–2025              │
-│ High-violence = top quartile by attack count    │
-│ Outcome excludes KAFD & IED (N4 decontamination)│
-└─────────────────────────────────────────────────┘
+┌ §2b · Identification robustness — threshold sweep ──────────────────┐
+│                                                                     │
+│ Min KAFD+IED count N:  [1]──●──[5]   (default 2)                    │
+│                                                                     │
+│ ┌─ data-table ────────────────────────────────────────────────────┐ │
+│ │  N │ Flagged │ TP │ FP │ FN │ TN │ Precision │ Recall │ F1 │ Lift│ │
+│ │  1 │   NNN   │ .. │ .. │ .. │ .. │   xx.x%   │ xx.x%  │0.xx│x.x× │ │
+│ │ *2*│  *NNN*  │ .. │ .. │ .. │ .. │  *xx.x%*  │ *xx.x%*│*..*│*..× │ │
+│ │  3 │   NNN   │ .. │ .. │ .. │ .. │    ...    │  ...   │ .. │ ..  │ │
+│ │  4 │   NNN   │ .. │ .. │ .. │ .. │    ...    │  ...   │ .. │ ..  │ │
+│ │  5 │   NNN   │ .. │ .. │ .. │ .. │    ...    │  ...   │ .. │ ..  │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ [ Inline SVG — 200×200 PR curve, current N filled amber ]           │
+│                                                                     │
+│ Universe: 1,510 admin2 · 2010–2025. High-violence label = ≥ 8.8×    │
+│ Sahel clean baseline on non-flagged weeks. Outcome excludes KAFD/IED│
+│ (N4 decontamination). See method note.                              │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 React components (inline JSX, ES5-transpiled like the rest of the viz)
+Row highlighted = current N. When slider moves, highlight class shifts to the newly-active row; PR curve fills the matching dot.
 
-- **`IdentRobustnessTab`** — stateful wrapper. Holds `N` (1–5, default 2). Reads `IDENT_ROBUSTNESS[N]` and `IDENT_PR_CURVE`.
-- **`ConfusionMatrix`** — pure functional. 4 cells + 4 readouts. Pass-through props.
-- **`PRCurveMini`** — 5-point SVG path in a unit square. Current `N` rendered as a filled dot in `p-amber`; other 4 as outlined dots. ~140×140 px.
-- **Slider** — native `<input type="range" min=1 max=5 step=1>` with tick labels below.
+### 4.2 DOM structure
+
+- **Section wrapper:** `<section class="section">` with `<div class="section-title">` matching neighbouring sections (span.num, h2, span.meta).
+- **Slider:** `<input type="range" min="1" max="5" step="1" value="2" id="ident-n-slider" aria-label="Minimum KAFD+IED co-occurrence count N">` with a live-updated `<output>` element beside it showing the current value.
+- **Table:** `<table class="data-table" id="ident-table">` with `<thead>` and `<tbody>`. 5 rows rendered at page-load from `IDENT_ROBUSTNESS`. Each `<tr>` carries `data-n="N"` for the vanilla-JS selector.
+- **PR curve:** `<svg>` rendered at page-load from `IDENT_PR_CURVE`. 5 `<circle>` elements, each with `data-n="N"`. Current N gets `fill="var(--amber)"`; others use `fill="none" stroke="var(--teal)"`.
+- **Script:** one small vanilla-JS block (~40 lines, no dependencies) wired after the table+SVG markup. Listens to `input` event on slider, toggles a class on the matching `<tr>` and `<circle>`.
 
 ### 4.3 Styling
 
-- Palette: reuse existing `p-navy` / `p-teal` / `p-amber`.
-- TP and TN cells: teal tint (`p-teal` @ 15%).
-- FP and FN cells: amber tint (`p-amber` @ 15%).
-- Current-threshold dot on PR curve: filled `p-amber`.
-- Other dots: outlined `p-teal`.
-- All text 11–13px inline, matching methodology-tab micro-typography already present on page.
+Reuse existing page variables: `var(--teal)`, `var(--amber)`, `var(--ink-dim)`, `var(--line)`, `var(--serif)`, `.mono-s`. Table rows use the existing `.data-table` styling; active row gets a subtle background via a new single-class rule `.ident-row-active { background: rgba(255,179,71,0.08); }` added to the existing `<style>` block.
 
 ### 4.4 Accessibility
 
-- Slider has `aria-label="Minimum KAFD+IED co-occurrence count N"` and `aria-valuenow`.
-- Confusion matrix cells have `role="cell"` and text labels read by screen readers.
-- PR curve is decorative (data is also in the matrix); marked `role="img"` with `aria-label` summarising the current state.
+- Slider has `aria-label`, `aria-valuenow` kept in sync, and a visible `<output>` label.
+- Table has standard `<th>` headers; each cell is readable by screen readers.
+- PR curve `<svg>` has `role="img"` + `aria-label` summarising the current state (e.g., "Precision-recall curve; current point N=2 at precision 73%, recall 34%").
+- Numeric values render with the same mono style as existing tables; no reliance on colour alone (active row has both colour and a `★` glyph prefix in the N column).
 
 ## 5. Methodology footnote
 

@@ -852,27 +852,209 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 
 No unit tests for the inline JSX; verification is visual plus a post-deploy grep. Steps still bite-sized.
 
-### Task 8: Add the `IdentRobustnessTab` React component and sub-components
+### Task 8: Add the Identification-robustness section (static HTML + vanilla JS)
+
+**Plan pivot (2026-04-20):** The research page was refactored away from inline React; it's now static HTML in a research-paper style. Task 8 builds the tab as a new `<section class="section">` with a data table, a vanilla-JS slider, and an inline SVG PR curve — matching §2 Table 1's style.
 
 **Files:**
 - Modify: `C:\Users\emmao\deploy-site\praxis\research\index.html`
 
-- [ ] **Step 1: Locate the methodology-tab list**
+- [ ] **Step 1: Locate the insertion point and existing style anchors**
 
-The existing methodology tabs are declared inside the main React viz component. Grep for the tab labels to find the declaration:
+Grep for the §2 and §3 section boundaries and the existing data-table conventions:
 
 ```bash
-grep -n "Actor signatures\|Coastal discovery\|Country breakdown" /c/Users/emmao/deploy-site/praxis/research/index.html
+grep -n "§3\\|<!-- §3\\|class=\"data-table\"\\|var(--amber)\\|var(--teal)" /c/Users/emmao/deploy-site/praxis/research/index.html | head -40
 ```
 
-Note the line numbers. The new tab will be appended to this list.
+Identify:
+- The exact line where `<!-- §3 METHODS -->` begins — new section inserts *before* this line.
+- The class names and CSS variables actually in use (confirm `.data-table`, `.section`, `.section-title`, `var(--teal)`, `var(--amber)`, `var(--ink-dim)`, `var(--line)`, `var(--serif)`, `.mono-s`).
+- The existing section-number convention (`§1`, `§2`, `§3`, `§4`) — new section will be `§2b` to avoid renumbering downstream.
 
-- [ ] **Step 2: Add the `IdentRobustnessTab` component**
+- [ ] **Step 2: Insert the new section HTML before §3**
 
-Locate the block in the `<script>` tag where sub-components are declared (same block that defines the React component used for other tab panels). Append the following ES5-transpiled-style component declarations. Use inline `React.createElement` to match the surrounding style (the file is transpiled — do NOT introduce fresh JSX):
+Use the Edit tool to insert the following block immediately before the line `<!-- §3 METHODS -->`. Indentation should match the neighbouring `<section>` blocks (no leading whitespace; `<section>` starts flush left):
+
+```html
+<!-- §2b IDENTIFICATION ROBUSTNESS -->
+<section class="section" id="robustness">
+  <div class="section-title">
+    <span class="num">&sect;2b</span>
+    <h2>Identification robustness &mdash; threshold sweep</h2>
+    <span class="meta">Vary N &middot; district-level</span>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px;">
+    <label for="ident-n-slider" class="mono-s" style="color:var(--ink-dim); white-space:nowrap;">
+      Min KAFD+IED count N:
+      <output id="ident-n-output" for="ident-n-slider" style="color:var(--amber); font-weight:500; margin-left:6px;">2</output>
+    </label>
+    <input id="ident-n-slider" type="range" min="1" max="5" step="1" value="2"
+           aria-label="Minimum KAFD+IED co-occurrence count N"
+           style="flex:1; min-width:200px; max-width:360px; accent-color:var(--amber);">
+    <span class="mono-s" style="color:var(--ink-dim); font-size:11px;">1 &middot; 2 &middot; 3 &middot; 4 &middot; 5</span>
+  </div>
+
+  <table class="data-table" id="ident-table">
+    <thead>
+      <tr>
+        <th>N</th>
+        <th style="text-align:right">Flagged</th>
+        <th style="text-align:right">TP</th>
+        <th style="text-align:right">FP</th>
+        <th style="text-align:right">FN</th>
+        <th style="text-align:right">TN</th>
+        <th style="text-align:right">Precision</th>
+        <th style="text-align:right">Recall</th>
+        <th style="text-align:right">F1</th>
+        <th style="text-align:right">Lift</th>
+      </tr>
+    </thead>
+    <tbody id="ident-tbody"><!-- rows injected at runtime from IDENT_ROBUSTNESS --></tbody>
+  </table>
+
+  <div style="display:flex; gap:24px; flex-wrap:wrap; margin-top:18px; align-items:flex-start;">
+    <svg id="ident-pr-curve" width="220" height="220" role="img"
+         aria-label="Precision-recall curve across N values" style="flex-shrink:0;">
+      <!-- axes, curve, dots injected at runtime from IDENT_PR_CURVE -->
+    </svg>
+    <p style="font-family:var(--serif); font-size:14px; color:var(--ink-dim); line-height:1.55; max-width:60ch; flex:1; min-width:260px;">
+      Lift compares flagged districts' non-flagged-week attack rate to the Sahel-wide clean baseline
+      (seed-42 sample of 8,000 district-weeks). Outcome excludes KAFD and IED sub-event types
+      (N4 decontamination). Districts whose every week is a signal week are excluded from the
+      confusion matrix and counted separately. Bonferroni-corrected threshold p &lt; 0.00102
+      across 49 specifications. Tests robustness of the <em>where</em> claim &mdash; not a timing forecast.
+    </p>
+  </div>
+</section>
+
+<script>
+(function () {
+  var tbody = document.getElementById("ident-tbody");
+  var svg = document.getElementById("ident-pr-curve");
+  var slider = document.getElementById("ident-n-slider");
+  var output = document.getElementById("ident-n-output");
+  if (!tbody || !svg || !slider || typeof IDENT_ROBUSTNESS !== "object") return;
+  var ns = Object.keys(IDENT_ROBUSTNESS).map(function (k) { return parseInt(k, 10); })
+    .sort(function (a, b) { return a - b; });
+  if (!ns.length) return;
+
+  var fmtPct = function (v) { return (v * 100).toFixed(1) + "%"; };
+  var fmtNum = function (v) { return (typeof v === "number") ? v.toLocaleString() : "-"; };
+  var fmtLift = function (v) { return (typeof v === "number" && v > 0) ? v.toFixed(1) + "x" : "-"; };
+
+  ns.forEach(function (n) {
+    var r = IDENT_ROBUSTNESS[String(n)];
+    var tr = document.createElement("tr");
+    tr.setAttribute("data-n", String(n));
+    tr.innerHTML =
+      '<td class="num">' + n + '</td>' +
+      '<td class="num" style="text-align:right">' + fmtNum(r.flagged) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--teal)">' + fmtNum(r.tp) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--amber)">' + fmtNum(r.fp) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--amber)">' + fmtNum(r.fn) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--teal)">' + fmtNum(r.tn) + '</td>' +
+      '<td class="num" style="text-align:right">' + fmtPct(r.precision) + '</td>' +
+      '<td class="num" style="text-align:right">' + fmtPct(r.recall) + '</td>' +
+      '<td class="num" style="text-align:right">' + r.f1.toFixed(3) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--amber); font-weight:500">' + fmtLift(r.lift) + '</td>';
+    tbody.appendChild(tr);
+  });
+
+  var PAD = 28, W = 220, H = 220;
+  var xs = function (v) { return PAD + v * (W - 2 * PAD); };
+  var ys = function (v) { return H - PAD - v * (H - 2 * PAD); };
+  var svgNs = "http://www.w3.org/2000/svg";
+
+  function axis(x1, y1, x2, y2) {
+    var el = document.createElementNS(svgNs, "line");
+    el.setAttribute("x1", x1); el.setAttribute("y1", y1);
+    el.setAttribute("x2", x2); el.setAttribute("y2", y2);
+    el.setAttribute("stroke", "var(--line)"); el.setAttribute("stroke-width", "1");
+    svg.appendChild(el);
+  }
+  axis(PAD, PAD, PAD, H - PAD);
+  axis(PAD, H - PAD, W - PAD, H - PAD);
+
+  function axisLabel(text, x, y, rotate) {
+    var el = document.createElementNS(svgNs, "text");
+    el.setAttribute("x", x); el.setAttribute("y", y);
+    el.setAttribute("fill", "var(--ink-dim)"); el.setAttribute("font-size", "11");
+    el.setAttribute("font-family", "var(--serif)");
+    if (rotate) el.setAttribute("transform", "rotate(-90 " + x + " " + y + ")");
+    el.setAttribute("text-anchor", "middle");
+    el.textContent = text;
+    svg.appendChild(el);
+  }
+  axisLabel("recall", W / 2, H - 6);
+  axisLabel("precision", 12, H / 2, true);
+
+  var pts = IDENT_PR_CURVE.slice().sort(function (a, b) { return a.n - b.n; });
+  var d = pts.map(function (p, i) {
+    return (i === 0 ? "M" : "L") + xs(p.recall) + "," + ys(p.precision);
+  }).join(" ");
+  var pathEl = document.createElementNS(svgNs, "path");
+  pathEl.setAttribute("d", d);
+  pathEl.setAttribute("stroke", "var(--teal)");
+  pathEl.setAttribute("stroke-width", "1.5");
+  pathEl.setAttribute("fill", "none");
+  svg.appendChild(pathEl);
+
+  pts.forEach(function (p) {
+    var c = document.createElementNS(svgNs, "circle");
+    c.setAttribute("data-n", String(p.n));
+    c.setAttribute("cx", xs(p.recall));
+    c.setAttribute("cy", ys(p.precision));
+    c.setAttribute("r", "5");
+    c.setAttribute("fill", "none");
+    c.setAttribute("stroke", "var(--teal)");
+    c.setAttribute("stroke-width", "1.5");
+    svg.appendChild(c);
+
+    var lbl = document.createElementNS(svgNs, "text");
+    lbl.setAttribute("x", xs(p.recall) + 8);
+    lbl.setAttribute("y", ys(p.precision) - 6);
+    lbl.setAttribute("fill", "var(--ink-dim)");
+    lbl.setAttribute("font-size", "10");
+    lbl.setAttribute("font-family", "var(--serif)");
+    lbl.textContent = "N=" + p.n;
+    svg.appendChild(lbl);
+  });
+
+  function setActive(n) {
+    output.textContent = String(n);
+    Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
+      tr.classList.toggle("ident-row-active", tr.getAttribute("data-n") === String(n));
+    });
+    Array.prototype.forEach.call(svg.querySelectorAll("circle[data-n]"), function (c) {
+      var active = c.getAttribute("data-n") === String(n);
+      c.setAttribute("fill", active ? "var(--amber)" : "none");
+      c.setAttribute("stroke", active ? "var(--amber)" : "var(--teal)");
+    });
+  }
+
+  slider.addEventListener("input", function (e) { setActive(parseInt(e.target.value, 10)); });
+  setActive(parseInt(slider.value, 10));
+})();
+</script>
+```
+
+- [ ] **Step 2b: Add one CSS rule for the active row**
+
+In the page's existing `<style>` block (grep for `.data-table` to find it), append this single rule:
+
+```css
+.ident-row-active { background: rgba(255, 179, 71, 0.08); }
+.ident-row-active td:first-child::before { content: "★ "; color: var(--amber); }
+```
+
+<details><summary>Original React component — kept for historical reference, not used</summary>
+
+(This block is deprecated; the tab is now vanilla HTML + JS. The React code below was the pre-2026-04-20 design when the research page still had an inline React viz.)
 
 ```javascript
-// --- Identification robustness tab ---
+// DEPRECATED — see Step 2 above for the current implementation
 function ConfusionMatrix(props) {
   var r = props.row;
   var cell = function (value, positive) {
@@ -984,44 +1166,41 @@ function IdentRobustnessTab() {
 }
 ```
 
-- [ ] **Step 3: Wire the tab into the methodology-tab list**
+</details>
 
-Find the methodology-tab list (the array of `{label, render}` pairs or equivalent from Step 1). Append:
-
-```javascript
-  { label: "Identification robustness", render: function () { return React.createElement(IdentRobustnessTab); } },
-```
-
-Match the exact shape of surrounding entries — some codebases use `id`, some use `key`, some use `title` — copy whatever field names are actually in use.
-
-- [ ] **Step 4: Local browser verify**
+- [ ] **Step 3: Local browser verify**
 
 ```bash
 cd /c/Users/emmao/deploy-site
-python -m http.server 8000 &
+python -m http.server 8000 > /tmp/http.log 2>&1 &
+sleep 2
 ```
 
-Open `http://localhost:8000/praxis/research/` in a browser. Click through to the methodology-tab region (scroll to the interactive viz). Verify:
+Open `http://localhost:8000/praxis/research/` in a browser. Scroll to the new §2b section, between §2 (Table 1) and §3 (Methods). Verify:
 
-- "Identification robustness" appears as a tab.
-- Clicking it shows a confusion matrix, PR curve, slider, and readouts.
-- Moving the slider updates all five readouts (precision, recall, F1, lift, and the PR-curve dot position).
-- Browser devtools console has no errors.
-- Layout at mobile width (≥360px; resize the window) stays readable — no horizontal scroll.
+- A new section titled "Identification robustness — threshold sweep" appears between §2 and §3.
+- Table shows 5 rows (N = 1..5) with real numeric values (not zeros or blanks).
+- At N=2, the Lift column reads ~7.6× and the row is highlighted in amber with a ★ prefix.
+- Slider value output reads "2" on first paint.
+- Moving the slider to N=3 makes row 3 the highlighted one and fills the N=3 dot on the PR curve (amber) while the N=2 dot reverts to teal outline.
+- Moving slider to N=1 and back to N=2 returns to the starting state with no visual glitches.
+- Browser devtools console shows zero errors.
+- Layout at mobile width (resize window to ~380px): table scrolls horizontally (acceptable) but slider and PR curve remain usable; no broken layout on the rest of the page.
 
-Kill the server: `kill %1`.
+Kill the server: `kill %1 2>/dev/null`.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 cd /c/Users/emmao/deploy-site
 git add praxis/research/index.html
-git commit -m "feat(research): add Identification robustness tab to co-occurrence viz
+git commit -m "feat(research): add Identification robustness section (static HTML + vanilla JS)
 
-Ninth methodology tab: confusion matrix + precision-recall curve + slider
-over KAFD+IED threshold N ∈ {1..5}. Consumes IDENT_ROBUSTNESS and
-IDENT_PR_CURVE produced by the tremor pipeline and injected by
-scripts/inject_research_page.py.
+New §2b section between Table 1 and Methods: threshold-N slider drives a
+5-row data table (one row per N) and an inline SVG precision-recall curve.
+All interactivity in ~120 lines of vanilla JS; no React or external deps.
+Consumes the IDENT_ROBUSTNESS and IDENT_PR_CURVE constants populated by
+tremor/scripts/inject_research_page.py from the pipeline JSON output.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 ```
