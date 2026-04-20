@@ -872,9 +872,13 @@ Identify:
 - The class names and CSS variables actually in use (confirm `.data-table`, `.section`, `.section-title`, `var(--teal)`, `var(--amber)`, `var(--ink-dim)`, `var(--line)`, `var(--serif)`, `.mono-s`).
 - The existing section-number convention (`§1`, `§2`, `§3`, `§4`) — new section will be `§2b` to avoid renumbering downstream.
 
-- [ ] **Step 2: Insert the new section HTML before §3**
+- [ ] **Step 2: Insert the new section HTML and the vanilla-JS in two pieces**
 
-Use the Edit tool to insert the following block immediately before the line `<!-- §3 METHODS -->`. Indentation should match the neighbouring `<section>` blocks (no leading whitespace; `<section>` starts flush left):
+**The HTML section** (everything up to `</section>`, including the table and SVG placeholders but NOT the `<script>` block) goes immediately before the line `<!-- §3 METHODS -->`.
+
+**The `<script>` block at the bottom** goes at the end of `<body>`, immediately after the existing `IDENT_ROBUSTNESS_INJECT_START ... INJECT_END` markers script block (around line ~597). Physical ordering matters: the markers define `IDENT_ROBUSTNESS` as an empty object by default (and the injector later replaces those with real data); the §2b vanilla-JS script reads from that global, so it must appear later in the document than the markers.
+
+Use two Edit tool calls — one per insertion. Paste the HTML chunk first, then the `<script>` chunk as a separate edit at the later line. Below is the full content split into the two pieces:
 
 ```html
 <!-- §2b IDENTIFICATION ROBUSTNESS -->
