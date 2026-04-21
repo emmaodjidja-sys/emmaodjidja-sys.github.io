@@ -124,6 +124,22 @@ a{color:var(--teal-dark);text-decoration:none}
 .slide-canvas .body ul.agenda li .an{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--teal-dark); font-size:12px; letter-spacing:0.04em; min-width:28px }
 .slide-canvas .body ul.agenda li .at{ color:var(--text); font-weight:500 }
 
+/* ══ SECTION: ToC tree viz ══ */
+.toc-tree{ width:100%; height:100%; }
+.toc-tree .col-label{ font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; fill:var(--slate) }
+.toc-tree .col-title{ font-size:12px; font-weight:700; fill:var(--navy) }
+.toc-tree .node-box{ fill:var(--surface); stroke:var(--border); stroke-width:1 }
+.toc-tree .node-box.impact{ fill:var(--navy); stroke:var(--navy) }
+.toc-tree .node-box.outcome{ fill:var(--teal-light); stroke:var(--teal) }
+.toc-tree .node-box.output{ fill:#FFF7ED; stroke:#FDBA74 }
+.toc-tree .node-box.activity{ fill:var(--bg); stroke:var(--border) }
+.toc-tree .node-text{ font-size:11px; font-weight:500; fill:var(--text) }
+.toc-tree .node-text.light{ fill:#fff }
+.toc-tree .node-text.center{ text-anchor:middle }
+.toc-tree .link{ stroke:var(--slate-light); stroke-width:1; fill:none }
+.toc-tree .overflow-chip{ fill:var(--bg); stroke:var(--border); stroke-width:1 }
+.toc-tree .overflow-text{ font-size:10px; font-weight:600; fill:var(--slate); font-style:italic }
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -493,6 +509,69 @@ function buildFindingsSlides(context, deckState) {
   return all.map((s, i) => ({ ...s, num: i + 1, total: all.length }));
 }
 
+/* ══ SECTION: ToC tree SVG ══ */
+function ToCTreeSVG({ nodes }) {
+  const W = 1184, H = 560;
+  const levels = [
+    { key:"impact",   label:"Impact" },
+    { key:"outcome",  label:"Outcomes" },
+    { key:"output",   label:"Outputs" },
+    { key:"activity", label:"Activities" }
+  ];
+  const COL_W = W / 4;
+  const MAX_PER_COL = 6;
+  const boxW = COL_W - 28, boxH = 46, gap = 10;
+
+  const grouped = levels.map((L, ci) => {
+    const all = (nodes || []).filter(n => n.level === L.key);
+    const shown = all.slice(0, MAX_PER_COL);
+    const overflow = all.length - shown.length;
+    const totalH = shown.length * boxH + (shown.length - 1) * gap + (overflow > 0 ? (boxH + gap) : 0);
+    const startY = 80 + (H - 100 - totalH) / 2;
+    const x = ci * COL_W + 14;
+    return {
+      level: L, col: ci, x, shown, overflow,
+      boxes: shown.map((n, i) => ({ node:n, x, y: startY + i * (boxH + gap), cx: x + boxW/2, cy: startY + i * (boxH + gap) + boxH/2 })),
+      overflowBox: overflow > 0 ? { x, y: startY + shown.length * (boxH + gap), cx: x + boxW/2, cy: startY + shown.length * (boxH + gap) + boxH/2 } : null
+    };
+  });
+
+  const links = [];
+  for (let ci = 1; ci < levels.length; ci++) {
+    const parents = grouped[ci-1];
+    const children = grouped[ci];
+    children.boxes.forEach(child => {
+      parents.boxes.forEach(parent => {
+        links.push({ x1: parent.x + boxW, y1: parent.cy, x2: child.x, y2: child.cy });
+      });
+    });
+  }
+
+  return <svg className="toc-tree" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+    {levels.map((L, ci) => <g key={L.key}>
+      <text x={ci*COL_W + COL_W/2} y={36} className="col-label" textAnchor="middle">{L.label}</text>
+      <text x={ci*COL_W + COL_W/2} y={56} className="col-title" textAnchor="middle">
+        {(nodes || []).filter(n => n.level === L.key).length} element{(nodes || []).filter(n => n.level === L.key).length === 1 ? '' : 's'}
+      </text>
+    </g>)}
+    {links.map((L, i) => <path key={i} className="link" d={`M ${L.x1} ${L.y1} C ${(L.x1+L.x2)/2} ${L.y1}, ${(L.x1+L.x2)/2} ${L.y2}, ${L.x2} ${L.y2}`}/>)}
+    {grouped.flatMap(g => [
+      ...g.boxes.map(b => <g key={b.node.id}>
+        <rect className={`node-box ${g.level.key}`} x={b.x} y={b.y} width={boxW} height={boxH} rx={4}/>
+        <foreignObject x={b.x + 6} y={b.y + 4} width={boxW - 12} height={boxH - 8}>
+          <div xmlns="http://www.w3.org/1999/xhtml" style={{font:'500 11px DM Sans,sans-serif',color: g.level.key === 'impact' ? '#fff' : '#0F172A',display:'flex',alignItems:'center',height:'100%',lineHeight:1.25,overflow:'hidden'}}>
+            {b.node.title}
+          </div>
+        </foreignObject>
+      </g>),
+      g.overflowBox && <g key={`of-${g.level.key}`}>
+        <rect className="overflow-chip" x={g.overflowBox.x} y={g.overflowBox.y} width={boxW} height={boxH} rx={4}/>
+        <text className="overflow-text" x={g.overflowBox.x + boxW/2} y={g.overflowBox.y + boxH/2 + 4} textAnchor="middle">+{g.overflow} more</text>
+      </g>
+    ])}
+  </svg>;
+}
+
 /* ══ SECTION: Slide dispatcher ══ */
 function renderSlide(slide, ctx, deckState, programme) {
   const sharedProps = { num: slide.num, total: slide.total, title: slide.title, programme };
@@ -547,6 +626,21 @@ function renderSlide(slide, ctx, deckState, programme) {
         <p className="lede">{safe(m.organisation, "")} — programme context at a glance.</p>
         <div className="param-grid">
           {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "toc": {
+      const nodes = ctx.toc?.nodes || [];
+      if (!nodes.length) {
+        return <SlideCanvas {...sharedProps}>
+          <h2 className="big">Theory of Change</h2>
+          <p className="lede" style={{fontStyle:'italic'}}>No Theory of Change captured in the workbench yet.</p>
+        </SlideCanvas>;
+      }
+      return <SlideCanvas {...sharedProps}>
+        <p className="lede" style={{marginBottom:10}}>How activities cascade into impact — the causal pathway this evaluation will test.</p>
+        <div style={{flex:1,minHeight:0,display:'flex',alignItems:'stretch'}}>
+          <ToCTreeSVG nodes={nodes} />
         </div>
       </SlideCanvas>;
     }
