@@ -180,6 +180,28 @@ a{color:var(--teal-dark);text-decoration:none}
 .slide-canvas .body .analysis-row .ameth{ color:var(--text); font-weight:500 }
 .slide-canvas .body .analysis-row .asoft{ color:var(--slate); font-size:11px; font-family:'JetBrains Mono',monospace }
 
+/* ══ SECTION: Evaluability radar ══ */
+.eval-layout{ display:grid; grid-template-columns:420px 1fr; gap:32px; align-items:start }
+.eval-score-block{ display:flex; flex-direction:column; gap:16px }
+.eval-score-hero{ display:flex; align-items:baseline; gap:14px }
+.eval-score-hero .sval{ font-size:88px; font-weight:800; color:var(--navy); line-height:1; font-family:'JetBrains Mono',monospace; letter-spacing:-0.04em }
+.eval-score-hero .scap{ font-size:16px; color:var(--slate); font-weight:600 }
+.eval-band{ display:inline-block; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:5px 10px; border-radius:3px; align-self:flex-start }
+.eval-band.high{ background:#D1FAE5; color:#065F46 }
+.eval-band.moderate{ background:#FEF3C7; color:#92400E }
+.eval-band.low{ background:#FEE2E2; color:#991B1B }
+.eval-blockers{ margin-top:6px; padding-top:14px; border-top:1px solid var(--border) }
+.eval-blockers .bk{ font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate); margin-bottom:6px }
+.eval-blockers .bitem{ font-size:13px; color:var(--text); padding:4px 0; display:flex; gap:8px; align-items:baseline }
+.eval-blockers .bitem::before{ content:"•"; color:var(--amber); font-weight:700 }
+.eval-radar svg{ width:100%; height:auto; max-height:480px }
+.eval-radar .axis{ stroke:var(--border); stroke-width:1; fill:none }
+.eval-radar .ring{ stroke:var(--border); stroke-width:1; stroke-dasharray:3,3; fill:none }
+.eval-radar .poly{ fill:var(--teal); fill-opacity:0.2; stroke:var(--teal-dark); stroke-width:1.5 }
+.eval-radar .pt{ fill:var(--teal-dark); stroke:var(--surface); stroke-width:2 }
+.eval-radar .alabel{ font-size:11px; font-weight:600; fill:var(--navy) }
+.eval-radar .ascore{ font-size:10px; font-weight:700; fill:var(--slate); font-family:'JetBrains Mono',monospace }
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -612,6 +634,40 @@ function ToCTreeSVG({ nodes }) {
   </svg>;
 }
 
+/* ══ SECTION: Evaluability radar SVG ══ */
+function EvaluabilityRadar({ dimensions }) {
+  const size = 380, cx = size/2, cy = size/2 + 6, r = 130;
+  const dims = dimensions || [];
+  if (!dims.length) return null;
+  const n = dims.length;
+  const angleFor = (i) => -Math.PI/2 + (i * 2 * Math.PI / n);
+  const pts = dims.map((d, i) => {
+    const val = d.adjusted_score != null ? d.adjusted_score : d.system_score;
+    const pct = d.max > 0 ? val / d.max : 0;
+    const a = angleFor(i);
+    return { x: cx + Math.cos(a) * r * pct, y: cy + Math.sin(a) * r * pct, label:d.label, val, max:d.max, angle:a };
+  });
+  const axisEnds = dims.map((_, i) => {
+    const a = angleFor(i);
+    return { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r, a };
+  });
+  const labelPos = axisEnds.map(e => ({ x: cx + Math.cos(e.a) * (r + 22), y: cy + Math.sin(e.a) * (r + 22), a:e.a }));
+  const polyD = pts.map((p,i) => `${i===0?'M':'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
+  return <svg viewBox={`0 0 ${size} ${size + 30}`} preserveAspectRatio="xMidYMid meet">
+    {[0.25,0.5,0.75,1].map(f => <circle key={f} className="ring" cx={cx} cy={cy} r={r*f}/>)}
+    {axisEnds.map((e,i) => <line key={i} className="axis" x1={cx} y1={cy} x2={e.x} y2={e.y}/>)}
+    <path className="poly" d={polyD}/>
+    {pts.map((p,i) => <circle key={i} className="pt" cx={p.x} cy={p.y} r={4}/>)}
+    {labelPos.map((lp,i) => {
+      const anchor = Math.abs(lp.a) < 0.1 || Math.abs(Math.abs(lp.a) - Math.PI) < 0.1 ? 'middle' : (Math.cos(lp.a) > 0 ? 'start' : 'end');
+      return <g key={i}>
+        <text className="alabel" x={lp.x} y={lp.y - 4} textAnchor={anchor}>{pts[i].label}</text>
+        <text className="ascore" x={lp.x} y={lp.y + 10} textAnchor={anchor}>{pts[i].val}/{pts[i].max}</text>
+      </g>;
+    })}
+  </svg>;
+}
+
 /* ══ SECTION: Slide dispatcher ══ */
 function renderSlide(slide, ctx, deckState, programme) {
   const sharedProps = { num: slide.num, total: slide.total, title: slide.title, programme };
@@ -666,6 +722,32 @@ function renderSlide(slide, ctx, deckState, programme) {
         <p className="lede">{safe(m.organisation, "")} — programme context at a glance.</p>
         <div className="param-grid">
           {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "evaluability": {
+      const ev = ctx.evaluability || {};
+      const score = ev.score;
+      if (score == null) return <SlideCanvas {...sharedProps}><h2 className="big">Evaluability Assessment</h2><p className="lede" style={{fontStyle:'italic'}}>Evaluability assessment not yet completed in the workbench.</p></SlideCanvas>;
+      const bandClass = score >= 80 ? 'high' : (score >= 50 ? 'moderate' : 'low');
+      const bandLabel = score >= 80 ? 'High' : (score >= 50 ? 'Moderate' : 'Low');
+      const blockers = ev.blockers || [];
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Evaluability Assessment</h2>
+        <p className="lede">Is this programme ready to be evaluated? Five-dimension readiness score.</p>
+        <div className="eval-layout" style={{flex:1,minHeight:0}}>
+          <div className="eval-score-block">
+            <div className="eval-score-hero">
+              <span className="sval">{score}</span>
+              <span className="scap">/ 100</span>
+            </div>
+            <span className={`eval-band ${bandClass}`}>{bandLabel} evaluability</span>
+            {blockers.length > 0 && <div className="eval-blockers">
+              <div className="bk">Key constraints</div>
+              {blockers.map((b, i) => <div key={i} className="bitem">{typeof b === 'string' ? b : (b.label || b.text || '')}</div>)}
+            </div>}
+          </div>
+          <div className="eval-radar"><EvaluabilityRadar dimensions={ev.dimensions || []}/></div>
         </div>
       </SlideCanvas>;
     }
