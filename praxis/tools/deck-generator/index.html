@@ -140,6 +140,18 @@ a{color:var(--teal-dark);text-decoration:none}
 .toc-tree .overflow-chip{ fill:var(--bg); stroke:var(--border); stroke-width:1 }
 .toc-tree .overflow-text{ font-size:10px; font-weight:600; fill:var(--slate); font-style:italic }
 
+/* ══ SECTION: EQ criterion badges ══ */
+.slide-canvas .body .eq-list{ display:flex; flex-direction:column; gap:8px }
+.slide-canvas .body .eq-row{ display:grid; grid-template-columns:36px 96px 1fr; gap:12px; align-items:start; padding:9px 12px; background:var(--surface); border:1px solid var(--border); border-radius:6px; font-size:13px; line-height:1.45 }
+.slide-canvas .body .eq-row .eq-num{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy); font-size:13px }
+.slide-canvas .body .crit-badge{ display:inline-block; font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:3px 7px; border-radius:3px; text-align:center; white-space:nowrap }
+.crit-relevance    { background:#DBEAFE; color:#1E40AF }
+.crit-coherence    { background:#E0E7FF; color:#3730A3 }
+.crit-effectiveness{ background:#D1FAE5; color:#065F46 }
+.crit-efficiency   { background:#FEF3C7; color:#92400E }
+.crit-impact       { background:#FCE7F3; color:#9D174D }
+.crit-sustainability{ background:#CCFBF1; color:#115E59 }
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -625,6 +637,39 @@ function renderSlide(slide, ctx, deckState, programme) {
         <h2 className="big">{safe(m.programme_name, "Programme Overview")}</h2>
         <p className="lede">{safe(m.organisation, "")} — programme context at a glance.</p>
         <div className="param-grid">
+          {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "eqs": {
+      const rows = ctx.evaluation_matrix?.rows || [];
+      if (!rows.length) return <SlideCanvas {...sharedProps}><h2 className="big">Evaluation Questions</h2><p className="lede" style={{fontStyle:'italic'}}>Complete the Evaluation Matrix station to populate this slide.</p></SlideCanvas>;
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Evaluation Questions</h2>
+        <p className="lede">{rows.length} question{rows.length === 1 ? '' : 's'} across {new Set(rows.map(r => r.criterion).filter(Boolean)).size} OECD-DAC criteria.</p>
+        <div className="eq-list">
+          {rows.map((eq, i) => <div key={eq.id || i} className="eq-row">
+            <span className="eq-num">{String(eq.number || i+1).padStart(2,'0')}</span>
+            <span className={`crit-badge crit-${eq.criterion || 'relevance'}`}>{fmt(eq.criterion || "—")}</span>
+            <span>{eq.question || "—"}</span>
+          </div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "methodology": {
+      const dr = ctx.design_recommendation || {};
+      const top = dr.ranked_designs?.[0] || (dr.selected_design ? { id: dr.selected_design } : null);
+      if (!top) return <SlideCanvas {...sharedProps}><h2 className="big">Methodology</h2><p className="lede" style={{fontStyle:'italic'}}>Complete the Design Advisor station to select an evaluation design.</p></SlideCanvas>;
+      const params = [
+        { k:"Design", v: safe(top.name, fmt(top.id)) },
+        { k:"Family", v: safe(top.family, "Not classified") },
+        top.score != null ? { k:"Score", v: (typeof top.score === 'number' ? top.score.toFixed(1) : top.score) + " / 100" } : null,
+        { k:"Comparison Strategy", v: fmt(ctx.tor_constraints?.comparison_feasibility || dr.answers?.comparison) }
+      ].filter(Boolean);
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">{safe(top.name, fmt(top.id))}</h2>
+        <p className="lede">{dr.justification || "Design selected by the workbench advisor based on causal-inference needs, timeline, and ToR constraints."}</p>
+        <div className="param-grid cols-4" style={{marginTop:'auto'}}>
           {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
         </div>
       </SlideCanvas>;
