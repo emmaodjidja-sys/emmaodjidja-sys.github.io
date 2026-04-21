@@ -236,6 +236,15 @@ a{color:var(--teal-dark);text-decoration:none}
 .slide-canvas .body .sc-card .v{ font-size:26px; font-weight:800; color:var(--navy); font-family:'JetBrains Mono',monospace }
 .slide-canvas .body .sc-card .sv{ font-size:12px; color:var(--text-muted); margin-top:2px }
 
+/* ══ SECTION: Criterion findings ══ */
+.slide-canvas .body .crit-layout{ display:grid; grid-template-columns:1fr 1fr; gap:24px; flex:1; min-height:0 }
+.slide-canvas .body .crit-eq-list{ display:flex; flex-direction:column; gap:8px; padding-top:4px }
+.slide-canvas .body .crit-eq{ background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-size:12px; line-height:1.45 }
+.slide-canvas .body .crit-eq .ceqn{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy); font-size:11px; margin-right:6px }
+.slide-canvas .body .crit-findings-col{ display:flex; flex-direction:column; gap:12px }
+.slide-canvas .body .crit-box{ background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:14px }
+.slide-canvas .body .crit-box .k{ font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--teal-dark); margin-bottom:6px }
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -770,6 +779,108 @@ function renderSlide(slide, ctx, deckState, programme) {
         <p className="lede">{safe(m.organisation, "")} — programme context at a glance.</p>
         <div className="param-grid">
           {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "finding-criterion": {
+      const cr = slide.criterion;
+      const rows = (ctx.evaluation_matrix?.rows || []).filter(r => r.criterion === cr);
+      return <SlideCanvas {...sharedProps}>
+        <p className="lede" style={{marginBottom:12}}>
+          <span className={`crit-badge crit-${cr}`} style={{marginRight:8}}>{fmt(cr)}</span>
+          {rows.length} question{rows.length === 1 ? '' : 's'} under this criterion.
+        </p>
+        <div className="crit-layout">
+          <div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--slate)',marginBottom:6}}>Evaluation questions</div>
+            <div className="crit-eq-list">
+              {rows.map((eq, i) => <div key={eq.id || i} className="crit-eq">
+                <span className="ceqn">EQ{eq.number || i+1}</span>{eq.question}
+              </div>)}
+            </div>
+          </div>
+          <div className="crit-findings-col">
+            <div className="crit-box">
+              <div className="k">Key findings</div>
+              <EditableCell path={`findings.${cr}.key`} value={"Lead with the most policy-relevant finding. Keep to 3–4 sentences. Cite evidence."} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline style={{minHeight:90,fontSize:13,lineHeight:1.5}}/>
+            </div>
+            <div className="crit-box">
+              <div className="k">Supporting evidence</div>
+              <EditableCell path={`findings.${cr}.evidence`} value={"Reference specific data — effect size, quote, observation — that underpins each finding."} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline style={{minHeight:70,fontSize:13,lineHeight:1.5}}/>
+            </div>
+          </div>
+        </div>
+      </SlideCanvas>;
+    }
+    case "cross-cutting": {
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Cross-cutting Findings</h2>
+        <p className="lede">Issues that cut across criteria — typically gender, equity, do-no-harm, human rights.</p>
+        <div className="param-grid cols-2" style={{alignItems:'stretch',flex:1}}>
+          {[
+            { k:"Gender & equity", path:"crosscut.gender", def:"How did the programme affect different gender/age/wealth groups? Where was uptake uneven?" },
+            { k:"Do no harm", path:"crosscut.dnh", def:"Any unintended negative effects? Any protection concerns surfaced during fieldwork?" },
+            { k:"Human rights", path:"crosscut.rights", def:"Impact on access to services for marginalised or displaced populations." },
+            { k:"Environmental / climate", path:"crosscut.env", def:"Applicable climate or environmental considerations surfaced during the evaluation." }
+          ].map((c, i) => <div key={i} className="param" style={{display:'flex',flexDirection:'column',gap:6}}>
+            <div className="k">{c.k}</div>
+            <EditableCell path={c.path} value={c.def} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline style={{flex:1,minHeight:60,fontSize:13,lineHeight:1.5}}/>
+          </div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "evidence": {
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Evidence Quality & Limitations</h2>
+        <p className="lede">What we know with confidence, and where the evidence is thinner.</p>
+        <div className="param-grid cols-2" style={{flex:1,alignItems:'stretch'}}>
+          <div className="param" style={{display:'flex',flexDirection:'column'}}>
+            <div className="k">Strengths of the evidence base</div>
+            <EditableCell path="evidence.strengths" value={"Large quant sample, triangulated with qualitative. HMIS data coverage across full evaluation period. Baseline comparison group robust."} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline style={{flex:1,minHeight:90,fontSize:13,lineHeight:1.5}}/>
+          </div>
+          <div className="param" style={{display:'flex',flexDirection:'column',borderLeftColor:'var(--amber)'}}>
+            <div className="k">Limitations</div>
+            <EditableCell path="evidence.limits" value={"Security access in 2 districts reduced sample. Recall bias in self-reported service use. No randomisation limits causal claims."} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline style={{flex:1,minHeight:90,fontSize:13,lineHeight:1.5}}/>
+          </div>
+        </div>
+      </SlideCanvas>;
+    }
+    case "recommendations": {
+      const defaults = [
+        { rec:"Scale EmONC training to remaining 12 districts over next 18 months.", pri:"High", own:"MoH + implementing partners", tl:"Year 1–2 post-eval" },
+        { rec:"Strengthen HMIS completeness targets to 90% before next evaluation.", pri:"High", own:"MoH Planning Unit", tl:"Year 1 post-eval" },
+        { rec:"Redesign referral incentive structure based on fieldwork findings.", pri:"Medium", own:"Implementing partner", tl:"Year 1 post-eval" },
+        { rec:"Commission follow-up study on equity dimensions in 18 months.", pri:"Medium", own:"Donor + MoH", tl:"Year 2 post-eval" }
+      ];
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Recommendations</h2>
+        <p className="lede">Prioritised actions with owners and timelines.</p>
+        <div className="etable">
+          <div className="erow header" style={{gridTemplateColumns:'3fr 80px 1fr 1fr'}}>
+            <span className="ecell">Recommendation</span><span className="ecell">Priority</span><span className="ecell">Owner</span><span className="ecell">Timeline</span>
+          </div>
+          {defaults.map((d, i) => <div key={i} className="erow" style={{gridTemplateColumns:'3fr 80px 1fr 1fr'}}>
+            <EditableCell path={`recs.${i}.rec`} value={d.rec} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline/>
+            <EditableCell path={`recs.${i}.pri`} value={d.pri} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+            <EditableCell path={`recs.${i}.own`} value={d.own} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+            <EditableCell path={`recs.${i}.tl`} value={d.tl} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+          </div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "lessons": {
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Lessons & Next Steps</h2>
+        <p className="lede">What this evaluation teaches future programmes, and what happens next.</p>
+        <div className="param-grid cols-2" style={{flex:1,alignItems:'stretch'}}>
+          <div className="param" style={{display:'flex',flexDirection:'column'}}>
+            <div className="k">Lessons for future programming</div>
+            <EditableCell path="lessons.future" value={"Three transferable lessons — design, implementation, and measurement — that future similar programmes can apply."} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline style={{flex:1,minHeight:100,fontSize:13,lineHeight:1.5}}/>
+          </div>
+          <div className="param" style={{display:'flex',flexDirection:'column'}}>
+            <div className="k">Next steps</div>
+            <EditableCell path="lessons.next" value={"Validation workshop, dissemination plan (partners, academic outputs), follow-up studies in 18 months."} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline style={{flex:1,minHeight:100,fontSize:13,lineHeight:1.5}}/>
+          </div>
         </div>
       </SlideCanvas>;
     }
