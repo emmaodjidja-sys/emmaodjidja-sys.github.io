@@ -202,6 +202,26 @@ a{color:var(--teal-dark);text-decoration:none}
 .eval-radar .alabel{ font-size:11px; font-weight:600; fill:var(--navy) }
 .eval-radar .ascore{ font-size:10px; font-weight:700; fill:var(--slate); font-family:'JetBrains Mono',monospace }
 
+/* ══ SECTION: Editable tables ══ */
+.etable{ display:grid; gap:6px }
+.etable .erow{ display:grid; gap:10px; padding:8px 12px; background:var(--surface); border:1px solid var(--border); border-radius:6px; align-items:center }
+.etable .erow.header{ background:var(--bg); border-color:var(--border) }
+.etable .erow.header .ecell{ font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--slate) }
+.etable input.ecell, .etable textarea.ecell{ border:1px solid transparent; background:transparent; padding:4px 6px; border-radius:4px; font-size:13px; color:var(--text); width:100%; font-family:inherit }
+.etable input.ecell:focus, .etable textarea.ecell:focus{ outline:none; border-color:var(--teal); background:var(--surface) }
+.etable input.ecell:hover, .etable textarea.ecell:hover{ background:var(--bg) }
+.etable .ecell.static{ font-weight:600; color:var(--navy); font-family:'JetBrains Mono',monospace; font-size:12px }
+
+/* Timeline Gantt grid */
+.gantt{ display:grid; grid-template-columns:180px repeat(12,1fr); gap:2px; margin-top:10px }
+.gantt .gh{ padding:6px 4px; font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--slate); text-align:center }
+.gantt .gh.label-col{ text-align:left; padding-left:10px }
+.gantt .phase-label{ padding:8px 10px; font-size:12px; font-weight:600; color:var(--text); display:flex; align-items:center; background:var(--surface); border-radius:4px }
+.gantt .phase-cell{ height:32px; background:var(--bg); border-radius:2px; cursor:pointer; transition:all 0.15s }
+.gantt .phase-cell:hover{ background:var(--teal-glow) }
+.gantt .phase-cell.on{ background:var(--teal); }
+.gantt .phase-cell.on:hover{ background:var(--teal-dark) }
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -634,6 +654,20 @@ function ToCTreeSVG({ nodes }) {
   </svg>;
 }
 
+/* ══ SECTION: Editable cell ══ */
+function EditableCell({ path, value, setOverride, getOverride, placeholder, multiline, style }) {
+  const current = getOverride(path, value);
+  const [local, setLocal] = useState(current);
+  useEffect(() => setLocal(current), [current]);
+  function commit() {
+    const trimmed = (local || "").trim();
+    if (trimmed === value) setOverride(path, null);
+    else setOverride(path, trimmed);
+  }
+  if (multiline) return <textarea className="ecell" value={local} onChange={e => setLocal(e.target.value)} onBlur={commit} placeholder={placeholder} style={{resize:'vertical',minHeight:32,...style}}/>;
+  return <input className="ecell" value={local} onChange={e => setLocal(e.target.value)} onBlur={commit} placeholder={placeholder} style={style}/>;
+}
+
 /* ══ SECTION: Evaluability radar SVG ══ */
 function EvaluabilityRadar({ dimensions }) {
   const size = 380, cx = size/2, cy = size/2 + 6, r = 130;
@@ -722,6 +756,114 @@ function renderSlide(slide, ctx, deckState, programme) {
         <p className="lede">{safe(m.organisation, "")} — programme context at a glance.</p>
         <div className="param-grid">
           {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "timeline": {
+      const phases = [
+        { id:"inception", label:"Inception" },
+        { id:"fieldwork", label:"Fieldwork" },
+        { id:"analysis",  label:"Analysis" },
+        { id:"reporting", label:"Reporting" }
+      ];
+      const defaults = {
+        "timeline.inception": "1,2,3",
+        "timeline.fieldwork": "4,5,6,7,8",
+        "timeline.analysis":  "8,9,10",
+        "timeline.reporting": "10,11,12"
+      };
+      function monthsSet(phaseId){
+        const raw = deckState.getOverride(`timeline.${phaseId}`, defaults[`timeline.${phaseId}`]);
+        return new Set(String(raw).split(',').map(s => parseInt(s.trim(),10)).filter(n => n >= 1 && n <= 12));
+      }
+      function toggleMonth(phaseId, m){
+        const current = monthsSet(phaseId);
+        if (current.has(m)) current.delete(m); else current.add(m);
+        const sorted = Array.from(current).sort((a,b)=>a-b).join(',');
+        deckState.setOverride(`timeline.${phaseId}`, sorted === defaults[`timeline.${phaseId}`] ? null : sorted);
+      }
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Timeline</h2>
+        <p className="lede">12-month evaluation schedule. Click cells to adjust phase coverage.</p>
+        <div className="gantt">
+          <div className="gh label-col">Phase</div>
+          {Array.from({length:12}, (_,i) => <div key={i} className="gh">M{i+1}</div>)}
+          {phases.map(p => <React.Fragment key={p.id}>
+            <div className="phase-label">{p.label}</div>
+            {Array.from({length:12},(_,i) => i+1).map(m => {
+              const on = monthsSet(p.id).has(m);
+              return <div key={m} className={`phase-cell ${on ? 'on' : ''}`} onClick={() => toggleMonth(p.id, m)}/>;
+            })}
+          </React.Fragment>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "team": {
+      const defaults = [
+        { role:"Team Leader", name:"Dr. [Name]", resp:"Overall direction, donor liaison, final report" },
+        { role:"Senior Methodologist", name:"[Name]", resp:"Quant design, DiD modelling, sampling" },
+        { role:"Qualitative Lead", name:"[Name]", resp:"KII/FGD design, thematic analysis, fieldwork oversight" },
+        { role:"Field Coordinator", name:"[Name]", resp:"Enumerator training, logistics, data quality" },
+        { role:"M&E Specialist", name:"[Name]", resp:"HMIS integration, indicator validation" }
+      ];
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Team & Roles</h2>
+        <p className="lede">Core evaluation team and division of responsibilities.</p>
+        <div className="etable">
+          <div className="erow header" style={{gridTemplateColumns:'220px 220px 1fr'}}>
+            <span className="ecell">Role</span><span className="ecell">Name</span><span className="ecell">Responsibilities</span>
+          </div>
+          {defaults.map((d, i) => <div key={i} className="erow" style={{gridTemplateColumns:'220px 220px 1fr'}}>
+            <EditableCell path={`team.${i}.role`} value={d.role} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+            <EditableCell path={`team.${i}.name`} value={d.name} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+            <EditableCell path={`team.${i}.resp`} value={d.resp} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline/>
+          </div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "risks": {
+      const defaults = [
+        { risk:"Security deterioration in target districts", like:"Medium", impact:"High", mit:"Remote enumeration protocol; drop non-accessible districts from sample" },
+        { risk:"HMIS data incompleteness at baseline", like:"High", impact:"Medium", mit:"Triangulate with facility audit; sensitivity analysis" },
+        { risk:"Enumerator attrition during fieldwork", like:"Medium", impact:"Medium", mit:"Oversample + rolling training; daily data quality checks" },
+        { risk:"Government counterpart changes mid-evaluation", like:"Low", impact:"Medium", mit:"Documented ToR; quarterly stakeholder briefings" }
+      ];
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Risks & Mitigations</h2>
+        <p className="lede">Top risks and planned responses. Adjust before the inception meeting.</p>
+        <div className="etable">
+          <div className="erow header" style={{gridTemplateColumns:'2fr 90px 90px 3fr'}}>
+            <span className="ecell">Risk</span><span className="ecell">Likelihood</span><span className="ecell">Impact</span><span className="ecell">Mitigation</span>
+          </div>
+          {defaults.map((d, i) => <div key={i} className="erow" style={{gridTemplateColumns:'2fr 90px 90px 3fr'}}>
+            <EditableCell path={`risks.${i}.risk`} value={d.risk} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline/>
+            <EditableCell path={`risks.${i}.like`} value={d.like} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+            <EditableCell path={`risks.${i}.impact`} value={d.impact} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+            <EditableCell path={`risks.${i}.mit`} value={d.mit} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline/>
+          </div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "deliverables": {
+      const defaults = [
+        { name:"Inception Report", due:"Month 2" },
+        { name:"Data Collection Tools (finalised)", due:"Month 3" },
+        { name:"Fieldwork Plan & Training Package", due:"Month 4" },
+        { name:"Preliminary Findings Note", due:"Month 8" },
+        { name:"Draft Evaluation Report", due:"Month 10" },
+        { name:"Final Evaluation Report + Dissemination Materials", due:"Month 12" }
+      ];
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Deliverables Schedule</h2>
+        <p className="lede">Key outputs and target delivery dates.</p>
+        <div className="etable">
+          <div className="erow header" style={{gridTemplateColumns:'1fr 140px'}}>
+            <span className="ecell">Deliverable</span><span className="ecell">Due</span>
+          </div>
+          {defaults.map((d, i) => <div key={i} className="erow" style={{gridTemplateColumns:'1fr 140px'}}>
+            <EditableCell path={`deliverables.${i}.name`} value={d.name} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+            <EditableCell path={`deliverables.${i}.due`} value={d.due} setOverride={deckState.setOverride} getOverride={deckState.getOverride}/>
+          </div>)}
         </div>
       </SlideCanvas>;
     }
