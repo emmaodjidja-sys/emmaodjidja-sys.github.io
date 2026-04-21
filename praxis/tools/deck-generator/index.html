@@ -223,7 +223,6 @@ function saveLastTemplate(template) {
 function TemplatePicker({ context, isDemo, onPick, onDismissBanner, bannerDismissed }) {
   const programme = context.project_meta?.programme_name || "Untitled programme";
   const org = context.project_meta?.organisation || "";
-  const eqCount = context.evaluation_matrix?.rows?.length || 0;
   const criterionCount = new Set((context.evaluation_matrix?.rows || []).map(r => r.criterion).filter(Boolean)).size;
   const findingsTotal = 10 + criterionCount;
 
