@@ -222,6 +222,8 @@ footer.site-foot{padding:80px var(--gutter) 40px; border-top:1px solid var(--lin
   .foot-right{text-align:left}
   .foot-links{justify-content: flex-start}
 }
+.ident-row-active { background: rgba(255, 179, 71, 0.08); }
+.ident-row-active td:first-child::before { content: "★ "; color: var(--amber); }
 </style>
 </head>
 <body>
@@ -490,6 +492,58 @@ footer.site-foot{padding:80px var(--gutter) 40px; border-top:1px solid var(--lin
   </p>
 </section>
 
+<!-- §2b IDENTIFICATION ROBUSTNESS -->
+<section class="section" id="robustness">
+  <div class="section-title">
+    <span class="num">&sect;2b</span>
+    <h2>Identification robustness &mdash; threshold sweep</h2>
+    <span class="meta">Vary N &middot; district-level</span>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px;">
+    <label for="ident-n-slider" class="mono-s" style="color:var(--ink-dim); white-space:nowrap;">
+      Min KAFD+IED count N:
+      <output id="ident-n-output" for="ident-n-slider" style="color:var(--amber); font-weight:500; margin-left:6px;">2</output>
+    </label>
+    <input id="ident-n-slider" type="range" min="1" max="5" step="1" value="2"
+           aria-label="Minimum KAFD+IED co-occurrence count N"
+           style="flex:1; min-width:200px; max-width:360px; accent-color:var(--amber);">
+    <span class="mono-s" style="color:var(--ink-dim); font-size:11px;">1 &middot; 2 &middot; 3 &middot; 4 &middot; 5</span>
+  </div>
+
+  <table class="data-table" id="ident-table">
+    <thead>
+      <tr>
+        <th>N</th>
+        <th style="text-align:right">Flagged</th>
+        <th style="text-align:right">TP</th>
+        <th style="text-align:right">FP</th>
+        <th style="text-align:right">FN</th>
+        <th style="text-align:right">TN</th>
+        <th style="text-align:right">Precision</th>
+        <th style="text-align:right">Recall</th>
+        <th style="text-align:right">F1</th>
+        <th style="text-align:right">Lift</th>
+      </tr>
+    </thead>
+    <tbody id="ident-tbody"><!-- rows injected at runtime from IDENT_ROBUSTNESS --></tbody>
+  </table>
+
+  <div style="display:flex; gap:24px; flex-wrap:wrap; margin-top:18px; align-items:flex-start;">
+    <svg id="ident-pr-curve" width="220" height="220" role="img"
+         aria-label="Precision-recall curve across N values" style="flex-shrink:0;">
+      <!-- axes, curve, dots injected at runtime from IDENT_PR_CURVE -->
+    </svg>
+    <p style="font-family:var(--serif); font-size:14px; color:var(--ink-dim); line-height:1.55; max-width:60ch; flex:1; min-width:260px;">
+      Lift compares flagged districts' non-flagged-week attack rate to the Sahel-wide clean baseline
+      (seed-42 sample of 8,000 district-weeks). Outcome excludes KAFD and IED sub-event types
+      (N4 decontamination). Districts whose every week is a signal week are excluded from the
+      confusion matrix and counted separately. Bonferroni-corrected threshold p &lt; 0.00102
+      across 49 specifications. Tests robustness of the <em>where</em> claim &mdash; not a timing forecast.
+    </p>
+  </div>
+</section>
+
 <!-- §3 METHODS -->
 <section class="section">
   <div class="section-title">
@@ -693,6 +747,116 @@ footer.site-foot{padding:80px var(--gutter) 40px; border-top:1px solid var(--lin
       }
     ];
     // <<< IDENT_ROBUSTNESS_INJECT_END
+</script>
+
+<script>
+(function () {
+  var tbody = document.getElementById("ident-tbody");
+  var svg = document.getElementById("ident-pr-curve");
+  var slider = document.getElementById("ident-n-slider");
+  var output = document.getElementById("ident-n-output");
+  if (!tbody || !svg || !slider || typeof IDENT_ROBUSTNESS !== "object") return;
+  var ns = Object.keys(IDENT_ROBUSTNESS).map(function (k) { return parseInt(k, 10); })
+    .sort(function (a, b) { return a - b; });
+  if (!ns.length) return;
+
+  var fmtPct = function (v) { return (v * 100).toFixed(1) + "%"; };
+  var fmtNum = function (v) { return (typeof v === "number") ? v.toLocaleString() : "-"; };
+  var fmtLift = function (v) { return (typeof v === "number" && v > 0) ? v.toFixed(1) + "x" : "-"; };
+
+  ns.forEach(function (n) {
+    var r = IDENT_ROBUSTNESS[String(n)];
+    var tr = document.createElement("tr");
+    tr.setAttribute("data-n", String(n));
+    tr.innerHTML =
+      '<td class="num">' + n + '</td>' +
+      '<td class="num" style="text-align:right">' + fmtNum(r.flagged) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--teal)">' + fmtNum(r.tp) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--amber)">' + fmtNum(r.fp) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--amber)">' + fmtNum(r.fn) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--teal)">' + fmtNum(r.tn) + '</td>' +
+      '<td class="num" style="text-align:right">' + fmtPct(r.precision) + '</td>' +
+      '<td class="num" style="text-align:right">' + fmtPct(r.recall) + '</td>' +
+      '<td class="num" style="text-align:right">' + r.f1.toFixed(3) + '</td>' +
+      '<td class="num" style="text-align:right; color:var(--amber); font-weight:500">' + fmtLift(r.lift) + '</td>';
+    tbody.appendChild(tr);
+  });
+
+  var PAD = 28, W = 220, H = 220;
+  var xs = function (v) { return PAD + v * (W - 2 * PAD); };
+  var ys = function (v) { return H - PAD - v * (H - 2 * PAD); };
+  var svgNs = "http://www.w3.org/2000/svg";
+
+  function axis(x1, y1, x2, y2) {
+    var el = document.createElementNS(svgNs, "line");
+    el.setAttribute("x1", x1); el.setAttribute("y1", y1);
+    el.setAttribute("x2", x2); el.setAttribute("y2", y2);
+    el.setAttribute("stroke", "var(--line)"); el.setAttribute("stroke-width", "1");
+    svg.appendChild(el);
+  }
+  axis(PAD, PAD, PAD, H - PAD);
+  axis(PAD, H - PAD, W - PAD, H - PAD);
+
+  function axisLabel(text, x, y, rotate) {
+    var el = document.createElementNS(svgNs, "text");
+    el.setAttribute("x", x); el.setAttribute("y", y);
+    el.setAttribute("fill", "var(--ink-dim)"); el.setAttribute("font-size", "11");
+    el.setAttribute("font-family", "var(--serif)");
+    if (rotate) el.setAttribute("transform", "rotate(-90 " + x + " " + y + ")");
+    el.setAttribute("text-anchor", "middle");
+    el.textContent = text;
+    svg.appendChild(el);
+  }
+  axisLabel("recall", W / 2, H - 6);
+  axisLabel("precision", 12, H / 2, true);
+
+  var pts = IDENT_PR_CURVE.slice().sort(function (a, b) { return a.n - b.n; });
+  var d = pts.map(function (p, i) {
+    return (i === 0 ? "M" : "L") + xs(p.recall) + "," + ys(p.precision);
+  }).join(" ");
+  var pathEl = document.createElementNS(svgNs, "path");
+  pathEl.setAttribute("d", d);
+  pathEl.setAttribute("stroke", "var(--teal)");
+  pathEl.setAttribute("stroke-width", "1.5");
+  pathEl.setAttribute("fill", "none");
+  svg.appendChild(pathEl);
+
+  pts.forEach(function (p) {
+    var c = document.createElementNS(svgNs, "circle");
+    c.setAttribute("data-n", String(p.n));
+    c.setAttribute("cx", xs(p.recall));
+    c.setAttribute("cy", ys(p.precision));
+    c.setAttribute("r", "5");
+    c.setAttribute("fill", "none");
+    c.setAttribute("stroke", "var(--teal)");
+    c.setAttribute("stroke-width", "1.5");
+    svg.appendChild(c);
+
+    var lbl = document.createElementNS(svgNs, "text");
+    lbl.setAttribute("x", xs(p.recall) + 8);
+    lbl.setAttribute("y", ys(p.precision) - 6);
+    lbl.setAttribute("fill", "var(--ink-dim)");
+    lbl.setAttribute("font-size", "10");
+    lbl.setAttribute("font-family", "var(--serif)");
+    lbl.textContent = "N=" + p.n;
+    svg.appendChild(lbl);
+  });
+
+  function setActive(n) {
+    output.textContent = String(n);
+    Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
+      tr.classList.toggle("ident-row-active", tr.getAttribute("data-n") === String(n));
+    });
+    Array.prototype.forEach.call(svg.querySelectorAll("circle[data-n]"), function (c) {
+      var active = c.getAttribute("data-n") === String(n);
+      c.setAttribute("fill", active ? "var(--amber)" : "none");
+      c.setAttribute("stroke", active ? "var(--amber)" : "var(--teal)");
+    });
+  }
+
+  slider.addEventListener("input", function (e) { setActive(parseInt(e.target.value, 10)); });
+  setActive(parseInt(slider.value, 10));
+})();
 </script>
 
 <!-- Vanilla JS: map animation + bibtex copy -->
