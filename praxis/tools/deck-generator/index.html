@@ -290,6 +290,23 @@ body.presenting{ background:#000; overflow:hidden }
 .shortcuts-modal .shrow:last-child{ border-bottom:none }
 .shortcuts-modal kbd{ display:inline-block; padding:2px 8px; border-radius:4px; background:var(--bg); border:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600 }
 
+/* ══ SECTION: Print stylesheet (PDF export) ══ */
+@media print {
+  @page { size: A4 landscape; margin: 0 }
+  body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact }
+  .topbar, .editor-toolbar, .picker-wrap, .slide-meta, .hud, .presenter-root .click-zone, .shortcuts-modal { display: none !important }
+  .editor-wrap { max-width: none; padding: 0; margin: 0 }
+  .slide-wrap { margin: 0; break-inside: avoid; page-break-inside: avoid; page-break-after: always }
+  .slide-wrap:last-child { page-break-after: auto }
+  .slide-scale { margin: 0; padding: 0 }
+  .slide-scale-inner { transform: none !important; width: 100%; height: auto; margin-bottom: 0 !important }
+  .slide-canvas { width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 0; box-shadow: none; page-break-inside: avoid }
+  .slide-canvas, .slide-canvas *, .header-bar, .section-divider { -webkit-print-color-adjust: exact; print-color-adjust: exact }
+  .presenter-root { position: static; background: transparent }
+  .presenter-root .hud { display: none }
+  input.ecell, textarea.ecell { border: none !important; background: transparent !important }
+}
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -450,6 +467,40 @@ function loadLastTemplate() {
 
 function saveLastTemplate(template) {
   try { localStorage.setItem(TEMPLATE_KEY, template); } catch (e) {}
+}
+
+/* ══ SECTION: JSON import/export ══ */
+function exportDeckJSON(template, programme, context, overrides) {
+  const payload = {
+    praxis_version: "deck-generator-1.0",
+    exported_at: new Date().toISOString(),
+    template,
+    programme,
+    organisation: context.project_meta?.organisation || "",
+    overrides
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${slugify(programme)}-${template}-${new Date().toISOString().slice(0,10)}.deck.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importDeckJSON(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const parsed = JSON.parse(fr.result);
+        if (!parsed.template || !parsed.overrides) throw new Error("Missing template or overrides in JSON");
+        resolve(parsed);
+      } catch (e) { reject(e); }
+    };
+    fr.onerror = () => reject(new Error("Read failed"));
+    fr.readAsText(file);
+  });
 }
 
 /* ══ SECTION: Format helpers ══ */
@@ -1501,9 +1552,40 @@ function App() {
       <span className="tcount">{template === 'inception' ? 'Inception Brief' : 'Findings Brief'}</span>
       <div className="tspacer"/>
       {deckState.hasOverrides && <button className="tbtn" onClick={deckState.resetAll} title="Discard all inline edits">↺ Reset edits</button>}
+      <button className="tbtn" onClick={() => exportDeckJSON(template, programme, context, deckState.overrides)} title="Download the editable deck state">⇣ Export</button>
+      <label className="tbtn" style={{cursor:'pointer'}} title="Load a previously exported deck state">
+        ⇡ Import
+        <input type="file" accept=".json,.deck.json,application/json" style={{display:'none'}} onChange={async (e) => {
+          const f = e.target.files?.[0]; if (!f) return;
+          try {
+            const parsed = await importDeckJSON(f);
+            if (parsed.template && parsed.template !== template) {
+              if (!confirm(`This JSON is for "${parsed.template}" — switch template and load?`)) return;
+              setTemplate(parsed.template);
+            }
+            deckState.resetAll();
+            Object.entries(parsed.overrides).forEach(([k,v]) => deckState.setOverride(k, v));
+          } catch (err) { alert("Import failed: " + err.message); }
+          finally { e.target.value = ""; }
+        }}/>
+      </label>
       <button className="tbtn" onClick={() => window.print()}>⎙ PDF</button>
+      <button className="tbtn" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts">?</button>
       <button className="tbtn primary" onClick={() => setPresenting(true)}>▶ Present</button>
     </div>
+    {showShortcuts && <div className="shortcuts-modal" onClick={() => setShowShortcuts(false)}>
+      <div className="smbody" onClick={(e) => e.stopPropagation()}>
+        <h3>Keyboard shortcuts</h3>
+        <div className="shrow"><span>Present</span><kbd>P</kbd></div>
+        <div className="shrow"><span>Navigate slides</span><span><kbd>←</kbd> <kbd>→</kbd></span></div>
+        <div className="shrow"><span>Fullscreen</span><kbd>F</kbd></div>
+        <div className="shrow"><span>Speaker view</span><kbd>S</kbd></div>
+        <div className="shrow"><span>Overview grid</span><kbd>O</kbd></div>
+        <div className="shrow"><span>Export PDF</span><span><kbd>Ctrl</kbd> + <kbd>P</kbd></span></div>
+        <div className="shrow"><span>Exit / close</span><kbd>Esc</kbd></div>
+        <div className="shrow"><span>Show this</span><kbd>?</kbd></div>
+      </div>
+    </div>}
     {(() => {
       const slides = template === 'inception' ? buildInceptionSlides(context, deckState) : buildFindingsSlides(context, deckState);
       return slides.map(slide => {
