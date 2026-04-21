@@ -591,8 +591,107 @@ footer.site-foot{padding:80px var(--gutter) 40px; border-top:1px solid var(--lin
 <!-- Pipeline data: written by tremor/scripts/inject_research_page.py -->
 <script>
     // >>> IDENT_ROBUSTNESS_INJECT_START — do not edit by hand; written by tremor/scripts/inject_research_page.py
-    const IDENT_ROBUSTNESS = {};
-    const IDENT_PR_CURVE = [];
+    const IDENT_ROBUSTNESS =
+    {
+      "1": {
+        "excluded": 0,
+        "f1": 0.10526315789473684,
+        "flagged": 72,
+        "fn": 0,
+        "fp": 68,
+        "high_violence": 4,
+        "lift": 5.585482958761688,
+        "p_value": 1.0,
+        "precision": 0.05555555555555555,
+        "recall": 1.0,
+        "tn": 1431,
+        "tp": 4
+      },
+      "2": {
+        "excluded": 0,
+        "f1": 0.30769230769230765,
+        "flagged": 9,
+        "fn": 2,
+        "fp": 7,
+        "high_violence": 4,
+        "lift": 7.610097659848904,
+        "p_value": 1.0,
+        "precision": 0.2222222222222222,
+        "recall": 0.5,
+        "tn": 1492,
+        "tp": 2
+      },
+      "3": {
+        "excluded": 0,
+        "f1": 0.0,
+        "flagged": 1,
+        "fn": 4,
+        "fp": 1,
+        "high_violence": 4,
+        "lift": 4.693116481888358,
+        "p_value": 1.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "tn": 1498,
+        "tp": 0
+      },
+      "4": {
+        "excluded": 0,
+        "f1": 0.0,
+        "flagged": 0,
+        "fn": 4,
+        "fp": 0,
+        "high_violence": 4,
+        "lift": 0.0,
+        "p_value": 1.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "tn": 1499,
+        "tp": 0
+      },
+      "5": {
+        "excluded": 0,
+        "f1": 0.0,
+        "flagged": 0,
+        "fn": 4,
+        "fp": 0,
+        "high_violence": 4,
+        "lift": 0.0,
+        "p_value": 1.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "tn": 1499,
+        "tp": 0
+      }
+    };
+    const IDENT_PR_CURVE =
+    [
+      {
+        "n": 1,
+        "precision": 0.05555555555555555,
+        "recall": 1.0
+      },
+      {
+        "n": 2,
+        "precision": 0.2222222222222222,
+        "recall": 0.5
+      },
+      {
+        "n": 3,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      {
+        "n": 4,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      {
+        "n": 5,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    ];
     // <<< IDENT_ROBUSTNESS_INJECT_END
 </script>
 
