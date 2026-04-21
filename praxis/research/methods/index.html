@@ -155,7 +155,7 @@
     <p class="text-slate-400 text-sm md:text-base font-mono leading-relaxed mb-8">
         <span class="text-white">Emmanuel Nene Odjidja</span> &nbsp;&middot;&nbsp;
         Principal Investigator &middot; Violence Prevention Econometrics &middot;
-        <a href="mailto:emmaodjidja@gmail.com" class="text-p_teal hover:text-p_teal_light transition-colors">emmaodjidja@gmail.com</a>
+        <a href="#" data-mu="emmaodjidja" data-md="gmail.com" class="text-p_teal hover:text-p_teal_light transition-colors">contact the author</a>
     </p>
 
     <!-- Version meta -->
@@ -184,7 +184,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
             Print / Save as PDF
         </button>
-        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="border border-slate-700 text-white px-5 py-2.5 rounded font-semibold text-sm tracking-wide hover:border-p_teal hover:text-p_teal transition-colors">Replication package &rarr;</a>
+        <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="border border-slate-700 text-white px-5 py-2.5 rounded font-semibold text-sm tracking-wide hover:border-p_teal hover:text-p_teal transition-colors">View code on GitHub &rarr;</a>
         <a href="../" class="text-slate-400 px-2 py-2.5 font-mono text-xs tracking-widest uppercase hover:text-p_teal transition-colors inline-flex items-center">Back to research &rarr;</a>
     </div>
 </header>
@@ -213,7 +213,7 @@
     <h2><span class="num">Section 02</span>Data</h2>
 
     <h3>Source</h3>
-    <p>All event data is drawn from the <strong>Armed Conflict Location &amp; Event Data Project (ACLED)</strong>. Events are coded by ACLED analysts under a published codebook; we rely on ACLED&rsquo;s own classification of <code class="inline">event_type</code> and <code class="inline">sub_event_type</code> without re-coding. Access is under ACLED&rsquo;s standard research licence; raw event data is not redistributed in the replication package.</p>
+    <p>All event data is drawn from the <strong>Armed Conflict Location &amp; Event Data Project (ACLED)</strong>. Events are coded by ACLED analysts under a published codebook; we rely on ACLED&rsquo;s own classification of <code class="inline">event_type</code> and <code class="inline">sub_event_type</code> without re-coding. Access is under ACLED&rsquo;s standard research licence; raw event data is not redistributed in the GitHub repository.</p>
 
     <h3>Geographic scope</h3>
     <p>Thirteen countries are included, selected for ACLED coverage density, geographic contiguity, and policy relevance to counter-violent-extremism work:</p>
@@ -276,7 +276,7 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
     <p>The outcome is the count of violent events (all eight analysis categories, summed) in district <em>d</em> during week <em>t+1</em>, divided by the number of district-weeks at risk in the panel. This yields a per-district-week mean, not a per-capita rate; exposure is held constant by design.</p>
 
     <h3>Baseline <code class="inline">Y_0</code></h3>
-    <p>The baseline attack rate is <code class="inline">Y_0 = 0.241</code> attacks per district-week, roughly one attack every four weeks in a typical district. All multipliers reported in the interactive visualisation reference this baseline. The construction (which district-weeks are eligible, and whether recent signal history is excluded) is documented in the replication package.</p>
+    <p>The baseline attack rate is <code class="inline">Y_0 = 0.241</code> attacks per district-week, roughly one attack every four weeks in a typical district. All multipliers reported in the interactive visualisation reference this baseline. The construction (which district-weeks are eligible, and whether recent signal history is excluded) is documented in the GitHub repository.</p>
 
     <h3>Exclusive signal</h3>
     <p>For single-type tests, the <strong>exclusive signal</strong> restricts treatment district-weeks to those in which only the indexed event type occurred (all other seven types had zero events). This isolates the standalone predictive power of each type. Without this restriction, apparent single-type signals are confounded by concurrent multi-type occurrences.</p>
@@ -285,7 +285,7 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
     <h2><span class="num">Section 04</span>Statistical methods</h2>
 
     <h3>Primary test</h3>
-    <p>For each predictor, we compute the <strong>ratio of means</strong> <code class="inline">R = E[Y_d,t+1 | predictor=1] / E[Y_d,t+1 | predictor=0]</code>. Confidence intervals are reported alongside each multiplier in the interactive visualisation on the research page (exact bootstrap specification to be documented in the replication package). We additionally compute a non-parametric <strong>Mann-Whitney U</strong> statistic comparing the distribution of <code class="inline">Y_d,t+1</code> across the two groups. The Mann-Whitney test makes no distributional assumptions and is robust to the highly skewed, zero-inflated outcome distribution characteristic of conflict-event data.</p>
+    <p>For each predictor, we compute the <strong>ratio of means</strong> <code class="inline">R = E[Y_d,t+1 | predictor=1] / E[Y_d,t+1 | predictor=0]</code>. Confidence intervals are reported alongside each multiplier in the interactive visualisation on the research page (exact bootstrap specification to be documented in the GitHub repository). We additionally compute a non-parametric <strong>Mann-Whitney U</strong> statistic comparing the distribution of <code class="inline">Y_d,t+1</code> across the two groups. The Mann-Whitney test makes no distributional assumptions and is robust to the highly skewed, zero-inflated outcome distribution characteristic of conflict-event data.</p>
 
     <h3>Multiple-comparison correction</h3>
     <p>We apply a <strong>Bonferroni correction at family-wise &alpha;&nbsp;=&nbsp;0.05</strong> across the 44 distinct tests in the primary and sensitivity analyses (eight exclusive single-type tests, four threshold tests, three regional tests, three period tests, four pair-type tests, plus related descriptive comparisons). The per-test significance threshold is therefore <code class="inline">p = 0.05 / 44 = 0.00114</code>. Results reported as &ldquo;p&nbsp;&lt;&nbsp;0.001&rdquo; survive this correction.</p>
@@ -342,7 +342,7 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
             <tr><td>&ge; 5 types</td><td class="num hi-amber">7.5x</td><td class="num">482</td></tr>
         </tbody>
     </table>
-    <p class="table-note">Intermediate-threshold multipliers and 95% CIs plotted in full on the research page interactive visualisation; numerical values pending extraction from the replication package. The 2.3x (N=13,984) and 7.5x (N=482) endpoints anchor the dose-response. All thresholds yield p&nbsp;&lt;&nbsp;0.001 against the clean baseline.</p>
+    <p class="table-note">Intermediate-threshold multipliers and 95% CIs plotted in full on the research page interactive visualisation; numerical values pending extraction from the GitHub repository. The 2.3x (N=13,984) and 7.5x (N=482) endpoints anchor the dose-response. All thresholds yield p&nbsp;&lt;&nbsp;0.001 against the clean baseline.</p>
 
     <h3>Regional replication</h3>
     <p>Table&nbsp;04 reports the composite signal (2+ types) within three regional sub-samples. The signal replicates in every region with statistically significant positive multipliers. The Lake Chad Basin and Coastal West Africa produce larger multipliers than Central Sahel despite smaller sample sizes, suggesting the mechanism is not specific to any one conflict ecology.</p>
@@ -366,7 +366,7 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
     <p class="table-note">Coastal West Africa sample size is small (N=11 composite district-weeks in the primary window) and the estimate should be treated as indicative, not confirmatory. Coastal frontier results are treated separately in Section&nbsp;6 under the coastal-discovery analysis.</p>
 
     <h3>Temporal stability</h3>
-    <p>The sample splits into three time periods (2016 to 2019, 2020 to 2022, 2023 to 2025) in the interactive visualisation. Absolute baseline violence has risen across the window, consistent with documented Sahel escalation. The relative signal strength (the incremental spike at t&nbsp;=&nbsp;0 above the pre-signal corridor) is stable across periods. Full multipliers and district-week counts by period are available in the interactive chart on the research page under the &ldquo;Period&rdquo; sensitivity tab. Numerical values for inclusion in this table are pending extraction from the replication package.</p>
+    <p>The sample splits into three time periods (2016 to 2019, 2020 to 2022, 2023 to 2025) in the interactive visualisation. Absolute baseline violence has risen across the window, consistent with documented Sahel escalation. The relative signal strength (the incremental spike at t&nbsp;=&nbsp;0 above the pre-signal corridor) is stable across periods. Full multipliers and district-week counts by period are available in the interactive chart on the research page under the &ldquo;Period&rdquo; sensitivity tab. Numerical values for inclusion in this table are pending extraction from the GitHub repository.</p>
 
     <h3>Combination specificity (KAFD+IED)</h3>
     <p>Table&nbsp;06 reports the headline combination-specific result. The KAFD+IED pair produces 5.5x next-week attacks and 4.6x next-week fatalities (N=292 district-weeks, p&nbsp;&lt;&nbsp;0.001). Districts where both KAFD and IED have co-occurred in any week sit persistently at <strong>8.8x the clean Sahel baseline</strong>. The elevation holds even when triggering event types are excluded from the outcome count, which means those districts are already elevated on non-triggering violence.</p>
@@ -388,7 +388,7 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
             <tr><td>KAFD + Looting</td><td class="num"></td><td class="num"></td><td class="num">980</td></tr>
         </tbody>
     </table>
-    <p class="table-note">KAFD+IED multipliers confirmed against the interactive visualisation. Other pair-type multipliers pending extraction from the replication package. Sample sizes for non-KAFD+IED pairs are taken from the viz data constants. The viz reports that all pair types produce elevated t+1 rates with consistent within-district incremental spikes at t=0, supporting a convergence-driven (rather than pair-specific) mechanism.</p>
+    <p class="table-note">KAFD+IED multipliers confirmed against the interactive visualisation. Other pair-type multipliers pending extraction from the GitHub repository. Sample sizes for non-KAFD+IED pairs are taken from the viz data constants. The viz reports that all pair types produce elevated t+1 rates with consistent within-district incremental spikes at t=0, supporting a convergence-driven (rather than pair-specific) mechanism.</p>
 
     <h3>Country-level scope</h3>
     <p>Table&nbsp;07 shows the full 13-country panel with total event counts from the ACLED export. Three Coastal West African countries (Ghana, C&ocirc;te d'Ivoire, Benin, Togo) and the broader Coastal zone show systematically higher composite ratios, consistent with the coastal-discovery finding in Section&nbsp;6.</p>
@@ -421,7 +421,7 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
             <tr><td>Togo</td><td>Coastal</td><td class="num">531</td><td class="num">4</td><td class="num">14</td><td class="num hi-amber">2.8</td></tr>
         </tbody>
     </table>
-    <p class="table-note">Event totals derived directly from the ACLED export (2026-03-26 vintage). KAFD/IED and composite-ratio values reported here come from the viz data constants. Guinea, Mauritania and Senegal were excluded from the decomposition in the visualisation and are therefore missing disaggregated values; updating these is pending. Composite ratio is defined in the replication package (operationally: ratio of composite district-weeks to baseline district-weeks within country).</p>
+    <p class="table-note">Event totals derived directly from the ACLED export (2026-03-26 vintage). KAFD/IED and composite-ratio values reported here come from the viz data constants. Guinea, Mauritania and Senegal were excluded from the decomposition in the visualisation and are therefore missing disaggregated values; updating these is pending. Composite ratio is defined in the GitHub repository (operationally: ratio of composite district-weeks to baseline district-weeks within country).</p>
 
     <!-- 6. ROBUSTNESS -->
     <h2><span class="num">Section 06</span>Robustness</h2>
@@ -450,7 +450,7 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
     <p>The signal strength correlates inversely with actor composite-frequency. High-frequency composite-capable actors (communal, Ambazonian) produce strong spatial effects (&ldquo;district identification&rdquo;) but weaker temporal escalation; low-frequency composite-capable actors (ISWAP, JNIM, IS&nbsp;Sahel) produce weaker spatial effects but stronger temporal escalation. This inverse pattern is consistent with the convergence-as-mechanism interpretation: when unusual-for-the-actor capabilities converge, the next-week signal is strongest.</p>
 
     <h3>Exclusive-outcome correction</h3>
-    <p>The temporal multipliers in the main interactive visualisation use an <em>inclusive</em> outcome (all next-week violence, including the triggering types). This inflates absolute values relative to an exclusive-outcome specification that removes the triggering types from the outcome count. Relative ordering is preserved under both specifications; the dose-response pattern and regional replication hold. A fully exclusive-outcome table is available in the replication package.</p>
+    <p>The temporal multipliers in the main interactive visualisation use an <em>inclusive</em> outcome (all next-week violence, including the triggering types). This inflates absolute values relative to an exclusive-outcome specification that removes the triggering types from the outcome count. Relative ordering is preserved under both specifications; the dose-response pattern and regional replication hold. A fully exclusive-outcome table is available in the GitHub repository.</p>
 
     <!-- 7. LIMITATIONS -->
     <h2><span class="num">Section 07</span>Limitations</h2>
@@ -478,7 +478,7 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
 
     <p>The analysis is descriptive and observational. No human-subjects intervention is performed. No individual-level identifying data is used: ACLED events are aggregated at the admin2-week resolution before any analysis, and no individual perpetrator, victim, or target is identified in outputs. <strong>Ethnic labels are deliberately excluded</strong> from all PRAXIS outputs, including this document and the TREMOR early-warning system, despite their presence in some ACLED actor fields. This reflects an operational judgement that ethnic targeting outputs carry disproportionate dual-use risk.</p>
 
-    <p>ACLED data is used under the project&rsquo;s standard research licence. The licence prohibits redistribution of the raw data; the replication package provides scripts that transform a locally-held ACLED export into the analysis panel.</p>
+    <p>ACLED data is used under the project&rsquo;s standard research licence. The licence prohibits redistribution of the raw data; the GitHub repository provides scripts that transform a locally-held ACLED export into the analysis panel.</p>
 
     <!-- 10. CITATION -->
     <h2><span class="num">Section 10</span>Suggested citation</h2>
@@ -518,14 +518,14 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
         </tbody>
     </table>
 
-    <p class="table-note">Subsequent revisions will be tracked here. Readers may subscribe to notifications via <a href="mailto:emmaodjidja@gmail.com?subject=PRAXIS%20manuscript%20updates">emmaodjidja@gmail.com</a>.</p>
+    <p class="table-note">Subsequent revisions will be tracked here. Readers may <a href="#" data-mu="emmaodjidja" data-md="gmail.com" data-ms="PRAXIS manuscript updates">subscribe to notifications</a>.</p>
 
     <!-- 12. AUTHOR -->
     <h2><span class="num">Section 12</span>Author &amp; contact</h2>
 
     <p><strong>Emmanuel Nene Odjidja</strong>. Principal Investigator, Violence Prevention Econometrics. 12+ years of programme-evaluation experience across Burkina Faso, Mali, Niger, South Sudan, and Burundi. 29 peer-reviewed publications spanning health systems, programme evaluation, and the climate-conflict nexus. Section Editor, Journal of MultiDisciplinary Evaluation.</p>
 
-    <p>Correspondence: <a href="mailto:emmaodjidja@gmail.com">emmaodjidja@gmail.com</a>. Public profile: <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>. Publications: <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>.</p>
+    <p>Correspondence: <a href="#" data-mu="emmaodjidja" data-md="gmail.com">message the author</a>. Public profile: <a href="https://www.emmanuelneneodjidja.org/" target="_blank" rel="noopener">emmanuelneneodjidja.org</a>. Publications: <a href="https://scholar.google.co.uk/citations?user=jIiNtLYAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>.</p>
 
 </article>
 
@@ -568,6 +568,16 @@ C_d,t = 1  <span class="kw">if</span> |{e: e in {KAFD, IED, Clash, Attack, Looti
         });
     }, { threshold: 0.1 });
     els.forEach(function(el) { observer.observe(el); });
+})();
+
+// Obfuscated mailto: assembles href at runtime so the address is not in page source.
+(function() {
+  document.querySelectorAll('a[data-mu][data-md]').forEach(function(a) {
+    var h = 'mailto:' + a.dataset.mu + '@' + a.dataset.md;
+    if (a.dataset.ms) { h += '?subject=' + encodeURIComponent(a.dataset.ms); }
+    a.setAttribute('href', h);
+    delete a.dataset.mu; delete a.dataset.md; if (a.dataset.ms) delete a.dataset.ms;
+  });
 })();
 </script>
 
