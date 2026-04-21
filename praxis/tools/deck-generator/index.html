@@ -166,6 +166,20 @@ a{color:var(--teal-dark);text-decoration:none}
 .sampling-hero .num-card .v{ font-size:28px; font-weight:800; color:var(--navy); font-family:'JetBrains Mono',monospace; letter-spacing:-0.02em }
 .sampling-hero .num-card .sv{ font-size:13px; color:var(--text-muted); margin-top:3px }
 
+/* ══ SECTION: Data collection + analysis lists ══ */
+.slide-canvas .body .instr-row{ display:grid; grid-template-columns:1fr 110px 80px; gap:12px; align-items:center; padding:9px 12px; border-bottom:1px solid var(--border); font-size:13px }
+.slide-canvas .body .instr-row:last-child{ border-bottom:none }
+.slide-canvas .body .instr-row .iname{ font-weight:600; color:var(--text) }
+.slide-canvas .body .instr-row .itype{ font-size:11px; font-weight:600; color:var(--slate); text-transform:uppercase; letter-spacing:0.06em }
+.slide-canvas .body .instr-row .iqcount{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy); text-align:right; font-size:12px }
+.slide-canvas .body .instr-summary{ display:flex; gap:22px; padding-bottom:12px; border-bottom:2px solid var(--border); margin-bottom:8px }
+.slide-canvas .body .instr-summary .is-item .k{ font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate) }
+.slide-canvas .body .instr-summary .is-item .v{ font-size:22px; font-weight:800; color:var(--navy); font-family:'JetBrains Mono',monospace; letter-spacing:-0.02em; line-height:1.1 }
+.slide-canvas .body .analysis-row{ display:grid; grid-template-columns:60px 1fr 200px; gap:12px; align-items:start; padding:9px 12px; border-bottom:1px solid var(--border); font-size:13px }
+.slide-canvas .body .analysis-row .aeq{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
+.slide-canvas .body .analysis-row .ameth{ color:var(--text); font-weight:500 }
+.slide-canvas .body .analysis-row .asoft{ color:var(--slate); font-size:11px; font-family:'JetBrains Mono',monospace }
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -653,6 +667,52 @@ function renderSlide(slide, ctx, deckState, programme) {
         <div className="param-grid">
           {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
         </div>
+      </SlideCanvas>;
+    }
+    case "datacoll": {
+      const items = ctx.instruments?.items || [];
+      if (!items.length) return <SlideCanvas {...sharedProps}><h2 className="big">Data Collection</h2><p className="lede" style={{fontStyle:'italic'}}>Complete the Instruments station to populate this slide.</p></SlideCanvas>;
+      const totalQ = items.reduce((s, it) => s + (it.questions?.length || 0), 0);
+      const typeMap = {};
+      items.forEach(it => { const t = it.type || 'other'; typeMap[t] = (typeMap[t] || 0) + 1; });
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Data Collection</h2>
+        <p className="lede">Instruments and touchpoints across the data collection plan.</p>
+        <div className="instr-summary">
+          <div className="is-item"><div className="k">Instruments</div><div className="v">{items.length}</div></div>
+          <div className="is-item"><div className="k">Total Questions</div><div className="v">{totalQ}</div></div>
+          <div className="is-item"><div className="k">Types</div><div className="v" style={{fontSize:14,fontFamily:'DM Sans',fontWeight:600,color:'var(--text)'}}>{Object.keys(typeMap).map(t => `${fmt(t)} (${typeMap[t]})`).join(' · ')}</div></div>
+        </div>
+        {items.map((it, i) => <div key={it.id || i} className="instr-row">
+          <span className="iname">{it.title || it.name || "Untitled"}</span>
+          <span className="itype">{fmt(it.type || "other")}</span>
+          <span className="iqcount">{it.questions?.length || 0} Qs</span>
+        </div>)}
+      </SlideCanvas>;
+    }
+    case "analysis": {
+      const rows = ctx.analysis_plan?.rows || [];
+      const matrixRows = ctx.evaluation_matrix?.rows || [];
+      if (!rows.length && !matrixRows.length) return <SlideCanvas {...sharedProps}><h2 className="big">Analysis Approach</h2><p className="lede" style={{fontStyle:'italic'}}>Complete the Analysis station to populate this slide.</p></SlideCanvas>;
+      if (!rows.length) {
+        return <SlideCanvas {...sharedProps}>
+          <h2 className="big">Analysis Approach</h2>
+          <p className="lede">Data sources per evaluation question.</p>
+          {matrixRows.map((eq, i) => <div key={eq.id || i} className="analysis-row">
+            <span className="aeq">EQ{eq.number || i+1}</span>
+            <span className="ameth">{(eq.dataSources || []).join(', ') || "No sources defined"}</span>
+            <span className="asoft"></span>
+          </div>)}
+        </SlideCanvas>;
+      }
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Analysis Approach</h2>
+        <p className="lede">Method and software assignments per evaluation question.</p>
+        {rows.map((r, i) => <div key={i} className="analysis-row">
+          <span className="aeq">{r.eq_label || `EQ${i+1}`}</span>
+          <span className="ameth">{r.method || "Not specified"}</span>
+          <span className="asoft">{r.software || ""}</span>
+        </div>)}
       </SlideCanvas>;
     }
     case "sampling": {
