@@ -40,6 +40,29 @@ a{color:var(--teal-dark);text-decoration:none}
 .topbar .nav-right{display:flex;align-items:center;gap:14px}
 .topbar .nav-right a{font-size:12px;color:var(--slate)}
 .topbar .nav-right a:hover{color:var(--navy)}
+
+/* ══ SECTION: Template picker ══ */
+.picker-wrap{max-width:900px;margin:40px auto;padding:0 24px}
+.picker-banner{background:var(--teal-light);border:1px solid var(--teal);border-left:4px solid var(--teal);border-radius:8px;padding:14px 18px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.picker-banner .bmsg{font-size:13px;color:var(--navy)}
+.picker-banner .bmsg strong{color:var(--navy);font-weight:700}
+.picker-banner a{color:var(--teal-dark);font-weight:600;font-size:12px;white-space:nowrap}
+.picker-banner .bclose{font-size:18px;color:var(--slate);background:none;border:none;cursor:pointer;padding:4px 8px;line-height:1}
+.picker-banner .bclose:hover{color:var(--navy)}
+.picker-hero h1{font-family:'Fraunces',serif;font-size:42px;font-weight:600;color:var(--navy);margin-bottom:12px;letter-spacing:-0.01em;line-height:1.05}
+.picker-hero p{font-size:15px;color:var(--text-muted);margin-bottom:32px;max-width:640px;line-height:1.5}
+.picker-programme{display:inline-block;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal-dark);font-weight:700;background:var(--teal-light);padding:4px 10px;border-radius:4px;margin-bottom:16px}
+.picker-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.picker-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;cursor:pointer;transition:all 0.18s;text-align:left;display:flex;flex-direction:column}
+.picker-card:hover{border-color:var(--teal);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.picker-card-badge{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--slate);font-weight:700;margin-bottom:10px}
+.picker-card h3{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.picker-card .card-sub{font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.5;flex:1}
+.picker-card .card-meta{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border)}
+.picker-card .card-meta .slides{font-size:11px;color:var(--slate);font-weight:600}
+.picker-card .card-meta .arrow{color:var(--teal);font-size:18px;font-weight:600}
+.picker-footer{text-align:center;color:var(--slate);font-size:12px;padding-top:16px}
+.picker-footer kbd{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;background:var(--bg);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;color:var(--text)}
 </style>
 </head>
 <body>
@@ -196,18 +219,65 @@ function saveLastTemplate(template) {
   try { localStorage.setItem(TEMPLATE_KEY, template); } catch (e) {}
 }
 
+/* ══ SECTION: Template picker ══ */
+function TemplatePicker({ context, isDemo, onPick, onDismissBanner, bannerDismissed }) {
+  const programme = context.project_meta?.programme_name || "Untitled programme";
+  const org = context.project_meta?.organisation || "";
+  const eqCount = context.evaluation_matrix?.rows?.length || 0;
+  const criterionCount = new Set((context.evaluation_matrix?.rows || []).map(r => r.criterion).filter(Boolean)).size;
+  const findingsTotal = 10 + criterionCount;
+
+  return <div className="picker-wrap">
+    {isDemo && !bannerDismissed && <div className="picker-banner">
+      <div className="bmsg">
+        <strong>Sample deck.</strong> This is the "{programme}" demo.{" "}
+        Build yours in the <a href="/praxis/workbench/">Workbench →</a>
+      </div>
+      <button className="bclose" onClick={onDismissBanner} aria-label="Dismiss">×</button>
+    </div>}
+    <div className="picker-hero">
+      <span className="picker-programme">{org || "Evaluation Deck"}</span>
+      <h1>{programme}</h1>
+      <p>Pick the deck you're presenting. Both templates share the same engine — live presenter mode, PDF export, and speaker-notes view on a second screen.</p>
+    </div>
+    <div className="picker-cards">
+      <button className="picker-card" onClick={() => onPick('inception')}>
+        <div className="picker-card-badge">Pre-fieldwork</div>
+        <h3>Inception Brief</h3>
+        <div className="card-sub">Donor inception meeting. Cover, Theory of Change, evaluation questions, methodology, sampling, timeline, team, risks.</div>
+        <div className="card-meta"><span className="slides">16 slides</span><span className="arrow">→</span></div>
+      </button>
+      <button className="picker-card" onClick={() => onPick('findings')}>
+        <div className="picker-card-badge">Post-fieldwork</div>
+        <h3>Findings Brief</h3>
+        <div className="card-sub">Results presentation. Headline findings, criterion-by-criterion results, recommendations, lessons learned.</div>
+        <div className="card-meta"><span className="slides">{findingsTotal} slides · {criterionCount || "?"} criteria</span><span className="arrow">→</span></div>
+      </button>
+    </div>
+    <div className="picker-footer">
+      Tip: once inside the deck, press <kbd>P</kbd> to start presenting · <kbd>Ctrl+P</kbd> for PDF · <kbd>?</kbd> for all shortcuts
+    </div>
+  </div>;
+}
+
 function App() {
   const [{context, isDemo}] = useState(() => loadContext());
-  const programme = context.project_meta?.programme_name || "Untitled programme";
-  return <div style={{padding:40,fontFamily:'DM Sans,sans-serif'}}>
-    <h1 style={{fontFamily:'Fraunces,serif',color:'var(--navy)',fontSize:28,fontWeight:600,marginBottom:8}}>Deck Generator</h1>
-    <p style={{color:'var(--slate)',fontSize:14,marginBottom:16}}>
-      Data source: <strong>{isDemo ? "Demo (no workbench session)" : "Workbench session"}</strong>
-    </p>
-    <p style={{color:'var(--text)',fontSize:14}}>Programme: <strong>{programme}</strong></p>
-    <p style={{color:'var(--text)',fontSize:12,marginTop:8,fontFamily:'JetBrains Mono,monospace'}}>
-      EQs: {context.evaluation_matrix?.rows?.length || 0} · ToC nodes: {context.toc?.nodes?.length || 0} · Evaluability: {context.evaluability?.score ?? "—"}/100
-    </p>
+  const [template, setTemplate] = useState(null);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  if (!template) {
+    return <TemplatePicker
+      context={context}
+      isDemo={isDemo}
+      bannerDismissed={bannerDismissed}
+      onDismissBanner={() => setBannerDismissed(true)}
+      onPick={(t) => { saveLastTemplate(t); setTemplate(t); }}
+    />;
+  }
+  // Template picked — render stub until Task 4 lands
+  return <div style={{padding:40}}>
+    <p>Template: <strong>{template}</strong></p>
+    <button style={{marginTop:12,padding:'6px 12px',background:'var(--teal)',color:'#fff',borderRadius:4}} onClick={() => setTemplate(null)}>← Change template</button>
   </div>;
 }
 
