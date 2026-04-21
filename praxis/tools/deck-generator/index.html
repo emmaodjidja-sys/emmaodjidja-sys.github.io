@@ -1493,6 +1493,11 @@ function App() {
   const [presentIdx, setPresentIdx] = useState(0);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
+  // Hooks must run on every render — compute programme unconditionally,
+  // and always call useDeckState (it falls back to "default" key before a template is chosen).
+  const programme = context.project_meta?.programme_name || "Untitled programme";
+  const deckState = useDeckState(programme, template || 'inception');
+
   useEffect(() => {
     function onHash() {
       const m = (window.location.hash || "").match(/^#\/(inception|findings)\/(\d+)$/);
@@ -1528,9 +1533,6 @@ function App() {
       onPick={(t) => { saveLastTemplate(t); setTemplate(t); }}
     />;
   }
-  // Template picked
-  const programme = context.project_meta?.programme_name || "Untitled programme";
-  const deckState = useDeckState(programme, template);
 
   if (presenting) {
     const slides = template === 'inception' ? buildInceptionSlides(context, deckState) : buildFindingsSlides(context, deckState);
