@@ -63,6 +63,41 @@ a{color:var(--teal-dark);text-decoration:none}
 .picker-card .card-meta .arrow{color:var(--teal);font-size:18px;font-weight:600}
 .picker-footer{text-align:center;color:var(--slate);font-size:12px;padding-top:16px}
 .picker-footer kbd{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;background:var(--bg);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;color:var(--text)}
+.picker-divider{ display:flex; align-items:center; gap:12px; margin:20px 0 16px; color:var(--slate-light); font-size:11px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase }
+.picker-divider::before, .picker-divider::after{ content:""; flex:1; height:1px; background:var(--border) }
+.picker-start-own{ display:block; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 20px; cursor:pointer; transition:all 0.18s; text-align:left; width:100%; font-family:inherit }
+.picker-start-own:hover{ border-color:var(--teal); box-shadow:var(--shadow); transform:translateY(-1px) }
+.picker-start-own .sotitle{ font-size:14px; font-weight:700; color:var(--navy); margin-bottom:4px; display:flex; align-items:center; justify-content:space-between }
+.picker-start-own .sotitle .arrow{ color:var(--teal); font-size:16px }
+.picker-start-own .sodesc{ font-size:12px; color:var(--text-muted); line-height:1.5 }
+
+/* ══ SECTION: Setup form ══ */
+.setup-wrap{ max-width:720px; margin:32px auto; padding:0 24px }
+.setup-hero{ margin-bottom:24px }
+.setup-hero .eyebrow{ font-size:11px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal-dark); margin-bottom:8px }
+.setup-hero h2{ font-family:'Fraunces',serif; font-size:30px; font-weight:600; color:var(--navy); margin-bottom:10px; letter-spacing:-0.01em; line-height:1.1 }
+.setup-hero p{ font-size:14px; color:var(--text-muted); line-height:1.5 }
+.setup-card{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px; margin-bottom:16px }
+.setup-card h3{ font-size:12px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--slate); margin-bottom:14px }
+.setup-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px }
+.setup-row.one{ grid-template-columns:1fr }
+.setup-field label{ display:block; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--slate); margin-bottom:5px }
+.setup-field input, .setup-field select, .setup-field textarea{ width:100%; padding:8px 11px; border:1px solid var(--border); border-radius:6px; font-size:13px; color:var(--text); background:var(--surface); font-family:inherit; transition:border-color 0.15s }
+.setup-field input:focus, .setup-field select:focus, .setup-field textarea:focus{ outline:none; border-color:var(--teal) }
+.setup-field textarea{ resize:vertical; min-height:44px }
+.eq-row-setup{ display:grid; grid-template-columns:1fr 160px 32px; gap:10px; margin-bottom:8px; align-items:start }
+.eq-row-setup textarea{ min-height:40px; font-size:12px; padding:6px 10px }
+.eq-row-setup select{ padding:8px 10px; font-size:12px }
+.eq-row-setup .eq-remove{ background:none; border:1px solid var(--border); border-radius:6px; color:var(--slate); font-size:14px; cursor:pointer; transition:all 0.15s; width:32px; height:32px; align-self:start; margin-top:2px }
+.eq-row-setup .eq-remove:hover{ border-color:var(--red); color:var(--red) }
+.eq-add{ display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border:1px dashed var(--border); border-radius:6px; font-size:12px; font-weight:600; color:var(--slate); background:transparent; cursor:pointer; transition:all 0.15s }
+.eq-add:hover{ border-color:var(--teal); color:var(--teal-dark); background:var(--teal-light) }
+.setup-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:20px }
+.setup-actions .secondary{ background:none; border:none; font-size:12px; color:var(--slate); font-weight:600; cursor:pointer; padding:4px 8px }
+.setup-actions .secondary:hover{ color:var(--navy) }
+.setup-actions .primary{ padding:10px 20px; border-radius:6px; background:var(--navy); color:#fff; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:background 0.15s }
+.setup-actions .primary:hover{ background:var(--navy-mid) }
+.setup-actions .primary:disabled{ background:var(--slate-light); cursor:not-allowed }
 
 /* ══ SECTION: Slide canvas ══ */
 .slide-canvas{
@@ -621,8 +656,134 @@ function ScaledSlide({ children, maxWidth = 1100 }) {
   </div>;
 }
 
+/* ══ SECTION: Setup form (standalone deck entry) ══ */
+const CRITERIA_LIST = ["relevance","coherence","effectiveness","efficiency","impact","sustainability"];
+const PURPOSES_LIST = ["accountability","learning","formative","summative"];
+
+function buildBlankContext({ org, programme, country, purpose, eqs }) {
+  const validEqs = (eqs || []).filter(e => e.text && e.text.trim().length > 0);
+  return {
+    project_meta: {
+      organisation: (org || "").trim(),
+      programme_name: (programme || "").trim(),
+      country: (country || "").trim(),
+      health_areas: [],
+      operating_context: "",
+      budget: "",
+      programme_maturity: "",
+      timeline: "",
+      sector: ""
+    },
+    tor_constraints: {
+      evaluation_purpose: purpose ? [purpose] : [],
+      causal_inference_level: "",
+      geographic_scope: "",
+      target_population: "",
+      comparison_feasibility: ""
+    },
+    toc: { nodes: [] },
+    evaluation_matrix: {
+      rows: validEqs.map((eq, i) => ({
+        id: `eq${i+1}`, number: i+1, criterion: eq.criterion || "relevance", question: eq.text.trim(), dataSources: []
+      }))
+    },
+    design_recommendation: { selected_design: null, ranked_designs: [], justification: "", answers: {} },
+    sample_parameters: { design_id: "", result: {}, qualitative_plan: { breakdown: [] } },
+    instruments: { items: [] },
+    analysis_plan: { rows: [] },
+    evaluability: { score: null, dimensions: [], blockers: [] }
+  };
+}
+
+function SetupForm({ onSubmit, onCancel }) {
+  const [org, setOrg] = useState("");
+  const [programme, setProgramme] = useState("");
+  const [country, setCountry] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [eqs, setEqs] = useState([
+    { text:"", criterion:"relevance" },
+    { text:"", criterion:"effectiveness" },
+    { text:"", criterion:"impact" }
+  ]);
+  const validEqCount = eqs.filter(e => e.text.trim().length > 0).length;
+  const canSubmit = programme.trim().length > 0 && validEqCount >= 1;
+
+  function updateEq(i, patch) {
+    setEqs(prev => prev.map((e, idx) => idx === i ? { ...e, ...patch } : e));
+  }
+  function addEq() {
+    if (eqs.length >= 6) return;
+    setEqs(prev => [...prev, { text:"", criterion:"relevance" }]);
+  }
+  function removeEq(i) {
+    if (eqs.length <= 1) return;
+    setEqs(prev => prev.filter((_, idx) => idx !== i));
+  }
+
+  function submit(e) {
+    e.preventDefault();
+    if (!canSubmit) return;
+    onSubmit(buildBlankContext({ org, programme, country, purpose, eqs }));
+  }
+
+  return <div className="setup-wrap">
+    <div className="setup-hero">
+      <div className="eyebrow">Create a new deck</div>
+      <h2>Quick setup</h2>
+      <p>Enter your programme basics and evaluation questions. You can edit every other field inline once the deck is generated.</p>
+    </div>
+    <form onSubmit={submit}>
+      <div className="setup-card">
+        <h3>Programme</h3>
+        <div className="setup-row">
+          <div className="setup-field">
+            <label>Organisation</label>
+            <input value={org} onChange={e => setOrg(e.target.value)} placeholder="e.g. UNICEF, MoH, World Bank"/>
+          </div>
+          <div className="setup-field">
+            <label>Country / Region</label>
+            <input value={country} onChange={e => setCountry(e.target.value)} placeholder="e.g. Niger, South Asia"/>
+          </div>
+        </div>
+        <div className="setup-row one">
+          <div className="setup-field">
+            <label>Programme name *</label>
+            <input value={programme} onChange={e => setProgramme(e.target.value)} placeholder="e.g. Maternal Health Quality Improvement Programme" required/>
+          </div>
+        </div>
+        <div className="setup-row one">
+          <div className="setup-field">
+            <label>Evaluation purpose</label>
+            <select value={purpose} onChange={e => setPurpose(e.target.value)}>
+              <option value="">— Pick one —</option>
+              {PURPOSES_LIST.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase()+p.slice(1)}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="setup-card">
+        <h3>Evaluation questions <span style={{color:'var(--slate)',fontWeight:400,textTransform:'none',fontSize:11,letterSpacing:0}}>— at least one, up to six</span></h3>
+        {eqs.map((eq, i) => <div key={i} className="eq-row-setup">
+          <textarea value={eq.text} onChange={e => updateEq(i, {text: e.target.value})} placeholder={`Evaluation question ${i+1}`} aria-label={`Evaluation question ${i+1}`}/>
+          <select value={eq.criterion} onChange={e => updateEq(i, {criterion: e.target.value})} aria-label="Criterion">
+            {CRITERIA_LIST.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
+          </select>
+          <button type="button" className="eq-remove" onClick={() => removeEq(i)} disabled={eqs.length <= 1} aria-label="Remove question">×</button>
+        </div>)}
+        {eqs.length < 6 && <button type="button" className="eq-add" onClick={addEq}>+ Add question</button>}
+      </div>
+
+      <div className="setup-actions">
+        <button type="button" className="secondary" onClick={onCancel}>← Back to templates</button>
+        <button type="submit" className="primary" disabled={!canSubmit}>Create deck →</button>
+      </div>
+    </form>
+  </div>;
+}
+
 /* ══ SECTION: Template picker ══ */
-function TemplatePicker({ context, isDemo, onPick, onDismissBanner, bannerDismissed }) {
+function TemplatePicker({ context, isDemo, onPick, onDismissBanner, bannerDismissed, onStartCustom }) {
   const programme = context.project_meta?.programme_name || "Untitled programme";
   const org = context.project_meta?.organisation || "";
   const criterionCount = new Set((context.evaluation_matrix?.rows || []).map(r => r.criterion).filter(Boolean)).size;
@@ -655,6 +816,13 @@ function TemplatePicker({ context, isDemo, onPick, onDismissBanner, bannerDismis
         <div className="card-meta"><span className="slides">{findingsTotal} slides · {criterionCount || "?"} criteria</span><span className="arrow">→</span></div>
       </button>
     </div>
+    {onStartCustom && <>
+      <div className="picker-divider">or</div>
+      <button className="picker-start-own" onClick={onStartCustom}>
+        <div className="sotitle">Start your own deck from scratch <span className="arrow">→</span></div>
+        <div className="sodesc">Enter your programme name, country, purpose, and evaluation questions. Every slide is fully editable inline.</div>
+      </button>
+    </>}
     <div className="picker-footer">
       Tip: once inside the deck, press <kbd>P</kbd> to start presenting · <kbd>Ctrl+P</kbd> for PDF · <kbd>?</kbd> for all shortcuts
     </div>
@@ -1486,9 +1654,11 @@ function Presenter({ slides, context, deckState, programme, onExit, initialIndex
 }
 
 function App() {
-  const [{context, isDemo}] = useState(() => loadContext());
+  const [ctxState, setCtxState] = useState(() => loadContext());
+  const { context, isDemo } = ctxState;
   const [template, setTemplate] = useState(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [setupMode, setSetupMode] = useState(false);
   const [presenting, setPresenting] = useState(false);
   const [presentIdx, setPresentIdx] = useState(0);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -1524,6 +1694,17 @@ function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [template, presenting]);
 
+  if (setupMode) {
+    return <SetupForm
+      onCancel={() => setSetupMode(false)}
+      onSubmit={(newContext) => {
+        try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(newContext)); } catch(e) {}
+        setCtxState({ context: newContext, isDemo: false });
+        setSetupMode(false);
+      }}
+    />;
+  }
+
   if (!template) {
     return <TemplatePicker
       context={context}
@@ -1531,6 +1712,7 @@ function App() {
       bannerDismissed={bannerDismissed}
       onDismissBanner={() => setBannerDismissed(true)}
       onPick={(t) => { saveLastTemplate(t); setTemplate(t); }}
+      onStartCustom={() => setSetupMode(true)}
     />;
   }
 
