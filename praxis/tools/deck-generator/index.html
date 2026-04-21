@@ -63,6 +63,58 @@ a{color:var(--teal-dark);text-decoration:none}
 .picker-card .card-meta .arrow{color:var(--teal);font-size:18px;font-weight:600}
 .picker-footer{text-align:center;color:var(--slate);font-size:12px;padding-top:16px}
 .picker-footer kbd{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;background:var(--bg);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;color:var(--text)}
+
+/* ══ SECTION: Slide canvas ══ */
+.slide-canvas{
+  width:1280px; height:720px;
+  background:var(--bg); color:var(--text);
+  display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
+  border-radius:8px; box-shadow:var(--shadow-lg);
+  transform-origin:top left;
+  font-family:'DM Sans',sans-serif;
+}
+.slide-canvas.section-divider{ background:var(--navy); color:#fff; justify-content:center; align-items:center; text-align:center; padding:0 120px }
+.slide-canvas .header-bar{
+  background:var(--navy); color:#fff;
+  padding:16px 40px; display:flex; align-items:center; gap:20px;
+  flex-shrink:0;
+}
+.slide-canvas .header-bar .hnum{ color:var(--teal); font-size:13px; font-weight:700; letter-spacing:0.08em; font-family:'JetBrains Mono',monospace }
+.slide-canvas .header-bar .htitle{ color:#fff; font-size:20px; font-weight:600; letter-spacing:-0.01em }
+.slide-canvas .body{ flex:1; padding:36px 48px 56px 48px; display:flex; flex-direction:column; min-height:0 }
+.slide-canvas .slide-footer{
+  position:absolute; bottom:14px; left:48px; right:48px;
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:10px; color:var(--slate-light); letter-spacing:0.1em; text-transform:uppercase; font-weight:600;
+}
+.slide-canvas.section-divider .slide-footer{ left:120px; right:120px; color:rgba(255,255,255,0.4) }
+.slide-canvas .praxis-mark{ position:absolute; top:14px; right:20px; font-size:9px; font-weight:700; letter-spacing:0.18em; color:var(--teal); text-transform:uppercase; z-index:2 }
+
+/* Section divider typography */
+.section-divider h2{ font-family:'Fraunces',serif; font-size:52px; font-weight:600; line-height:1.1; letter-spacing:-0.015em; margin-bottom:16px }
+.section-divider .section-rule{ width:64px; height:3px; background:var(--teal); margin:0 auto 20px }
+.section-divider .section-eyebrow{ font-size:11px; font-weight:700; letter-spacing:0.18em; color:var(--teal); text-transform:uppercase; margin-bottom:16px }
+.section-divider .section-sub{ font-size:16px; color:rgba(255,255,255,0.65); max-width:640px; line-height:1.5 }
+
+/* Editor mode (stack of slides) */
+.editor-wrap{ max-width:1440px; margin:0 auto; padding:24px 20px 80px }
+.editor-toolbar{ position:sticky; top:56px; z-index:10; background:rgba(248,250,252,0.92); backdrop-filter:blur(8px); display:flex; align-items:center; gap:10px; padding:12px 16px; margin-bottom:20px; border:1px solid var(--border); border-radius:8px }
+.editor-toolbar .tbtn{ padding:7px 13px; border-radius:6px; background:var(--surface); border:1px solid var(--border); font-size:12px; font-weight:600; color:var(--text); transition:all 0.15s; display:inline-flex; align-items:center; gap:6px }
+.editor-toolbar .tbtn:hover{ border-color:var(--teal); color:var(--teal-dark) }
+.editor-toolbar .tbtn.primary{ background:var(--navy); color:#fff; border-color:var(--navy) }
+.editor-toolbar .tbtn.primary:hover{ background:var(--navy-mid); color:#fff }
+.editor-toolbar .tbtn.teal{ background:var(--teal); color:#fff; border-color:var(--teal) }
+.editor-toolbar .tbtn.teal:hover{ background:var(--teal-dark) }
+.editor-toolbar .tsep{ width:1px; height:20px; background:var(--border) }
+.editor-toolbar .tspacer{ flex:1 }
+.editor-toolbar .tcount{ font-size:12px; color:var(--slate); font-weight:600 }
+
+.slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
+.slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
+.slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
+.slide-scale{ display:flex; justify-content:center }
+.slide-scale-inner{ transform-origin:top left }
 </style>
 </head>
 <body>
@@ -219,6 +271,42 @@ function saveLastTemplate(template) {
   try { localStorage.setItem(TEMPLATE_KEY, template); } catch (e) {}
 }
 
+/* ══ SECTION: Slide canvas ══ */
+function SlideHeader({ num, total, title, programme }) {
+  return <>
+    <div className="praxis-mark">PRAXIS</div>
+    <div className="header-bar">
+      <span className="hnum">{String(num).padStart(2,'0')}</span>
+      <span className="htitle">{title}</span>
+    </div>
+  </>;
+}
+
+function SlideFooter({ programme, num, total }) {
+  return <div className="slide-footer">
+    <span>{programme}</span>
+    <span>{String(num).padStart(2,'0')} / {String(total).padStart(2,'0')}</span>
+  </div>;
+}
+
+function SlideCanvas({ children, isDivider, num, total, title, programme, className = "" }) {
+  return <div className={`slide-canvas ${isDivider ? 'section-divider' : ''} ${className}`}>
+    {!isDivider && <SlideHeader num={num} total={total} title={title} programme={programme} />}
+    {isDivider ? children : <div className="body">{children}</div>}
+    <SlideFooter programme={programme} num={num} total={total} />
+  </div>;
+}
+
+// Scaled slide wrapper for editor mode — renders the 1280×720 canvas at a target width
+function ScaledSlide({ children, maxWidth = 1100 }) {
+  const scale = maxWidth / 1280;
+  return <div className="slide-scale">
+    <div className="slide-scale-inner" style={{ width: 1280, height: 720, transform: `scale(${scale})`, marginBottom: (720 * scale) - 720 }}>
+      {children}
+    </div>
+  </div>;
+}
+
 /* ══ SECTION: Template picker ══ */
 function TemplatePicker({ context, isDemo, onPick, onDismissBanner, bannerDismissed }) {
   const programme = context.project_meta?.programme_name || "Untitled programme";
@@ -273,10 +361,28 @@ function App() {
       onPick={(t) => { saveLastTemplate(t); setTemplate(t); }}
     />;
   }
-  // Template picked — render stub until Task 4 lands
-  return <div style={{padding:40}}>
-    <p>Template: <strong>{template}</strong></p>
-    <button style={{marginTop:12,padding:'6px 12px',background:'var(--teal)',color:'#fff',borderRadius:4}} onClick={() => setTemplate(null)}>← Change template</button>
+  // Template picked
+  const programme = context.project_meta?.programme_name || "Untitled programme";
+  return <div className="editor-wrap">
+    <div className="editor-toolbar">
+      <button className="tbtn" onClick={() => setTemplate(null)}>← Change template</button>
+      <div className="tsep"/>
+      <span className="tcount">{template === 'inception' ? 'Inception Brief' : 'Findings Brief'}</span>
+      <div className="tspacer"/>
+      <button className="tbtn primary">▶ Present</button>
+    </div>
+    {/* Canvas preview — real slide library lands in Task 5+ */}
+    <div className="slide-wrap">
+      <div className="slide-meta"><span className="snum">01</span> · Cover (preview)</div>
+      <ScaledSlide>
+        <SlideCanvas isDivider={true} num={1} total={16} title="Cover" programme={programme}>
+          <div className="section-eyebrow">{context.project_meta?.organisation || ""}</div>
+          <h2>{programme}</h2>
+          <div className="section-rule"></div>
+          <div className="section-sub">{template === 'inception' ? "Evaluation Design Brief" : "Findings Brief"}</div>
+        </SlideCanvas>
+      </ScaledSlide>
+    </div>
   </div>;
 }
 
