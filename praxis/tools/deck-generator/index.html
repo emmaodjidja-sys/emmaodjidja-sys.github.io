@@ -110,6 +110,20 @@ a{color:var(--teal-dark);text-decoration:none}
 .editor-toolbar .tspacer{ flex:1 }
 .editor-toolbar .tcount{ font-size:12px; color:var(--slate); font-weight:600 }
 
+/* ══ SECTION: Slide content typography ══ */
+.slide-canvas .body h2.big{ font-size:30px; font-weight:700; color:var(--navy); letter-spacing:-0.01em; line-height:1.15; margin-bottom:10px }
+.slide-canvas .body .lede{ font-size:15px; color:var(--text-muted); line-height:1.55; margin-bottom:22px; max-width:980px }
+.slide-canvas .body .param-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px }
+.slide-canvas .body .param-grid.cols-2{ grid-template-columns:1fr 1fr }
+.slide-canvas .body .param-grid.cols-4{ grid-template-columns:repeat(4,1fr) }
+.slide-canvas .body .param{ background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--teal); border-radius:6px; padding:12px 14px }
+.slide-canvas .body .param .k{ font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--slate); margin-bottom:4px }
+.slide-canvas .body .param .v{ font-size:15px; font-weight:600; color:var(--text); line-height:1.35 }
+.slide-canvas .body ul.agenda{ list-style:none; display:grid; grid-template-columns:1fr 1fr; column-gap:48px; row-gap:10px; font-size:15px; margin-top:8px }
+.slide-canvas .body ul.agenda li{ padding:10px 0; border-bottom:1px solid var(--border); display:flex; align-items:baseline; gap:14px }
+.slide-canvas .body ul.agenda li .an{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--teal-dark); font-size:12px; letter-spacing:0.04em; min-width:28px }
+.slide-canvas .body ul.agenda li .at{ color:var(--text); font-weight:500 }
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -271,6 +285,13 @@ function loadLastTemplate() {
 function saveLastTemplate(template) {
   try { localStorage.setItem(TEMPLATE_KEY, template); } catch (e) {}
 }
+
+/* ══ SECTION: Format helpers ══ */
+function fmt(id) {
+  if (id === null || id === undefined || id === "") return "Not specified";
+  return String(id).replace(/[_-]/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+function safe(v, fallback) { return (v !== null && v !== undefined && v !== "") ? v : (fallback || "Not specified"); }
 
 /* ══ SECTION: Deck state hook ══ */
 function useDeckState(programme, template) {
@@ -500,6 +521,52 @@ function renderSlide(slide, ctx, deckState, programme) {
         <InlineEditable as="div" className="section-sub" path="qa.contact" value={ctx.project_meta?.organisation || ""}
           setOverride={deckState.setOverride} getOverride={deckState.getOverride} placeholder="Contact — email@org · +…" />
       </SlideCanvas>;
+    case "agenda": {
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Agenda</h2>
+        <p className="lede">Order and focus for today's discussion.</p>
+        <ul className="agenda">
+          {(slide._siblings || []).filter(s => s.id !== slide.id && !s.isDivider).map(s =>
+            <li key={s.id}><span className="an">{String(s.num).padStart(2,'0')}</span><span className="at">{s.title}</span></li>
+          )}
+        </ul>
+      </SlideCanvas>;
+    }
+    case "programme": {
+      const m = ctx.project_meta || {};
+      const params = [
+        { k:"Country / Region", v: safe(m.country) },
+        { k:"Sectors", v: (m.health_areas||[]).map(fmt).join(', ') || safe(m.sector) },
+        { k:"Operating Context", v: fmt(m.operating_context) },
+        { k:"Budget", v: fmt(m.budget) },
+        { k:"Programme Maturity", v: fmt(m.programme_maturity) },
+        { k:"Timeline", v: fmt(m.timeline) }
+      ];
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">{safe(m.programme_name, "Programme Overview")}</h2>
+        <p className="lede">{safe(m.organisation, "")} — programme context at a glance.</p>
+        <div className="param-grid">
+          {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "purpose": {
+      const t = ctx.tor_constraints || {};
+      const purposes = (t.evaluation_purpose || []).map(fmt);
+      const params = [
+        { k:"Evaluation Purpose", v: purposes.length ? purposes.join(', ') : "Not specified" },
+        { k:"Causal Inference Level", v: fmt(t.causal_inference_level) },
+        { k:"Geographic Scope", v: safe(t.geographic_scope), wide:true },
+        { k:"Target Population", v: safe(t.target_population), wide:true }
+      ];
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Evaluation Purpose & Users</h2>
+        <p className="lede">What this evaluation is for, and who will use the findings.</p>
+        <div className="param-grid cols-2">
+          {params.map((p,i) => <div key={i} className="param" style={p.wide ? {gridColumn:'1 / -1'} : {}}><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
+        </div>
+      </SlideCanvas>;
+    }
     default:
       return <SlideCanvas {...sharedProps}>
         <div style={{color:'var(--slate)',fontSize:14,fontFamily:'JetBrains Mono,monospace',padding:20,background:'var(--teal-light)',borderRadius:6,border:'1px dashed var(--teal)'}}>
