@@ -60,10 +60,154 @@ a{color:var(--teal-dark);text-decoration:none}
 /* ══ SECTION: App entry ══ */
 const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
+/* ══ SECTION: DEMO_CONTEXT ══ */
+const DEMO_CONTEXT = {
+  project_meta: {
+    organisation: "Ministry of Public Health, Niger",
+    programme_name: "Maternal Health Quality Improvement Programme",
+    country: "Niger",
+    health_areas: ["maternal_health","child_health"],
+    operating_context: "fragile_humanitarian",
+    budget: "usd_5m_to_20m",
+    programme_maturity: "early_implementation",
+    timeline: "36_months",
+    sector: "health"
+  },
+  tor_constraints: {
+    evaluation_purpose: ["accountability","learning"],
+    causal_inference_level: "attribution",
+    geographic_scope: "14 health districts across Tillabéri and Maradi regions",
+    target_population: "Pregnant women and newborns (≈ 180,000 annually)",
+    comparison_feasibility: "matched_comparison"
+  },
+  toc: {
+    nodes: [
+      {id:"i1", level:"impact", title:"Reduced maternal and neonatal mortality"},
+      {id:"o1", level:"outcome", title:"Improved quality of antenatal care"},
+      {id:"o2", level:"outcome", title:"Increased facility-based deliveries"},
+      {id:"o3", level:"outcome", title:"Strengthened referral systems"},
+      {id:"op1", level:"output", title:"Providers trained in EmONC"},
+      {id:"op2", level:"output", title:"Facilities equipped with WHO minimum package"},
+      {id:"op3", level:"output", title:"Community health workers deployed"},
+      {id:"op4", level:"output", title:"Referral protocols revised and adopted"},
+      {id:"a1", level:"activity", title:"EmONC training curriculum delivered"},
+      {id:"a2", level:"activity", title:"Equipment procurement and distribution"},
+      {id:"a3", level:"activity", title:"Community sensitisation campaigns"},
+      {id:"a4", level:"activity", title:"Referral network mapping"}
+    ]
+  },
+  evaluation_matrix: {
+    rows: [
+      {id:"eq1", number:1, criterion:"relevance", question:"To what extent does the programme respond to the priorities of pregnant women, newborns, and health providers in Niger?", dataSources:["household_survey","kii_providers"]},
+      {id:"eq2", number:2, criterion:"effectiveness", question:"What changes in antenatal care coverage and quality can be attributed to the programme?", dataSources:["hmis","facility_audit"]},
+      {id:"eq3", number:3, criterion:"effectiveness", question:"Has the programme strengthened the functioning of referral systems between health centres and district hospitals?", dataSources:["facility_audit","kii_providers"]},
+      {id:"eq4", number:4, criterion:"impact", question:"What is the effect of the programme on maternal and neonatal mortality at the district level?", dataSources:["hmis","household_survey"]},
+      {id:"eq5", number:5, criterion:"sustainability", question:"To what extent are the capacity gains and equipment practices likely to be maintained after programme closure?", dataSources:["kii_providers","document_review"]},
+      {id:"eq6", number:6, criterion:"efficiency", question:"Are the programme's results commensurate with the resources invested, and how do costs compare with alternative approaches?", dataSources:["document_review"]}
+    ]
+  },
+  design_recommendation: {
+    selected_design: "did_matched",
+    ranked_designs: [
+      {id:"did_matched", name:"Difference-in-Differences with Matched Controls", family:"Quasi-experimental", score:87.2}
+    ],
+    justification: "Staggered district rollout creates natural variation in treatment timing. Propensity-score matching on baseline HMIS indicators yields a credible comparison group. Design is feasible under the stated budget and aligns with the attribution requirement in the ToR.",
+    answers: {comparison:"matched_districts"}
+  },
+  sample_parameters: {
+    design_id: "did_matched",
+    result: {primary:1842, label:"DiD with matched districts, α=0.05, power=0.80, MDE=5pp"},
+    qualitative_plan: {
+      breakdown: [
+        {method:"Key informant interviews (providers)", count:32},
+        {method:"Focus groups (pregnant women)", count:12},
+        {method:"Focus groups (community health workers)", count:8},
+        {method:"Observation (facility audits)", count:28}
+      ]
+    }
+  },
+  instruments: {
+    items: [
+      {id:"i1", title:"Household Survey", type:"quantitative", questions:new Array(64).fill(null)},
+      {id:"i2", title:"Facility Audit Checklist", type:"observation", questions:new Array(48).fill(null)},
+      {id:"i3", title:"Provider KII Guide", type:"qualitative", questions:new Array(22).fill(null)},
+      {id:"i4", title:"Pregnant Women FGD Guide", type:"qualitative", questions:new Array(18).fill(null)},
+      {id:"i5", title:"HMIS Data Extraction Template", type:"administrative", questions:new Array(34).fill(null)}
+    ]
+  },
+  analysis_plan: {
+    rows: [
+      {eq_label:"EQ1", method:"Thematic analysis + descriptive stats", software:"NVivo + R"},
+      {eq_label:"EQ2", method:"DiD regression with district FE", software:"R / Stata"},
+      {eq_label:"EQ3", method:"Mixed-methods triangulation", software:"NVivo + R"},
+      {eq_label:"EQ4", method:"DiD + matching sensitivity analysis", software:"R"},
+      {eq_label:"EQ5", method:"Framework analysis", software:"NVivo"},
+      {eq_label:"EQ6", method:"Cost-effectiveness (cost per DALY averted)", software:"Excel + R"}
+    ]
+  },
+  evaluability: {
+    score: 74,
+    dimensions: [
+      {id:"d1", label:"Programme logic", system_score:17, max:20},
+      {id:"d2", label:"Data availability", system_score:12, max:20},
+      {id:"d3", label:"Stakeholder engagement", system_score:16, max:20},
+      {id:"d4", label:"Utility of findings", system_score:15, max:20},
+      {id:"d5", label:"Ethics & protection", system_score:14, max:20}
+    ],
+    blockers: [
+      "Baseline HMIS completeness below 80% in 3 of 14 districts",
+      "Security access restrictions in Tillabéri district require mitigation plan"
+    ]
+  }
+};
+
+/* ══ SECTION: Storage helpers ══ */
+const SESSION_KEY = "praxis-deck-context";
+const TEMPLATE_KEY = "praxis-deck-template";
+function overrideKey(programme, template){ return `praxis-deck-overrides:${programme||"untitled"}:${template}`; }
+
+function loadContext() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) return { context: JSON.parse(raw), isDemo: false };
+  } catch (e) { console.warn("Failed to parse sessionStorage context:", e); }
+  return { context: DEMO_CONTEXT, isDemo: true };
+}
+
+function loadOverrides(programme, template) {
+  try {
+    const raw = localStorage.getItem(overrideKey(programme, template));
+    if (raw) return JSON.parse(raw);
+  } catch (e) { console.warn("Failed to parse overrides:", e); }
+  return {};
+}
+
+function saveOverrides(programme, template, overrides) {
+  try {
+    localStorage.setItem(overrideKey(programme, template), JSON.stringify(overrides));
+  } catch (e) { console.warn("Failed to save overrides:", e); }
+}
+
+function loadLastTemplate() {
+  try { return localStorage.getItem(TEMPLATE_KEY) || null; } catch (e) { return null; }
+}
+
+function saveLastTemplate(template) {
+  try { localStorage.setItem(TEMPLATE_KEY, template); } catch (e) {}
+}
+
 function App() {
-  return <div style={{padding:40,textAlign:'center',color:'var(--slate)'}}>
+  const [{context, isDemo}] = useState(() => loadContext());
+  const programme = context.project_meta?.programme_name || "Untitled programme";
+  return <div style={{padding:40,fontFamily:'DM Sans,sans-serif'}}>
     <h1 style={{fontFamily:'Fraunces,serif',color:'var(--navy)',fontSize:28,fontWeight:600,marginBottom:8}}>Deck Generator</h1>
-    <p>Loading…</p>
+    <p style={{color:'var(--slate)',fontSize:14,marginBottom:16}}>
+      Data source: <strong>{isDemo ? "Demo (no workbench session)" : "Workbench session"}</strong>
+    </p>
+    <p style={{color:'var(--text)',fontSize:14}}>Programme: <strong>{programme}</strong></p>
+    <p style={{color:'var(--text)',fontSize:12,marginTop:8,fontFamily:'JetBrains Mono,monospace'}}>
+      EQs: {context.evaluation_matrix?.rows?.length || 0} · ToC nodes: {context.toc?.nodes?.length || 0} · Evaluability: {context.evaluability?.score ?? "—"}/100
+    </p>
   </div>;
 }
 
