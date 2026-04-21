@@ -423,6 +423,92 @@ function TemplatePicker({ context, isDemo, onPick, onDismissBanner, bannerDismis
   </div>;
 }
 
+/* ══ SECTION: Slide registry ══ */
+function buildInceptionSlides(context, deckState) {
+  const slides = [
+    { id:"cover",     title:"Cover",                      isDivider:true,  type:"cover" },
+    { id:"agenda",    title:"Agenda",                     type:"agenda" },
+    { id:"programme", title:"Programme Overview",         type:"programme" },
+    { id:"purpose",   title:"Evaluation Purpose & Users", type:"purpose" },
+    { id:"toc",       title:"Theory of Change",           type:"toc" },
+    { id:"eqs",       title:"Evaluation Questions",       type:"eqs" },
+    { id:"method",    title:"Methodology",                type:"methodology" },
+    { id:"sampling",  title:"Sampling Strategy",          type:"sampling" },
+    { id:"datacoll",  title:"Data Collection",            type:"datacoll" },
+    { id:"analysis",  title:"Analysis Approach",          type:"analysis" },
+    { id:"evalabil",  title:"Evaluability Assessment",    type:"evaluability" },
+    { id:"timeline",  title:"Timeline",                   type:"timeline" },
+    { id:"team",      title:"Team & Roles",               type:"team" },
+    { id:"risks",     title:"Risks & Mitigations",        type:"risks" },
+    { id:"deliverab", title:"Deliverables Schedule",      type:"deliverables" },
+    { id:"qa",        title:"Q&A",                        isDivider:true, type:"qa" }
+  ];
+  return slides.map((s, i) => ({ ...s, num: i + 1, total: slides.length }));
+}
+
+function buildFindingsSlides(context, deckState) {
+  const criteria = Array.from(new Set((context.evaluation_matrix?.rows || []).map(r => r.criterion).filter(Boolean)));
+  const criterionOrder = ["relevance","coherence","effectiveness","efficiency","impact","sustainability"];
+  const sortedCriteria = criteria.sort((a,b) => criterionOrder.indexOf(a) - criterionOrder.indexOf(b));
+
+  const fixed = [
+    { id:"cover",     title:"Cover",                      isDivider:true, type:"cover-findings" },
+    { id:"agenda",    title:"Agenda",                     type:"agenda" },
+    { id:"prgrecap",  title:"Programme Recap",            type:"programme-recap" },
+    { id:"methrecap", title:"Methodology Recap",          type:"methodology-recap" },
+    { id:"headline",  title:"Headline Findings",          type:"headline-findings" }
+  ];
+  const criterionSlides = sortedCriteria.map(cr => ({
+    id:`finding-${cr}`, title:`Findings — ${cr.charAt(0).toUpperCase()+cr.slice(1)}`, type:"finding-criterion", criterion:cr
+  }));
+  const tail = [
+    { id:"crosscut", title:"Cross-cutting Findings",      type:"cross-cutting" },
+    { id:"evidence", title:"Evidence Quality & Limits",   type:"evidence" },
+    { id:"recs",     title:"Recommendations",             type:"recommendations" },
+    { id:"lessons",  title:"Lessons & Next Steps",        type:"lessons" },
+    { id:"qa",       title:"Q&A",                         isDivider:true, type:"qa" }
+  ];
+  const all = [...fixed, ...criterionSlides, ...tail];
+  return all.map((s, i) => ({ ...s, num: i + 1, total: all.length }));
+}
+
+/* ══ SECTION: Slide dispatcher ══ */
+function renderSlide(slide, ctx, deckState, programme) {
+  const sharedProps = { num: slide.num, total: slide.total, title: slide.title, programme };
+  switch (slide.type) {
+    case "cover":
+      return <SlideCanvas {...sharedProps} isDivider>
+        <div className="section-eyebrow">{ctx.project_meta?.organisation || ""}</div>
+        <h2>{programme}</h2>
+        <div className="section-rule"></div>
+        <InlineEditable as="div" className="section-sub" path="cover.subtitle" value="Evaluation Design Brief"
+          setOverride={deckState.setOverride} getOverride={deckState.getOverride} placeholder="Subtitle…" />
+      </SlideCanvas>;
+    case "cover-findings":
+      return <SlideCanvas {...sharedProps} isDivider>
+        <div className="section-eyebrow">{ctx.project_meta?.organisation || ""}</div>
+        <h2>{programme}</h2>
+        <div className="section-rule"></div>
+        <InlineEditable as="div" className="section-sub" path="cover.subtitle" value="Findings Brief"
+          setOverride={deckState.setOverride} getOverride={deckState.getOverride} placeholder="e.g. Mid-term Findings · April 2026" />
+      </SlideCanvas>;
+    case "qa":
+      return <SlideCanvas {...sharedProps} isDivider>
+        <div className="section-eyebrow">Questions</div>
+        <h2>Thank you</h2>
+        <div className="section-rule"></div>
+        <InlineEditable as="div" className="section-sub" path="qa.contact" value={ctx.project_meta?.organisation || ""}
+          setOverride={deckState.setOverride} getOverride={deckState.getOverride} placeholder="Contact — email@org · +…" />
+      </SlideCanvas>;
+    default:
+      return <SlideCanvas {...sharedProps}>
+        <div style={{color:'var(--slate)',fontSize:14,fontFamily:'JetBrains Mono,monospace',padding:20,background:'var(--teal-light)',borderRadius:6,border:'1px dashed var(--teal)'}}>
+          <strong>[Stub: {slide.type}]</strong> — implemented in a later task.
+        </div>
+      </SlideCanvas>;
+  }
+}
+
 function App() {
   const [{context, isDemo}] = useState(() => loadContext());
   const [template, setTemplate] = useState(null);
@@ -450,24 +536,16 @@ function App() {
       <button className="tbtn" onClick={() => window.print()}>⎙ PDF</button>
       <button className="tbtn primary">▶ Present</button>
     </div>
-    {/* Canvas preview — real slide library lands in Task 5+ */}
-    <div className="slide-wrap">
-      <div className="slide-meta"><span className="snum">01</span> · Cover (preview)</div>
-      <ScaledSlide>
-        <SlideCanvas isDivider={true} num={1} total={16} title="Cover" programme={programme}>
-          <div className="section-eyebrow">{context.project_meta?.organisation || ""}</div>
-          <h2>{programme}</h2>
-          <div className="section-rule"></div>
-          <InlineEditable
-            as="div" className="section-sub"
-            path="cover.subtitle"
-            value={template === 'inception' ? "Evaluation Design Brief" : "Findings Brief"}
-            setOverride={deckState.setOverride} getOverride={deckState.getOverride}
-            placeholder="Subtitle…"
-          />
-        </SlideCanvas>
-      </ScaledSlide>
-    </div>
+    {(() => {
+      const slides = template === 'inception' ? buildInceptionSlides(context, deckState) : buildFindingsSlides(context, deckState);
+      return slides.map(slide => {
+        const slideWithSiblings = { ...slide, _siblings: slides };
+        return <div key={slide.id} className="slide-wrap">
+          <div className="slide-meta"><span className="snum">{String(slide.num).padStart(2,'0')}</span> · {slide.title}</div>
+          <ScaledSlide>{renderSlide(slideWithSiblings, context, deckState, programme)}</ScaledSlide>
+        </div>;
+      });
+    })()}
   </div>;
 }
 
