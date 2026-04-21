@@ -222,6 +222,20 @@ a{color:var(--teal-dark);text-decoration:none}
 .gantt .phase-cell.on{ background:var(--teal); }
 .gantt .phase-cell.on:hover{ background:var(--teal-dark) }
 
+/* ══ SECTION: Findings ══ */
+.slide-canvas .body .headline-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-top:10px; flex:1 }
+.slide-canvas .body .headline-card{ background:var(--surface); border:1px solid var(--border); border-top:4px solid var(--teal); border-radius:8px; padding:20px; display:flex; flex-direction:column }
+.slide-canvas .body .headline-card .hn{ font-family:'JetBrains Mono',monospace; font-weight:800; color:var(--teal-dark); font-size:32px; letter-spacing:-0.03em; margin-bottom:6px }
+.slide-canvas .body .headline-card .ht{ font-size:15px; font-weight:700; color:var(--navy); margin-bottom:8px; line-height:1.25 }
+.slide-canvas .body .headline-card textarea.hbody, .slide-canvas .body .headline-card .hbody{ font-size:13px; color:var(--text-muted); line-height:1.5; flex:1 }
+.slide-canvas .body .sample-compare{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px }
+.slide-canvas .body .sample-compare .sc-card{ background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:14px 16px }
+.slide-canvas .body .sample-compare .sc-card.planned{ border-left:3px solid var(--slate-light) }
+.slide-canvas .body .sample-compare .sc-card.achieved{ border-left:3px solid var(--teal) }
+.slide-canvas .body .sc-card .k{ font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--slate); margin-bottom:4px }
+.slide-canvas .body .sc-card .v{ font-size:26px; font-weight:800; color:var(--navy); font-family:'JetBrains Mono',monospace }
+.slide-canvas .body .sc-card .sv{ font-size:12px; color:var(--text-muted); margin-top:2px }
+
 .slide-wrap{ display:flex; flex-direction:column; gap:10px; margin-bottom:28px }
 .slide-meta{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--slate) }
 .slide-meta .snum{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--navy) }
@@ -756,6 +770,77 @@ function renderSlide(slide, ctx, deckState, programme) {
         <p className="lede">{safe(m.organisation, "")} — programme context at a glance.</p>
         <div className="param-grid">
           {params.map((p,i) => <div key={i} className="param"><div className="k">{p.k}</div><div className="v">{p.v}</div></div>)}
+        </div>
+      </SlideCanvas>;
+    }
+    case "programme-recap": {
+      const m = ctx.project_meta || {};
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">{safe(m.programme_name, "Programme")}</h2>
+        <p className="lede">{safe(m.organisation, "")} · {safe(m.country, "")} — {fmt(m.operating_context)} context, {fmt(m.timeline)} duration, budget {fmt(m.budget)}.</p>
+        <div className="param-grid cols-4" style={{marginTop:'auto'}}>
+          <div className="param"><div className="k">Sectors</div><div className="v">{(m.health_areas||[]).map(fmt).join(', ') || safe(m.sector)}</div></div>
+          <div className="param"><div className="k">Target</div><div className="v" style={{fontSize:13}}>{safe(ctx.tor_constraints?.target_population, "Not specified")}</div></div>
+          <div className="param"><div className="k">EQs</div><div className="v">{(ctx.evaluation_matrix?.rows || []).length} questions</div></div>
+          <div className="param"><div className="k">ToC depth</div><div className="v">{new Set((ctx.toc?.nodes || []).map(n => n.level)).size} levels</div></div>
+        </div>
+      </SlideCanvas>;
+    }
+    case "methodology-recap": {
+      const dr = ctx.design_recommendation || {};
+      const top = dr.ranked_designs?.[0] || (dr.selected_design ? { id: dr.selected_design } : null);
+      const quant = ctx.sample_parameters?.result?.primary;
+      const qualTotal = (ctx.sample_parameters?.qualitative_plan?.breakdown || []).reduce((s,b) => s + (b.count||0), 0);
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Methodology Recap</h2>
+        <p className="lede">Design used: <strong>{top ? safe(top.name, fmt(top.id)) : "Not specified"}</strong>. Sample achieved vs planned.</p>
+        <div className="sample-compare">
+          <div className="sc-card planned">
+            <div className="k">Quant — planned</div>
+            <div className="v">{quant != null ? quant.toLocaleString() : "—"}</div>
+            <div className="sv">{ctx.sample_parameters?.result?.label || ""}</div>
+          </div>
+          <div className="sc-card achieved">
+            <div className="k">Quant — achieved</div>
+            <div className="v">
+              <EditableCell path="findings.sample.quant_achieved" value={quant != null ? String(quant) : "—"} setOverride={deckState.setOverride} getOverride={deckState.getOverride} style={{fontSize:26,fontWeight:800,fontFamily:'JetBrains Mono',color:'var(--navy)',textAlign:'left'}}/>
+            </div>
+            <div className="sv">
+              <EditableCell path="findings.sample.quant_notes" value="Response rate, attrition notes…" setOverride={deckState.setOverride} getOverride={deckState.getOverride} placeholder="e.g. 92% response rate, 3 districts under-sampled"/>
+            </div>
+          </div>
+          <div className="sc-card planned">
+            <div className="k">Qual — planned</div>
+            <div className="v">{qualTotal}</div>
+            <div className="sv">{(ctx.sample_parameters?.qualitative_plan?.breakdown || []).length} methods</div>
+          </div>
+          <div className="sc-card achieved">
+            <div className="k">Qual — achieved</div>
+            <div className="v">
+              <EditableCell path="findings.sample.qual_achieved" value={String(qualTotal)} setOverride={deckState.setOverride} getOverride={deckState.getOverride} style={{fontSize:26,fontWeight:800,fontFamily:'JetBrains Mono',color:'var(--navy)',textAlign:'left'}}/>
+            </div>
+            <div className="sv">
+              <EditableCell path="findings.sample.qual_notes" value="Completion vs plan, substitutions…" setOverride={deckState.setOverride} getOverride={deckState.getOverride} placeholder="e.g. all methods completed"/>
+            </div>
+          </div>
+        </div>
+      </SlideCanvas>;
+    }
+    case "headline-findings": {
+      const defaults = [
+        { title:"Finding 1", body:"Key finding for the headline — 2–3 sentences, lead with the most surprising or policy-relevant result." },
+        { title:"Finding 2", body:"Second headline finding — focus on the evaluation's core attribution question." },
+        { title:"Finding 3", body:"Third headline finding — often the surprise or null result, or the cross-cutting insight." }
+      ];
+      return <SlideCanvas {...sharedProps}>
+        <h2 className="big">Headline Findings</h2>
+        <p className="lede">Three takeaways. If audience remembers nothing else, these are the three.</p>
+        <div className="headline-grid">
+          {defaults.map((d, i) => <div key={i} className="headline-card">
+            <div className="hn">0{i+1}</div>
+            <EditableCell path={`headline.${i}.title`} value={d.title} setOverride={deckState.setOverride} getOverride={deckState.getOverride} style={{fontSize:15,fontWeight:700,color:'var(--navy)',marginBottom:8,lineHeight:1.25}}/>
+            <EditableCell path={`headline.${i}.body`} value={d.body} setOverride={deckState.setOverride} getOverride={deckState.getOverride} multiline style={{fontSize:13,color:'var(--text-muted)',lineHeight:1.5,flex:1}}/>
+          </div>)}
         </div>
       </SlideCanvas>;
     }
