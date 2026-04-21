@@ -239,7 +239,8 @@ const DEMO_CONTEXT = {
 /* ══ SECTION: Storage helpers ══ */
 const SESSION_KEY = "praxis-deck-context";
 const TEMPLATE_KEY = "praxis-deck-template";
-function overrideKey(programme, template){ return `praxis-deck-overrides:${programme||"untitled"}:${template}`; }
+function slugify(s){ return String(s||"untitled").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,48) || "untitled"; }
+function overrideKey(programme, template){ return `praxis-deck-overrides:${slugify(programme)}:${template}`; }
 
 function loadContext() {
   try {
@@ -269,6 +270,76 @@ function loadLastTemplate() {
 
 function saveLastTemplate(template) {
   try { localStorage.setItem(TEMPLATE_KEY, template); } catch (e) {}
+}
+
+/* ══ SECTION: Deck state hook ══ */
+function useDeckState(programme, template) {
+  const [overrides, setOverrides] = useState(() => loadOverrides(programme, template));
+
+  // Debounced save — save 300ms after last change
+  useEffect(() => {
+    const t = setTimeout(() => saveOverrides(programme, template, overrides), 300);
+    return () => clearTimeout(t);
+  }, [programme, template, overrides]);
+
+  const setOverride = useCallback((path, value) => {
+    setOverrides(prev => {
+      const next = { ...prev };
+      if (value === null || value === undefined || value === "") delete next[path];
+      else next[path] = value;
+      return next;
+    });
+  }, []);
+
+  const getOverride = useCallback((path, fallback) => {
+    if (overrides[path] !== undefined) return overrides[path];
+    return fallback;
+  }, [overrides]);
+
+  const resetAll = useCallback(() => setOverrides({}), []);
+
+  return { overrides, setOverride, getOverride, resetAll, hasOverrides: Object.keys(overrides).length > 0 };
+}
+
+/* ══ SECTION: Inline editable ══ */
+function InlineEditable({ path, value, setOverride, getOverride, multiline, placeholder, as = "span", className, style }) {
+  const current = getOverride(path, value);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(current);
+  const isOverridden = current !== value;
+
+  useEffect(() => { if (!editing) setDraft(current); }, [current, editing]);
+
+  function commit() {
+    setEditing(false);
+    const trimmed = (draft || "").trim();
+    if (trimmed === value) setOverride(path, null);
+    else setOverride(path, trimmed);
+  }
+
+  if (editing) {
+    if (multiline) return <textarea
+      autoFocus value={draft} onChange={e => setDraft(e.target.value)} onBlur={commit}
+      placeholder={placeholder}
+      className={className}
+      style={{width:'100%',resize:'vertical',minHeight:60,padding:'6px 8px',border:`1.5px solid var(--teal)`,borderRadius:4,fontFamily:'inherit',fontSize:'inherit',lineHeight:'inherit',color:'inherit',background:'var(--surface)',...style}}
+    />;
+    return <input
+      autoFocus value={draft} onChange={e => setDraft(e.target.value)} onBlur={commit} onKeyDown={e => {if(e.key==='Enter'){commit()}else if(e.key==='Escape'){setEditing(false);setDraft(current)}}}
+      placeholder={placeholder}
+      className={className}
+      style={{padding:'2px 6px',border:`1.5px solid var(--teal)`,borderRadius:4,fontFamily:'inherit',fontSize:'inherit',color:'inherit',background:'var(--surface)',...style}}
+    />;
+  }
+
+  const Tag = as;
+  const handleClick = () => setEditing(true);
+  return <Tag
+    className={className}
+    style={{...style, cursor:'text', borderBottom: isOverridden ? '1.5px dashed var(--teal)' : 'none'}}
+    onClick={handleClick}
+    title={isOverridden ? "Edited — click to change" : "Click to edit"}
+  >{current || <span style={{color:'var(--slate-light)',fontStyle:'italic'}}>{placeholder || "Click to add…"}</span>}</Tag>;
 }
 
 /* ══ SECTION: Slide canvas ══ */
@@ -363,12 +434,15 @@ function App() {
   }
   // Template picked
   const programme = context.project_meta?.programme_name || "Untitled programme";
+  const deckState = useDeckState(programme, template);
   return <div className="editor-wrap">
     <div className="editor-toolbar">
       <button className="tbtn" onClick={() => setTemplate(null)}>← Change template</button>
       <div className="tsep"/>
       <span className="tcount">{template === 'inception' ? 'Inception Brief' : 'Findings Brief'}</span>
       <div className="tspacer"/>
+      {deckState.hasOverrides && <button className="tbtn" onClick={deckState.resetAll} title="Discard all inline edits">↺ Reset edits</button>}
+      <button className="tbtn" onClick={() => window.print()}>⎙ PDF</button>
       <button className="tbtn primary">▶ Present</button>
     </div>
     {/* Canvas preview — real slide library lands in Task 5+ */}
@@ -379,7 +453,13 @@ function App() {
           <div className="section-eyebrow">{context.project_meta?.organisation || ""}</div>
           <h2>{programme}</h2>
           <div className="section-rule"></div>
-          <div className="section-sub">{template === 'inception' ? "Evaluation Design Brief" : "Findings Brief"}</div>
+          <InlineEditable
+            as="div" className="section-sub"
+            path="cover.subtitle"
+            value={template === 'inception' ? "Evaluation Design Brief" : "Findings Brief"}
+            setOverride={deckState.setOverride} getOverride={deckState.getOverride}
+            placeholder="Subtitle…"
+          />
         </SlideCanvas>
       </ScaledSlide>
     </div>
