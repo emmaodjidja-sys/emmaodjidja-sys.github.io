@@ -302,11 +302,12 @@ function useDeckState(programme, template) {
 }
 
 /* ══ SECTION: Inline editable ══ */
-function InlineEditable({ path, value, setOverride, getOverride, multiline, placeholder, as = "span", className, style }) {
+function InlineEditable({ path, value, setOverride, getOverride, multiline, placeholder, ariaLabel, as = "span", className, style }) {
   const current = getOverride(path, value);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(current);
   const isOverridden = current !== value;
+  const label = ariaLabel || placeholder || "Editable field";
 
   useEffect(() => { if (!editing) setDraft(current); }, [current, editing]);
 
@@ -316,28 +317,32 @@ function InlineEditable({ path, value, setOverride, getOverride, multiline, plac
     if (trimmed === value) setOverride(path, null);
     else setOverride(path, trimmed);
   }
+  function cancel() { setEditing(false); setDraft(current); }
 
   if (editing) {
     if (multiline) return <textarea
       autoFocus value={draft} onChange={e => setDraft(e.target.value)} onBlur={commit}
-      placeholder={placeholder}
+      onKeyDown={e => { if (e.key === 'Escape') cancel(); }}
+      placeholder={placeholder} aria-label={label}
       className={className}
       style={{width:'100%',resize:'vertical',minHeight:60,padding:'6px 8px',border:`1.5px solid var(--teal)`,borderRadius:4,fontFamily:'inherit',fontSize:'inherit',lineHeight:'inherit',color:'inherit',background:'var(--surface)',...style}}
     />;
     return <input
-      autoFocus value={draft} onChange={e => setDraft(e.target.value)} onBlur={commit} onKeyDown={e => {if(e.key==='Enter'){commit()}else if(e.key==='Escape'){setEditing(false);setDraft(current)}}}
-      placeholder={placeholder}
+      autoFocus value={draft} onChange={e => setDraft(e.target.value)} onBlur={commit}
+      onKeyDown={e => { if (e.key === 'Enter') commit(); else if (e.key === 'Escape') cancel(); }}
+      placeholder={placeholder} aria-label={label}
       className={className}
       style={{padding:'2px 6px',border:`1.5px solid var(--teal)`,borderRadius:4,fontFamily:'inherit',fontSize:'inherit',color:'inherit',background:'var(--surface)',...style}}
     />;
   }
 
   const Tag = as;
-  const handleClick = () => setEditing(true);
   return <Tag
     className={className}
+    role="button" tabIndex={0} aria-label={`${label} — click to edit`}
     style={{...style, cursor:'text', borderBottom: isOverridden ? '1.5px dashed var(--teal)' : 'none'}}
-    onClick={handleClick}
+    onClick={() => setEditing(true)}
+    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing(true); } }}
     title={isOverridden ? "Edited — click to change" : "Click to edit"}
   >{current || <span style={{color:'var(--slate-light)',fontStyle:'italic'}}>{placeholder || "Click to add…"}</span>}</Tag>;
 }
