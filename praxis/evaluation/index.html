@@ -205,6 +205,13 @@
                         </span>
                         <span class="text-xs text-slate-400 line-clamp-1">298 indicators, PEPFAR MER codes.</span>
                     </button>
+
+                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-deck', this)">
+                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
+                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">07</span> Deck Generator
+                        </span>
+                        <span class="text-xs text-slate-400 line-clamp-1">Live-presenter deck from your evaluation.</span>
+                    </button>
                 </div>
             </div>
 
@@ -316,6 +323,44 @@
                     </div>
                     <div class="mt-6 flex justify-end">
                         <a href="../tools/indicator-bank/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Open Bank</a>
+                    </div>
+                </div>
+
+                <div id="tool-deck" class="tool-pane h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-white mb-2">Deck Generator</h3>
+                    <p class="text-slate-400 text-sm mb-8">Turn a Workbench evaluation into a live-presenter deck. Inception Brief (pre-fieldwork) and Findings Brief (post-fieldwork) share one engine . keyboard nav, speaker notes on a second screen, PDF export.</p>
+                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6 flex flex-col justify-center gap-4">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="aspect-video bg-p_navy rounded border border-slate-700 p-2 flex flex-col justify-center">
+                                <div class="text-[7px] text-p_teal font-mono uppercase tracking-wider mb-1">Programme</div>
+                                <div class="text-white text-[9px] font-bold leading-tight">Maternal Health Programme</div>
+                                <div class="w-6 h-[1.5px] bg-p_teal mt-2"></div>
+                            </div>
+                            <div class="aspect-video bg-slate-50 rounded border border-slate-700 overflow-hidden">
+                                <div class="bg-p_navy px-2 py-1 text-[6px] flex items-center gap-1"><span class="text-p_teal font-mono">07</span><span class="text-white">Methodology</span></div>
+                                <div class="p-2">
+                                    <div class="h-1 w-3/4 bg-slate-300 rounded mb-1"></div>
+                                    <div class="h-1 w-1/2 bg-slate-300 rounded mb-2"></div>
+                                    <div class="grid grid-cols-2 gap-1">
+                                        <div class="h-3 bg-p_teal/20 border-l-2 border-p_teal rounded-sm"></div>
+                                        <div class="h-3 bg-p_teal/20 border-l-2 border-p_teal rounded-sm"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="aspect-video bg-slate-50 rounded border border-slate-700 overflow-hidden">
+                                <div class="bg-p_navy px-2 py-1 text-[6px] flex items-center gap-1"><span class="text-p_teal font-mono">11</span><span class="text-white">Evaluability</span></div>
+                                <div class="flex items-center justify-center" style="height: calc(100% - 16px);">
+                                    <svg viewBox="0 0 60 60" class="w-10 h-10">
+                                        <polygon points="30,8 50,22 44,46 16,46 10,22" fill="none" stroke="#cbd5e1" stroke-width="0.7"/>
+                                        <polygon points="30,14 44,24 40,40 22,40 18,24" fill="#2EC4B6" fill-opacity="0.3" stroke="#1FA89B" stroke-width="0.9"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 font-mono text-center">16 inception slides . 13 to 16 findings slides . PDF + JSON export</div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <a href="../tools/deck-generator/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Deck Generator</a>
                     </div>
                 </div>
 
