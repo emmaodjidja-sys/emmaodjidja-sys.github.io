@@ -48,18 +48,6 @@
             background-size: 30px 30px;
         }
 
-        .tool-pane { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
-        .tool-pane.active { display: block; opacity: 1; animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(20, 184, 166, 0.3); border-radius: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(20, 184, 166, 0.6); }
-
         .reveal {
             opacity: 0; transform: translateY(16px);
             transition: opacity 0.7s ease, transform 0.7s ease;
@@ -152,219 +140,199 @@
     </section>
 
     <!-- WORKBENCH -->
-    <section id="workbench" class="py-16 px-8 max-w-7xl mx-auto reveal">
-        <h2 class="text-3xl font-bold text-white mb-8">The Local Toolkit</h2>
-
-        <div class="border border-slate-700 rounded-xl bg-[#0f172a] shadow-2xl overflow-hidden flex flex-col md:flex-row h-[600px]">
-
-            <div class="w-full md:w-1/3 bg-[#1e293b] border-r border-slate-700 flex flex-col">
-                <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-[#0f172a]/50">
-                    <span class="text-xs font-mono text-slate-400 tracking-widest uppercase">Select Module</span>
-                    <span class="w-2 h-2 bg-p_teal rounded-full shadow-[0_0_8px_#14b8a6]"></span>
+    <section id="workbench" class="py-16 md:py-20 px-6 md:px-8 max-w-7xl mx-auto reveal">
+        <div class="flex items-end justify-between flex-wrap gap-6 mb-10 md:mb-12">
+            <div>
+                <div class="inline-flex items-center gap-2 text-[10px] font-mono tracking-widest text-slate-500 uppercase mb-3">
+                    <span class="w-1.5 h-1.5 bg-p_teal rounded-full shadow-[0_0_6px_#14b8a6]"></span>
+                    The Local Toolkit
                 </div>
-
-                <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-2" id="tool-menu">
-                    <button class="w-full text-left p-4 rounded-lg border border-slate-600 bg-slate-700/50 hover:border-p_teal transition-all flex flex-col gap-1 group" onclick="switchTool('tool-advisor', this)">
-                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
-                            <span class="font-mono text-[10px] bg-p_teal/20 text-p_teal px-1 rounded">01</span> Design Advisor
-                        </span>
-                        <span class="text-xs text-slate-400 line-clamp-1">AI-scored recommendations across 16 designs.</span>
-                    </button>
-
-                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-sample', this)">
-                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
-                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">02</span> Sample Size Calculator
-                        </span>
-                        <span class="text-xs text-slate-400 line-clamp-1">8 designs: RCT, Cluster, Stepped-Wedge, DiD.</span>
-                    </button>
-
-                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-toc', this)">
-                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
-                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">03</span> Theory of Change
-                        </span>
-                        <span class="text-xs text-slate-400 line-clamp-1">Visual canvas with assumptions mapping.</span>
-                    </button>
-
-                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-matrix', this)">
-                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
-                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">04</span> Evaluation Matrix
-                        </span>
-                        <span class="text-xs text-slate-400 line-clamp-1">Link criteria, indicators, and methods.</span>
-                    </button>
-
-                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-data', this)">
-                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
-                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">05</span> Data Explorer
-                        </span>
-                        <span class="text-xs text-slate-400 line-clamp-1">Instant stats, regression, and Likert analysis.</span>
-                    </button>
-
-                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-bank', this)">
-                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
-                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">06</span> Indicator Bank
-                        </span>
-                        <span class="text-xs text-slate-400 line-clamp-1">298 indicators, PEPFAR MER codes.</span>
-                    </button>
-
-                    <button class="w-full text-left p-4 rounded-lg border border-transparent hover:border-slate-600 hover:bg-slate-800 transition-all flex flex-col gap-1 group" onclick="switchTool('tool-deck', this)">
-                        <span class="text-sm font-bold text-white group-hover:text-p_teal transition-colors flex items-center gap-2">
-                            <span class="font-mono text-[10px] bg-slate-800 text-slate-400 px-1 rounded">07</span> Deck Generator
-                        </span>
-                        <span class="text-xs text-slate-400 line-clamp-1">Live-presenter deck from your evaluation.</span>
-                    </button>
-                </div>
+                <h2 class="text-3xl md:text-4xl font-bold text-white tracking-tight">Seven offline-first modules.</h2>
             </div>
+            <p class="text-sm md:text-base text-slate-400 max-w-md leading-relaxed">
+                Each module runs entirely in your browser. No server, no telemetry, fully MIT-licensed. Pick any module to launch.
+            </p>
+        </div>
 
-            <div class="w-full md:w-2/3 p-8 relative overflow-y-auto custom-scroll">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
 
-                <div id="tool-advisor" class="tool-pane active h-full flex flex-col">
-                    <h3 class="text-2xl font-bold text-white mb-2">Evaluation Design Advisor</h3>
-                    <p class="text-slate-400 text-sm mb-8">Answer 10 context questions about your programme and get scored recommendations. The advisor accounts for data availability, ethical constraints, and operational context to suggest designs that will actually work in the field.</p>
-                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6 flex flex-col justify-center items-center text-center relative overflow-hidden">
-                        <div class="absolute inset-0 bg-tactical opacity-50"></div>
-                        <div class="relative z-10 w-full max-w-sm">
-                            <div class="text-[10px] font-mono text-p_teal uppercase tracking-widest mb-4 border border-p_teal/30 bg-p_teal/10 inline-block px-3 py-1 rounded">Algorithm Output Preview</div>
-                            <div class="flex justify-between items-center bg-slate-800 p-4 rounded mb-2 border border-slate-700">
-                                <span class="text-white font-medium text-sm">Cluster-RCT</span>
-                                <span class="text-p_teal font-mono font-bold">92%</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-slate-800 p-4 rounded mb-2 border border-slate-700 opacity-70">
-                                <span class="text-white font-medium text-sm">Stepped-Wedge</span>
-                                <span class="text-slate-400 font-mono font-bold">85%</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-slate-800 p-4 rounded border border-slate-700 opacity-50">
-                                <span class="text-white font-medium text-sm">Diff-in-Diff</span>
-                                <span class="text-slate-500 font-mono font-bold">40%</span>
+            <!-- 01 Design Advisor -->
+            <a href="../tools/evaluation-design-advisor/" class="group relative bg-p_surface border border-slate-800 hover:border-p_teal/50 rounded-xl p-6 flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(20,184,166,0.25)]">
+                <div class="flex items-start justify-between mb-5">
+                    <span class="font-mono text-[10px] tracking-widest text-p_teal bg-p_teal/10 border border-p_teal/30 px-2 py-1 rounded">01</span>
+                    <span class="text-[9px] font-mono uppercase tracking-widest text-slate-500">Module</span>
+                </div>
+                <h3 class="text-lg font-bold text-white group-hover:text-p_teal transition-colors mb-2">Design Advisor</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-5">AI-scored recommendations across 16 evaluation designs. Accounts for data, ethics, and operational context.</p>
+                <div class="bg-p_navy/60 border border-slate-800 rounded-lg p-3 space-y-1.5 mt-auto mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-white flex-1">Cluster-RCT</span>
+                        <div class="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-p_teal" style="width:92%"></div></div>
+                        <span class="text-[10px] font-mono text-p_teal w-7 text-right">92%</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-slate-400 flex-1">Stepped-Wedge</span>
+                        <div class="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-slate-500" style="width:85%"></div></div>
+                        <span class="text-[10px] font-mono text-slate-400 w-7 text-right">85%</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-slate-500 flex-1">Diff-in-Diff</span>
+                        <div class="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-slate-600" style="width:40%"></div></div>
+                        <span class="text-[10px] font-mono text-slate-500 w-7 text-right">40%</span>
+                    </div>
+                </div>
+                <span class="text-[11px] font-mono uppercase tracking-widest text-slate-500 group-hover:text-p_teal transition-colors flex items-center gap-1">Launch Advisor <span class="transition-transform group-hover:translate-x-1">&rarr;</span></span>
+            </a>
+
+            <!-- 02 Sample Size -->
+            <a href="../tools/sample-size-calculator/" class="group relative bg-p_surface border border-slate-800 hover:border-p_teal/50 rounded-xl p-6 flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(20,184,166,0.25)]">
+                <div class="flex items-start justify-between mb-5">
+                    <span class="font-mono text-[10px] tracking-widest text-p_teal bg-p_teal/10 border border-p_teal/30 px-2 py-1 rounded">02</span>
+                    <span class="text-[9px] font-mono uppercase tracking-widest text-slate-500">Module</span>
+                </div>
+                <h3 class="text-lg font-bold text-white group-hover:text-p_teal transition-colors mb-2">Sample Size Calculator</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-5">Eight designs covered: RCT, Cluster, Stepped-Wedge, Diff-in-Diff. Handles ICC and attrition offline.</p>
+                <div class="bg-p_navy/60 border border-slate-800 rounded-lg p-4 mt-auto mb-4">
+                    <div class="flex items-baseline justify-around gap-2">
+                        <div class="text-center"><div class="text-2xl font-mono text-white">24</div><div class="text-[9px] text-slate-500 font-mono uppercase tracking-wider">Clusters</div></div>
+                        <span class="text-slate-700 text-lg">&times;</span>
+                        <div class="text-center"><div class="text-2xl font-mono text-white">30</div><div class="text-[9px] text-slate-500 font-mono uppercase tracking-wider">Per Cluster</div></div>
+                        <span class="text-slate-700 text-lg">=</span>
+                        <div class="text-center"><div class="text-2xl font-mono text-p_teal">720</div><div class="text-[9px] text-p_teal font-mono uppercase tracking-wider">Total N</div></div>
+                    </div>
+                </div>
+                <span class="text-[11px] font-mono uppercase tracking-widest text-slate-500 group-hover:text-p_teal transition-colors flex items-center gap-1">Launch Calculator <span class="transition-transform group-hover:translate-x-1">&rarr;</span></span>
+            </a>
+
+            <!-- 03 Theory of Change -->
+            <a href="../tools/toc-builder/" class="group relative bg-p_surface border border-slate-800 hover:border-p_teal/50 rounded-xl p-6 flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(20,184,166,0.25)]">
+                <div class="flex items-start justify-between mb-5">
+                    <span class="font-mono text-[10px] tracking-widest text-p_teal bg-p_teal/10 border border-p_teal/30 px-2 py-1 rounded">03</span>
+                    <span class="text-[9px] font-mono uppercase tracking-widest text-slate-500">Module</span>
+                </div>
+                <h3 class="text-lg font-bold text-white group-hover:text-p_teal transition-colors mb-2">Theory of Change</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-5">Visual canvas with assumptions mapping. Build your programme's logic model from inputs through to impact.</p>
+                <div class="bg-p_navy/60 border border-slate-800 rounded-lg p-4 mt-auto mb-4">
+                    <div class="flex items-center justify-between gap-1 text-[10px] font-mono">
+                        <span class="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-slate-300">Inputs</span>
+                        <span class="text-slate-600">&rarr;</span>
+                        <span class="px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-slate-300">Activities</span>
+                        <span class="text-slate-600">&rarr;</span>
+                        <span class="px-2 py-1.5 bg-p_teal/10 border border-p_teal/40 rounded text-p_teal">Outcomes</span>
+                        <span class="text-slate-600">&rarr;</span>
+                        <span class="px-2 py-1.5 bg-p_amber/10 border border-p_amber/40 rounded text-p_amber">Impact</span>
+                    </div>
+                </div>
+                <span class="text-[11px] font-mono uppercase tracking-widest text-slate-500 group-hover:text-p_teal transition-colors flex items-center gap-1">Launch Canvas <span class="transition-transform group-hover:translate-x-1">&rarr;</span></span>
+            </a>
+
+            <!-- 04 Evaluation Matrix -->
+            <a href="../tools/eval-matrix-builder/" class="group relative bg-p_surface border border-slate-800 hover:border-p_teal/50 rounded-xl p-6 flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(20,184,166,0.25)]">
+                <div class="flex items-start justify-between mb-5">
+                    <span class="font-mono text-[10px] tracking-widest text-p_teal bg-p_teal/10 border border-p_teal/30 px-2 py-1 rounded">04</span>
+                    <span class="text-[9px] font-mono uppercase tracking-widest text-slate-500">Module</span>
+                </div>
+                <h3 class="text-lg font-bold text-white group-hover:text-p_teal transition-colors mb-2">Evaluation Matrix</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-5">Link evaluation questions, judgement criteria, indicators, and methods into a structured exportable table.</p>
+                <div class="bg-p_navy/60 border border-slate-800 rounded-lg p-3 mt-auto mb-4">
+                    <table class="w-full text-[10px] font-mono">
+                        <tr class="border-b border-slate-800/80"><td class="text-p_teal py-1.5 pr-2">EQ1</td><td class="text-slate-300 pr-2">Relevance</td><td class="text-right text-p_amber">Doc review</td></tr>
+                        <tr class="border-b border-slate-800/80"><td class="text-p_teal py-1.5 pr-2">EQ2</td><td class="text-slate-300 pr-2">Effectiveness</td><td class="text-right text-p_amber">Mixed</td></tr>
+                        <tr class="border-b border-slate-800/80"><td class="text-p_teal py-1.5 pr-2">EQ3</td><td class="text-slate-300 pr-2">Impact</td><td class="text-right text-p_amber">Quasi-exp.</td></tr>
+                        <tr><td class="text-p_teal py-1.5 pr-2">EQ4</td><td class="text-slate-300 pr-2">Sustainability</td><td class="text-right text-p_amber">KII + FGD</td></tr>
+                    </table>
+                </div>
+                <span class="text-[11px] font-mono uppercase tracking-widest text-slate-500 group-hover:text-p_teal transition-colors flex items-center gap-1">Launch Matrix <span class="transition-transform group-hover:translate-x-1">&rarr;</span></span>
+            </a>
+
+            <!-- 05 Data Explorer -->
+            <a href="../tools/data-explorer/" class="group relative bg-p_surface border border-slate-800 hover:border-p_teal/50 rounded-xl p-6 flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(20,184,166,0.25)]">
+                <div class="flex items-start justify-between mb-5">
+                    <span class="font-mono text-[10px] tracking-widest text-p_teal bg-p_teal/10 border border-p_teal/30 px-2 py-1 rounded">05</span>
+                    <span class="text-[9px] font-mono uppercase tracking-widest text-slate-500">Module</span>
+                </div>
+                <h3 class="text-lg font-bold text-white group-hover:text-p_teal transition-colors mb-2">Data Explorer</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-5">Offline CSV/XLSX engine. Auto-detect types, summarise distributions, run regressions, flag quality issues.</p>
+                <div class="bg-p_navy/60 border border-slate-800 rounded-lg p-4 mt-auto mb-4">
+                    <div class="flex items-end justify-between gap-1.5 h-12">
+                        <div class="flex-1 bg-slate-800 rounded-sm" style="height:30%"></div>
+                        <div class="flex-1 bg-slate-700 rounded-sm" style="height:55%"></div>
+                        <div class="flex-1 bg-p_teal/40 rounded-sm" style="height:85%"></div>
+                        <div class="flex-1 bg-p_teal rounded-sm" style="height:100%"></div>
+                        <div class="flex-1 bg-p_teal/60 rounded-sm" style="height:70%"></div>
+                        <div class="flex-1 bg-slate-700 rounded-sm" style="height:45%"></div>
+                        <div class="flex-1 bg-slate-800 rounded-sm" style="height:25%"></div>
+                    </div>
+                    <div class="flex justify-between text-[9px] font-mono text-slate-500 mt-2"><span>n=1,247</span><span class="text-p_teal">&mu; = 4.2 &sigma; = 1.1</span></div>
+                </div>
+                <span class="text-[11px] font-mono uppercase tracking-widest text-slate-500 group-hover:text-p_teal transition-colors flex items-center gap-1">Launch Explorer <span class="transition-transform group-hover:translate-x-1">&rarr;</span></span>
+            </a>
+
+            <!-- 06 Indicator Bank -->
+            <a href="../tools/indicator-bank/" class="group relative bg-p_surface border border-slate-800 hover:border-p_teal/50 rounded-xl p-6 flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(20,184,166,0.25)]">
+                <div class="flex items-start justify-between mb-5">
+                    <span class="font-mono text-[10px] tracking-widest text-p_teal bg-p_teal/10 border border-p_teal/30 px-2 py-1 rounded">06</span>
+                    <span class="text-[9px] font-mono uppercase tracking-widest text-slate-500">Module</span>
+                </div>
+                <h3 class="text-lg font-bold text-white group-hover:text-p_teal transition-colors mb-2">Indicator Bank</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-5">298 indicators across 11 sectors. Filter by PEPFAR MER codes, sector, or keyword.</p>
+                <div class="bg-p_navy/60 border border-slate-800 rounded-lg p-3 mt-auto mb-4 space-y-1.5">
+                    <div class="flex justify-between text-[11px] font-mono"><span class="text-slate-300">Health</span><span class="text-p_teal">47</span></div>
+                    <div class="flex justify-between text-[11px] font-mono"><span class="text-slate-300">Education</span><span class="text-p_teal">38</span></div>
+                    <div class="flex justify-between text-[11px] font-mono"><span class="text-slate-300">Protection</span><span class="text-p_teal">31</span></div>
+                    <div class="flex justify-between text-[11px] font-mono"><span class="text-slate-300">WASH</span><span class="text-p_teal">28</span></div>
+                    <div class="flex justify-between text-[11px] font-mono"><span class="text-slate-500">+ 7 more sectors</span><span class="text-slate-500">154</span></div>
+                </div>
+                <span class="text-[11px] font-mono uppercase tracking-widest text-slate-500 group-hover:text-p_teal transition-colors flex items-center gap-1">Open Bank <span class="transition-transform group-hover:translate-x-1">&rarr;</span></span>
+            </a>
+
+            <!-- 07 Deck Generator (FEATURED — wide on desktop) -->
+            <a href="../tools/deck-generator/" class="group relative bg-p_surface border border-slate-800 hover:border-p_teal/50 rounded-xl p-6 md:p-8 flex flex-col md:flex-row gap-6 transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(20,184,166,0.25)] sm:col-span-2 lg:col-span-3">
+                <div class="flex-1 flex flex-col">
+                    <div class="flex items-start justify-between mb-5">
+                        <span class="font-mono text-[10px] tracking-widest text-p_teal bg-p_teal/10 border border-p_teal/30 px-2 py-1 rounded">07</span>
+                        <span class="text-[9px] font-mono uppercase tracking-widest text-p_amber border border-p_amber/30 bg-p_amber/10 px-2 py-1 rounded">Featured</span>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold text-white group-hover:text-p_teal transition-colors mb-3">Deck Generator</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-5 max-w-md">
+                        Turn a Workbench evaluation into a live-presenter deck. Inception Brief (pre-fieldwork) and Findings Brief (post-fieldwork) share one engine: keyboard nav, speaker notes on a second screen, PDF export.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-5">
+                        <span class="text-[10px] font-mono text-slate-400 bg-slate-800/60 border border-slate-700 px-2 py-1 rounded">16 inception slides</span>
+                        <span class="text-[10px] font-mono text-slate-400 bg-slate-800/60 border border-slate-700 px-2 py-1 rounded">13&ndash;16 findings slides</span>
+                        <span class="text-[10px] font-mono text-slate-400 bg-slate-800/60 border border-slate-700 px-2 py-1 rounded">PDF + JSON export</span>
+                    </div>
+                    <span class="text-[11px] font-mono uppercase tracking-widest text-slate-500 group-hover:text-p_teal transition-colors flex items-center gap-1 mt-auto">Launch Deck Generator <span class="transition-transform group-hover:translate-x-1">&rarr;</span></span>
+                </div>
+                <div class="flex-1 grid grid-cols-3 gap-3 self-stretch">
+                    <div class="aspect-video bg-p_navy rounded border border-slate-800 p-3 flex flex-col justify-center">
+                        <div class="text-[8px] text-p_teal font-mono uppercase tracking-wider mb-1">Programme</div>
+                        <div class="text-white text-[11px] font-bold leading-tight">Maternal Health</div>
+                        <div class="w-8 h-[1.5px] bg-p_teal mt-2"></div>
+                    </div>
+                    <div class="aspect-video bg-slate-50 rounded border border-slate-800 overflow-hidden">
+                        <div class="bg-p_navy px-2 py-1 text-[7px] flex items-center gap-1"><span class="text-p_teal font-mono">07</span><span class="text-white">Methodology</span></div>
+                        <div class="p-2">
+                            <div class="h-1 w-3/4 bg-slate-300 rounded mb-1"></div>
+                            <div class="h-1 w-1/2 bg-slate-300 rounded mb-2"></div>
+                            <div class="grid grid-cols-2 gap-1">
+                                <div class="h-3 bg-p_teal/20 border-l-2 border-p_teal rounded-sm"></div>
+                                <div class="h-3 bg-p_teal/20 border-l-2 border-p_teal rounded-sm"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-6 flex justify-end">
-                        <a href="../tools/evaluation-design-advisor/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Advisor</a>
-                    </div>
-                </div>
-
-                <div id="tool-sample" class="tool-pane h-full flex flex-col">
-                    <h3 class="text-2xl font-bold text-white mb-2">Sample Size Calculator</h3>
-                    <p class="text-slate-400 text-sm mb-8">Guided parameter selection for 8 evaluation designs. Handles Intraclass Correlation Coefficients (ICC) and expected attrition rates completely offline.</p>
-                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6 flex flex-col justify-center items-center relative">
-                        <div class="flex gap-8 items-end flex-wrap justify-center">
-                            <div class="text-center"><div class="text-4xl font-mono text-white mb-2">24</div><div class="text-xs text-slate-500 font-mono uppercase">Clusters</div></div>
-                            <div class="text-4xl font-light text-slate-700 pb-2">&times;</div>
-                            <div class="text-center"><div class="text-4xl font-mono text-white mb-2">30</div><div class="text-xs text-slate-500 font-mono uppercase">Per Cluster</div></div>
-                            <div class="text-4xl font-light text-slate-700 pb-2">=</div>
-                            <div class="text-center"><div class="text-5xl font-mono text-p_teal mb-2">720</div><div class="text-xs text-p_teal font-mono uppercase font-bold">Total N (80% Power)</div></div>
+                    <div class="aspect-video bg-slate-50 rounded border border-slate-800 overflow-hidden">
+                        <div class="bg-p_navy px-2 py-1 text-[7px] flex items-center gap-1"><span class="text-p_teal font-mono">11</span><span class="text-white">Evaluability</span></div>
+                        <div class="flex items-center justify-center" style="height: calc(100% - 16px);">
+                            <svg viewBox="0 0 60 60" class="w-10 h-10">
+                                <polygon points="30,8 50,22 44,46 16,46 10,22" fill="none" stroke="#cbd5e1" stroke-width="0.7"/>
+                                <polygon points="30,14 44,24 40,40 22,40 18,24" fill="#14b8a6" fill-opacity="0.3" stroke="#14b8a6" stroke-width="0.9"/>
+                            </svg>
                         </div>
                     </div>
-                    <div class="mt-6 flex justify-end">
-                        <a href="../tools/sample-size-calculator/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Calculator</a>
-                    </div>
                 </div>
+            </a>
 
-                <div id="tool-toc" class="tool-pane h-full flex flex-col">
-                    <h3 class="text-2xl font-bold text-white mb-2">Theory of Change Builder</h3>
-                    <p class="text-slate-400 text-sm mb-8">Visual drag-and-drop canvas. Build your programme's logic model with auto-linked nodes from inputs through to impact.</p>
-                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg flex items-center justify-center">
-                        <div class="flex items-center gap-3">
-                            <div class="px-4 py-2 bg-slate-800 border border-slate-600 rounded text-sm text-slate-300">Inputs</div>
-                            <div class="w-8 h-[1px] bg-slate-600"></div>
-                            <div class="px-4 py-2 bg-p_teal/10 border border-p_teal/40 rounded text-sm text-p_teal">Activities</div>
-                            <div class="w-8 h-[1px] bg-slate-600"></div>
-                            <div class="px-4 py-2 bg-p_amber/10 border border-p_amber/40 rounded text-sm text-p_amber">Impact</div>
-                        </div>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <a href="../tools/toc-builder/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Canvas</a>
-                    </div>
-                </div>
-
-                <div id="tool-matrix" class="tool-pane h-full flex flex-col">
-                    <h3 class="text-2xl font-bold text-white mb-2">Evaluation Matrix Builder</h3>
-                    <p class="text-slate-400 text-sm mb-8">Compile evaluation questions, judgement criteria, indicators, and data collection methods into a structured, exportable table.</p>
-                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6">
-                        <table class="w-full text-xs font-mono text-slate-500 mt-4">
-                            <tr class="border-b border-slate-700/50"><td class="text-p_teal py-2 pr-4">EQ1</td><td class="pr-4">Relevance</td><td>2 indicators</td><td class="text-right text-p_amber">Doc review</td></tr>
-                            <tr class="border-b border-slate-700/50"><td class="text-p_teal py-2 pr-4">EQ2</td><td class="pr-4">Effectiveness</td><td>4 indicators</td><td class="text-right text-p_amber">Mixed methods</td></tr>
-                            <tr class="border-b border-slate-700/50"><td class="text-p_teal py-2 pr-4">EQ3</td><td class="pr-4">Impact</td><td>3 indicators</td><td class="text-right text-p_amber">Quasi-exp.</td></tr>
-                            <tr><td class="text-p_teal py-2 pr-4">EQ4</td><td class="pr-4">Sustainability</td><td>2 indicators</td><td class="text-right text-p_amber">KII + FGD</td></tr>
-                        </table>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <a href="../tools/eval-matrix-builder/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Matrix</a>
-                    </div>
-                </div>
-
-                <div id="tool-data" class="tool-pane h-full flex flex-col">
-                    <h3 class="text-2xl font-bold text-white mb-2">Data Explorer</h3>
-                    <p class="text-slate-400 text-sm mb-8">Offline CSV/XLSX analysis engine. Upload, auto-detect types, summarize distributions, run regressions, and flag quality issues.</p>
-                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg flex items-center justify-center flex-col gap-4">
-                        <svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                        <span class="text-sm text-slate-500 font-mono">Select file to analyze locally</span>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <a href="../tools/data-explorer/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Explorer</a>
-                    </div>
-                </div>
-
-                <div id="tool-bank" class="tool-pane h-full flex flex-col">
-                    <h3 class="text-2xl font-bold text-white mb-2">Indicator Bank</h3>
-                    <p class="text-slate-400 text-sm mb-8">Search 298 indicators across 11 sectors. Filter by PEPFAR MER codes, sector, or keyword.</p>
-                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6">
-                        <div class="w-full bg-slate-900 border border-slate-700 p-3 rounded mb-6 text-slate-500 text-sm font-mono flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            Search PEPFAR MER codes...
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>Health</span><span class="text-p_teal">47</span></div>
-                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>Education</span><span class="text-p_teal">38</span></div>
-                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>Protection</span><span class="text-p_teal">31</span></div>
-                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>WASH</span><span class="text-p_teal">28</span></div>
-                            <div class="flex justify-between text-xs font-mono text-slate-500"><span>Governance</span><span class="text-p_teal">24</span></div>
-                        </div>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <a href="../tools/indicator-bank/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Open Bank</a>
-                    </div>
-                </div>
-
-                <div id="tool-deck" class="tool-pane h-full flex flex-col">
-                    <h3 class="text-2xl font-bold text-white mb-2">Deck Generator</h3>
-                    <p class="text-slate-400 text-sm mb-8">Turn a Workbench evaluation into a live-presenter deck. Inception Brief (pre-fieldwork) and Findings Brief (post-fieldwork) share one engine . keyboard nav, speaker notes on a second screen, PDF export.</p>
-                    <div class="flex-1 bg-[#1e293b] border border-slate-700 rounded-lg p-6 flex flex-col justify-center gap-4">
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="aspect-video bg-p_navy rounded border border-slate-700 p-2 flex flex-col justify-center">
-                                <div class="text-[7px] text-p_teal font-mono uppercase tracking-wider mb-1">Programme</div>
-                                <div class="text-white text-[9px] font-bold leading-tight">Maternal Health Programme</div>
-                                <div class="w-6 h-[1.5px] bg-p_teal mt-2"></div>
-                            </div>
-                            <div class="aspect-video bg-slate-50 rounded border border-slate-700 overflow-hidden">
-                                <div class="bg-p_navy px-2 py-1 text-[6px] flex items-center gap-1"><span class="text-p_teal font-mono">07</span><span class="text-white">Methodology</span></div>
-                                <div class="p-2">
-                                    <div class="h-1 w-3/4 bg-slate-300 rounded mb-1"></div>
-                                    <div class="h-1 w-1/2 bg-slate-300 rounded mb-2"></div>
-                                    <div class="grid grid-cols-2 gap-1">
-                                        <div class="h-3 bg-p_teal/20 border-l-2 border-p_teal rounded-sm"></div>
-                                        <div class="h-3 bg-p_teal/20 border-l-2 border-p_teal rounded-sm"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="aspect-video bg-slate-50 rounded border border-slate-700 overflow-hidden">
-                                <div class="bg-p_navy px-2 py-1 text-[6px] flex items-center gap-1"><span class="text-p_teal font-mono">11</span><span class="text-white">Evaluability</span></div>
-                                <div class="flex items-center justify-center" style="height: calc(100% - 16px);">
-                                    <svg viewBox="0 0 60 60" class="w-10 h-10">
-                                        <polygon points="30,8 50,22 44,46 16,46 10,22" fill="none" stroke="#cbd5e1" stroke-width="0.7"/>
-                                        <polygon points="30,14 44,24 40,40 22,40 18,24" fill="#2EC4B6" fill-opacity="0.3" stroke="#1FA89B" stroke-width="0.9"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-[10px] text-slate-500 font-mono text-center">16 inception slides . 13 to 16 findings slides . PDF + JSON export</div>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <a href="../tools/deck-generator/" class="bg-p_teal text-p_navy px-6 py-3 rounded text-sm font-bold hover:bg-p_teal_light transition-colors shadow-lg inline-block">Launch Deck Generator</a>
-                    </div>
-                </div>
-
-            </div>
         </div>
     </section>
 
@@ -420,24 +388,6 @@
     </footer>
 
 <script>
-function switchTool(toolId, btn) {
-    document.querySelectorAll('.tool-pane').forEach(function(p) { p.classList.remove('active'); });
-    var t = document.getElementById(toolId);
-    if (t) t.classList.add('active');
-
-    document.querySelectorAll('#tool-menu button').forEach(function(b) {
-        b.classList.remove('border-slate-600', 'bg-slate-700/50');
-        b.classList.add('border-transparent');
-        var badge = b.querySelector('.font-mono');
-        if (badge) { badge.classList.remove('bg-p_teal/20', 'text-p_teal'); badge.classList.add('bg-slate-800', 'text-slate-400'); }
-    });
-
-    btn.classList.remove('border-transparent');
-    btn.classList.add('border-slate-600', 'bg-slate-700/50');
-    var ab = btn.querySelector('.font-mono');
-    if (ab) { ab.classList.remove('bg-slate-800', 'text-slate-400'); ab.classList.add('bg-p_teal/20', 'text-p_teal'); }
-}
-
 (function() {
     var pr = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var els = document.querySelectorAll('.reveal');
