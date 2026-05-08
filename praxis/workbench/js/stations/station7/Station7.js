@@ -10,42 +10,30 @@
   var h = React.createElement;
   var useState = React.useState;
   var useCallback = React.useCallback;
-  var useMemo = React.useMemo;
 
   function uid(prefix) {
     if (typeof PraxisUtils !== 'undefined' && PraxisUtils.uid) return PraxisUtils.uid(prefix);
     return prefix + '-' + Math.random().toString(36).substr(2, 9);
   }
 
-  // ── Criterion colours ──
-
-  var CRITERION_COLORS = {
-    relevance:      { bg: '#DBEAFE', text: '#1E40AF' },
-    coherence:      { bg: '#E0E7FF', text: '#3730A3' },
-    effectiveness:  { bg: '#D1FAE5', text: '#065F46' },
-    efficiency:     { bg: '#FEF3C7', text: '#92400E' },
-    impact:         { bg: '#FCE7F3', text: '#9D174D' },
-    sustainability: { bg: '#CCFBF1', text: '#115E59' }
-  };
-
   // ── Word count guidance ──
 
   var WORD_GUIDANCE = {
-    executive_summary: { min: 500,  max: 800,  label: '500\u2013800 words' },
-    introduction:      { min: 800,  max: 1200, label: '800\u20131,200 words' },
-    methodology:       { min: 1500, max: 2500, label: '1,500\u20132,500 words' },
-    finding:           { min: 1000, max: 2000, label: '1,000\u20132,000 words' },
-    conclusions:       { min: 800,  max: 1500, label: '800\u20131,500 words' },
-    recommendations:   { min: 600,  max: 1200, label: '600\u20131,200 words' },
+    executive_summary: { min: 500,  max: 800,  label: '500–800 words' },
+    introduction:      { min: 800,  max: 1200, label: '800–1,200 words' },
+    methodology:       { min: 1500, max: 2500, label: '1,500–2,500 words' },
+    finding:           { min: 1000, max: 2000, label: '1,000–2,000 words' },
+    conclusions:       { min: 800,  max: 1500, label: '800–1,500 words' },
+    recommendations:   { min: 600,  max: 1200, label: '600–1,200 words' },
     annexes:           { min: 0,    max: 0,    label: 'Variable' }
   };
 
   // ── Safe accessors ──
 
-  function safe(v, fallback) { return v != null && v !== '' ? v : (fallback || '\u2014'); }
-  function list(arr) { return Array.isArray(arr) && arr.length > 0 ? arr.join(', ') : '\u2014'; }
+  function safe(v, fallback) { return v != null && v !== '' ? v : (fallback || '—'); }
+  function list(arr) { return Array.isArray(arr) && arr.length > 0 ? arr.join(', ') : '—'; }
   function purposeLabel(arr) {
-    if (!Array.isArray(arr) || arr.length === 0) return '\u2014';
+    if (!Array.isArray(arr) || arr.length === 0) return '—';
     return arr.map(function (p) {
       return p.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
     }).join(', ');
@@ -98,7 +86,7 @@
       autoContent: [
         'Programme: ' + safe(meta.programme_name),
         'Sector: ' + safe(meta.sector),
-        'Country and scope: ' + safe(meta.country) + ' \u2014 ' + safe(tor.geographic_scope),
+        'Country and scope: ' + safe(meta.country) + ' — ' + safe(tor.geographic_scope),
         'Target population: ' + safe(tor.target_population),
         'Evaluation purpose: ' + purposeText,
         'Causal inference level: ' + safe(tor.causal_inference_level),
@@ -127,7 +115,7 @@
           ', power ' + safe(sample.params && sample.params.power) +
           ', alpha ' + safe(sample.params && sample.params.alpha) +
           ', ICC ' + safe(sample.params && sample.params.icc),
-        'Qualitative methods: ' + (qualBreakdown || '\u2014'),
+        'Qualitative methods: ' + (qualBreakdown || '—'),
         'Instruments: ' + instrItems.length + ' (' + instrItems.map(function (i) { return i.title || i.name; }).join('; ') + ')',
         'Analysis methods: ' + analysisMethods,
         'Comparison feasibility: ' + safe(tor.comparison_feasibility),
@@ -147,7 +135,7 @@
 
       sections.push({
         id: uid('sec'), sectionType: 'finding', type: 'finding',
-        title: 'Findings: EQ' + (eq.number || i + 1) + ' \u2014 ' + eqText,
+        title: 'Findings: EQ' + (eq.number || i + 1) + ' — ' + eqText,
         criterion: criterion,
         eqId: eq.id,
         eqNumber: eq.number || i + 1,
@@ -155,7 +143,7 @@
           'Question: ' + eqText,
           'Criterion: ' + criterion,
           subQs ? 'Sub-questions:\n' + subQs : null,
-          'Indicators: ' + (indicators || '\u2014'),
+          'Indicators: ' + (indicators || '—'),
           'Data sources: ' + sources,
           'Judgement criteria: ' + judgement
         ].filter(Boolean).join('\n'),
@@ -170,7 +158,7 @@
       autoContent: [
         'This section should synthesise findings across all ' + rows.length + ' evaluation questions.',
         'Assess overall programme performance against each DAC criterion covered:',
-        '  \u2022 ' + (rows.map(function (r) { return r.criterion; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ') || 'N/A'),
+        '  • ' + (rows.map(function (r) { return r.criterion; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ') || 'N/A'),
         'Draw together cross-cutting themes and unexpected findings.',
         'Distinguish between conclusions that are strongly evidenced vs. those that are indicative.'
       ].join('\n'),
@@ -183,10 +171,10 @@
       title: 'Recommendations',
       autoContent: [
         'Each recommendation should:',
-        '  \u2022 Be linked to specific finding(s) and conclusion(s)',
-        '  \u2022 Identify the responsible actor/stakeholder',
-        '  \u2022 Be prioritised by urgency (immediate / short-term / medium-term)',
-        '  \u2022 Be specific and actionable',
+        '  • Be linked to specific finding(s) and conclusion(s)',
+        '  • Identify the responsible actor/stakeholder',
+        '  • Be prioritised by urgency (immediate / short-term / medium-term)',
+        '  • Be specific and actionable',
         'Target audience: ' + safe(meta.organisation)
       ].join('\n'),
       draftContent: ''
@@ -217,7 +205,7 @@
   // ── Export as Word outline (docx via HTML) ──
 
   function exportWordOutline(sections, programmeName) {
-    var title = (programmeName || 'Evaluation') + ' \u2014 Draft Evaluation Report Outline';
+    var title = (programmeName || 'Evaluation') + ' — Draft Evaluation Report Outline';
     var html = [
       '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">',
       '<head><meta charset="utf-8"><title>' + title + '</title>',
@@ -275,28 +263,34 @@
     var withContent = sections.filter(function (s) { return s.draftContent && s.draftContent.trim().length > 0; }).length;
     var total = sections.length;
     var pct = total > 0 ? Math.round((withContent / total) * 100) : 0;
+    var complete = withContent === total && total > 0;
 
-    return h('div', { className: 'wb-card', style: { padding: '12px 16px', marginBottom: 12 } },
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
-        h('span', { style: { fontSize: 11, fontWeight: 600, color: 'var(--text, #0F172A)' } },
-          'Report completeness'),
-        h('span', { style: { fontSize: 11, fontWeight: 700, color: withContent === total ? 'var(--green-dark, #065F46)' : 'var(--slate, #64748B)' } },
-          withContent + ' of ' + total + ' sections have draft content')
+    return h('div', { className: 'wb-report-progress' },
+      h('div', { className: 'wb-report-progress-header' },
+        h('span', { className: 'wb-report-progress-label' }, 'Report completeness'),
+        h('span', {
+          className: 'wb-report-progress-count' + (complete ? ' wb-report-progress-count--complete' : '')
+        }, withContent + ' of ' + total + ' sections have draft content')
       ),
-      h('div', { style: { height: 6, background: '#F1F5F9', borderRadius: 3, overflow: 'hidden' } },
-        h('div', { style: {
-          height: '100%', borderRadius: 3,
-          width: pct + '%',
-          background: withContent === total ? '#059669' : 'var(--teal, #2EC4B6)',
-          transition: 'width 0.4s ease'
-        } })
+      h('div', {
+        className: 'wb-progress-bar',
+        role: 'progressbar',
+        'aria-valuenow': pct,
+        'aria-valuemin': 0,
+        'aria-valuemax': 100,
+        'aria-label': 'Report completeness'
+      },
+        h('div', {
+          className: 'wb-progress-bar-fill' + (complete ? ' wb-progress-bar-fill--high' : ''),
+          style: { width: pct + '%' }
+        })
       )
     );
   }
 
   // ── Type badge ──
 
-  function typeBadge(sectionType) {
+  function TypeBadge(props) {
     var labels = {
       executive_summary: 'Standard',
       introduction: 'Standard',
@@ -306,23 +300,10 @@
       recommendations: 'Standard',
       annexes: 'Annex'
     };
-    var colors = {
-      standard: { bg: '#F1F5F9', text: '#475569' },
-      finding: { bg: '#DBEAFE', text: '#1E40AF' },
-      annex: { bg: '#F5F3FF', text: '#6D28D9' }
-    };
-    var type = sectionType === 'finding' ? 'finding' : (sectionType === 'annexes' ? 'annex' : 'standard');
+    var sectionType = props.sectionType;
+    var variant = sectionType === 'finding' ? 'finding' : (sectionType === 'annexes' ? 'annex' : 'standard');
     var label = labels[sectionType] || 'Standard';
-    var cc = colors[type];
-
-    return h('span', {
-      style: {
-        display: 'inline-block', padding: '1px 7px', borderRadius: 3,
-        fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
-        letterSpacing: '0.04em', background: cc.bg, color: cc.text,
-        flexShrink: 0
-      }
-    }, label);
+    return h('span', { className: 'wb-section-type wb-section-type--' + variant }, label);
   }
 
   // ── Section card component ──
@@ -338,112 +319,100 @@
     var onRemove = props.onRemove;
     var onMove = props.onMove;
 
-    var cc = sec.criterion ? (CRITERION_COLORS[sec.criterion] || { bg: '#F1F5F9', text: '#475569' }) : null;
     var wg = WORD_GUIDANCE[sec.sectionType] || {};
     var hasDraft = sec.draftContent && sec.draftContent.trim().length > 0;
 
-    return h('div', {
-      className: 'wb-section-card' + (isEditing ? ' wb-section-card--editing' : '') + (sec.type === 'finding' ? ' wb-section-card--finding' : ''),
-      key: sec.id,
-      style: {
-        display: 'flex', alignItems: 'flex-start', gap: 12,
-        padding: '14px 16px', marginBottom: 6,
-        background: isEditing ? '#FAFBFC' : 'var(--surface, #fff)',
-        border: '1px solid ' + (isEditing ? 'var(--teal, #2EC4B6)' : 'var(--border, #E2E8F0)'),
-        borderLeft: sec.type === 'finding' && cc ? '3px solid ' + cc.text : (sec.type === 'annex' ? '3px solid #6D28D9' : '3px solid var(--border, #E2E8F0)'),
-        borderRadius: 6, transition: 'border-color 0.15s'
-      }
-    },
-      // Order controls
-      h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, paddingTop: 2, alignItems: 'center' } },
+    var cardCls = 'wb-section-card';
+    if (isEditing) cardCls += ' wb-section-card--editing';
+    if (sec.type === 'finding') cardCls += ' wb-section-card--finding';
+    if (sec.type === 'annex') cardCls += ' wb-section-card--annex';
+    if (sec.criterion) cardCls += ' wb-section-card--' + sec.criterion;
+
+    var statusDotCls = 'wb-status-dot ' + (hasDraft ? 'wb-status-dot--complete' : 'wb-status-dot--draft');
+
+    return h('div', { className: cardCls, key: sec.id },
+      // Reorder + status column
+      h('div', { className: 'wb-reorder-col' },
         h('button', {
-          style: { border: 'none', background: 'none', cursor: index > 0 ? 'pointer' : 'default', color: index > 0 ? 'var(--slate, #64748B)' : '#E2E8F0', fontSize: 10, padding: 2, lineHeight: 1 },
+          className: 'wb-reorder-btn',
           onClick: function () { onMove(sec.id, -1); },
-          disabled: index === 0, title: 'Move up'
-        }, '\u25B2'),
-        h('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--slate, #64748B)', textAlign: 'center', lineHeight: 1 } }, index + 1),
+          disabled: index === 0,
+          title: 'Move up',
+          'aria-label': 'Move section up'
+        }, '▲'),
+        h('span', { className: 'wb-reorder-index' }, index + 1),
         h('button', {
-          style: { border: 'none', background: 'none', cursor: index < total - 1 ? 'pointer' : 'default', color: index < total - 1 ? 'var(--slate, #64748B)' : '#E2E8F0', fontSize: 10, padding: 2, lineHeight: 1 },
+          className: 'wb-reorder-btn',
           onClick: function () { onMove(sec.id, 1); },
-          disabled: index === total - 1, title: 'Move down'
-        }, '\u25BC'),
-        // Status dot
-        h('div', {
-          style: {
-            width: 8, height: 8, borderRadius: '50%', marginTop: 4,
-            background: hasDraft ? '#059669' : '#CBD5E1'
-          },
-          title: hasDraft ? 'Has draft content' : 'No draft content yet'
+          disabled: index === total - 1,
+          title: 'Move down',
+          'aria-label': 'Move section down'
+        }, '▼'),
+        h('span', {
+          className: statusDotCls,
+          title: hasDraft ? 'Has draft content' : 'No draft content yet',
+          'aria-label': hasDraft ? 'complete status' : 'draft status'
         })
       ),
 
       // Main content area
-      h('div', { style: { flex: 1, minWidth: 0 } },
-        // Header: badges + title
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, flexWrap: 'wrap' } },
-          typeBadge(sec.sectionType),
-          cc ? h('span', { className: 'wb-criterion wb-criterion--' + sec.criterion }, sec.criterion) : null,
-          wg.label ? h('span', { style: { fontSize: 9, color: 'var(--slate, #64748B)', fontStyle: 'italic' } }, wg.label) : null
+      h('div', { className: 'wb-section-card-main' },
+        h('div', { className: 'wb-section-card-meta' },
+          h(TypeBadge, { sectionType: sec.sectionType }),
+          sec.criterion
+            ? h('span', { className: 'wb-criterion wb-criterion--' + sec.criterion }, sec.criterion)
+            : null,
+          wg.label
+            ? h('span', { className: 'wb-section-card-word-guide' }, wg.label)
+            : null
         ),
 
-        // Title
+        // Title (display vs edit)
         isEditing
           ? h('input', {
-              className: 'wb-input',
-              style: { width: '100%', fontWeight: 600, fontSize: 13, marginBottom: 8 },
+              className: 'wb-input wb-section-card-title-input',
               value: sec.title,
               onChange: function (e) { onUpdate(sec.id, 'title', e.target.value); },
               autoFocus: true
             })
           : h('div', {
-              style: { fontSize: 13, fontWeight: 600, color: 'var(--text, #0F172A)', marginBottom: 6, cursor: 'pointer' },
+              className: 'wb-section-card-title',
               onClick: onEdit
             }, sec.title),
 
-        // Auto-populated content preview (read-only)
+        // Auto-content preview
         sec.autoContent
           ? h('div', {
-              style: {
-                background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 4,
-                padding: '10px 12px', marginBottom: 8,
-                fontSize: 11, color: '#475569', lineHeight: 1.6,
-                whiteSpace: 'pre-line', maxHeight: isEditing ? 'none' : 120,
-                overflow: isEditing ? 'visible' : 'hidden',
-                position: 'relative'
-              }
+              className: 'wb-auto-content' + (isEditing ? ' wb-auto-content--expanded' : '')
             },
-              h('div', { style: { fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#94A3B8', marginBottom: 4 } }, 'Auto-populated from upstream data'),
+              h('div', { className: 'wb-auto-content-overline' }, 'Auto-populated from upstream data'),
               sec.autoContent,
-              !isEditing ? h('div', { style: {
-                position: 'absolute', bottom: 0, left: 0, right: 0, height: 24,
-                background: 'linear-gradient(transparent, #F8FAFC)'
-              } }) : null
+              !isEditing ? h('div', { className: 'wb-auto-content-fade' }) : null
             )
           : null,
 
-        // Editable draft content area
+        // Draft editor or preview
         isEditing
-          ? h('div', { style: { marginTop: 4 } },
-              h('label', { style: { fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--slate, #64748B)', display: 'block', marginBottom: 4 } }, 'Draft content / notes'),
+          ? h('div', { className: 'wb-draft-editor' },
+              h('label', { className: 'wb-draft-editor-label' }, 'Draft content / notes'),
               h('textarea', {
-                className: 'wb-input',
-                style: { width: '100%', minHeight: 80, resize: 'vertical', fontSize: 12, lineHeight: 1.6 },
+                className: 'wb-input wb-textarea wb-draft-textarea',
                 value: sec.draftContent || '',
                 onChange: function (e) { onUpdate(sec.id, 'draftContent', e.target.value); },
-                placeholder: 'Write your draft content for this section here\u2026'
+                placeholder: 'Write your draft content for this section here…'
               })
             )
           : hasDraft
-            ? h('div', { style: { fontSize: 11, color: 'var(--text, #0F172A)', lineHeight: 1.5, marginTop: 4, borderTop: '1px solid #E2E8F0', paddingTop: 6 } },
-                h('span', { style: { fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#94A3B8', marginRight: 6 } }, 'Draft'),
-                sec.draftContent.length > 200 ? sec.draftContent.substring(0, 200) + '\u2026' : sec.draftContent
+            ? h('div', { className: 'wb-draft-preview' },
+                h('span', { className: 'wb-draft-preview-overline' }, 'Draft'),
+                sec.draftContent.length > 200 ? sec.draftContent.substring(0, 200) + '…' : sec.draftContent
               )
             : null,
 
-        // Linked EQs for findings
+        // Linked EQ for findings
         sec.type === 'finding' && sec.eqNumber
-          ? h('div', { style: { marginTop: 6, display: 'flex', gap: 4, alignItems: 'center' } },
-              h('span', { style: { fontSize: 9, color: '#94A3B8' } }, 'Linked:'),
+          ? h('div', { className: 'wb-section-card-linked' },
+              h('span', { className: 'wb-section-card-linked-label' }, 'Linked:'),
               h('span', { className: 'wb-criterion wb-criterion--' + (sec.criterion || 'relevance') },
                 'EQ' + sec.eqNumber)
             )
@@ -451,22 +420,24 @@
       ),
 
       // Actions column
-      h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 } },
+      h('div', { className: 'wb-section-card-actions' },
         isEditing
           ? h('button', {
-              style: { border: 'none', background: 'none', cursor: 'pointer', color: 'var(--teal, #2EC4B6)', fontSize: 11, fontWeight: 600, padding: '4px 8px' },
+              className: 'wb-icon-action-btn wb-icon-action-btn--primary',
               onClick: onDone
             }, 'Done')
           : h('button', {
-              style: { border: 'none', background: 'none', cursor: 'pointer', color: 'var(--slate, #64748B)', fontSize: 11, padding: '4px 6px' },
-              onClick: onEdit, title: 'Edit'
-            }, '\u270E'),
+              className: 'wb-icon-action-btn',
+              onClick: onEdit,
+              title: 'Edit',
+              'aria-label': 'Edit section'
+            }, '✎'),
         h('button', {
-          style: { border: 'none', background: 'none', cursor: 'pointer', color: '#EF4444', fontSize: 11, padding: '4px 6px', opacity: 0.5 },
-          onClick: function () { onRemove(sec.id); }, title: 'Remove section',
-          onMouseEnter: function (e) { e.currentTarget.style.opacity = 1; },
-          onMouseLeave: function (e) { e.currentTarget.style.opacity = 0.5; }
-        }, '\u2715')
+          className: 'wb-icon-action-btn wb-icon-action-btn--danger',
+          onClick: function () { onRemove(sec.id); },
+          title: 'Remove section',
+          'aria-label': 'Remove section'
+        }, '✕')
       )
     );
   }
@@ -548,7 +519,7 @@
     // ── Empty state ──
     if (!generated) {
       return h('div', null,
-        h(SectionCard,{ title: 'Report Structure', bodyType: 'empty' },
+        h(SectionCard, { title: 'Report Structure', bodyType: 'empty' },
           h('div', { className: 'wb-station-empty' },
             h('div', { className: 'wb-station-empty-title' }, 'Report Builder'),
             h('p', { className: 'wb-station-empty-desc' },
@@ -572,30 +543,26 @@
     var annexCount = sections.filter(function (s) { return s.type === 'annex'; }).length;
 
     return h('div', null,
-      // Wrap progress bar + header row in global SectionCard
-      h(SectionCard,{
+      h(SectionCard, {
         title: 'Report Structure',
         badge: sections.length + ' sections'
       },
-        // Progress bar
         h(ProgressBar, { sections: sections }),
 
-        // Header row
-        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
-          h('div', null,
-            h('span', { style: { fontSize: 13, fontWeight: 600, color: 'var(--text, #0F172A)' } },
+        h('div', { className: 'wb-report-header-row' },
+          h('div', { className: 'wb-report-header-stats' },
+            h('span', { className: 'wb-report-header-stats-primary' },
               sections.length + ' sections'),
-            h('span', { style: { fontSize: 11, color: 'var(--slate, #64748B)', marginLeft: 8 } },
-              standardCount + ' standard \u00B7 ' + findingsCount + ' findings \u00B7 ' + annexCount + ' annex')
+            h('span', { className: 'wb-report-header-stats-meta' },
+              standardCount + ' standard · ' + findingsCount + ' findings · ' + annexCount + ' annex')
           ),
-          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-            h('button', { className: 'wb-btn', style: { fontSize: 11 }, onClick: addSection }, '+ Add Section'),
-            h('button', { className: 'wb-btn', style: { fontSize: 11 }, onClick: handleGenerate }, 'Regenerate'),
-            h('button', { className: 'wb-btn wb-btn-primary', style: { fontSize: 11 }, onClick: handleExport }, 'Export Outline')
+          h('div', { className: 'wb-report-header-actions' },
+            h('button', { className: 'wb-btn wb-btn-sm', onClick: addSection }, '+ Add Section'),
+            h('button', { className: 'wb-btn wb-btn-sm', onClick: handleGenerate }, 'Regenerate'),
+            h('button', { className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: handleExport }, 'Export Outline')
           )
         ),
 
-        // Section cards
         sections.map(function (sec, i) {
           return h(ReportSectionCard, {
             key: sec.id,
@@ -613,7 +580,7 @@
       ),
 
       // Save bar
-      h('div', { className: 'wb-action-bar', style: { marginTop: 16 } },
+      h('div', { className: 'wb-action-bar' },
         h('button', { className: 'wb-btn wb-btn-teal', onClick: handleSave }, 'Save Report Structure'),
         h('button', { className: 'wb-btn', onClick: handleExport }, 'Export as Word Outline')
       ),
