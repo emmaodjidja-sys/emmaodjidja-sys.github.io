@@ -1,5 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="64" fill="#0c0c14"/>
-  <text x="256" y="356" text-anchor="middle" font-family="'Neue Haas Unica', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="320" font-weight="700" fill="#fafaf6">E</text>
-  <circle cx="420" cy="116" r="44" fill="#6E1818"/>
+  <rect width="512" height="512" fill="#fafaf6"/>
+  <polygon points="128,96 128,416 392,256" fill="#6E1818"/>
 </svg>
