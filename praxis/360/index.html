@@ -6,7 +6,7 @@
     <title>PRAXIS 360° | The Unbroken Evaluation Loop</title>
     <meta name="description" content="PRAXIS 360° keeps the entire evaluation pipeline in one traceable .praxis file. Theory of Change to findings and back, in one unbroken chain.">
     <meta property="og:title" content="PRAXIS 360° | The Unbroken Evaluation Loop">
-    <meta property="og:description" content="Six stages. One file. Every output feeds the next. Launching at Glocal Evaluation Week, June 2026.">
+    <meta property="og:description" content="Six stages. One file. Every output feeds the next. Live at Glocal Evaluation Week 2026.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/360/">
     <meta name="twitter:card" content="summary_large_image">
@@ -107,9 +107,9 @@
 
     <!-- HERO -->
     <header class="pt-36 pb-20 px-8 max-w-7xl mx-auto relative z-10 text-center">
-        <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 font-mono text-[10px] uppercase tracking-widest mb-8 backdrop-blur">
-            <span class="w-2 h-2 bg-p_amber rounded-full animate-pulse shadow-[0_0_8px_#f59e0b]"></span>
-            <span>Launching: Glocal Evaluation Week | June 3, 2026</span>
+        <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-slate-800/80 border border-p_teal/40 text-slate-200 font-mono text-[10px] uppercase tracking-widest mb-8 backdrop-blur">
+            <span class="w-2 h-2 bg-p_teal rounded-full animate-pulse shadow-[0_0_8px_#14b8a6]"></span>
+            <span>Now live &middot; Glocal Evaluation Week 2026</span>
         </div>
 
         <h1 class="text-6xl md:text-8xl font-bold tracking-tighter mb-8 text-white leading-none">
@@ -118,13 +118,16 @@
         </h1>
 
         <p class="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-3xl mx-auto mb-10">
-            Every evaluation quality standard requires one unbroken chain: Theory of Change to findings and back. Current tools fragment the process across disconnected documents. <strong class="text-white">PRAXIS 360 keeps the entire evaluation pipeline in one traceable <code class="text-p_teal">.praxis</code> file.</strong>
+            Causal claims require one unbroken chain: question, design, data, analysis, finding, and back to question. Fragmented tooling breaks the chain at every handoff. <strong class="text-white">PRAXIS 360 keeps the entire chain in one traceable <code class="text-p_teal">.praxis</code> file.</strong>
         </p>
 
-        <div class="flex justify-center gap-4 flex-wrap">
-            <button onclick="document.getElementById('simulator').scrollIntoView({behavior: 'smooth'})" class="bg-p_teal text-p_navy px-8 py-4 rounded font-bold tracking-wide hover:bg-p_teal_light transition-colors shadow-[0_0_20px_rgba(20,184,166,0.3)]">View the Pipeline</button>
-            <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="border border-slate-700 text-white px-8 py-4 rounded font-bold tracking-wide hover:border-p_teal transition-colors bg-p_surface">GitHub Repository</a>
+        <div class="flex justify-center gap-4 flex-wrap items-center">
+            <a href="../workbench/" class="bg-p_teal text-p_navy px-8 py-4 rounded font-bold tracking-wide hover:bg-p_teal_light transition-colors shadow-[0_0_20px_rgba(20,184,166,0.35)]">Open the Workbench</a>
+            <button onclick="document.getElementById('simulator').scrollIntoView({behavior: 'smooth'})" class="border border-slate-700 text-white px-8 py-4 rounded font-bold tracking-wide hover:border-p_teal transition-colors bg-p_surface">View the Pipeline</button>
         </div>
+        <p class="mt-6 text-xs font-mono uppercase tracking-widest text-slate-500">
+            Open source &middot; <a href="https://github.com/emmaodjidja-sys/praxis" target="_blank" rel="noopener" class="hover:text-p_teal transition-colors">GitHub</a> &middot; <a href="../tools/indicator-bank/" class="hover:text-p_teal transition-colors">Indicator Bank</a>
+        </p>
     </header>
 
     <!-- SIMULATOR -->
@@ -161,11 +164,89 @@
         </div>
     </section>
 
+    <!-- LIVE TOOL BRIDGE -->
+    <section id="live-tool" class="py-24 px-8 max-w-7xl mx-auto relative z-10">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-3 text-xs font-mono tracking-widest text-p_teal uppercase mb-6">
+                <span class="w-2 h-2 bg-p_teal rounded-full animate-pulse shadow-[0_0_8px_#14b8a6]"></span>
+                Live now
+            </div>
+            <h2 class="text-sm font-mono tracking-widest text-slate-500 uppercase mb-4">From architecture to implementation</h2>
+            <h3 class="text-4xl md:text-5xl font-bold text-white tracking-tight">The Workbench is the <span class="font-serif italic font-normal text-p_teal_light">.praxis</span> file, shipped.</h3>
+            <p class="text-slate-400 font-light leading-relaxed max-w-2xl mx-auto mt-6">
+                The simulator above is the architecture. The Workbench is that architecture working: nine stations, one local-first file, runs in the browser, no install, no account.
+            </p>
+        </div>
+
+        <!-- 9 STATION RAIL -->
+        <div class="bg-p_surface/60 border border-slate-800 rounded-2xl p-6 md:p-8 mb-10">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <div class="text-xs font-mono tracking-widest text-slate-500 uppercase">The Workbench &middot; nine stations</div>
+                </div>
+                <div class="hidden md:block text-xs font-mono text-slate-500">Load Demo populates all nine with a Global Fund RSSH Ghana case</div>
+            </div>
+            <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-9 gap-3">
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">01</div>
+                    <div class="text-xs text-slate-300 leading-tight">Evaluability</div>
+                </a>
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">02</div>
+                    <div class="text-xs text-slate-300 leading-tight">Theory of Change</div>
+                </a>
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">03</div>
+                    <div class="text-xs text-slate-300 leading-tight">Evaluation Matrix</div>
+                </a>
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">04</div>
+                    <div class="text-xs text-slate-300 leading-tight">Design Advisor</div>
+                </a>
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">05</div>
+                    <div class="text-xs text-slate-300 leading-tight">Sample Size</div>
+                </a>
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">06</div>
+                    <div class="text-xs text-slate-300 leading-tight">Instruments</div>
+                </a>
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">07</div>
+                    <div class="text-xs text-slate-300 leading-tight">Analysis</div>
+                </a>
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">08</div>
+                    <div class="text-xs text-slate-300 leading-tight">Report Builder</div>
+                </a>
+                <a href="../workbench/" class="block p-3 bg-p_navy/60 border border-slate-800 rounded-lg hover:border-p_teal hover:bg-p_navy transition-colors">
+                    <div class="text-[10px] font-mono text-p_teal tracking-widest mb-2">09</div>
+                    <div class="text-xs text-slate-300 leading-tight">Deck Generator</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- CTA BLOCK -->
+        <div class="relative bg-gradient-to-br from-p_teal/10 via-p_surface to-p_amber/5 border border-p_teal/30 rounded-2xl p-10 md:p-12 text-center shadow-[0_0_40px_rgba(20,184,166,0.08)]">
+            <h4 class="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Open the Workbench. Run the demo.</h4>
+            <p class="text-slate-300 font-light leading-relaxed mb-8 max-w-2xl mx-auto">
+                A pre-populated Global Fund RSSH Ghana evaluation walks the full pipeline end to end. Six evaluation questions, instruments, sample strategy, analysis plan, ready-to-export report and deck. No sign-in. Local-first.
+            </p>
+            <div class="flex justify-center gap-4 flex-wrap">
+                <a href="../workbench/" class="bg-p_teal text-p_navy px-8 py-4 rounded font-bold tracking-wide hover:bg-p_teal_light transition-colors shadow-[0_0_20px_rgba(20,184,166,0.35)]">Open the Workbench</a>
+                <a href="../tools/indicator-bank/" class="border border-slate-700 text-white px-8 py-4 rounded font-bold tracking-wide hover:border-p_teal transition-colors bg-p_surface/80">Indicator Bank &middot; 325 indicators</a>
+            </div>
+            <div class="mt-8 text-xs font-mono uppercase tracking-widest text-slate-500">
+                Open source &middot; MIT licensed &middot; Runs in the browser
+            </div>
+        </div>
+    </section>
+
     <!-- PARADIGM SHIFT -->
     <section class="py-24 px-8 max-w-7xl mx-auto relative z-10">
         <div class="text-center mb-16">
-            <h2 class="text-sm font-mono tracking-widest text-slate-500 uppercase mb-4">The Paradigm Shift</h2>
-            <h3 class="text-4xl font-bold text-white">What breaks today vs. what 360 fixes.</h3>
+            <h2 class="text-sm font-mono tracking-widest text-slate-500 uppercase mb-4">Why the chain matters</h2>
+            <h3 class="text-4xl font-bold text-white">Fragmented tooling breaks causal claims.</h3>
         </div>
 
         <div class="grid md:grid-cols-2 gap-8">
@@ -204,11 +285,12 @@
     <!-- FOOTER -->
     <footer class="pt-20 pb-12 px-8 max-w-7xl mx-auto border-t border-slate-800 relative z-10">
         <div class="text-center mb-24">
-            <h2 class="text-4xl font-bold text-white mb-6">Live demo. June 3, 2026.</h2>
-            <p class="text-slate-400 mb-8 font-mono uppercase tracking-widest text-sm">Glocal Evaluation Week. Open source. Free forever.</p>
+            <h2 class="text-4xl font-bold text-white mb-6">Now live.</h2>
+            <p class="text-slate-400 mb-8 font-mono uppercase tracking-widest text-sm">Glocal Evaluation Week 2026 &middot; Open source &middot; Free forever</p>
             <div class="flex justify-center gap-6 text-sm font-bold flex-wrap">
-                <a href="https://www.linkedin.com/in/emmanuel-odjidja/" target="_blank" rel="noopener" class="text-p_teal hover:text-p_teal_light transition-colors">Follow for Updates &rarr;</a>
-                <a href="../evaluation/" class="text-white hover:text-p_teal transition-colors">Evaluation Tools &rarr;</a>
+                <a href="../workbench/" class="text-p_teal hover:text-p_teal_light transition-colors">Open the Workbench &rarr;</a>
+                <a href="../tools/indicator-bank/" class="text-white hover:text-p_teal transition-colors">Indicator Bank &rarr;</a>
+                <a href="https://www.linkedin.com/in/emmanuel-odjidja/" target="_blank" rel="noopener" class="text-slate-300 hover:text-p_teal transition-colors">Follow Updates &rarr;</a>
             </div>
         </div>
 
