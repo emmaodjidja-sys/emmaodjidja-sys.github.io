@@ -138,7 +138,7 @@ Widths alternate as user scrolls to create cinematic pacing.
 - **Text:**
   - Heading: "Built from field reality"
   - Paragraph: 12 years across conflict-affected settings (Burkina Faso, Mali, Niger, South Sudan, Burundi). Epidemiology, econometrics, applied M&E.
-  - Bio line: "**Emmanuel Nene Odjidja** — Founder and Director. Section Editor, Journal of MultiDisciplinary Evaluation. 29 peer-reviewed publications."
+  - Bio line: "**Emmanuel Nene Odjidja, MPH** — Founder and Director. Section Editor, Journal of MultiDisciplinary Evaluation. 29 peer-reviewed publications."
   - Links: Publications → | Google Scholar →
 - **Stats grid:** 2x2 grid of stat cards
   - 12+ / years in the field
