@@ -102,7 +102,7 @@
       var secCount = (inst.sections || []).length;
       var eqIds = {}; (inst.sections || []).forEach(function(sec) { if (sec.eqId) eqIds[sec.eqId] = true; });
       var eqBadges = Object.keys(eqIds).length > 0
-        ? h('div', { className: 'wb-context-badges', style: { marginTop: 6 } },
+        ? h('div', { className: 'wb-context-badges wb-context-badges--inset' },
             Object.keys(eqIds).map(function(eqId) { return h('span', { key: eqId, className: 'wb-badge wb-badge-teal' }, eqId); }))
         : null;
 
@@ -113,15 +113,14 @@
         collapsible: true,
         defaultCollapsed: i > 0
       },
-        h('div', { className: 'wb-card wb-card--interactive',
-          onClick: function() { setEditingId(inst.id); },
-          style: { cursor: 'pointer' } },
-          h('div', { className: 'wb-action-card-desc', style: { marginBottom: 8 } }, inst.method),
+        h('div', { className: 'wb-card wb-card--interactive wb-instrument-summary',
+          onClick: function() { setEditingId(inst.id); } },
+          h('div', { className: 'wb-instrument-method' }, inst.method),
           h('div', { className: 'wb-context-badges' },
             h('span', { className: 'wb-context-badge' }, qCount + ' questions'),
             h('span', { className: 'wb-context-badge' }, secCount + ' sections')),
           eqBadges,
-          h('button', { className: 'wb-btn wb-btn-primary', style: { marginTop: 12 },
+          h('button', { className: 'wb-btn wb-btn-primary wb-instrument-edit',
             onClick: function(e) { e.stopPropagation(); setEditingId(inst.id); } }, 'Edit Instrument')));
     });
 
@@ -142,37 +141,37 @@
       collapsible: true,
       defaultCollapsed: false
     },
-      uncoveredCount > 0 ? h('div', { className: 'wb-guidance', style: { background: 'var(--amber-light)', borderColor: 'var(--amber)', marginBottom: 12 } },
-        h('span', { className: 'wb-guidance-text', style: { color: '#92400E' } },
+      uncoveredCount > 0 ? h('div', { className: 'wb-guidance--signal' },
+        h('span', { className: 'wb-guidance--signal-text' },
           uncoveredCount + ' evaluation question(s) not covered by any instrument')) : null,
       h('div', { className: 'wb-table-container' },
         h('table', { className: 'wb-table' },
           h('thead', null, h('tr', null,
             h('th', null, 'Evaluation Question'),
-            localInst.map(function(inst) { return h('th', { key: inst.id, style: { textAlign: 'center' } }, (inst.type || 'survey').toUpperCase()); }))),
+            localInst.map(function(inst) { return h('th', { key: inst.id, className: 'wb-th--center' }, (inst.type || 'survey').toUpperCase()); }))),
           h('tbody', null, eqCoverage.map(function(ec) {
             var noCoverage = Object.keys(ec.covered).length === 0;
             return h('tr', { key: ec.row.id, className: noCoverage ? 'wb-coverage-gap' : '' },
-              h('td', { style: { fontWeight: noCoverage ? 600 : 400, color: noCoverage ? '#92400E' : 'var(--text)' } },
+              h('td', { className: noCoverage ? 'wb-coverage-cell--gap' : '' },
                 (ec.row.question || ec.row.text || ec.row.id || '').slice(0, 60)),
               localInst.map(function(inst) {
-                return h('td', { key: inst.id, style: { textAlign: 'center' } },
-                  ec.covered[inst.id] ? h('span', { style: { color: 'var(--teal)', fontWeight: 700 } }, '\u2713') : '\u2014');
+                return h('td', { key: inst.id, className: 'wb-td--center' },
+                  ec.covered[inst.id] ? h('span', { className: 'wb-coverage-mark' },'\u2713') : '\u2014');
               }));
           })))));
 
     // SKIP LOGIC BOUNDARY
     var skipLogic = h(SectionCard, { title: 'Skip Logic & Branching', badge: 'Handled in KoboToolbox', collapsible: true, defaultCollapsed: true },
-      h('div', { className: 'wb-form-grid', style: { marginBottom: 8, fontSize: 12 } },
-        h('div', { style: { background: 'var(--green-light)', padding: 12, borderRadius: 'var(--radius-sm)' } },
-          h('strong', { style: { color: '#065F46', fontSize: 11 } }, 'What this builder does'),
-          h('ul', { style: { margin: '6px 0 0', paddingLeft: 16, color: 'var(--text)' } },
+      h('div', { className: 'wb-form-grid' },
+        h('div', { className: 'wb-info-panel wb-info-panel--green' },
+          h('span', { className: 'wb-info-panel-title' }, 'What this builder does'),
+          h('ul', { className: 'wb-info-panel-list' },
             h('li', null, 'Structure questions in logical sections'),
             h('li', null, 'Set required/optional flags'),
             h('li', null, 'Define response types and constraints'))),
-        h('div', { style: { background: 'var(--blue-light)', padding: 12, borderRadius: 'var(--radius-sm)' } },
-          h('strong', { style: { color: '#1E40AF', fontSize: 11 } }, 'Configure in KoboToolbox'),
-          h('ul', { style: { margin: '6px 0 0', paddingLeft: 16, color: 'var(--text)' } },
+        h('div', { className: 'wb-info-panel wb-info-panel--blue' },
+          h('span', { className: 'wb-info-panel-title' }, 'Configure in KoboToolbox'),
+          h('ul', { className: 'wb-info-panel-list' },
             h('li', null, 'Skip logic (relevant column)'),
             h('li', null, 'Cascading selects'),
             h('li', null, 'Validation constraints & calculations')))),

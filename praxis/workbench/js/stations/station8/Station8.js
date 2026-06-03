@@ -11,7 +11,6 @@
   var useState = React.useState;
   var useCallback = React.useCallback;
   var useEffect = React.useEffect;
-  var useRef = React.useRef;
 
   // ── Helpers ──
 
@@ -42,20 +41,11 @@
     return { label: 'Low', cls: 'wb-score-band--red' };
   }
 
-  function dimensionColor(pct) {
-    if (pct >= 80) return '#059669';
-    if (pct >= 50) return '#D97706';
-    return '#DC2626';
+  function dimensionFillClass(pct) {
+    if (pct >= 80) return 'wb-progress-bar-fill--high';
+    if (pct >= 50) return 'wb-progress-bar-fill--mid';
+    return 'wb-progress-bar-fill--low';
   }
-
-  var CRITERION_COLORS = {
-    relevance: { bg: '#DBEAFE', text: '#1E40AF' },
-    coherence: { bg: '#E0E7FF', text: '#3730A3' },
-    effectiveness: { bg: '#D1FAE5', text: '#065F46' },
-    efficiency: { bg: '#FEF3C7', text: '#92400E' },
-    impact: { bg: '#FCE7F3', text: '#9D174D' },
-    sustainability: { bg: '#CCFBF1', text: '#115E59' }
-  };
 
   // ── Print CSS injection ──
 
@@ -87,7 +77,6 @@
   }
 
   // ── Slide builders ──
-  // Each returns { id, title, contentFn } where contentFn returns React elements
 
   function buildSlides(context) {
     var meta = context.project_meta || {};
@@ -112,11 +101,11 @@
       {
         id: uid('s'), title: 'Title Slide',
         content: function () {
-          return h('div', { style: { textAlign: 'center', padding: '32px 0' } },
-            h('div', { className: 'wb-param-label', style: { fontSize: 11, marginBottom: 8 } }, safe(meta.organisation)),
-            h('div', { style: { fontSize: 22, fontWeight: 800, color: 'var(--navy, #0B1A2E)', marginBottom: 6 } }, safe(meta.programme_name, 'Evaluation Design Brief')),
-            h('div', { style: { fontSize: 14, fontWeight: 600, color: 'var(--teal, #2DD4BF)', marginBottom: 16 } }, 'Evaluation Design Brief'),
-            h('div', { className: 'wb-param-label' }, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
+          return h('div', { className: 's8-title-slide' },
+            h('div', { className: 's8-title-org' }, safe(meta.organisation)),
+            h('div', { className: 's8-title-name' }, safe(meta.programme_name, 'Evaluation Design Brief')),
+            h('div', { className: 's8-title-tag' }, 'Evaluation Design Brief'),
+            h('div', { className: 's8-title-date' }, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
           );
         }
       },
@@ -150,14 +139,14 @@
         content: function () {
           var purposes = tor.evaluation_purpose || [];
           var fields = [
-            { label: 'Evaluation Purpose(s)', value: purposes.length > 0 ? purposes.map(fmt).join(', ') : 'Not specified' },
-            { label: 'Causal Inference Level', value: fmt(tor.causal_inference_level) },
-            { label: 'Geographic Scope', value: safe(tor.geographic_scope) },
-            { label: 'Target Population', value: safe(tor.target_population) }
+            { label: 'Evaluation Purpose(s)', value: purposes.length > 0 ? purposes.map(fmt).join(', ') : 'Not specified', full: false },
+            { label: 'Causal Inference Level', value: fmt(tor.causal_inference_level), full: false },
+            { label: 'Geographic Scope', value: safe(tor.geographic_scope), full: true },
+            { label: 'Target Population', value: safe(tor.target_population), full: true }
           ];
           return h('div', { className: 'wb-slide-fields' },
             fields.map(function (f, i) {
-              return h('div', { key: i, style: i < 2 ? {} : { gridColumn: '1 / -1' } },
+              return h('div', { key: i, className: f.full ? 'wb-slide-fields--full' : '' },
                 h('div', { className: 'wb-param-label' }, f.label),
                 h('div', { className: 'wb-param-value' }, f.value)
               );
@@ -171,12 +160,12 @@
         id: uid('s'), title: 'Theory of Change Summary',
         content: function () {
           if (nodes.length === 0) {
-            return h('p', { style: { fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' } }, 'Complete the Theory of Change station to populate this slide.');
+            return h('p', { className: 's8-slide-empty' }, 'Complete the Theory of Change station to populate this slide.');
           }
           var levels = ['impact', 'outcome', 'output', 'activity'];
           var outcomeNodes = nodes.filter(function (n) { return n.level === 'outcome'; });
           return h('div', null,
-            h('div', { className: 'wb-slide-fields', style: { marginBottom: 12 } },
+            h('div', { className: 'wb-slide-fields wb-slide-fields-bottom-margin' },
               levels.map(function (lvl) {
                 return h('div', { key: lvl },
                   h('div', { className: 'wb-param-label' }, fmt(lvl) + 's'),
@@ -186,10 +175,12 @@
             ),
             outcomeNodes.length > 0
               ? h('div', null,
-                  h('div', { className: 'wb-param-label', style: { marginBottom: 4 } }, 'Key Outcome Areas'),
-                  outcomeNodes.map(function (n) {
-                    return h('div', { key: n.id, style: { fontSize: 13, color: 'var(--text)', padding: '2px 0' } }, '\u2022 ' + n.title);
-                  })
+                  h('div', { className: 'wb-param-label' }, 'Key Outcome Areas'),
+                  h('div', { className: 's8-bullet-list' },
+                    outcomeNodes.map(function (n) {
+                      return h('div', { key: n.id, className: 's8-bullet-item' }, '• ' + n.title);
+                    })
+                  )
                 )
               : null
           );
@@ -201,16 +192,17 @@
         id: uid('s'), title: 'Evaluation Questions',
         content: function () {
           if (rows.length === 0) {
-            return h('p', { style: { fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' } }, 'Complete Station 2 to define evaluation questions.');
+            return h('p', { className: 's8-slide-empty' }, 'Complete Station 2 to define evaluation questions.');
           }
-          return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          return h('div', { className: 's8-eq-list' },
             rows.map(function (eq, i) {
               var num = eq.number || (i + 1);
-              var cc = eq.criterion ? CRITERION_COLORS[eq.criterion] : null;
-              return h('div', { key: eq.id || i, style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, lineHeight: 1.5 } },
-                h('span', { style: { fontWeight: 700, color: 'var(--slate)', flexShrink: 0, minWidth: 22 } }, num + '.'),
-                cc ? h('span', { className: 'wb-criterion wb-criterion--' + eq.criterion, style: { flexShrink: 0, marginTop: 1 } }, eq.criterion.substring(0, 5).toUpperCase()) : null,
-                h('span', { style: { color: 'var(--text)' } }, eq.question || '')
+              return h('div', { key: eq.id || i, className: 's8-eq-row' },
+                h('span', { className: 's8-eq-num' }, num + '.'),
+                eq.criterion
+                  ? h('span', { className: 'wb-criterion wb-criterion--' + eq.criterion }, eq.criterion.substring(0, 5).toUpperCase())
+                  : null,
+                h('span', { className: 's8-eq-text' }, eq.question || '')
               );
             })
           );
@@ -222,17 +214,17 @@
         id: uid('s'), title: 'Methodology',
         content: function () {
           if (!topDesign) {
-            return h('p', { style: { fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' } }, 'Complete Station 3 to select an evaluation design.');
+            return h('p', { className: 's8-slide-empty' }, 'Complete Station 3 to select an evaluation design.');
           }
           var fields = [
             { label: 'Design', value: topDesign.name || fmt(topDesign.id || topDesign.design_id || '') },
             { label: 'Family', value: topDesign.family || 'Not classified' },
             topDesign.score != null ? { label: 'Score', value: (typeof topDesign.score === 'number' ? topDesign.score.toFixed(1) : topDesign.score) + ' / 100' } : null,
-            { label: 'Comparison Strategy', value: fmt(tor.comparison_feasibility || designRec.answers && designRec.answers.comparison) }
+            { label: 'Comparison Strategy', value: fmt(tor.comparison_feasibility || (designRec.answers && designRec.answers.comparison)) }
           ].filter(Boolean);
 
           return h('div', null,
-            h('div', { className: 'wb-slide-fields', style: { marginBottom: 12 } },
+            h('div', { className: 'wb-slide-fields wb-slide-fields-bottom-margin' },
               fields.map(function (f, i) {
                 return h('div', { key: i },
                   h('div', { className: 'wb-param-label' }, f.label),
@@ -242,8 +234,8 @@
             ),
             designRec.justification
               ? h('div', null,
-                  h('div', { className: 'wb-param-label', style: { marginBottom: 2 } }, 'Justification'),
-                  h('div', { style: { fontSize: 12, color: 'var(--text)', lineHeight: 1.5 } }, designRec.justification)
+                  h('div', { className: 'wb-param-label' }, 'Justification'),
+                  h('div', { className: 's8-eq-text' }, designRec.justification)
                 )
               : null
           );
@@ -255,19 +247,19 @@
         id: uid('s'), title: 'Sampling Strategy',
         content: function () {
           if (!result.primary && !sampleParams.design_id) {
-            return h('p', { style: { fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' } }, 'Complete Station 4 to define sample parameters.');
+            return h('p', { className: 's8-slide-empty' }, 'Complete Station 4 to define sample parameters.');
           }
           var breakdown = qualPlan.breakdown || [];
           var topFields = [
-            result.primary ? { label: 'Total Sample', value: String(result.primary) } : null,
-            result.label ? { label: 'Design', value: result.label } : null
+            result.primary ? { label: 'Total Sample', value: String(result.primary), full: false } : null,
+            result.label ? { label: 'Design', value: result.label, full: true } : null
           ].filter(Boolean);
 
           return h('div', null,
             topFields.length > 0
-              ? h('div', { className: 'wb-slide-fields', style: { marginBottom: 12 } },
+              ? h('div', { className: 'wb-slide-fields wb-slide-fields-bottom-margin' },
                   topFields.map(function (f, i) {
-                    return h('div', { key: i, style: i === 1 ? { gridColumn: '1 / -1' } : {} },
+                    return h('div', { key: i, className: f.full ? 'wb-slide-fields--full' : '' },
                       h('div', { className: 'wb-param-label' }, f.label),
                       h('div', { className: 'wb-param-value' }, f.value)
                     );
@@ -276,11 +268,11 @@
               : null,
             breakdown.length > 0
               ? h('div', null,
-                  h('div', { className: 'wb-param-label', style: { marginBottom: 6 } }, 'Qualitative Breakdown'),
+                  h('div', { className: 'wb-param-label' }, 'Qualitative Breakdown'),
                   breakdown.map(function (b, i) {
-                    return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #F1F5F9', fontSize: 12 } },
-                      h('span', { style: { fontWeight: 500, color: 'var(--text)' } }, b.method),
-                      h('span', { style: { fontWeight: 700, color: 'var(--navy)' } }, String(b.count))
+                    return h('div', { key: i, className: 's8-list-row' },
+                      h('span', { className: 's8-list-label' }, b.method),
+                      h('span', { className: 's8-list-value' }, String(b.count))
                     );
                   })
                 )
@@ -294,14 +286,14 @@
         id: uid('s'), title: 'Data Collection',
         content: function () {
           if (instruments.length === 0) {
-            return h('p', { style: { fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' } }, 'Complete Station 5 to build instruments.');
+            return h('p', { className: 's8-slide-empty' }, 'Complete Station 5 to build instruments.');
           }
           var totalQ = instruments.reduce(function (sum, inst) { return sum + (inst.questions ? inst.questions.length : 0); }, 0);
           var types = {};
           instruments.forEach(function (inst) { var t = inst.type || 'other'; types[t] = (types[t] || 0) + 1; });
 
           return h('div', null,
-            h('div', { className: 'wb-slide-fields', style: { marginBottom: 12 } },
+            h('div', { className: 'wb-slide-fields wb-slide-fields-bottom-margin' },
               h('div', null,
                 h('div', { className: 'wb-param-label' }, 'Instruments'),
                 h('div', { className: 'wb-param-value' }, String(instruments.length))
@@ -318,9 +310,9 @@
             h('div', null,
               instruments.map(function (inst, i) {
                 var qCount = inst.questions ? inst.questions.length : 0;
-                return h('div', { key: inst.id || i, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid #F1F5F9', fontSize: 12 } },
-                  h('span', { style: { fontWeight: 500, color: 'var(--text)' } }, inst.title || inst.name || 'Untitled'),
-                  h('span', { style: { color: 'var(--slate)', fontSize: 11 } }, qCount + ' questions \u00B7 ' + fmt(inst.type || 'other'))
+                return h('div', { key: inst.id || i, className: 's8-list-row' },
+                  h('span', { className: 's8-list-label' }, inst.title || inst.name || 'Untitled'),
+                  h('span', { className: 's8-list-value--muted' }, qCount + ' questions · ' + fmt(inst.type || 'other'))
                 );
               })
             )
@@ -334,28 +326,27 @@
         content: function () {
           var aRows = analysisPlan.rows || [];
           if (aRows.length === 0 && rows.length > 0) {
-            // Fallback: show data sources per EQ from matrix
             return h('div', null,
-              h('div', { className: 'wb-param-label', style: { marginBottom: 6 } }, 'Data Sources per Evaluation Question'),
+              h('div', { className: 'wb-param-label' }, 'Data Sources per Evaluation Question'),
               rows.map(function (eq, i) {
                 var num = eq.number || (i + 1);
                 var sources = eq.dataSources || [];
-                return h('div', { key: eq.id || i, style: { padding: '4px 0', borderBottom: '1px solid #F1F5F9', fontSize: 12 } },
-                  h('span', { style: { fontWeight: 700, color: 'var(--slate)', marginRight: 8 } }, 'EQ' + num + ':'),
-                  h('span', { style: { color: 'var(--text)' } }, sources.length > 0 ? sources.join(', ') : 'No sources defined')
+                return h('div', { key: eq.id || i, className: 's8-list-row' },
+                  h('span', { className: 's8-list-label' }, 'EQ' + num),
+                  h('span', { className: 's8-list-value--muted' }, sources.length > 0 ? sources.join(', ') : 'No sources defined')
                 );
               }),
-              h('p', { style: { fontSize: 11, color: 'var(--slate)', fontStyle: 'italic', marginTop: 8 } }, 'Complete Station 6 for detailed analysis methods.')
+              h('p', { className: 's8-slide-empty' }, 'Complete Station 6 for detailed analysis methods.')
             );
           }
           if (aRows.length === 0) {
-            return h('p', { style: { fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' } }, 'Complete Station 6 to define the analysis plan.');
+            return h('p', { className: 's8-slide-empty' }, 'Complete Station 6 to define the analysis plan.');
           }
           return h('div', null,
             aRows.map(function (r, i) {
-              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #F1F5F9', fontSize: 12 } },
-                h('span', { style: { fontWeight: 500, color: 'var(--text)' } }, r.eq_label || ('EQ' + (i + 1))),
-                h('span', { style: { color: 'var(--slate)' } }, [r.method, r.software].filter(Boolean).join(' \u00B7 ') || 'Not specified')
+              return h('div', { key: i, className: 's8-list-row' },
+                h('span', { className: 's8-list-label' }, r.eq_label || ('EQ' + (i + 1))),
+                h('span', { className: 's8-list-value--muted' }, [r.method, r.software].filter(Boolean).join(' · ') || 'Not specified')
               );
             })
           );
@@ -371,17 +362,17 @@
           var blockers = evaluability.blockers || [];
 
           if (score == null) {
-            return h('p', { style: { fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' } }, 'Evaluability assessment not yet completed.');
+            return h('p', { className: 's8-slide-empty' }, 'Evaluability assessment not yet completed.');
           }
 
           var band = scoreBand(score);
 
           return h('div', null,
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 } },
+            h('div', { className: 's8-score-header' },
               h('span', { className: 'wb-score-number' }, String(score)),
-              h('div', null,
+              h('div', { className: 's8-score-band-wrap' },
                 h('span', { className: 'wb-score-band ' + band.cls }, band.label),
-                h('div', { className: 'wb-score-label', style: { marginTop: 2 } }, 'out of 100')
+                h('div', { className: 'wb-score-label' }, 'out of 100')
               )
             ),
             dims.length > 0
@@ -392,7 +383,7 @@
                     return h('div', { key: d.id, className: 'wb-dimension' },
                       h('span', { className: 'wb-dimension-label' }, d.label),
                       h('div', { className: 'wb-dimension-bar' },
-                        h('div', { className: 'wb-dimension-fill', style: { width: pct + '%', background: dimensionColor(pct) } })
+                        h('div', { className: 'wb-dimension-fill ' + dimensionFillClass(pct), style: { width: pct + '%' } })
                       ),
                       h('span', { className: 'wb-dimension-score' }, val + '/' + d.max)
                     );
@@ -400,11 +391,13 @@
                 )
               : null,
             blockers.length > 0
-              ? h('div', { style: { marginTop: 12 } },
-                  h('div', { className: 'wb-param-label', style: { marginBottom: 4 } }, 'Key Constraints'),
-                  blockers.map(function (b, i) {
-                    return h('div', { key: i, style: { fontSize: 12, color: 'var(--text)', padding: '2px 0' } }, '\u2022 ' + (typeof b === 'string' ? b : b.label || b.text || JSON.stringify(b)));
-                  })
+              ? h('div', null,
+                  h('div', { className: 'wb-param-label' }, 'Key Constraints'),
+                  h('div', { className: 's8-bullet-list' },
+                    blockers.map(function (b, i) {
+                      return h('div', { key: i, className: 's8-bullet-item' }, '• ' + (typeof b === 'string' ? b : b.label || b.text || JSON.stringify(b)));
+                    })
+                  )
                 )
               : null
           );
@@ -420,7 +413,6 @@
     var dispatch = props.dispatch;
     var context = (state && state.context) || {};
 
-    // Slide state: array of { ...slideData, included: bool, talkingPoints: string }
     var _slides = useState(function () {
       return buildSlides(context).map(function (s) {
         return Object.assign({}, s, { included: true, talkingPoints: '' });
@@ -429,7 +421,6 @@
     var slides = _slides[0];
     var setSlides = _slides[1];
 
-    // Inject print CSS on mount
     useEffect(function () { ensurePrintCSS(); }, []);
 
     // ── Handlers ──
@@ -518,45 +509,45 @@
 
       // Toolbar
       h('div', { className: 'wb-toolbar s8-no-print' },
-        h('span', { style: { fontSize: 12, fontWeight: 600, color: 'var(--text)' } }, includedCount + ' of ' + slides.length + ' slides included'),
-        h('div', { className: 'wb-toolbar-spacer' }),
-        h('button', { className: 'wb-btn', onClick: handleRegenerate, style: { fontSize: 11 } }, '\u21BB Regenerate'),
-        h('div', { className: 'wb-toolbar-divider' }),
-        h('button', { className: 'wb-btn', onClick: handlePrint }, '\u2399 Download PDF'),
-        h('button', { className: 'wb-btn wb-btn-primary', onClick: handleOpenDeckTool }, 'Open Deck Tool \u2197')
+        h('span', { className: 's8-toolbar-stat' }, includedCount + ' of ' + slides.length + ' slides included'),
+        h('span', { className: 'wb-toolbar-spacer' }),
+        h('button', { className: 'wb-btn wb-btn-sm', onClick: handleRegenerate, title: 'Regenerate from current data' }, '↻ Regenerate'),
+        h('span', { className: 'wb-toolbar-divider' }),
+        h('button', { className: 'wb-btn wb-btn-sm', onClick: handlePrint, title: 'Print or save as PDF' }, '⎙ Download PDF'),
+        h('button', { className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: handleOpenDeckTool, title: 'Open in deck generator' }, 'Open Deck Tool ↗')
       ),
 
       // Slide cards
-      h('div', { style: { display: 'grid', gap: 10 } },
+      h('div', { className: 's8-slide-grid' },
         slides.map(function (slide, si) {
           var excluded = !slide.included;
-          return h('div', {
-            key: slide.id,
-            className: 'wb-slide s8-slide-card' + (excluded ? ' s8-excluded-slide-screen' : ''),
-            style: excluded ? { opacity: 0.45 } : {}
-          },
+          var slideCls = 'wb-slide s8-slide-card';
+          if (excluded) slideCls += ' wb-slide--excluded s8-excluded-slide-screen';
+          return h('div', { key: slide.id, className: slideCls },
+
             // Header (screen)
             h('div', { className: 'wb-slide-header s8-no-print' },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              h('div', { className: 's8-slide-header-left' },
                 h('span', { className: 'wb-slide-num' }, 'Slide ' + (si + 1)),
                 h('span', { className: 'wb-slide-title' }, slide.title)
               ),
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
+              h('div', { className: 's8-slide-header-actions' },
                 h('button', {
-                  className: 'wb-btn', style: { fontSize: 10, padding: '2px 6px' },
+                  className: 'wb-reorder-btn',
                   onClick: function () { handleMoveUp(si); },
                   disabled: si === 0,
-                  title: 'Move up'
-                }, '\u25B2'),
+                  title: 'Move up',
+                  'aria-label': 'Move slide up'
+                }, '▲'),
                 h('button', {
-                  className: 'wb-btn', style: { fontSize: 10, padding: '2px 6px' },
+                  className: 'wb-reorder-btn',
                   onClick: function () { handleMoveDown(si); },
                   disabled: si === slides.length - 1,
-                  title: 'Move down'
-                }, '\u25BC'),
+                  title: 'Move down',
+                  'aria-label': 'Move slide down'
+                }, '▼'),
                 h('button', {
-                  className: 'wb-btn' + (slide.included ? ' wb-btn--active' : ''),
-                  style: { fontSize: 10, padding: '2px 8px', marginLeft: 4 },
+                  className: 'wb-btn wb-btn-sm s8-include-btn' + (slide.included ? ' wb-btn--active' : ''),
                   onClick: function () { handleToggleInclude(si); },
                   title: slide.included ? 'Exclude from export' : 'Include in export'
                 }, slide.included ? 'Included' : 'Excluded')
@@ -574,23 +565,19 @@
               slide.content()
             ),
 
-            // Talking points (editable)
-            h('div', { className: 's8-no-print', style: { padding: '0 14px 10px' } },
-              h('label', { style: { display: 'block', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--slate)', marginBottom: 4 } }, 'Talking Points'),
+            // Talking points (editable on screen)
+            h('div', { className: 's8-no-print s8-talking-points-block' },
+              h('label', { className: 'wb-overline' }, 'Talking Points'),
               h('textarea', {
+                className: 's8-talking-points-textarea',
                 value: slide.talkingPoints,
                 onChange: function (e) { handleTalkingPointsChange(si, e.target.value); },
-                placeholder: 'Add presenter notes for this slide\u2026',
-                rows: 2,
-                style: {
-                  width: '100%', resize: 'vertical', border: '1px solid var(--border, #E2E8F0)',
-                  borderRadius: 4, padding: '6px 10px', fontSize: 12, fontFamily: 'inherit',
-                  color: 'var(--text)', background: 'var(--bg, #F8FAFC)', lineHeight: 1.5
-                }
+                placeholder: 'Add presenter notes for this slide…',
+                rows: 2
               })
             ),
 
-            // Talking points (print — only if content exists)
+            // Talking points (print only)
             slide.talkingPoints
               ? h('div', { className: 's8-talking-points', style: { display: 'none' } }, slide.talkingPoints)
               : null
@@ -599,11 +586,11 @@
       ),
 
       // Bottom actions
-      h('div', { className: 'wb-toolbar s8-no-print', style: { marginTop: 16 } },
+      h('div', { className: 'wb-toolbar wb-toolbar--mt s8-no-print' },
         h('button', { className: 'wb-btn wb-btn-teal', onClick: handleSave }, 'Save'),
-        h('div', { className: 'wb-toolbar-spacer' }),
-        h('p', { style: { margin: 0, fontSize: 10, color: 'var(--slate)' } },
-          'Data is passed to the Deck Tool via sessionStorage \u2014 nothing leaves your browser.')
+        h('span', { className: 'wb-toolbar-spacer' }),
+        h('p', { className: 's8-footer-note' },
+          'Data is passed to the Deck Tool via sessionStorage — nothing leaves your browser.')
       ),
 
       // Navigation

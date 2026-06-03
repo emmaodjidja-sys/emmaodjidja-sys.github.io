@@ -28,35 +28,30 @@
     }
 
     var logo = h('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none' },
-      h('circle', { cx: 12, cy: 12, r: 10, stroke: '#2EC4B6', strokeWidth: 2 }),
-      h('path', { d: 'M8 12l3 3 5-5', stroke: '#2EC4B6', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+      h('circle', { cx: 12, cy: 12, r: 10, stroke: 'var(--teal)', strokeWidth: 2 }),
+      h('path', { d: 'M8 12l3 3 5-5', stroke: 'var(--teal)', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
     );
 
     return h('div', { className: 'wb-topbar' },
-      h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 } },
+      h('div', { className: 'wb-topbar-logo' },
         logo,
-        h('span', { style: { color: '#2EC4B6', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em' } }, 'PRAXIS'),
-        h('span', { style: { color: 'rgba(255,255,255,0.2)', fontSize: '10px' } }, '\u00B7'),
+        h('span', { className: 'wb-topbar-brand' }, 'PRAXIS'),
+        h('span', { className: 'wb-topbar-sep' }, '·'),
         h('input', {
           ref: titleRef,
           type: 'text',
+          className: 'wb-topbar-title-input',
           value: title,
           placeholder: 'Untitled evaluation',
           onChange: function(e) { setTitle(e.target.value); },
-          onBlur: handleBlur,
-          style: {
-            background: 'transparent', border: 'none', outline: 'none',
-            color: '#fff', fontSize: '13px', fontWeight: 500,
-            flex: 1, minWidth: 0, padding: '2px 4px'
-          }
+          onBlur: handleBlur
         })
       ),
-      h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+      h('div', { className: 'wb-topbar-actions' },
         h(ExperienceTierBadge, { tier: state.ui.experienceTier, dispatch: dispatch }),
         h('button', {
-          className: 'wb-btn wb-btn-ghost wb-btn-sm',
-          onClick: handleSave,
-          style: { color: 'rgba(255,255,255,0.7)', fontSize: '11px' }
+          className: 'wb-btn wb-btn-ghost wb-btn-sm wb-topbar-save',
+          onClick: handleSave
         }, 'Save')
       )
     );

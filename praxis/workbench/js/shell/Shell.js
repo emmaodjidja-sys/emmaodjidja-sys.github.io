@@ -52,11 +52,11 @@
     } else if (activeStation === 8 && typeof Station8 !== 'undefined') {
       stationContent = h(Station8, { state: state, dispatch: dispatch });
     } else {
-      stationContent = h('div', { className: 'wb-station-empty', style: { textAlign: 'center', padding: '64px 24px' } },
-        h('h3', { className: 'wb-station-empty-title', style: { fontSize: '16px', fontWeight: 600, color: '#1F2937', marginBottom: 8 } },
+      stationContent = h('div', { className: 'wb-station-empty' },
+        h('h3', { className: 'wb-station-empty-title' },
           'Station ' + activeStation + ': ' + stationName
         ),
-        h('p', { className: 'wb-station-empty-desc', style: { fontSize: '13px', color: '#6B7280' } },
+        h('p', { className: 'wb-station-empty-desc' },
           'This station will be available soon.'
         )
       );
@@ -72,7 +72,7 @@
             h(StationHeader, { stationId: activeStation, context: context }),
             h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }),
             typeof SummaryBar !== 'undefined'
-              ? h('div', { style: { padding: '0 20px' } },
+              ? h('div', { className: 'wb-summary-bar-wrap' },
                   h(SummaryBar, { stationId: activeStation, context: context }))
               : null,
             h('div', { className: 'wb-panel-content' }, stationContent)

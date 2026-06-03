@@ -10,7 +10,7 @@
   function completedBadge() {
     return h('span', { className: 'wb-rail-check' },
       h('svg', { width: 10, height: 10, viewBox: '0 0 10 10' },
-        h('circle', { cx: 5, cy: 5, r: 5, fill: '#10B981' }),
+        h('circle', { cx: 5, cy: 5, r: 5, fill: 'var(--green)' }),
         h('path', { d: 'M3 5l1.5 1.5L7 4', stroke: '#fff', strokeWidth: 1.2, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' })
       )
     );
@@ -55,10 +55,9 @@
             key: id,
             className: cls,
             onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: id }); },
-            style: { position: 'relative' },
             title: PraxisSchema.STATION_LABELS[id]
           },
-            h('span', { style: { fontSize: '10px', fontWeight: 700 } }, String(id)),
+            h('span', { className: 'wb-rail-btn-num' }, String(id)),
             badge
           )
         );
@@ -68,13 +67,12 @@
     // Help button at bottom of rail
     var helpBtn = h('button', {
       key: 'help',
-      className: 'wb-rail-btn',
+      className: 'wb-rail-btn wb-rail-btn--help',
       onClick: function() {
         if (props.onHelpToggle) props.onHelpToggle();
       },
-      style: { position: 'relative', marginTop: 'auto' },
       title: 'Help'
-    }, h('span', { style: { fontSize: '10px', fontWeight: 700 } }, '?'));
+    }, h('span', { className: 'wb-rail-btn-num' }, '?'));
 
     return h('nav', { className: 'wb-rail' }, buttons.concat([helpBtn]));
   }

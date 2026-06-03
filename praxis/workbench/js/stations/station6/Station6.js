@@ -103,9 +103,9 @@
         threats: 'Attrition bias: differential dropout between treatment/control can bias ITT estimates. Check attrition rates and compute Lee (2009) bounds.\nContamination/spillovers: if control units receive indirect benefits, treatment effects are underestimated.\nHawthorne effect: awareness of being studied may alter behaviour independent of the intervention.'
       };
       if (isQuasiExp && selectedDesign === 'did' && (f.hasRate || hasAdmin)) return {
-        method: 'Difference-in-differences (DID) estimation exploiting phased rollout. IMPORTANT: If treatment timing is staggered across units, use heterogeneity-robust DID estimators (Callaway & Sant\u2019Anna 2021, Sun & Abraham 2021) rather than naive two-way fixed effects, which produce biased estimates under staggered adoption (Goodman-Bacon 2021).',
-        steps: '1. Construct panel dataset: facility/district-level outcomes across pre/post periods and treatment/comparison regions. 2. Test parallel trends assumption visually (event study plot) and with Rambachan & Roth (2023) sensitivity analysis (honestdid). 3. If staggered rollout: use Callaway-Sant\u2019Anna group-time ATT estimator (csdid). If common treatment timing: use TWFE with reghdfe. 4. Conduct event study to visualise dynamic treatment effects. 5. Robustness: vary treatment timing window, test with synthetic control (synth/scpi) for largest units, Oster (2019) bounds for omitted variable bias.',
-        software: 'Stata: csdid (Callaway-Sant\u2019Anna), did_multiplegt (de Chaisemartin-D\u2019Haultfoeuille), eventstudyinteract (Sun-Abraham), reghdfe (naive TWFE for comparison only), honestdid for sensitivity. R: did package, fixest (feols/sunab), HonestDiD. Python: linearmodels for panel data.',
+        method: 'Difference-in-differences (DID) estimation exploiting phased rollout. IMPORTANT: If treatment timing is staggered across units, use heterogeneity-robust DID estimators (Callaway & Sant’Anna 2021, Sun & Abraham 2021) rather than naive two-way fixed effects, which produce biased estimates under staggered adoption (Goodman-Bacon 2021).',
+        steps: '1. Construct panel dataset: facility/district-level outcomes across pre/post periods and treatment/comparison regions. 2. Test parallel trends assumption visually (event study plot) and with Rambachan & Roth (2023) sensitivity analysis (honestdid). 3. If staggered rollout: use Callaway-Sant’Anna group-time ATT estimator (csdid). If common treatment timing: use TWFE with reghdfe. 4. Conduct event study to visualise dynamic treatment effects. 5. Robustness: vary treatment timing window, test with synthetic control (synth/scpi) for largest units, Oster (2019) bounds for omitted variable bias.',
+        software: 'Stata: csdid (Callaway-Sant’Anna), did_multiplegt (de Chaisemartin-D’Haultfoeuille), eventstudyinteract (Sun-Abraham), reghdfe (naive TWFE for comparison only), honestdid for sensitivity. R: did package, fixest (feols/sunab), HonestDiD. Python: linearmodels for panel data.',
         type: 'quantitative',
         threats: 'Parallel trends violation: if treatment regions were selected on need, pre-trends may diverge. Test with event study and honestdid sensitivity.\nStaggered treatment bias: if rollout timing varies, naive TWFE produces biased ATT estimates (Goodman-Bacon 2021).\nAnticipation effects: units may change behaviour before formal treatment begins.'
       };
@@ -278,8 +278,7 @@
     var onToggle = props.onToggle;
     return h('button', {
       type: 'button',
-      className: 'wb-btn wb-btn-xs' + (active ? ' wb-btn--active' : ''),
-      style: { fontSize: '10px', padding: '2px 8px', borderRadius: '12px', margin: '2px' },
+      className: 'wb-disagg-chip' + (active ? ' wb-disagg-chip--active' : ''),
       onClick: onToggle
     }, label);
   }
@@ -307,53 +306,36 @@
       ? card.eqNumber.replace('eq_', '')
       : card.eqNumber;
 
-    return h('div', { className: 'wb-card', style: { marginBottom: '12px' } },
-      // Header: EQ number + criterion badge
-      h('div', { className: 'wb-toolbar', style: { marginBottom: '8px' } },
-        h('span', {
-          style: { fontSize: '14px', fontWeight: 700, color: 'var(--navy)', marginRight: '8px' }
-        }, 'EQ ' + eqLabel),
+    var threatsCount = card.threats ? card.threats.split('\n').length : 0;
+
+    return h('div', { className: 'wb-analysis-card' },
+      // Header: EQ + criterion + question + method type
+      h('div', { className: 'wb-analysis-card-header' },
+        h('span', { className: 'wb-analysis-card-eq' }, 'EQ ' + eqLabel),
         h('span', {
           className: 'wb-criterion wb-criterion--' + (card.criterion || 'effectiveness')
         }, (card.criterion || '').charAt(0).toUpperCase() + (card.criterion || '').slice(1)),
-        h('span', { className: 'wb-toolbar-spacer' }),
+        h('p', { className: 'wb-analysis-card-question' }, card.question),
         h('span', {
-          className: 'wb-context-badge',
-          style: {
-            fontSize: '9px', fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.04em', padding: '2px 8px', borderRadius: '3px',
-            background: card.analysisType === 'quantitative' ? '#DBEAFE' : '#FCE7F3',
-            color: card.analysisType === 'quantitative' ? '#1E40AF' : '#9D174D'
-          }
+          className: 'wb-method-pill wb-method-pill--' + (card.analysisType === 'quantitative' ? 'quant' : 'qual')
         }, card.analysisType === 'quantitative' ? 'QUANT' : 'QUAL')
       ),
 
-      // Question text
-      h('p', {
-        style: { fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, margin: '0 0 12px 0' }
-      }, card.question),
-
-      // Two-column detail grid
-      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' } },
+      // Body: two-column grid
+      h('div', { className: 'wb-analysis-card-body' },
 
         // Left column
         h('div', null,
-          // Indicators
-          h('div', { className: 'wb-field', style: { marginBottom: '10px' } },
+          h('div', { className: 'wb-field wb-analysis-card-section' },
             h('label', { className: 'wb-field-label' }, 'Linked Indicators'),
             (card.indicators && card.indicators.length > 0)
-              ? h('ul', { style: { margin: '4px 0 0 0', paddingLeft: '16px', fontSize: '12px', lineHeight: 1.6, color: 'var(--text)' } },
+              ? h('ul', { className: 'wb-analysis-card-prose' },
                   card.indicators.map(function (ind, j) {
                     return h('li', { key: j },
-                      h('span', { style: { fontWeight: 500 } }, ind.code ? '[' + ind.code + '] ' : ''),
+                      ind.code ? '[' + ind.code + '] ' : '',
                       ind.name,
                       h('span', {
-                        style: {
-                          marginLeft: '6px', fontSize: '9px', fontWeight: 700,
-                          textTransform: 'uppercase', padding: '1px 5px', borderRadius: '3px',
-                          background: ind.indType === 'quantitative' ? '#EFF6FF' : '#FDF2F8',
-                          color: ind.indType === 'quantitative' ? '#3B82F6' : '#DB2777'
-                        }
+                        className: 'wb-indicator-type wb-indicator-type--' + (ind.indType === 'quantitative' ? 'num' : 'qual')
                       }, ind.indType === 'quantitative' ? 'NUM' : 'QUAL')
                     );
                   })
@@ -361,90 +343,20 @@
               : h('span', { className: 'wb-td--meta' }, 'No indicators linked')
           ),
 
-          // Data Sources
-          h('div', { className: 'wb-field', style: { marginBottom: '10px' } },
+          h('div', { className: 'wb-field wb-analysis-card-section' },
             h('label', { className: 'wb-field-label' }, 'Data Sources'),
             (card.dataSources && card.dataSources.length > 0)
-              ? h('ul', { style: { margin: '4px 0 0 0', paddingLeft: '16px', fontSize: '12px', lineHeight: 1.6, color: 'var(--text)' } },
+              ? h('ul', { className: 'wb-analysis-card-prose' },
                   card.dataSources.map(function (ds, j) {
                     return h('li', { key: j }, ds);
                   })
                 )
               : h('span', { className: 'wb-td--meta' }, 'No data sources specified')
-          )
-        ),
-
-        // Right column
-        h('div', null,
-          // Method
-          h('div', { className: 'wb-field', style: { marginBottom: '10px' } },
-            h('label', { className: 'wb-field-label' }, 'Suggested Method'),
-            h('textarea', {
-              className: 'wb-input wb-textarea',
-              rows: 2,
-              value: card.method,
-              onChange: function (e) { onUpdate(index, 'method', e.target.value); },
-              style: { fontSize: '12px', width: '100%', boxSizing: 'border-box' }
-            })
           ),
 
-          // Analytical steps
-          card.steps ? h('div', { className: 'wb-field', style: { marginBottom: '10px' } },
-            h('label', { className: 'wb-field-label' }, 'Analytical Steps'),
-            h('div', {
-              style: { fontSize: '11px', color: 'var(--text)', lineHeight: 1.6, padding: '8px 10px',
-                background: '#F8FAFC', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }
-            }, card.steps)
-          ) : null,
-
-          // Validity threats (collapsible)
-          card.threats ? h('div', { className: 'wb-field', style: { marginBottom: '10px' } },
-            h('button', {
-              type: 'button',
-              onClick: function () { setThreatsOpen(!threatsOpen); },
-              style: {
-                display: 'flex', alignItems: 'center', gap: '6px', width: '100%',
-                background: 'none', border: 'none', padding: '0', cursor: 'pointer',
-                fontSize: '11px', fontWeight: 700, color: '#B45309',
-                textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px'
-              }
-            },
-              h('span', { style: { fontSize: '10px', transition: 'transform 0.15s', transform: threatsOpen ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block' } }, '\u25B6'),
-              'Validity Threats (' + card.threats.split('\n').length + ')'
-            ),
-            threatsOpen ? h('div', {
-              style: {
-                fontSize: '11px', color: '#78350F', lineHeight: 1.7, padding: '10px 12px',
-                background: '#FFFBEB', borderRadius: 'var(--radius-sm)',
-                borderLeft: '3px solid #F59E0B', border: '1px solid #FDE68A',
-                borderLeftWidth: '3px', borderLeftColor: '#F59E0B'
-              }
-            },
-              card.threats.split('\n').map(function (threat, ti) {
-                return h('div', { key: ti, style: { marginBottom: ti < card.threats.split('\n').length - 1 ? '6px' : '0', paddingLeft: '4px' } },
-                  h('span', { style: { color: '#D97706', marginRight: '6px', fontWeight: 700 } }, '\u26A0'),
-                  threat
-                );
-              })
-            ) : null
-          ) : null,
-
-          // Software & tools
-          h('div', { className: 'wb-field', style: { marginBottom: '10px' } },
-            h('label', { className: 'wb-field-label' }, 'Software & Tools'),
-            h('textarea', {
-              className: 'wb-input wb-textarea',
-              rows: 2,
-              value: card.software,
-              onChange: function (e) { onUpdate(index, 'software', e.target.value); },
-              style: { fontSize: '11px', width: '100%', boxSizing: 'border-box' }
-            })
-          ),
-
-          // Disaggregation chips
-          h('div', { className: 'wb-field', style: { marginBottom: '10px' } },
+          h('div', { className: 'wb-field wb-analysis-card-section' },
             h('label', { className: 'wb-field-label' }, 'Disaggregation Dimensions'),
-            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '4px' } },
+            h('div', { className: 'wb-disagg-row' },
               DEFAULT_DISAGGREGATIONS.map(function (dim) {
                 var active = (card.disaggregations || []).indexOf(dim.id) >= 0;
                 return h(DisaggChip, {
@@ -455,17 +367,62 @@
                 });
               })
             )
+          )
+        ),
+
+        // Right column
+        h('div', null,
+          h('div', { className: 'wb-field wb-analysis-card-section' },
+            h('label', { className: 'wb-field-label' }, 'Suggested Method'),
+            h('textarea', {
+              className: 'wb-input wb-textarea',
+              rows: 2,
+              value: card.method,
+              onChange: function (e) { onUpdate(index, 'method', e.target.value); }
+            })
           ),
 
-          // Notes
-          h('div', { className: 'wb-field' },
+          card.steps ? h('div', { className: 'wb-field wb-analysis-card-section' },
+            h('label', { className: 'wb-field-label' }, 'Analytical Steps'),
+            h('div', { className: 'wb-info-panel wb-info-panel--neutral' }, card.steps)
+          ) : null,
+
+          card.threats ? h('div', { className: 'wb-field wb-analysis-card-section' },
+            h('button', {
+              type: 'button',
+              className: 'wb-threats-toggle' + (threatsOpen ? ' wb-threats-toggle--open' : ''),
+              onClick: function () { setThreatsOpen(!threatsOpen); }
+            },
+              h('span', { className: 'wb-threats-toggle-caret' }, '▶'),
+              'Validity Threats (' + threatsCount + ')'
+            ),
+            threatsOpen ? h('div', { className: 'wb-threats-body' },
+              card.threats.split('\n').map(function (threat, ti) {
+                return h('div', { key: ti, className: 'wb-threats-item' },
+                  h('span', { className: 'wb-threats-marker' }, '⚠'),
+                  threat
+                );
+              })
+            ) : null
+          ) : null,
+
+          h('div', { className: 'wb-field wb-analysis-card-section' },
+            h('label', { className: 'wb-field-label' }, 'Software & Tools'),
+            h('textarea', {
+              className: 'wb-input wb-textarea',
+              rows: 2,
+              value: card.software,
+              onChange: function (e) { onUpdate(index, 'software', e.target.value); }
+            })
+          ),
+
+          h('div', { className: 'wb-field wb-analysis-card-section' },
             h('label', { className: 'wb-field-label' }, 'Notes'),
             h('input', {
               className: 'wb-input',
               value: card.notes,
               placeholder: 'Analysis notes...',
-              onChange: function (e) { onUpdate(index, 'notes', e.target.value); },
-              style: { fontSize: '12px', width: '100%', boxSizing: 'border-box' }
+              onChange: function (e) { onUpdate(index, 'notes', e.target.value); }
             })
           )
         )
@@ -513,7 +470,7 @@
           t += '<div style="margin:0 0 6pt;padding:6pt 10pt;background:#FFFBEB;border-left:3pt solid #F59E0B;border-radius:3pt">';
           t += '<p style="margin:0 0 3pt;font-size:9pt;font-weight:bold;color:#B45309">VALIDITY THREATS</p>';
           card.threats.split('\n').forEach(function (threat) {
-            t += '<p style="margin:0 0 2pt;font-size:8.5pt;color:#78350F;line-height:1.4">\u26A0 ' + esc(threat) + '</p>';
+            t += '<p style="margin:0 0 2pt;font-size:8.5pt;color:#78350F;line-height:1.4">⚠ ' + esc(threat) + '</p>';
           });
           t += '</div>';
         }
@@ -564,22 +521,26 @@
     }
   }
 
-  // ── Tab Button ──
+  // ── Tab Button (uses .wb-tab class) ──
 
   function TabButton(props) {
     var active = props.active;
     var label = props.label;
     var count = props.count;
     var onClick = props.onClick;
-    var color = props.color;
+    var variant = props.variant; // 'quant' | 'qual'
+
+    var cls = 'wb-tab';
+    if (variant) cls += ' wb-tab--' + variant;
+    if (active) cls += ' wb-tab--active';
 
     return h('button', {
       type: 'button',
-      className: 'wb-btn' + (active ? ' wb-btn--active' : ''),
-      style: active ? { background: color || 'var(--navy)', borderColor: color || 'var(--navy)' } : {},
+      className: cls,
       onClick: onClick
     },
-      label + ' (' + count + ')'
+      label,
+      h('span', { className: 'wb-tab-count' }, count)
     );
   }
 
@@ -707,14 +668,11 @@
     // ── Render ──
     return h('div', null,
       // Design context banner
-      selectedDesign ? h('div', {
-        className: 'wb-guidance wb-guidance--neutral',
-        style: { padding: '10px 16px', marginBottom: '16px', borderRadius: '6px', border: '1px solid var(--border)' }
-      },
+      selectedDesign ? h('div', { className: 'wb-guidance wb-guidance--neutral' },
         h('span', { className: 'wb-guidance-text' },
           h('strong', null, 'Evaluation design: '),
           selectedDesign.toUpperCase(),
-          ' \u2014 analysis method suggestions are tailored to this design.'
+          ' — analysis method suggestions are tailored to this design.'
         )
       ) : null,
 
@@ -736,46 +694,40 @@
             )
           : h('div', null,
               // Toolbar actions row
-              h('div', { className: 'wb-toolbar', style: { marginBottom: '12px' } },
+              h('div', { className: 'wb-toolbar' },
                 h('span', { className: 'wb-toolbar-spacer' }),
-                h('div', { style: { display: 'flex', gap: '8px' } },
-                  h('button', {
-                    className: 'wb-btn',
-                    onClick: handleExport,
-                    title: 'Export as Word document'
-                  }, 'Export Analysis Plan'),
-                  h('button', {
-                    className: 'wb-btn',
-                    onClick: handleGenerate
-                  }, 'Regenerate')
-                )
+                h('button', {
+                  className: 'wb-btn',
+                  onClick: handleExport,
+                  title: 'Export as Word document'
+                }, 'Export Analysis Plan'),
+                h('button', {
+                  className: 'wb-btn',
+                  onClick: handleGenerate
+                }, 'Regenerate')
               ),
 
-              // Tab buttons
-              h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
+              // Tab bar
+              h('div', { className: 'wb-tab-bar' },
                 h(TabButton, {
                   active: activeTab === 'quantitative',
                   label: 'Quantitative',
                   count: quantCards.length,
-                  color: '#1E40AF',
+                  variant: 'quant',
                   onClick: function () { setActiveTab('quantitative'); }
                 }),
                 h(TabButton, {
                   active: activeTab === 'qualitative',
                   label: 'Qualitative',
                   count: qualCards.length,
-                  color: '#9D174D',
+                  variant: 'qual',
                   onClick: function () { setActiveTab('qualitative'); }
                 })
               ),
 
-              // Panel heading
+              // Tab heading
               h('div', {
-                style: {
-                  fontSize: '11px', fontWeight: 700, textTransform: 'uppercase',
-                  letterSpacing: '0.06em', marginBottom: '12px',
-                  color: activeTab === 'quantitative' ? '#1E40AF' : '#9D174D'
-                }
+                className: 'wb-tab-heading wb-tab-heading--' + (activeTab === 'quantitative' ? 'quant' : 'qual')
               }, activeTab === 'quantitative'
                 ? 'Quantitative Analysis Methods — statistical and numerical approaches'
                 : 'Qualitative Analysis Methods — interpretive and thematic approaches'),
@@ -790,12 +742,8 @@
                       onUpdate: updateCard
                     });
                   })
-                : h('div', {
-                    style: {
-                      textAlign: 'center', padding: '32px', fontSize: '13px',
-                      color: 'var(--slate)', fontStyle: 'italic'
-                    }
-                  }, 'No ' + activeTab + ' evaluation questions in this analysis plan.')
+                : h('div', { className: 'wb-inline-empty' },
+                    'No ' + activeTab + ' evaluation questions in this analysis plan.')
             )
       ),
 
