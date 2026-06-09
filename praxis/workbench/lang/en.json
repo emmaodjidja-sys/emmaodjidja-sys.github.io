@@ -4,6 +4,8 @@
   "shell.save": "Save .praxis",
   "shell.open": "Open",
   "shell.export": "Export",
+  "shell.start": "Start",
+  "shell.start_hint": "Return to start page (your project stays saved)",
 
   "tier.foundation": "FOUNDATION",
   "tier.practitioner": "PRACTITIONER",

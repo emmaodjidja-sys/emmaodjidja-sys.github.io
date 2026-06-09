@@ -4,6 +4,8 @@
   "shell.save": "Enregistrer .praxis",
   "shell.open": "Ouvrir",
   "shell.export": "Exporter",
+  "shell.start": "Accueil",
+  "shell.start_hint": "Revenir à la page d’accueil (votre projet reste enregistré)",
 
   "tier.foundation": "FONDATION",
   "tier.practitioner": "PRATICIEN",

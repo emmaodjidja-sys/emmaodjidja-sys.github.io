@@ -8,6 +8,8 @@
     "shell.save": "Save .praxis",
     "shell.open": "Open",
     "shell.export": "Export",
+    "shell.start": "Start",
+    "shell.start_hint": "Return to start page (your project stays saved)",
 
     "tier.foundation": "FOUNDATION",
     "tier.practitioner": "PRACTITIONER",
@@ -67,10 +69,12 @@
   };
   var currentLocale = 'en';
 
+  var LANG_VERSION = '2026-06-08';
+
   function loadLocale(locale) {
     try {
       var xhr = new XMLHttpRequest();
-      var path = (window.PRAXIS_BASE_PATH || '') + 'lang/' + locale + '.json';
+      var path = (window.PRAXIS_BASE_PATH || '') + 'lang/' + locale + '.json?v=' + LANG_VERSION;
       xhr.open('GET', path, false);
       xhr.send();
       if (xhr.status === 200) {
@@ -78,7 +82,6 @@
         currentLocale = locale;
       }
     } catch (e) {
-      // Synchronous XHR failed (blocked or network error) — using inline defaults
     }
   }
 
