@@ -88,7 +88,10 @@
         tiers.map(function(tier) {
           return h(ActionCard, {
             key: tier.key, title: tier.label, accent: tier.accent, desc: t(tier.textKey),
-            onClick: function() { dispatch({ type: AT.INIT, tier: tier.key }); }
+            onClick: function() {
+              try { localStorage.removeItem('praxis-workbench'); localStorage.removeItem('praxis-workbench-ui'); } catch (e) {}
+              dispatch({ type: AT.INIT, tier: tier.key });
+            }
           });
         })
       );

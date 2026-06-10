@@ -29,25 +29,6 @@
       }
     }, [state.context, state.ui.projectLoaded, state.ui.activeStation, state.ui.experienceTier]);
 
-    // Auto-resume: if there's a saved project, load it immediately
-    var hasAutoResumed = React.useRef(false);
-    React.useEffect(function() {
-      if (!hasAutoResumed.current && !state.ui.projectLoaded && PraxisContext.hasSavedProject()) {
-        hasAutoResumed.current = true;
-        var ctx = PraxisContext.loadSavedProject();
-        if (ctx) {
-          var savedUI = {};
-          try { savedUI = JSON.parse(localStorage.getItem('praxis-workbench-ui') || '{}'); } catch (e) {}
-          dispatch({
-            type: PraxisContext.ACTION_TYPES.INIT,
-            context: ctx,
-            station: savedUI.activeStation || 0,
-            tier: savedUI.experienceTier || 'foundation'
-          });
-        }
-      }
-    }, []);
-
     // Render entry landing or shell
     if (!state.ui.projectLoaded) {
       return h(EntryLanding, { state: state, dispatch: dispatch });
