@@ -123,9 +123,14 @@
   function CanvasOverlay(props) {
     var iframeRef = React.useRef(null);
     var toc = props.toc;
-    var bridge = window.useTocBridge(iframeRef, toc, function(payload) {
-      // Auto-capture export from within iframe
+    // Capture the toc once so incremental saves don't re-fire the bridge init.
+    var initialTocRef = React.useRef(toc);
+    var bridge = window.useTocBridge(iframeRef, initialTocRef.current, function(payload) {
+      // Explicit export (Save button pressed inside/around the iframe)
       props.onSave(normaliseTocPayload(payload));
+    }, function(payload) {
+      // Incremental change stream — persist silently so canvas edits are never lost
+      if (props.onChange) props.onChange(normaliseTocPayload(payload));
     });
 
     function handleSave() {
@@ -248,6 +253,15 @@
       setMode('landing');
     }
 
+    // Incremental persist from the canvas change stream: no toast, no mode change.
+    function saveTocSilent(tocSchema) {
+      dispatch({
+        type: PraxisContext.ACTION_TYPES.SAVE_STATION,
+        stationId: 1,
+        payload: { toc: tocSchema }
+      });
+    }
+
     function handleExport() {
       var blob = new Blob([JSON.stringify(toc, null, 2)], { type: 'application/json' });
       var url = URL.createObjectURL(blob);
@@ -265,6 +279,7 @@
       return h(CanvasOverlay, {
         toc: hasData ? toc : null,
         onSave: saveToc,
+        onChange: saveTocSilent,
         onClose: function() { setMode('landing'); },
         onSaveAndAdvance: function() {
           setMode('landing');

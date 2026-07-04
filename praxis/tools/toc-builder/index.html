@@ -1135,7 +1135,7 @@ function ToCBuilder({sensitivity,experienceTier,initialData,onDataChange,fromSta
     if(dataChangeRef.current)clearTimeout(dataChangeRef.current);
     dataChangeRef.current=setTimeout(()=>{
       onDataChange({title:s.title,narrative:s.narrative,nodes:s.nodes,connections:s.connections});
-    },500);
+    },200);
     return()=>{if(dataChangeRef.current)clearTimeout(dataChangeRef.current);};
   },[s.title,s.narrative,s.nodes,s.connections,onDataChange]);
 
@@ -1563,7 +1563,29 @@ function ToCBuilder({sensitivity,experienceTier,initialData,onDataChange,fromSta
 // ═══════════════════════════════════════════════════════════════
 function StandaloneToCBuilder(){
   const isEmbedded = window.self !== window.top;
-  return <ToCBuilder embedded={isEmbedded}/>;
+  // When embedded in the PRAXIS Workbench, load the ToC injected via PRAXIS_INIT
+  // (stashed on window._praxisInitData by the bridge below) and sync edits back out.
+  const [initialData,setInitialData]=useState(()=> (isEmbedded && window._praxisInitData) ? window._praxisInitData : null);
+  useEffect(()=>{
+    if(!isEmbedded) return;
+    // The PRAXIS_INIT message can land before this component mounts (the bridge
+    // stashes it synchronously) or after (via the praxis-init event) — handle both.
+    if(!initialData && window._praxisInitData) setInitialData(window._praxisInitData);
+    function onInit(e){ if(e && e.detail) setInitialData(e.detail); }
+    window.addEventListener('praxis-init', onInit);
+    return ()=>window.removeEventListener('praxis-init', onInit);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
+  const onDataChange=useCallback((data)=>{
+    // Keep the latest canvas state available to the bridge's export handler and
+    // stream incremental changes to the workbench.
+    window._praxisLatestToC=data;
+    if(typeof window._praxisChangeToC==='function') window._praxisChangeToC(data);
+  },[]);
+  return <ToCBuilder
+    embedded={isEmbedded}
+    initialData={isEmbedded?initialData:undefined}
+    onDataChange={isEmbedded?onDataChange:undefined}/>;
 }
 
 // ── PRAXIS Workbench Bridge ──
@@ -1580,6 +1602,13 @@ function StandaloneToCBuilder(){
       window._praxisInitData = e.data.payload;
       // Dispatch custom event so the component can react
       window.dispatchEvent(new CustomEvent('praxis-init', { detail: e.data.payload }));
+    }
+    if (e.data.type === 'PRAXIS_REQUEST_EXPORT') {
+      // Workbench asked for the current canvas state (Save & Return / Save & Continue).
+      var latest = window._praxisLatestToC || window._praxisInitData;
+      if (latest && typeof window._praxisExportToC === 'function') {
+        window._praxisExportToC(latest);
+      }
     }
   });
 
