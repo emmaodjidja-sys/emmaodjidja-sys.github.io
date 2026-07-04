@@ -133,18 +133,37 @@
         })
       );
 
+    } else if (mode === 'demo') {
+      // Demo picker — one card per pre-populated example evaluation
+      var demos = [
+        { key: 'rssh', title: 'Global Fund RSSH', accent: 'var(--blue)',
+          desc: 'Health system strengthening evaluation, Ghana. 7 evaluation questions, instruments, and a difference-in-differences sample strategy.',
+          ctx: window.PRAXIS_DEMO },
+        { key: 'zd', title: 'Gavi Zero-Dose', accent: 'var(--teal)',
+          desc: 'Multi-country immunisation equity evaluation (8 countries). 8 evaluation questions, contribution analysis, and 126 key informant interviews.',
+          ctx: window.PRAXIS_DEMO_ZD }
+      ];
+      rightContent = h('div', null,
+        h(BackButton, { onClick: function() { setMode(null); } }),
+        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Load a demo'),
+        demos.map(function(d) {
+          return h(ActionCard, {
+            key: d.key, title: d.title, accent: d.accent, desc: d.desc,
+            onClick: function() {
+              if (d.ctx) dispatch({ type: AT.INIT, context: d.ctx, tier: 'practitioner', station: 0 });
+            }
+          });
+        })
+      );
+
     } else {
       // Default: action cards — accent colors mapped to design system tokens
       var cards = [
         h(ActionCard, { key: 'new', title: '+ ' + t('landing.new'), desc: t('landing.new_desc'), accent: 'var(--teal)', onClick: function() { setMode('tier'); } }),
         h(ActionCard, { key: 'open', title: t('landing.open'), desc: t('landing.open_desc'), accent: 'var(--blue)', onClick: function() { setMode('open'); } }),
         h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: 'var(--purple)', onClick: function() { setMode('quick'); } }),
-        h(ActionCard, { key: 'demo', title: 'Load Demo', desc: 'Pre-populated Global Fund RSSH evaluation with 6 EQs, instruments, and sample strategy. Explore all 9 stations.', accent: 'var(--amber)',
-          onClick: function() {
-            if (window.PRAXIS_DEMO) {
-              dispatch({ type: AT.INIT, context: window.PRAXIS_DEMO, tier: 'practitioner', station: 0 });
-            }
-          }
+        h(ActionCard, { key: 'demo', title: 'Load a demo', desc: 'Explore a fully worked evaluation across all 9 stations. Choose Global Fund RSSH or Gavi Zero-Dose.', accent: 'var(--amber)',
+          onClick: function() { setMode('demo'); }
         })
       ];
 
