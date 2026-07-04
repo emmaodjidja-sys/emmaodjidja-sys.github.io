@@ -171,29 +171,30 @@
 /* ── Data tables ── */
 .wb-table {
   width: 100%; border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 .wb-table th {
-  text-align: left; padding: 8px 12px;
-  font-size: 11px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--wb-text-secondary, #64748B);
-  background: var(--wb-card-header-bg, #F8FAFC);
+  text-align: left; padding: 10px 12px;
+  font-size: var(--text-xs); font-weight: 600;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--text-secondary);
+  background: var(--surface-muted);
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 1;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .wb-table th.wb-th--numeric { text-align: right; }
 .wb-table td {
-  padding: 8px 12px; border-bottom: 1px solid #F1F5F9;
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
   vertical-align: top; line-height: 1.5;
   min-height: 40px;
 }
 .wb-table td.wb-td--numeric {
   text-align: right; font-family: var(--font-mono);
-  font-size: 12px; line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-xs); line-height: 1.15;
 }
-.wb-table tr:hover td { background: var(--wb-card-header-bg, #F8FAFC); transition: background 0.1s; }
+.wb-table tr:hover td { background: var(--surface-muted); transition: background 0.1s; }
 
 /* Table container with scroll fade */
 .wb-table-wrap {
@@ -319,8 +320,11 @@
   background: var(--surface); border-radius: var(--radius-md);
   border: 1px solid var(--border);
   border-left: 3px solid var(--wb-card-accent, var(--teal));
+  box-shadow: var(--shadow-sm);
   margin-bottom: 16px;
+  transition: box-shadow var(--dur-base);
 }
+.wb-sec:hover { box-shadow: var(--shadow-md); }
 .wb-sec--warning { border-left-color: var(--wb-card-accent-warning, var(--amber)); }
 .wb-sec--complete { border-left-color: var(--wb-card-accent-complete, var(--green)); }
 .wb-sec--neutral { border-left-color: var(--border); }
@@ -333,11 +337,11 @@
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .wb-sec-title {
-  font-size: 14px; font-weight: 600; color: var(--wb-text-heading, #0F172A);
-  margin: 0;
+  font-size: var(--text-md); font-weight: 600; color: var(--text); margin: 0;
 }
 .wb-sec-badge {
-  font-size: 11px; font-weight: 600; color: var(--wb-text-secondary, #64748B);
+  font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 600;
+  color: var(--text-secondary); font-variant-numeric: tabular-nums;
 }
 .wb-sec-chevron {
   width: 32px; height: 32px; border-radius: var(--radius-sm);
