@@ -57,9 +57,14 @@
     if (editingId) {
       var editInst = localInst.filter(function(i) { return i.id === editingId; })[0];
       if (!editInst) { setEditingId(null); return null; }
-      return h(InstrumentEditor, { instrument: editInst, matrixRows: matrixRows, tier: tier,
-        onChange: handleInstChange, onExport: handleExport,
-        onBack: function() { setEditingId(null); } });
+      return h('div', null,
+        h(InstrumentEditor, { instrument: editInst, matrixRows: matrixRows, tier: tier,
+          onChange: handleInstChange, onExport: handleExport,
+          onBack: function() { setEditingId(null); },
+          onPrev: function() { setEditingId(null); dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 4 }); },
+          onNext: function() { setEditingId(null); dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 6 }); } }),
+        typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 5, dispatch: dispatch }) : null
+      );
     }
 
     // Upstream badges

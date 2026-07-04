@@ -178,12 +178,24 @@
           onClick: function() { handleSave(); props.onClose(); },
           disabled: !bridge.ready,
           style: {
+            padding: '5px 14px', borderRadius: 5, border: '1px solid rgba(255,255,255,0.2)',
+            background: 'transparent', color: '#E2E8F0',
+            fontSize: 12, fontWeight: 600, cursor: bridge.ready ? 'pointer' : 'default',
+            opacity: bridge.ready ? 1 : 0.5, marginRight: 8
+          }
+        }, 'Save & Return'),
+        h('button', {
+          type: 'button',
+          onClick: function() { handleSave(); if (props.onSaveAndAdvance) props.onSaveAndAdvance(); else props.onClose(); },
+          disabled: !bridge.ready,
+          title: 'Save and continue to Station 2: Evaluation Matrix',
+          style: {
             padding: '5px 14px', borderRadius: 5, border: 'none',
             background: 'var(--teal, #2EC4B6)', color: 'var(--navy, #0B1A2E)',
             fontSize: 12, fontWeight: 700, cursor: bridge.ready ? 'pointer' : 'default',
             opacity: bridge.ready ? 1 : 0.5
           }
-        }, 'Save & Return')
+        }, 'Save & Continue to Station 2 →')
       ),
 
       // Iframe
@@ -253,27 +265,42 @@
       return h(CanvasOverlay, {
         toc: hasData ? toc : null,
         onSave: saveToc,
-        onClose: function() { setMode('landing'); }
+        onClose: function() { setMode('landing'); },
+        onSaveAndAdvance: function() {
+          setMode('landing');
+          dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 2 });
+        }
       });
     }
 
     // ── Inline mode ──
     if (mode === 'inline') {
       return h('div', null,
-        h('div', { style: { display: 'flex', alignItems: 'center', marginBottom: 16 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+            h('button', {
+              type: 'button',
+              className: 'wb-btn wb-btn-ghost wb-btn-sm',
+              onClick: function() { setMode('landing'); }
+            }, '\u2190 Back'),
+            h('span', { style: { fontSize: 14, fontWeight: 600, color: 'var(--text)' } }, 'Guided Builder')
+          ),
           h('button', {
             type: 'button',
-            className: 'wb-btn wb-btn-ghost wb-btn-sm',
-            onClick: function() { setMode('landing'); },
-            style: { marginRight: 8 }
-          }, '\u2190 Back'),
-          h('span', { style: { fontSize: 14, fontWeight: 600, color: 'var(--text)' } }, 'Guided Builder')
+            className: 'wb-btn wb-btn-primary wb-btn-sm',
+            title: 'Continue to Station 2: Evaluation Matrix',
+            onClick: function() {
+              setMode('landing');
+              dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 2 });
+            }
+          }, 'Continue to Station 2 \u2192')
         ),
         h(window.TocInline, {
           tocData: hasData ? toc : null,
           onSave: saveToc,
           tier: tier
-        })
+        }),
+        typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 1, dispatch: dispatch }) : null
       );
     }
 

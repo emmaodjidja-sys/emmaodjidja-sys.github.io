@@ -5,6 +5,7 @@
   function InstrumentEditor(props) {
     var inst = props.instrument, matrixRows = props.matrixRows || [], tier = props.tier;
     var onChange = props.onChange, onExport = props.onExport, onBack = props.onBack;
+    var onNext = props.onNext, onPrev = props.onPrev;
 
     var aq = React.useState(null), activeQId = aq[0], setActiveQId = aq[1];
     var cs = React.useState({}), collapsed = cs[0], setCollapsed = cs[1];
@@ -24,7 +25,7 @@
       }
     }
 
-    // Auto-select first question if none active (effect must be at top level — no conditional)
+    // Auto-select first question if none active (effect must be at top level, no conditional)
     React.useEffect(function() {
       if (!activeQId && allQuestions.length) {
         setActiveQId(allQuestions[0].q.id);
@@ -70,14 +71,14 @@
     var sidebar = h('div', { style: { width: 240, minWidth: 240, background: '#F8FAFC', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', height: '100%' } },
       h('div', { style: { padding: '14px 12px 10px', borderBottom: '1px solid #E2E8F0' } },
         h('div', { style: { fontSize: 14, fontWeight: 600, color: '#1F2937', marginBottom: 2 } }, inst.name),
-        h('div', { style: { fontSize: 11, color: '#6B7280' } }, inst.method + ' \u00b7 ' + inst.targetSample)),
+        h('div', { style: { fontSize: 11, color: '#6B7280' } }, inst.method + ' · ' + inst.targetSample)),
       h('div', { style: { flex: 1, overflowY: 'auto', padding: '6px 0' } },
         (inst.sections || []).map(function(sec) {
           var isCollapsed = collapsed[sec.id];
           return h('div', { key: sec.id },
             h('div', { style: { padding: '6px 12px', fontSize: 12, fontWeight: 600, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
               onClick: function() { toggleSection(sec.id); } },
-              h('span', { style: { fontSize: 10, transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0)', transition: 'transform 0.15s', display: 'inline-block' } }, '\u25BC'),
+              h('span', { style: { fontSize: 10, transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0)', transition: 'transform 0.15s', display: 'inline-block' } }, '▼'),
               sec.label),
             !isCollapsed ? (sec.questions || []).map(function(q) {
               var isActive = q.id === (activeQuestion && activeQuestion.id);
@@ -98,10 +99,20 @@
     // RIGHT PANEL
     var eqBanner = eqRow ? h('div', { style: { background: '#EBF8FF', borderRadius: 6, padding: '8px 12px', marginBottom: 12, fontSize: 12 } },
       h('strong', { style: { color: '#2B6CB0' } }, 'EQ: '), eqRow.question || eqRow.text || '',
-      eqRow.indicators && eqRow.indicators.length ? h('span', { style: { color: '#718096', marginLeft: 8 } }, '\u2192 ' + eqRow.indicators.length + ' indicator(s)') : null) : null;
+      eqRow.indicators && eqRow.indicators.length ? h('span', { style: { color: '#718096', marginLeft: 8 } }, '→ ' + eqRow.indicators.length + ' indicator(s)') : null) : null;
+
+    // Top navigation bar: back to instrument list, jump to prev/next station
+    var navBar = h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap' } },
+      h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
+        h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: onBack }, '← Back to instruments'),
+        onPrev ? h('button', { className: 'wb-btn wb-btn-sm', onClick: onPrev, title: 'Save and go to Station 4: Sample Size' }, '← Station 4') : null
+      ),
+      h('div', { style: { fontSize: 11, color: '#64748B', fontWeight: 500 } }, 'Station 5 of 9'),
+      onNext ? h('button', { className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: onNext, title: 'Save and continue to Station 6: Analysis Framework' }, 'Continue to Station 6 →') : null
+    );
 
     var rightPanel = h('div', { style: { flex: 1, padding: '16px 20px', overflowY: 'auto' } },
-      h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: onBack, style: { marginBottom: 12 } }, '\u2190 Back to instruments'),
+      navBar,
       eqBanner,
       activeQuestion ? h('div', null,
         h('div', { style: { marginBottom: 8 } },
@@ -112,7 +123,7 @@
       nextQuestion ? h('div', { style: { marginTop: 16, padding: '8px 12px', background: '#F7FAFC', borderRadius: 6, fontSize: 12, color: '#718096' } },
         h('strong', null, 'Next: '), (nextQuestion.text || '').slice(0, 60) + '...') : null);
 
-    return h('div', { style: { display: 'flex', height: 'calc(100vh - 200px)', border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden' } },
+    return h('div', { style: { display: 'flex', height: 'calc(100vh - 240px)', minHeight: 420, border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden' } },
       sidebar, rightPanel);
   }
 
