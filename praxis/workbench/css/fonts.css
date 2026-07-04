@@ -1,0 +1,16 @@
+/* Self-hosted fonts. No third-party font requests may exist (v1.1 WS-3.4). */
+/* Variable fonts: one file per family covers all weights the app uses. */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('../vendor/fonts/dm-sans-var.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('../vendor/fonts/jetbrains-mono-var.woff2') format('woff2');
+}
