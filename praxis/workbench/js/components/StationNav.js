@@ -39,7 +39,7 @@
       style: {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '16px 0', marginTop: 24,
-        borderTop: '1px solid var(--border, #E2E8F0)'
+        borderTop: '1px solid var(--border)'
       }
     },
       // Back
@@ -55,7 +55,7 @@
 
       // Position indicator
       h('span', {
-        style: { fontSize: 11, color: 'var(--slate, #64748B)', fontWeight: 500 }
+        style: { fontSize: 'var(--text-xs)', color: 'var(--slate)', fontWeight: 500 }
       }, 'Station ' + stationId + ' of 9'),
 
       // Next

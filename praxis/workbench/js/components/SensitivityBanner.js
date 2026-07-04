@@ -21,7 +21,7 @@
     }
 
     return h('div', { className: className },
-      h('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: isHighly ? '#EF4444' : '#F59E0B', flexShrink: 0 } }),
+      h('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: isHighly ? 'var(--red)' : 'var(--amber)', flexShrink: 0 } }),
       h('span', null, text)
     );
   }

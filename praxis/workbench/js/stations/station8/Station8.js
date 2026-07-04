@@ -63,7 +63,7 @@
       '  .s8-slide-card { break-inside: avoid; page-break-inside: avoid; break-after: page; page-break-after: always; margin: 0 0 0 0; border: none !important; box-shadow: none !important; }',
       '  .s8-slide-card:last-child { break-after: auto; page-break-after: auto; }',
       '  .s8-slide-header-print { display: flex !important; align-items: center; padding: 18px 28px; background: #0B1A2E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
-      '  .s8-slide-header-print .s8-slide-num-print { color: #2DD4BF; font-size: 13px; font-weight: 700; margin-right: 16px; }',
+      '  .s8-slide-header-print .s8-slide-num-print { color: var(--teal); font-size: 13px; font-weight: 700; margin-right: 16px; }',
       '  .s8-slide-header-print .s8-slide-title-print { color: #fff; font-size: 18px; font-weight: 700; }',
       '  .s8-slide-body-print { padding: 24px 28px; font-size: 13px; line-height: 1.6; }',
       '  .s8-slide-body-print .wb-param-label { font-size: 10px; }',

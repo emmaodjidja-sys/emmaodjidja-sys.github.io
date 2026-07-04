@@ -37,13 +37,13 @@
       open ? h('div', {
         style: {
           position: 'absolute', top: '100%', right: 0, marginTop: '6px',
-          width: '280px', background: '#fff', border: '1px solid var(--wb-border)',
+          width: '280px', background: 'var(--surface)', border: '1px solid var(--border)',
           borderRadius: '8px', boxShadow: '0 4px 16px rgba(11,26,46,0.12)',
           zIndex: 300, overflow: 'hidden'
         }
       },
-        h('div', { style: { padding: '10px 14px 6px', borderBottom: '1px solid var(--wb-border)' } },
-          h('span', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--wb-slate)', letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Experience Tier')
+        h('div', { style: { padding: '10px 14px 6px', borderBottom: '1px solid var(--border)' } },
+          h('span', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--slate)', letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Experience Tier')
         ),
         TIERS.map(function(tier) {
           var isActive = tier.id === currentTier;
@@ -55,13 +55,13 @@
             },
             style: {
               display: 'block', width: '100%', padding: '10px 14px',
-              background: isActive ? 'var(--wb-tier-' + tier.id + '-bg, rgba(16,185,129,0.08))' : 'transparent',
-              border: 'none', borderLeft: isActive ? '3px solid var(--wb-tier-' + tier.id + ', #10B981)' : '3px solid transparent',
+              background: isActive ? 'var(--tier-' + tier.id + '-bg)' : 'transparent',
+              border: 'none', borderLeft: isActive ? '3px solid var(--tier-' + tier.id + ')' : '3px solid transparent',
               cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s'
             }
           },
-            h('div', { style: { fontSize: '11px', fontWeight: 600, color: 'var(--wb-text)', marginBottom: '2px' } }, tier.label),
-            h('div', { style: { fontSize: '10px', color: 'var(--wb-slate)', lineHeight: '1.4' } }, tier.desc)
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: 'var(--text)', marginBottom: '2px' } }, tier.label),
+            h('div', { style: { fontSize: '10px', color: 'var(--slate)', lineHeight: '1.4' } }, tier.desc)
           );
         })
       ) : null

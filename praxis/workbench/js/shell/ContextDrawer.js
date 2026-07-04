@@ -24,8 +24,8 @@
         h('button', {
           onClick: toggle,
           style: {
-            width: 28, height: 28, border: '1px solid #E5E7EB', borderRadius: 4,
-            background: '#fff', cursor: 'pointer', fontSize: '11px', color: '#6B7280',
+            width: 28, height: 28, border: '1px solid var(--border)', borderRadius: 4,
+            background: 'var(--surface)', cursor: 'pointer', fontSize: '11px', color: 'var(--text-tertiary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '8px auto 0'
           }
         }, '{ }')
@@ -45,16 +45,16 @@
       h('strong', null, 'Evaluability: '), evaluability.score + '/100'));
 
     return h('aside', { className: 'wb-drawer wb-drawer--open' },
-      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderBottom: '1px solid #E5E7EB' } },
-        h('span', { style: { fontSize: '12px', fontWeight: 600, color: '#1F2937' } }, 'Context'),
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderBottom: '1px solid var(--border)' } },
+        h('span', { style: { fontSize: '12px', fontWeight: 600, color: 'var(--text)' } }, 'Context'),
         h('button', { onClick: toggle, className: 'wb-btn wb-btn-ghost wb-btn-sm', style: { fontSize: '14px', padding: '2px 6px' } }, '\u00D7')
       ),
       h('div', { style: { padding: '12px', flex: 1, overflow: 'auto' } },
         items.length > 0
           ? items
-          : h('p', { style: { fontSize: '11px', color: '#9CA3AF' } }, 'No project metadata yet.')
+          : h('p', { style: { fontSize: '11px', color: 'var(--text-tertiary)' } }, 'No project metadata yet.')
       ),
-      h('div', { style: { padding: '12px', borderTop: '1px solid #E5E7EB' } },
+      h('div', { style: { padding: '12px', borderTop: '1px solid var(--border)' } },
         h('button', { className: 'wb-btn wb-btn-outline wb-btn-sm', onClick: handleExport, style: { width: '100%' } }, 'Export .praxis')
       )
     );

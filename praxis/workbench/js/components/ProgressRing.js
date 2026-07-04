@@ -17,7 +17,7 @@
         h('circle', {
           cx: center, cy: center, r: radius,
           fill: 'none',
-          stroke: '#E2E8F0',
+          stroke: 'var(--border)',
           strokeWidth: strokeWidth
         }),
         h('circle', {

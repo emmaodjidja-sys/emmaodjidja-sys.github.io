@@ -73,33 +73,33 @@
     return h('div', {
       style: {
         position: 'fixed', top: 0, right: 0, bottom: 0, width: '320px',
-        background: '#fff', borderLeft: '1px solid var(--wb-border)',
+        background: 'var(--surface)', borderLeft: '1px solid var(--border)',
         boxShadow: '-4px 0 16px rgba(11,26,46,0.08)', zIndex: 250,
         display: 'flex', flexDirection: 'column', overflow: 'hidden'
       }
     },
       // Header
-      h('div', { style: { padding: '14px 16px', borderBottom: '1px solid var(--wb-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
-        h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--wb-navy)', letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Help'),
+      h('div', { style: { padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--navy)', letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Help'),
         h('button', {
           className: 'wb-btn wb-btn-ghost wb-btn-sm',
           onClick: onClose,
-          style: { fontSize: '14px', padding: '2px 6px', color: 'var(--wb-slate)' }
+          style: { fontSize: '14px', padding: '2px 6px', color: 'var(--slate)' }
         }, '\u00D7')
       ),
       // Content
       h('div', { style: { flex: 1, overflow: 'auto', padding: '16px' } },
-        h('h3', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--wb-navy)', marginBottom: '8px' } },
+        h('h3', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--navy)', marginBottom: '8px' } },
           'Station ' + stationId + ': ' + help.title
         ),
-        h('p', { style: { fontSize: '12px', color: 'var(--wb-text)', lineHeight: '1.6', marginBottom: '16px' } }, text),
+        h('p', { style: { fontSize: '12px', color: 'var(--text)', lineHeight: '1.6', marginBottom: '16px' } }, text),
 
-        h('div', { style: { padding: '10px 12px', background: 'var(--wb-bg)', borderRadius: '6px', marginBottom: '12px' } },
+        h('div', { style: { padding: '10px 12px', background: 'var(--bg)', borderRadius: '6px', marginBottom: '12px' } },
           h('span', { className: 'wb-label', style: { marginBottom: '4px', display: 'block' } }, 'Current tier'),
           h('span', { className: 'wb-tier-pill', 'data-tier': tier, style: { fontSize: '9px' } }, tier.toUpperCase())
         ),
 
-        h('div', { style: { fontSize: '11px', color: 'var(--wb-slate)', lineHeight: '1.5' } },
+        h('div', { style: { fontSize: '11px', color: 'var(--slate)', lineHeight: '1.5' } },
           h('p', { style: { marginBottom: '8px' } }, 'Tip: You can change your experience tier using the badge in the top bar. This adjusts the language and detail level without changing the layout.'),
           h('p', null, 'Your progress is saved automatically. You can also download a .praxis file at any time using the Save button.')
         )

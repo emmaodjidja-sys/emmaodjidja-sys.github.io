@@ -11,7 +11,7 @@
     return h('span', { className: 'wb-rail-check' },
       h('svg', { width: 10, height: 10, viewBox: '0 0 10 10' },
         h('circle', { cx: 5, cy: 5, r: 5, fill: 'var(--green)' }),
-        h('path', { d: 'M3 5l1.5 1.5L7 4', stroke: '#fff', strokeWidth: 1.2, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' })
+        h('path', { d: 'M3 5l1.5 1.5L7 4', stroke: 'var(--surface)', strokeWidth: 1.2, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' })
       )
     );
   }
