@@ -2,6 +2,8 @@
 
 body {
   font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
@@ -122,3 +124,33 @@ input, textarea, select { font-family: inherit; }
   }
   .wb-drawer { display: none; }
 }
+
+/* ── §7.3 Global styles ─────────────────────────────── */
+:focus { outline: none; }
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+.on-chrome :focus-visible,
+:focus-visible.on-chrome {
+  box-shadow: var(--focus-ring-chrome);
+}
+::selection { background: var(--teal-glow); }
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); background-clip: content-box; }
