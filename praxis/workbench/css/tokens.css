@@ -1,138 +1,117 @@
 :root {
-  /* ── Inherited from PRAXIS tools (must match exactly) ── */
-  --navy: #0B1A2E;
-  --navy-mid: #122240;
-  --navy-light: #1a3050;
-  --teal: #2EC4B6;
-  --teal-dark: #1a9e92;
-  --teal-light: #d0f0ed;
-  --teal-glow: rgba(46,196,182,0.15);
-  --slate: #64748B;
-  --slate-light: #94A3B8;
-  --bg: #F1F5F9;
-  --surface: #FFFFFF;
-  --border: #E2E8F0;
-  --text: #0F172A;
-  --text-muted: #64748B;
-  --amber: #F59E0B;
-  --amber-dark: #D97706;
-  --amber-light: #FEF3C7;
-  --amber-warm: #FFF7ED;
-  --amber-border: #FDBA74;
-  --amber-text: #92400E;
-  --red: #EF4444;
-  --red-light: #FEE2E2;
-  --green: #10B981;
-  --green-dark: #059669;
-  --green-light: #D1FAE5;
-  --blue: #3B82F6;
-  --blue-light: #DBEAFE;
-  --purple: #8B5CF6;
-  --purple-light: #EDE9FE;
+  /* ── Brand ── */
+  --navy:        #0B1A2E;
+  --navy-mid:    #10233D;
+  --navy-light:  #1A3050;
+  --teal:        #2EC4B6;
+  --teal-ink:    #0F766E;   /* teal TEXT on light · 5.0:1 on #fff */
+  --teal-dark:   #0D9488;
+  --teal-deep:   #115E59;
+  --teal-light:  #CCFBF6;
+  --teal-glow:   rgba(46,196,182,0.16);
 
-  /* ── Workbench-specific tokens ── */
-  --wb-rail-bg: #0a1525;
-  --wb-rail-width: 48px;
-  --wb-topbar-height: 44px;
-  --wb-topbar-bg: #081420;
-  --wb-drawer-width-collapsed: 44px;
-  --wb-drawer-width-expanded: 320px;
+  /* ── Neutrals (light canvas) ── */
+  --bg:          #F4F6F9;
+  --surface:     #FFFFFF;
+  --surface-muted:#F8FAFC;
+  --border:      #E2E8F0;
+  --border-strong:#CBD5E1;
+  --text:        #101827;
+  --text-secondary:#3F4C61;
+  --text-tertiary:#64748B;
 
-  /* Tier colors */
-  --tier-foundation: #10B981;
-  --tier-foundation-bg: rgba(16,185,129,0.12);
-  --tier-practitioner: #3B82F6;
-  --tier-practitioner-bg: rgba(59,130,246,0.12);
-  --tier-advanced: #8B5CF6;
-  --tier-advanced-bg: rgba(139,92,246,0.12);
+  /* ── Neutrals (dark chrome) ── */
+  --chrome-bg:   #081221;
+  --chrome-raised:#0E1B30;
+  --chrome-border:rgba(255,255,255,0.08);
+  --chrome-text: #E7EDF5;
+  --chrome-text-dim:#9FB0C6;
 
-  /* Status */
-  --stale-color: #F59E0B;
-  --stale-bg: #FEF3C7;
+  /* ── Status ── */
+  --green: #059669;  --green-strong:#047857; --green-light:#D1FAE5;
+  --amber: #D97706;  --amber-text:#92400E;   --amber-light:#FEF3C7;
+  --red:   #DC2626;  --red-strong:#B91C1C;   --red-light:#FEE2E2;
+  --blue:  #2563EB;  --blue-light:#DBEAFE;
+  --purple:#7C3AED;  --purple-light:#EDE9FE;
 
-  /* Sensitivity */
-  --sens-sensitive-bg: #FEF3C7;
-  --sens-sensitive-border: #FDE68A;
-  --sens-highly-bg: #FEE2E2;
-  --sens-highly-border: #FECACA;
+  /* ── Type ── */
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --text-xs: 12px;  --lh-xs: 16px;
+  --text-sm: 13px;  --lh-sm: 20px;
+  --text-base:14px; --lh-base:22px;
+  --text-md: 15px;  --lh-md: 24px;
+  --text-lg: 17px;  --lh-lg: 26px;
+  --text-xl: 20px;  --lh-xl: 28px;
+  --text-2xl:24px;  --lh-2xl:32px;
+  --text-3xl:28px;  --lh-3xl:36px;
+  --tracking-caps: 0.08em;
 
-  /* Selection/editing */
-  --edit-color: #3B82F6;
-  --edit-bg: #EFF6FF;
+  /* ── Space (4px grid) ── */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px; --space-9:48px;
 
-  /* Typography */
-  --font-sans: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* ── Shape & depth ── */
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(11,26,46,.06);
+  --shadow-md:0 2px 8px rgba(11,26,46,.08);
+  --shadow-lg:0 8px 28px rgba(11,26,46,.14);
+  --shadow-overlay:0 24px 64px rgba(4,10,20,.45);
 
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 12px;
+  /* ── Motion ── */
+  --ease-out: cubic-bezier(.16,1,.3,1);
+  --dur-fast:120ms; --dur-base:180ms; --dur-slow:260ms;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(11,26,46,0.06);
-  --shadow-md: 0 2px 8px rgba(11,26,46,0.08);
-  --shadow-lg: 0 4px 20px rgba(11,26,46,0.12);
-  --shadow-xl: 0 24px 80px rgba(0,0,0,0.4);
+  /* ── Focus ── */
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--teal);
+  --focus-ring-chrome: 0 0 0 2px var(--chrome-bg), 0 0 0 4px var(--teal);
 
-  /* ── Summary bar ── */
-  --wb-summary-bg: #1a3050;
-  --wb-summary-height: 40px;
+  /* ── Layout ── */
+  --spine-w: 216px; --spine-w-collapsed:56px;
+  --topbar-h: 48px;
+  --content-max: 880px;
 
-  /* ── Section card ── */
-  --wb-card-header-bg: #F8FAFC;
+  /* ════════ Legacy aliases (do not delete; keep existing CSS/JS resolving) ════════ */
+  --slate:#64748B; --slate-light:#94A3B8; --text-muted:#64748B;
+  --amber-dark:#B45309; --amber-warm:#FFF7ED; --amber-border:#FDBA74;
+  --green-dark:#047857;
+  /* rail / topbar / drawer (Phase C rewrites the rail; keep alive until then) */
+  --wb-rail-bg: var(--chrome-bg); --wb-rail-width: 48px;
+  --wb-topbar-height: var(--topbar-h); --wb-topbar-bg: var(--chrome-bg);
+  --wb-drawer-width-collapsed: 44px; --wb-drawer-width-expanded: 320px;
+  --wb-summary-bg: var(--navy-light); --wb-summary-height: 40px;
+  /* tier colors */
+  --tier-foundation: var(--green); --tier-foundation-bg: rgba(5,150,105,0.12);
+  --tier-practitioner: var(--blue); --tier-practitioner-bg: rgba(37,99,235,0.12);
+  --tier-advanced: var(--purple); --tier-advanced-bg: rgba(124,58,237,0.12);
+  /* status legacy */
+  --stale-color: var(--amber); --stale-bg: var(--amber-light);
+  --sens-sensitive-bg: var(--amber-light); --sens-sensitive-border: #FDE68A;
+  --sens-highly-bg: var(--red-light); --sens-highly-border: #FECACA;
+  --edit-color: var(--blue); --edit-bg: #EFF6FF;
+  /* section card */
+  --wb-card-header-bg: var(--surface-muted);
   --wb-card-accent: var(--teal);
   --wb-card-accent-warning: var(--amber);
   --wb-card-accent-complete: var(--green);
-
-  /* ── Input variants ── */
-  --wb-input-border: #CBD5E1;
-  --wb-input-focus-ring: rgba(46,196,182,0.2);
+  /* inputs */
+  --wb-input-border: var(--border-strong);
+  --wb-input-focus-ring: var(--teal-glow);
   --wb-input-compact-padding: 6px 10px;
-
-  /* ── Typography hierarchy ── */
-  --wb-text-primary: #334155;
-  --wb-text-secondary: #64748B;
-  --wb-text-heading: #0F172A;
-
-  /* ── Spacing scale (4px base) ── */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 32px;
-  --space-8: 40px;
-  --space-9: 48px;
-
-  /* ── Type scale ── */
-  --text-xs: 11px;
-  --text-sm: 12px;
-  --text-base: 13px;
-  --text-md: 14px;
-  --text-lg: 15px;
-  --text-xl: 16px;
-  --text-2xl: 20px;
-  --text-3xl: 24px;
-
-  /* ── Line heights ── */
-  --leading-tight: 1.2;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.6;
-
-  /* ── Transitions ── */
-  --ease-default: 0.15s ease;
-  --ease-slow: 0.25s ease;
-
-  /* ── Focus rings ── */
-  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--teal);
-  --focus-ring-dark: 0 0 0 2px var(--navy), 0 0 0 4px rgba(255,255,255,0.5);
-
-  /* ── Surface variants (in addition to --wb-card-header-bg) ── */
-  --surface-muted: #FAFBFC;
-
-  /* ── Depth ── */
-  --shadow-inset: inset 0 1px 2px rgba(11,26,46,0.06);
+  /* text hierarchy legacy */
+  --wb-text-primary: var(--text-secondary);
+  --wb-text-secondary: var(--text-tertiary);
+  --wb-text-heading: var(--text);
+  /* line-height legacy (unitless) */
+  --leading-tight: 1.2; --leading-normal: 1.5; --leading-relaxed: 1.6;
+  /* transitions legacy */
+  --ease-default: var(--dur-fast) ease; --ease-slow: var(--dur-slow) ease;
+  /* radius/shadow legacy */
+  --radius-xl: 12px; --shadow-xl: var(--shadow-overlay);
+  --shadow-inset: inset 0 1px 2px rgba(11,26,46,.06);
+  /* focus legacy (dark) → chrome */
+  --focus-ring-dark: var(--focus-ring-chrome);
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration:0.01ms !important; animation-duration:0.01ms !important; }
 }
