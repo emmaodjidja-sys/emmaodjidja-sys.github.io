@@ -75,6 +75,7 @@
 
     React.useEffect(function () {
       function handleMessage(event) {
+        if (event.origin !== window.location.origin) return;
         if (!event.data || typeof event.data !== 'object') return;
 
         var type = event.data.type;
@@ -86,7 +87,7 @@
             iframe.contentWindow.postMessage({
               type: 'PRAXIS_INIT',
               design: calculatorDesignId
-            }, '*');
+            }, window.location.origin);
           }
         }
 

@@ -64,6 +64,7 @@
 
     React.useEffect(function() {
       function handleMessage(e) {
+        if (e.origin !== window.location.origin) return;
         if (!e.data || !e.data.type) return;
 
         if (e.data.type === 'DESIGN_READY') {
@@ -73,7 +74,7 @@
             iframeRef.current.contentWindow.postMessage({
               type: 'PRAXIS_INIT',
               payload: { answers: prefillAnswers }
-            }, '*');
+            }, window.location.origin);
           }
         } else if (e.data.type === 'DESIGN_EXPORT' && e.data.payload) {
           if (onExport) onExport(e.data.payload);

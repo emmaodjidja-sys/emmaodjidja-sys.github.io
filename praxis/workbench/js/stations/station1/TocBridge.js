@@ -26,17 +26,8 @@
 
     React.useEffect(function() {
       function handleMessage(e) {
+        if (e.origin !== window.location.origin) return;
         if (!e.data || typeof e.data.type !== 'string') return;
-
-        // Only accept messages from our iframe origin
-        if (iframeRef.current) {
-          try {
-            var iframeOrigin = new URL(iframeRef.current.src, window.location.origin).origin;
-            if (e.origin !== iframeOrigin) return;
-          } catch (_) {
-            // If URL parsing fails, fall through (same-origin iframe)
-          }
-        }
 
         switch (e.data.type) {
           case 'TOC_READY':
@@ -47,7 +38,7 @@
               iframeRef.current.contentWindow.postMessage({
                 type: 'PRAXIS_INIT',
                 payload: tocData
-              }, '*');
+              }, window.location.origin);
             }
             break;
 
@@ -77,7 +68,7 @@
         iframeRef.current.contentWindow.postMessage({
           type: 'PRAXIS_INIT',
           payload: tocData
-        }, '*');
+        }, window.location.origin);
       }
     }, [tocData]);
 

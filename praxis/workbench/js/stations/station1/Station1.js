@@ -131,7 +131,7 @@
     function handleSave() {
       // Request an export from the iframe
       if (iframeRef.current && bridge.ready) {
-        iframeRef.current.contentWindow.postMessage({ type: 'PRAXIS_REQUEST_EXPORT' }, '*');
+        iframeRef.current.contentWindow.postMessage({ type: 'PRAXIS_REQUEST_EXPORT' }, window.location.origin);
       }
     }
 

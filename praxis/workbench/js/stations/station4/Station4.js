@@ -87,7 +87,7 @@
                 className: 'wb-btn wb-btn-teal wb-btn-sm',
                 onClick: function () {
                   if (iframeRef.current && iframeRef.current.contentWindow) {
-                    iframeRef.current.contentWindow.postMessage({ type: 'REQUEST_EXPORT' }, '*');
+                    iframeRef.current.contentWindow.postMessage({ type: 'REQUEST_EXPORT' }, window.location.origin);
                   }
                 }
               }, 'Save to Workbench'),

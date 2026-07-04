@@ -216,7 +216,7 @@
             onClick: function() {
               // Request export from iframe
               if (iframeRef.current) {
-                iframeRef.current.contentWindow.postMessage({ type: 'PRAXIS_REQUEST_EXPORT' }, '*');
+                iframeRef.current.contentWindow.postMessage({ type: 'PRAXIS_REQUEST_EXPORT' }, window.location.origin);
               }
             }
           }, 'Save to Workbench'),

@@ -1570,9 +1570,10 @@ function StandaloneToCBuilder(){
 (function() {
   if (window.self === window.top) return;
 
-  window.parent.postMessage({ type: 'TOC_READY' }, '*');
+  window.parent.postMessage({ type: 'TOC_READY' }, window.location.origin);
 
   window.addEventListener('message', function(e) {
+    if (e.origin !== window.location.origin) return;
     if (!e.data || !e.data.type) return;
     if (e.data.type === 'PRAXIS_INIT' && e.data.payload) {
       // Store for component to pick up via window._praxisInitData
@@ -1590,7 +1591,7 @@ function StandaloneToCBuilder(){
       nodes: state.nodes,
       connections: state.connections
     };
-    window.parent.postMessage({ type: 'TOC_EXPORT', payload: data }, '*');
+    window.parent.postMessage({ type: 'TOC_EXPORT', payload: data }, window.location.origin);
   };
 
   window._praxisChangeToC = function(state) {
@@ -1600,7 +1601,7 @@ function StandaloneToCBuilder(){
       nodes: state.nodes,
       connections: state.connections
     };
-    window.parent.postMessage({ type: 'TOC_CHANGE', payload: data }, '*');
+    window.parent.postMessage({ type: 'TOC_CHANGE', payload: data }, window.location.origin);
   };
 })();
 

@@ -1211,9 +1211,10 @@ function App() {
 (function() {
   if (window.self === window.top) return;
 
-  window.parent.postMessage({ type: 'SAMPLE_READY' }, '*');
+  window.parent.postMessage({ type: 'SAMPLE_READY' }, window.location.origin);
 
   window.addEventListener('message', function(e) {
+    if (e.origin !== window.location.origin) return;
     if (!e.data || !e.data.type) return;
     if (e.data.type === 'PRAXIS_INIT' && e.data.payload) {
       window._praxisInitSample = e.data.payload;
@@ -1222,7 +1223,7 @@ function App() {
   });
 
   window._praxisExportSample = function(data) {
-    window.parent.postMessage({ type: 'SAMPLE_EXPORT', payload: data }, '*');
+    window.parent.postMessage({ type: 'SAMPLE_EXPORT', payload: data }, window.location.origin);
   };
 })();
 
