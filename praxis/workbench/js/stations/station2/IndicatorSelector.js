@@ -103,7 +103,10 @@
               )
             );
           })
-      )
+      ),
+      // Explicit close control (form modal, not overlay-dismissable per §7.9)
+      h('div', { className: 'wb-modal-footer', style: { margin: '14px -18px -18px', padding: '12px 18px' } },
+        h('button', { className: 'wb-btn wb-btn-sm wb-btn-secondary', onClick: props.onClose }, 'Done'))
     );
   }
 
