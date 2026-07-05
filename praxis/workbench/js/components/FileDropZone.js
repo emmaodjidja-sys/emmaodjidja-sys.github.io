@@ -15,6 +15,7 @@
         if (typeof props.onFile === 'function') props.onFile(data);
       }).catch(function(err) {
         console.error('FileDropZone: failed to parse file', err);
+        if (typeof props.onError === 'function') props.onError(err);
       });
     }
 

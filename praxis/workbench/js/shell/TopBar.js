@@ -23,12 +23,40 @@
     }
 
     function handleSave() {
-      var fname = (meta.title || 'evaluation') + '.praxis';
+      var fname = PraxisUtils.sanitizeFilename(meta.title || 'evaluation', 'evaluation') + '.praxis';
       PraxisUtils.downloadJSON(context, fname);
+      dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: 'Project file downloaded as ' + fname + '.', toastType: 'success' });
     }
 
     function handleBackToStart() {
       dispatch({ type: PraxisContext.ACTION_TYPES.SET_PROJECT_LOADED, loaded: false });
+    }
+
+    // Autosave state indicator, driven by ui.persistStatus / ui.lastSavedAt
+    var persistStatus = state.ui.persistStatus;
+    var lastSavedAt = state.ui.lastSavedAt;
+    var indicator = null;
+    var indicatorTextStyle = { fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.55)', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' };
+    function dot(color) {
+      return h('span', { 'aria-hidden': 'true', style: { width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0 } });
+    }
+    if (persistStatus === 'error') {
+      indicator = h('button', {
+        type: 'button',
+        className: 'wb-btn wb-btn-ghost wb-btn-sm',
+        onClick: handleSave,
+        title: 'Autosave to this browser failed. Download your .praxis file to keep your work.',
+        style: { color: 'var(--red)', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: 'var(--text-xs)', whiteSpace: 'nowrap' }
+      }, dot('var(--red)'), 'Autosave failed. Download your file.');
+    } else if (persistStatus === 'conflict') {
+      indicator = h('span', {
+        style: Object.assign({}, indicatorTextStyle, { color: 'var(--amber)' }),
+        title: 'This project is open in another tab. Changes made there can overwrite changes made here.'
+      }, dot('var(--amber)'), 'Open in another tab');
+    } else if (persistStatus === 'saving') {
+      indicator = h('span', { style: indicatorTextStyle }, dot('rgba(255,255,255,0.35)'), 'Saving');
+    } else if (lastSavedAt) {
+      indicator = h('span', { style: indicatorTextStyle }, dot('var(--green)'), 'Saved ' + PraxisUtils.formatTime(lastSavedAt));
     }
 
     var logo = h('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none' },
@@ -60,6 +88,7 @@
         })
       ),
       h('div', { className: 'wb-topbar-actions' },
+        indicator,
         h(ExperienceTierBadge, { tier: state.ui.experienceTier, dispatch: dispatch }),
         h('button', {
           className: 'wb-btn wb-btn-ghost wb-btn-sm wb-topbar-start',

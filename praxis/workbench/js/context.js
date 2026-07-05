@@ -15,7 +15,8 @@
     CLEAR_PROJECT: 'CLEAR_PROJECT',
     SHOW_TOAST: 'SHOW_TOAST',
     DISMISS_TOAST: 'DISMISS_TOAST',
-    CLEAR_STALE: 'CLEAR_STALE'
+    CLEAR_STALE: 'CLEAR_STALE',
+    SET_PERSIST_STATUS: 'SET_PERSIST_STATUS'
   };
 
   var defaultUI = {
@@ -23,31 +24,119 @@
     activeStation: 0,
     experienceTier: 'foundation',
     drawerOpen: false,
-    toasts: []
+    toasts: [],
+    // 'saved' | 'saving' | 'error' | 'conflict', driven by the persist logic in app.js
+    persistStatus: 'saved',
+    lastSavedAt: null
   };
+
+  function pushToast(ui, message, type) {
+    return Object.assign({}, ui, {
+      toasts: ui.toasts.concat([{ id: PraxisUtils.uid('toast_'), message: message, type: type || 'info' }])
+    });
+  }
+
+  // Station label for a top-level context field (for merge messages).
+  function fieldStationLabel(field) {
+    var ids = Object.keys(PraxisSchema.STATION_FIELDS);
+    for (var i = 0; i < ids.length; i++) {
+      if (PraxisSchema.STATION_FIELDS[ids[i]].indexOf(field) !== -1) {
+        return PraxisSchema.STATION_LABELS[ids[i]] || 'Planning';
+      }
+    }
+    return field;
+  }
 
   function reducer(state, action) {
     switch (action.type) {
 
       case ACTION_TYPES.INIT:
-        return {
-          context: action.context || PraxisSchema.createEmptyContext(),
-          ui: Object.assign({}, defaultUI, {
-            projectLoaded: true,
-            experienceTier: action.tier || 'foundation',
-            activeStation: action.station != null ? action.station : 0
-          })
-        };
+        var initContext = PraxisSchema.createEmptyContext();
+        var initFellBack = false;
+        if (action.context) {
+          var initCheck = PraxisSchema.validateContext(action.context);
+          if (initCheck.ok && !initCheck.partial) {
+            initContext = PraxisSchema.migrate(initCheck.context);
+          } else {
+            initFellBack = true;
+          }
+        }
+        var initUI = Object.assign({}, defaultUI, {
+          projectLoaded: true,
+          experienceTier: action.tier || 'foundation',
+          activeStation: action.station != null ? action.station : 0
+        });
+        if (initFellBack) {
+          initUI = pushToast(initUI, 'The provided project data could not be read. A blank project was created instead.', 'warning');
+        }
+        return { context: initContext, ui: initUI };
 
       case ACTION_TYPES.LOAD_FILE:
-        if (!action.context || action.context.schema !== 'praxis-workbench') {
-          var toasts2 = state.ui.toasts.concat([{ id: PraxisUtils.uid('toast_'), message: 'Invalid file format. Expected a .praxis file.', type: 'error' }]);
-          return { context: state.context, ui: Object.assign({}, state.ui, { toasts: toasts2 }) };
+        var check = PraxisSchema.validateContext(action.context);
+        if (!check.ok) {
+          var failMsg = (check.errors && check.errors[0]) || 'Invalid file format. Expected a .praxis file.';
+          return { context: state.context, ui: pushToast(state.ui, failMsg, 'error') };
         }
-        return {
-          context: action.context,
-          ui: Object.assign({}, state.ui, { projectLoaded: true })
-        };
+
+        if (check.partial) {
+          // Station-level export: merge its station fields into a full
+          // project instead of replacing the whole context. The merge base
+          // is the live context when a project is open. In a fresh session
+          // the call site passes the saved project as action.base, so the
+          // import never merges onto an empty context and then overwrites
+          // the saved project on the next autosave.
+          var mergeBase = state.context;
+          var baseKind = state.ui.projectLoaded ? 'current' : 'new';
+          if (!state.ui.projectLoaded && action.base) {
+            var baseCheck = PraxisSchema.validateContext(action.base);
+            if (baseCheck.ok && !baseCheck.partial) {
+              mergeBase = PraxisSchema.migrate(baseCheck.context);
+              baseKind = 'saved';
+            }
+          }
+          var mergePayload = {};
+          var mergedLabels = [];
+          Object.keys(PraxisSchema.STATION_FIELDS).forEach(function(id) {
+            PraxisSchema.STATION_FIELDS[id].forEach(function(field) {
+              if (check.context[field] !== undefined) {
+                mergePayload[field] = check.context[field];
+                if (mergedLabels.indexOf(fieldStationLabel(field)) === -1) mergedLabels.push(fieldStationLabel(field));
+              }
+            });
+          });
+          if (!mergedLabels.length) {
+            return { context: state.context, ui: pushToast(state.ui, 'This partial file contains no station data that can be merged.', 'error') };
+          }
+          var mergedContext = PraxisUtils.deepMerge(mergeBase, mergePayload);
+          mergedContext.updated_at = new Date().toISOString();
+          var partialStation = typeof check.context._station === 'number' ? check.context._station : null;
+          if (partialStation != null && PraxisSchema.STATION_FIELDS[partialStation]) {
+            mergedContext.staleness = PraxisStaleness.computeStaleness(partialStation, mergedContext.staleness);
+          }
+          var mergeMsg;
+          if (baseKind === 'current') {
+            mergeMsg = 'Merged ' + mergedLabels.join(', ') + ' data into the current project. Other stations were not changed.';
+          } else if (baseKind === 'saved') {
+            mergeMsg = 'Merged ' + mergedLabels.join(', ') + ' data into your saved project. Other stations were not changed.';
+          } else {
+            mergeMsg = 'Created a new project from the imported ' + mergedLabels.join(', ') + ' data.';
+          }
+          var mergedUI = pushToast(state.ui, mergeMsg, 'success');
+          return { context: mergedContext, ui: Object.assign({}, mergedUI, { projectLoaded: true }) };
+        }
+
+        var loadedContext = PraxisSchema.migrate(check.context);
+        var loadedUI = Object.assign({}, state.ui, { projectLoaded: true });
+        if (typeof action.station === 'number' && action.station >= 0 && action.station <= 9) {
+          loadedUI.activeStation = action.station;
+        }
+        if (action.tier === 'foundation' || action.tier === 'practitioner' || action.tier === 'advanced') {
+          loadedUI.experienceTier = action.tier;
+        }
+        if (check.errors && check.errors.length) {
+          loadedUI = pushToast(loadedUI, 'Some fields in the file could not be read and were reset to defaults: ' + check.errors.length + ' field(s) affected.', 'warning');
+        }
+        return { context: loadedContext, ui: loadedUI };
 
       case ACTION_TYPES.SAVE_STATION:
         var newContext = PraxisUtils.deepMerge(state.context, action.payload || action.data);
@@ -79,13 +168,18 @@
         return { context: state.context, ui: Object.assign({}, state.ui, { projectLoaded: action.loaded }) };
 
       case ACTION_TYPES.CLEAR_PROJECT:
-        // Note: localStorage cleanup is handled by the useEffect in app.js
-        // (when projectLoaded becomes false, persist stops; next INIT creates fresh state)
-        try { localStorage.removeItem('praxis-workbench'); localStorage.removeItem('praxis-workbench-ui'); } catch(e) {}
+        // Pure state reset. Callers that intend to delete the saved copy must
+        // remove the localStorage keys themselves before dispatching.
         return {
           context: PraxisSchema.createEmptyContext(),
           ui: Object.assign({}, defaultUI)
         };
+
+      case ACTION_TYPES.SET_PERSIST_STATUS:
+        return { context: state.context, ui: Object.assign({}, state.ui, {
+          persistStatus: action.status,
+          lastSavedAt: action.at !== undefined ? action.at : state.ui.lastSavedAt
+        })};
 
       case ACTION_TYPES.SHOW_TOAST:
         var toasts = state.ui.toasts.concat([{ id: PraxisUtils.uid('toast_'), message: action.message, type: action.toastType || 'info' }]);
@@ -128,13 +222,15 @@
       if (saved) {
         var parsed = JSON.parse(saved);
         if (parsed && parsed.schema === 'praxis-workbench' && parsed.project_meta && parsed.project_meta.programme_name) {
-          // Find last active station (highest completed or first incomplete)
+          // Find last active station (highest completed or first incomplete).
+          // Includes the optional Planning station (9) defensively.
           var lastStation = 0;
-          for (var i = 8; i >= 0; i--) {
+          for (var i = 9; i >= 0; i--) {
             var fields = PraxisSchema.STATION_FIELDS[i];
+            if (!fields) continue;
             for (var j = 0; j < fields.length; j++) {
               if (parsed[fields[j]] && parsed[fields[j]].completed_at) {
-                lastStation = Math.min(i + 1, 8);
+                lastStation = (i === 9) ? 9 : Math.min(i + 1, 8);
                 break;
               }
             }
@@ -143,7 +239,7 @@
           return {
             name: parsed.project_meta.programme_name || parsed.project_meta.title || 'Untitled',
             station: lastStation,
-            stationName: PraxisSchema.STATION_LABELS[lastStation],
+            stationName: PraxisSchema.STATION_LABELS[lastStation] || 'Planning',
             updatedAt: parsed.updated_at
           };
         }
@@ -156,11 +252,92 @@
     try {
       var saved = localStorage.getItem('praxis-workbench');
       if (saved) {
-        var context = JSON.parse(saved);
-        if (context && context.schema === 'praxis-workbench') return context;
+        var check = PraxisSchema.validateContext(JSON.parse(saved));
+        if (check.ok && !check.partial) return PraxisSchema.migrate(check.context);
       }
     } catch (e) {}
     return null;
+  }
+
+  // Saved UI state (active station, experience tier), validated.
+  function getSavedUIState() {
+    try {
+      var raw = localStorage.getItem('praxis-workbench-ui');
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      var out = {};
+      if (typeof parsed.activeStation === 'number' && parsed.activeStation >= 0 && parsed.activeStation <= 9) {
+        out.activeStation = parsed.activeStation;
+      }
+      if (parsed.experienceTier === 'foundation' || parsed.experienceTier === 'practitioner' || parsed.experienceTier === 'advanced') {
+        out.experienceTier = parsed.experienceTier;
+      }
+      return out;
+    } catch (e) {}
+    return null;
+  }
+
+  // Single rotating backup slot. Copies the current saved blob (whatever its
+  // state, including unparseable data) so one destructive replacement is
+  // always recoverable. Returns true when a backup was written.
+  function writeBackup(reason) {
+    try {
+      var current = localStorage.getItem('praxis-workbench');
+      if (!current) return false;
+      localStorage.setItem('praxis-workbench-backup', current);
+      localStorage.setItem('praxis-workbench-backup-meta', JSON.stringify({
+        backedUpAt: new Date().toISOString(),
+        reason: reason || ''
+      }));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Metadata for the backup slot, or null when there is no backup, the
+  // backup is unreadable, or it is identical to the current saved blob.
+  function getBackupMeta() {
+    try {
+      var raw = localStorage.getItem('praxis-workbench-backup');
+      if (!raw) return null;
+      if (raw === localStorage.getItem('praxis-workbench')) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || parsed.schema !== 'praxis-workbench') return null;
+      var meta = null;
+      try { meta = JSON.parse(localStorage.getItem('praxis-workbench-backup-meta')); } catch (e2) {}
+      return {
+        name: (parsed.project_meta && (parsed.project_meta.programme_name || parsed.project_meta.title)) || 'Untitled',
+        updatedAt: parsed.updated_at || null,
+        backedUpAt: (meta && meta.backedUpAt) || null,
+        reason: (meta && meta.reason) || ''
+      };
+    } catch (e) {}
+    return null;
+  }
+
+  function loadBackup() {
+    try {
+      var raw = localStorage.getItem('praxis-workbench-backup');
+      if (raw) {
+        var check = PraxisSchema.validateContext(JSON.parse(raw));
+        if (check.ok && !check.partial) return PraxisSchema.migrate(check.context);
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  // Raw saved blob that exists but cannot be read as a workbench project
+  // (corrupt JSON or wrong schema). Lets the landing page offer a raw
+  // download instead of silently hiding recoverable data.
+  function getUnreadableSavedData() {
+    var raw = null;
+    try { raw = localStorage.getItem('praxis-workbench'); } catch (e) { return null; }
+    if (!raw) return null;
+    try {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.schema === 'praxis-workbench') return null;
+    } catch (e2) {}
+    return raw;
   }
 
   window.PraxisContext = {
@@ -170,6 +347,11 @@
     hasSavedProject: hasSavedProject,
     getSavedProjectMeta: getSavedProjectMeta,
     loadSavedProject: loadSavedProject,
+    getSavedUIState: getSavedUIState,
+    writeBackup: writeBackup,
+    getBackupMeta: getBackupMeta,
+    loadBackup: loadBackup,
+    getUnreadableSavedData: getUnreadableSavedData,
     defaultUI: defaultUI
   };
 })();
