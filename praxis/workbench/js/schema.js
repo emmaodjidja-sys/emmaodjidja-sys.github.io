@@ -265,6 +265,9 @@
     if (!context || typeof context !== 'object') return context;
     var ctx = context;
     if (typeof ctx.version !== 'string' || (!MIGRATIONS[ctx.version] && ctx.version !== PRAXIS_VERSION)) {
+      // Lexicographic compare, correct for the current 1.0 / 1.1 / 1.1.0 line.
+      // Switch to a numeric (component-wise) compare before any 1.10-style bump,
+      // where "1.9" would sort after "1.10" as strings.
       var isKnownNewer = typeof ctx.version === 'string' && ctx.version > PRAXIS_VERSION;
       if (isKnownNewer) return ctx;
       ctx = deepDefault({}, ctx);
