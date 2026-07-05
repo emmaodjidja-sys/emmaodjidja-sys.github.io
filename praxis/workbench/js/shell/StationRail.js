@@ -64,6 +64,20 @@
       })(i);
     }
 
+    // Planning (optional station, index 9) — a separate rail button kept out of the
+    // numbered 0-8 flow. Shows a completion check once planning is marked complete.
+    var planningActive = activeStation === 9;
+    var planningDone = !!(context.planning && context.planning.completed_at != null);
+    var pCls = 'wb-rail-btn wb-rail-btn--planning';
+    if (planningActive) pCls += ' wb-rail-btn--active';
+    if (planningDone) pCls += ' wb-rail-btn--completed';
+    var planningBtn = h('button', {
+      key: 'planning',
+      className: pCls,
+      onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 9 }); },
+      title: 'Planning (optional)'
+    }, h('span', { className: 'wb-rail-btn-num' }, 'P'), planningDone ? completedBadge() : null);
+
     // Help button at bottom of rail
     var helpBtn = h('button', {
       key: 'help',
@@ -74,7 +88,7 @@
       title: 'Help'
     }, h('span', { className: 'wb-rail-btn-num' }, '?'));
 
-    return h('nav', { className: 'wb-rail' }, buttons.concat([helpBtn]));
+    return h('nav', { className: 'wb-rail' }, buttons.concat([planningBtn, helpBtn]));
   }
 
   window.StationRail = StationRail;

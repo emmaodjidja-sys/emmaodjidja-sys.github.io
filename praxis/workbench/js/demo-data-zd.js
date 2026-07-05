@@ -1737,6 +1737,332 @@
     ],
     "completed_at": "2024-03-10T10:00:00.000Z"
   },
+  "planning": {
+    "contract": {
+      "reference": "GAVI-EVAL-ZD-2022",
+      "commissioner": "Gavi, the Vaccine Alliance (Evaluation Advisory Committee)",
+      "evaluator": "Independent evaluation consortium",
+      "currency": "USD",
+      "start_date": "2022-09-01",
+      "end_date": "2025-10-31",
+      "total_budget": 646218
+    },
+    "budget_lines": [
+      {
+        "id": "bl_1",
+        "category": "Personnel",
+        "role": "Team Leader",
+        "description": "",
+        "unit": "days",
+        "quantity": 120,
+        "rate": 800,
+        "amount": 96000
+      },
+      {
+        "id": "bl_2",
+        "category": "Personnel",
+        "role": "Senior Evaluators (three)",
+        "description": "",
+        "unit": "days",
+        "quantity": 300,
+        "rate": 600,
+        "amount": 180000
+      },
+      {
+        "id": "bl_3",
+        "category": "Personnel",
+        "role": "QA and peer reviewer",
+        "description": "",
+        "unit": "days",
+        "quantity": 20,
+        "rate": 800,
+        "amount": 16000
+      },
+      {
+        "id": "bl_4",
+        "category": "Personnel",
+        "role": "Research analysts (two)",
+        "description": "",
+        "unit": "days",
+        "quantity": 180,
+        "rate": 300,
+        "amount": 54000
+      },
+      {
+        "id": "bl_5",
+        "category": "Data collection",
+        "role": "Country case-study fieldwork",
+        "description": "",
+        "unit": "countries",
+        "quantity": 8,
+        "rate": 8000,
+        "amount": 64000
+      },
+      {
+        "id": "bl_6",
+        "category": "Data collection",
+        "role": "Transcription",
+        "description": "",
+        "unit": "interviews",
+        "quantity": 126,
+        "rate": 40,
+        "amount": 5040
+      },
+      {
+        "id": "bl_7",
+        "category": "Data collection",
+        "role": "Translation",
+        "description": "",
+        "unit": "lump sum",
+        "quantity": 1,
+        "rate": 10000,
+        "amount": 10000
+      },
+      {
+        "id": "bl_8",
+        "category": "Data collection",
+        "role": "SCM survey platform",
+        "description": "",
+        "unit": "lump sum",
+        "quantity": 1,
+        "rate": 4000,
+        "amount": 4000
+      },
+      {
+        "id": "bl_9",
+        "category": "Travel and DSA",
+        "role": "International airfare",
+        "description": "",
+        "unit": "trips",
+        "quantity": 12,
+        "rate": 2000,
+        "amount": 24000
+      },
+      {
+        "id": "bl_10",
+        "category": "Travel and DSA",
+        "role": "In-country transport",
+        "description": "",
+        "unit": "trips",
+        "quantity": 8,
+        "rate": 2500,
+        "amount": 20000
+      },
+      {
+        "id": "bl_11",
+        "category": "Travel and DSA",
+        "role": "DSA and per diem",
+        "description": "",
+        "unit": "nights",
+        "quantity": 200,
+        "rate": 190,
+        "amount": 38000
+      },
+      {
+        "id": "bl_12",
+        "category": "Dissemination",
+        "role": "Annual learning and validation workshops",
+        "description": "",
+        "unit": "lump sum",
+        "quantity": 1,
+        "rate": 20000,
+        "amount": 20000
+      },
+      {
+        "id": "bl_13",
+        "category": "Dissemination",
+        "role": "Editing, design and briefs",
+        "description": "",
+        "unit": "lump sum",
+        "quantity": 1,
+        "rate": 12000,
+        "amount": 12000
+      },
+      {
+        "id": "bl_14",
+        "category": "Management and overhead",
+        "role": "Management fee (12% of direct cost)",
+        "description": "",
+        "unit": "",
+        "quantity": null,
+        "rate": null,
+        "amount": 65165
+      },
+      {
+        "id": "bl_15",
+        "category": "Contingency",
+        "role": "Contingency (7% of direct cost)",
+        "description": "",
+        "unit": "",
+        "quantity": null,
+        "rate": null,
+        "amount": 38013
+      }
+    ],
+    "deliverables": [
+      {
+        "id": "del_1",
+        "code": "D1",
+        "title": "Inception Report",
+        "description": "Evaluation framework, theory of change, methodology and country-study protocols across three phases.",
+        "due_date": "2022-11-30",
+        "station_ids": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "payment_percent": 15,
+        "status": "accepted",
+        "submitted_at": "2022-11-25T10:00:00.000Z",
+        "accepted_at": "2022-12-05T10:00:00.000Z",
+        "notes": "",
+        "rating": {
+          "scores": {
+            "purpose": 4,
+            "methodology": 4,
+            "evidence": 3,
+            "findings": 3,
+            "conclusions": 3,
+            "recommendations": 3,
+            "communication": 4,
+            "principles": 4
+          },
+          "comment": "Detailed assumptions register and country-specific theories of change. Strong basis for the longitudinal design.",
+          "rated_at": "2024-04-10T10:00:00.000Z"
+        }
+      },
+      {
+        "id": "del_2",
+        "code": "D2",
+        "title": "Data Collection Tools",
+        "description": "Global and country KII guides, SCM online survey and desk-review protocol.",
+        "due_date": "2022-12-15",
+        "station_ids": [
+          5
+        ],
+        "payment_percent": 0,
+        "status": "accepted",
+        "submitted_at": "2022-12-10T10:00:00.000Z",
+        "accepted_at": "2022-12-18T10:00:00.000Z",
+        "notes": "",
+        "rating": null
+      },
+      {
+        "id": "del_3",
+        "code": "D3",
+        "title": "Year 1 Annual Report (baseline)",
+        "description": "Baseline findings across the eight case-study countries against the theory of change.",
+        "due_date": "2024-03-31",
+        "station_ids": [
+          6,
+          7,
+          8
+        ],
+        "payment_percent": 25,
+        "status": "accepted",
+        "submitted_at": "2024-03-28T10:00:00.000Z",
+        "accepted_at": "2024-04-08T10:00:00.000Z",
+        "notes": "",
+        "rating": {
+          "scores": {
+            "purpose": 4,
+            "methodology": 3,
+            "evidence": 3,
+            "findings": 3,
+            "conclusions": 3,
+            "recommendations": 3,
+            "communication": 4,
+            "principles": 4
+          },
+          "comment": "Clear baseline and utilisation focus. Note the data-availability constraints for Objectives 2 and 3 in Year 2.",
+          "rated_at": "2024-04-10T10:00:00.000Z"
+        }
+      },
+      {
+        "id": "del_4",
+        "code": "D4",
+        "title": "Year 2 Annual Report",
+        "description": "Mid-line tracking of change against the baseline and assumptions.",
+        "due_date": "2024-10-31",
+        "station_ids": [
+          7
+        ],
+        "payment_percent": 25,
+        "status": "submitted",
+        "submitted_at": "2024-10-29T10:00:00.000Z",
+        "accepted_at": null,
+        "notes": "",
+        "rating": null
+      },
+      {
+        "id": "del_5",
+        "code": "D5",
+        "title": "Year 3 Final Report",
+        "description": "Summative final report with conclusions and recommendations for Gavi 6.0.",
+        "due_date": "2025-10-31",
+        "station_ids": [
+          7
+        ],
+        "payment_percent": 30,
+        "status": "not_started",
+        "submitted_at": null,
+        "accepted_at": null,
+        "notes": "",
+        "rating": null
+      },
+      {
+        "id": "del_6",
+        "code": "D6",
+        "title": "Learning Products and Deck",
+        "description": "Summative slide deck, evaluation brief and learning products.",
+        "due_date": "2025-11-30",
+        "station_ids": [
+          8
+        ],
+        "payment_percent": 5,
+        "status": "not_started",
+        "submitted_at": null,
+        "accepted_at": null,
+        "notes": "",
+        "rating": null
+      }
+    ],
+    "invoices": [
+      {
+        "id": "inv_1",
+        "number": "INV-2022-001",
+        "deliverable_id": "del_1",
+        "amount": 96933,
+        "currency": "USD",
+        "issued_date": "2022-12-06",
+        "status": "paid",
+        "paid_date": "2022-12-20"
+      },
+      {
+        "id": "inv_2",
+        "number": "INV-2024-001",
+        "deliverable_id": "del_3",
+        "amount": 161554,
+        "currency": "USD",
+        "issued_date": "2024-04-09",
+        "status": "approved",
+        "paid_date": null
+      },
+      {
+        "id": "inv_3",
+        "number": "INV-2024-002",
+        "deliverable_id": "del_4",
+        "amount": 161554,
+        "currency": "USD",
+        "issued_date": "2024-11-01",
+        "status": "submitted",
+        "paid_date": null
+      }
+    ],
+    "completed_at": "2024-04-10T10:00:00.000Z"
+  },
   "staleness": {
     "0": false,
     "1": false,

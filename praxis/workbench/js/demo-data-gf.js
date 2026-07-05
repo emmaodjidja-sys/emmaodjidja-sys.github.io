@@ -2150,6 +2150,383 @@
     ],
     "completed_at": "2025-04-03T10:00:00.000Z"
   },
+  "planning": {
+    "contract": {
+      "reference": "GF-ELO-SNT-2024",
+      "commissioner": "The Global Fund, Evaluation and Learning Office (ELO)",
+      "evaluator": "Independent evaluation consortium",
+      "currency": "USD",
+      "start_date": "2024-04-01",
+      "end_date": "2025-01-31",
+      "total_budget": 387405
+    },
+    "budget_lines": [
+      {
+        "id": "bl_1",
+        "category": "Personnel",
+        "role": "Team Leader",
+        "description": "",
+        "unit": "days",
+        "quantity": 70,
+        "rate": 750,
+        "amount": 52500
+      },
+      {
+        "id": "bl_2",
+        "category": "Personnel",
+        "role": "Senior Evaluator - malaria and SNT",
+        "description": "",
+        "unit": "days",
+        "quantity": 60,
+        "rate": 600,
+        "amount": 36000
+      },
+      {
+        "id": "bl_3",
+        "category": "Personnel",
+        "role": "Senior Evaluator - health systems and data",
+        "description": "",
+        "unit": "days",
+        "quantity": 60,
+        "rate": 600,
+        "amount": 36000
+      },
+      {
+        "id": "bl_4",
+        "category": "Personnel",
+        "role": "Evaluator - political economy",
+        "description": "",
+        "unit": "days",
+        "quantity": 55,
+        "rate": 550,
+        "amount": 30250
+      },
+      {
+        "id": "bl_5",
+        "category": "Personnel",
+        "role": "QA and peer reviewer",
+        "description": "",
+        "unit": "days",
+        "quantity": 12,
+        "rate": 800,
+        "amount": 9600
+      },
+      {
+        "id": "bl_6",
+        "category": "Personnel",
+        "role": "Research analysts (two)",
+        "description": "",
+        "unit": "days",
+        "quantity": 90,
+        "rate": 300,
+        "amount": 27000
+      },
+      {
+        "id": "bl_7",
+        "category": "Data collection",
+        "role": "Country insight fieldwork",
+        "description": "",
+        "unit": "countries",
+        "quantity": 6,
+        "rate": 6000,
+        "amount": 36000
+      },
+      {
+        "id": "bl_8",
+        "category": "Data collection",
+        "role": "Transcription",
+        "description": "",
+        "unit": "interviews",
+        "quantity": 90,
+        "rate": 40,
+        "amount": 3600
+      },
+      {
+        "id": "bl_9",
+        "category": "Data collection",
+        "role": "Translation, English and French",
+        "description": "",
+        "unit": "lump sum",
+        "quantity": 1,
+        "rate": 12000,
+        "amount": 12000
+      },
+      {
+        "id": "bl_10",
+        "category": "Data collection",
+        "role": "28-country survey platform",
+        "description": "",
+        "unit": "lump sum",
+        "quantity": 1,
+        "rate": 3000,
+        "amount": 3000
+      },
+      {
+        "id": "bl_11",
+        "category": "Travel and DSA",
+        "role": "International airfare",
+        "description": "",
+        "unit": "trips",
+        "quantity": 8,
+        "rate": 2200,
+        "amount": 17600
+      },
+      {
+        "id": "bl_12",
+        "category": "Travel and DSA",
+        "role": "In-country transport",
+        "description": "",
+        "unit": "trips",
+        "quantity": 6,
+        "rate": 2500,
+        "amount": 15000
+      },
+      {
+        "id": "bl_13",
+        "category": "Travel and DSA",
+        "role": "DSA and per diem",
+        "description": "",
+        "unit": "nights",
+        "quantity": 120,
+        "rate": 200,
+        "amount": 24000
+      },
+      {
+        "id": "bl_14",
+        "category": "Dissemination",
+        "role": "Recommendations and learning workshops",
+        "description": "",
+        "unit": "lump sum",
+        "quantity": 1,
+        "rate": 15000,
+        "amount": 15000
+      },
+      {
+        "id": "bl_15",
+        "category": "Dissemination",
+        "role": "Editing, design, brief and deck",
+        "description": "",
+        "unit": "lump sum",
+        "quantity": 1,
+        "rate": 8000,
+        "amount": 8000
+      },
+      {
+        "id": "bl_16",
+        "category": "Management and overhead",
+        "role": "Management fee (12% of direct cost)",
+        "description": "",
+        "unit": "",
+        "quantity": null,
+        "rate": null,
+        "amount": 39066
+      },
+      {
+        "id": "bl_17",
+        "category": "Contingency",
+        "role": "Contingency (7% of direct cost)",
+        "description": "",
+        "unit": "",
+        "quantity": null,
+        "rate": null,
+        "amount": 22789
+      }
+    ],
+    "deliverables": [
+      {
+        "id": "del_1",
+        "code": "D1",
+        "title": "High-Level Workplan",
+        "description": "Proposed workplan and timeline, submitted within 10 working days of contract.",
+        "due_date": "2024-04-15",
+        "station_ids": [
+          0
+        ],
+        "payment_percent": 10,
+        "status": "accepted",
+        "submitted_at": "2024-04-11T10:00:00.000Z",
+        "accepted_at": "2024-04-18T10:00:00.000Z",
+        "notes": "",
+        "rating": {
+          "scores": {
+            "purpose": 4,
+            "methodology": 3,
+            "evidence": 3,
+            "findings": 3,
+            "conclusions": 3,
+            "recommendations": 3,
+            "communication": 4,
+            "principles": 3
+          },
+          "comment": "Clear and well structured. Timeline is realistic against the country-insight schedule.",
+          "rated_at": "2024-07-05T10:00:00.000Z"
+        }
+      },
+      {
+        "id": "del_2",
+        "code": "D2",
+        "title": "Inception Report",
+        "description": "Context and questions, evaluation framework, methodology, data collection tools and analysis plan. No more than 20 pages.",
+        "due_date": "2024-06-28",
+        "station_ids": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "payment_percent": 20,
+        "status": "accepted",
+        "submitted_at": "2024-06-25T10:00:00.000Z",
+        "accepted_at": "2024-07-02T10:00:00.000Z",
+        "notes": "",
+        "rating": {
+          "scores": {
+            "purpose": 4,
+            "methodology": 4,
+            "evidence": 3,
+            "findings": 3,
+            "conclusions": 4,
+            "recommendations": 3,
+            "communication": 4,
+            "principles": 3
+          },
+          "comment": "Strong evaluation matrix and country-insight criteria. Strengthen the strength-of-evidence approach before fieldwork.",
+          "rated_at": "2024-07-05T10:00:00.000Z"
+        }
+      },
+      {
+        "id": "del_3",
+        "code": "D3",
+        "title": "Data Collection Tools",
+        "description": "KII guides, country stakeholder survey, FGD guides and document and portfolio review protocol.",
+        "due_date": "2024-06-28",
+        "station_ids": [
+          5
+        ],
+        "payment_percent": 0,
+        "status": "accepted",
+        "submitted_at": "2024-06-25T10:00:00.000Z",
+        "accepted_at": "2024-07-02T10:00:00.000Z",
+        "notes": "",
+        "rating": null
+      },
+      {
+        "id": "del_4",
+        "code": "D4",
+        "title": "Preliminary Findings",
+        "description": "Progress and preliminary findings, presented at the IEP meeting in early September.",
+        "due_date": "2024-08-30",
+        "station_ids": [
+          6
+        ],
+        "payment_percent": 0,
+        "status": "submitted",
+        "submitted_at": "2024-08-29T10:00:00.000Z",
+        "accepted_at": null,
+        "notes": "",
+        "rating": null
+      },
+      {
+        "id": "del_5",
+        "code": "D5",
+        "title": "First Draft Report",
+        "description": "First draft evaluation report for review by ELO, IEP focal points and Secretariat teams.",
+        "due_date": "2024-09-30",
+        "station_ids": [
+          6,
+          7
+        ],
+        "payment_percent": 30,
+        "status": "in_progress",
+        "submitted_at": null,
+        "accepted_at": null,
+        "notes": "",
+        "rating": null
+      },
+      {
+        "id": "del_6",
+        "code": "D6",
+        "title": "Second Draft Report",
+        "description": "Second draft incorporating review comments, ahead of the recommendations workshop.",
+        "due_date": "2024-11-15",
+        "station_ids": [
+          7
+        ],
+        "payment_percent": 0,
+        "status": "not_started",
+        "submitted_at": null,
+        "accepted_at": null,
+        "notes": "",
+        "rating": null
+      },
+      {
+        "id": "del_7",
+        "code": "D7",
+        "title": "Final Evaluation Report",
+        "description": "Concise final report, 40 to 50 pages including the executive summary, with annexes.",
+        "due_date": "2025-01-15",
+        "station_ids": [
+          7
+        ],
+        "payment_percent": 30,
+        "status": "not_started",
+        "submitted_at": null,
+        "accepted_at": null,
+        "notes": "",
+        "rating": null
+      },
+      {
+        "id": "del_8",
+        "code": "D8",
+        "title": "Learning Products and Summative Deck",
+        "description": "Summative slide deck, evaluation brief, learning briefs and storyboard.",
+        "due_date": "2025-01-31",
+        "station_ids": [
+          8
+        ],
+        "payment_percent": 10,
+        "status": "not_started",
+        "submitted_at": null,
+        "accepted_at": null,
+        "notes": "",
+        "rating": null
+      }
+    ],
+    "invoices": [
+      {
+        "id": "inv_1",
+        "number": "INV-2024-001",
+        "deliverable_id": "del_1",
+        "amount": 38740,
+        "currency": "USD",
+        "issued_date": "2024-04-18",
+        "status": "paid",
+        "paid_date": "2024-04-30"
+      },
+      {
+        "id": "inv_2",
+        "number": "INV-2024-002",
+        "deliverable_id": "del_2",
+        "amount": 77481,
+        "currency": "USD",
+        "issued_date": "2024-07-03",
+        "status": "approved",
+        "paid_date": null
+      },
+      {
+        "id": "inv_3",
+        "number": "INV-2024-003",
+        "deliverable_id": "del_5",
+        "amount": 116222,
+        "currency": "USD",
+        "issued_date": "2024-10-02",
+        "status": "submitted",
+        "paid_date": null
+      }
+    ],
+    "completed_at": "2024-07-05T10:00:00.000Z"
+  },
   "staleness": {
     "0": false,
     "1": false,

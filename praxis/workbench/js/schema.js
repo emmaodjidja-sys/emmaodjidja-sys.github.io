@@ -124,6 +124,9 @@
       report_structure: { sections: [], completed_at: null },
       presentation: { slides: [], completed_at: null },
 
+      // Optional Planning station (index 9): contract, budget, deliverables, invoices, ratings.
+      planning: { contract: {}, budget_lines: [], deliverables: [], invoices: [], completed_at: null },
+
       staleness: { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false },
       reviews: []
     };

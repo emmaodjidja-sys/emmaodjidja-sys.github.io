@@ -51,6 +51,8 @@
       stationContent = h(Station7, { state: state, dispatch: dispatch });
     } else if (activeStation === 8 && typeof Station8 !== 'undefined') {
       stationContent = h(Station8, { state: state, dispatch: dispatch });
+    } else if (activeStation === 9 && typeof Station9 !== 'undefined') {
+      stationContent = h(Station9, { state: state, dispatch: dispatch });
     } else {
       stationContent = h('div', { className: 'wb-station-empty' },
         h('h3', { className: 'wb-station-empty-title' },
@@ -69,9 +71,10 @@
         h(StationRail, { state: state, dispatch: dispatch, onHelpToggle: function() { setHelpOpen(!helpOpen); } }),
         h('div', { className: 'wb-main' },
           h('div', { className: 'wb-panel' },
-            h(StationHeader, { stationId: activeStation, context: context }),
-            h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }),
-            typeof SummaryBar !== 'undefined'
+            // Planning (index 9) is an optional station that renders its own header and view toggle.
+            activeStation !== 9 ? h(StationHeader, { stationId: activeStation, context: context }) : null,
+            activeStation !== 9 ? h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }) : null,
+            (activeStation !== 9 && typeof SummaryBar !== 'undefined')
               ? h('div', { className: 'wb-summary-bar-wrap' },
                   h(SummaryBar, { stationId: activeStation, context: context }))
               : null,

@@ -1,0 +1,127 @@
+/* ============================================================================
+   Planning station (Station 9). Uses design tokens from tokens.css so it
+   inherits light/dark parity. No emoji; status = colored dot/pill + text.
+   ============================================================================ */
+
+.wb-plan { }
+
+/* ---- header with the evaluator/commissioner view tabs ---- */
+.wb-plan-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--space-4); flex-wrap: wrap;
+}
+.wb-plan-viewtabs {
+  display: inline-flex; background: var(--surface-muted);
+  border: 1px solid var(--border); border-radius: var(--radius-full);
+  padding: 3px; gap: 2px; flex-shrink: 0;
+}
+.wb-plan-viewtab {
+  appearance: none; border: 0; cursor: pointer;
+  font: 600 var(--text-sm)/1 var(--font-sans);
+  color: var(--text-tertiary); background: transparent;
+  padding: 7px 16px; border-radius: var(--radius-full);
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.wb-plan-viewtab:hover { color: var(--text-secondary); }
+.wb-plan-viewtab--active {
+  background: var(--surface); color: var(--teal-ink);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---- KPI stat strip ---- */
+.wb-plan-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-3); margin: var(--space-4) 0 var(--space-5);
+}
+.wb-plan-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+}
+.wb-plan-stat-value { font: 700 var(--text-xl)/1.1 var(--font-sans); color: var(--text); font-variant-numeric: tabular-nums; }
+.wb-plan-stat-label { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 4px; }
+.wb-plan-stat-sub { font-size: var(--text-xs); color: var(--teal-ink); margin-top: 2px; }
+
+/* ---- contract summary strip ---- */
+.wb-plan-contract {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4); padding: var(--space-4);
+  background: var(--surface-muted); border: 1px solid var(--border);
+  border-radius: var(--radius-md); margin-bottom: var(--space-5);
+}
+.wb-plan-contract-label { font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: var(--tracking-caps); }
+.wb-plan-contract-value { font-size: var(--text-sm); color: var(--text); font-weight: 600; margin-top: 3px; }
+
+/* ---- tables ---- */
+.wb-plan-table { width: 100%; }
+.wb-plan-table td { vertical-align: top; }
+.wb-plan-del-title { font-weight: 600; color: var(--text); font-size: var(--text-sm); }
+.wb-plan-del-desc { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px; line-height: 1.4; }
+.wb-plan-total-row td { font-weight: 700; color: var(--text); border-top: 2px solid var(--border-strong); background: var(--surface-muted); }
+.wb-plan-table tfoot td { font-variant-numeric: tabular-nums; }
+
+/* ---- linked station chips ---- */
+.wb-plan-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.wb-plan-chip {
+  font: 500 11px/1 var(--font-mono); white-space: nowrap;
+  padding: 3px 6px; border-radius: var(--radius-sm);
+  background: var(--surface-muted); color: var(--text-tertiary);
+  border: 1px solid var(--border);
+}
+.wb-plan-chip--done { background: var(--green-light); color: var(--green-strong); border-color: transparent; }
+
+/* ---- progress bars ---- */
+.wb-plan-prog { display: flex; align-items: center; gap: var(--space-2); }
+.wb-plan-prog-num { font-size: var(--text-xs); color: var(--text-secondary); font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
+.wb-plan-bar { flex: 1; height: 6px; min-width: 60px; background: var(--border); border-radius: var(--radius-full); overflow: hidden; }
+.wb-plan-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width var(--dur-slow) var(--ease-out); }
+.wb-plan-bar-fill--low  { background: var(--amber); }
+.wb-plan-bar-fill--mid  { background: var(--blue); }
+.wb-plan-bar-fill--high { background: var(--green); }
+
+/* ---- budget-vs-paid bar ---- */
+.wb-plan-budgetbar { margin-top: var(--space-4); }
+.wb-plan-budgetbar-row { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--text-secondary); margin-bottom: 6px; }
+.wb-plan-budgetbar .wb-plan-bar { height: 10px; }
+
+/* ---- commissioner review cards ---- */
+.wb-plan-review {
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
+  background: var(--surface);
+}
+.wb-plan-review-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+.wb-plan-review-head-right { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+.wb-plan-review-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.wb-plan-rate-toggle { margin-top: var(--space-3); }
+
+/* ---- rating rubric ---- */
+.wb-plan-rubric { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--border); }
+.wb-plan-rubric-table { width: 100%; }
+.wb-plan-rubric-table th, .wb-plan-rubric-table td { padding: 6px 8px; }
+.wb-plan-rubric-table td:first-child { font-size: var(--text-sm); color: var(--text-secondary); }
+.wb-plan-score {
+  width: 26px; height: 26px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong); background: var(--surface);
+  cursor: pointer; color: var(--teal-ink); font-weight: 700; font-size: var(--text-sm);
+  line-height: 1; transition: all var(--dur-fast) var(--ease-out);
+}
+.wb-plan-score:hover { border-color: var(--teal); }
+.wb-plan-score--on { background: var(--teal); border-color: var(--teal); color: #fff; box-shadow: var(--shadow-sm); }
+.wb-plan-rubric-scale { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
+.wb-plan-rubric-scale-item { font-size: var(--text-xs); color: var(--text-tertiary); }
+.wb-plan-rubric-comment { width: 100%; margin-top: var(--space-3); resize: vertical; }
+
+/* ---- locked invoice hint ---- */
+.wb-plan-lock { font-size: var(--text-xs); color: var(--amber-text); background: var(--amber-light); padding: 3px 8px; border-radius: var(--radius-sm); white-space: nowrap; }
+
+/* ---- optional-station rail button ---- */
+.wb-rail-btn--planning .wb-rail-btn-num { color: var(--teal); }
+
+/* ============================================================================
+   Dark chrome: the station body renders on the light canvas by default, but the
+   header sits on chrome in some layouts. Keep pills/tokens legible in dark mode.
+   ============================================================================ */
+@media (prefers-color-scheme: dark) {
+  .wb-plan-viewtab--active { background: var(--chrome-raised); color: var(--teal); }
+}
+:root[data-theme="dark"] .wb-plan-viewtab--active { background: var(--chrome-raised); color: var(--teal); }
