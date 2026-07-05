@@ -2,9 +2,11 @@
   'use strict';
 
   // Schema version history:
-  //   1.0  original nine-station context
-  //   1.1  adds the optional Planning station (planning field, station index 9)
-  var PRAXIS_VERSION = '1.1';
+  //   1.0    original nine-station context
+  //   1.1    adds the optional Planning station (planning field, station index 9)
+  //   1.1.0  version string switched to semantic-version format (no field changes).
+  //          This is also the version displayed in the app (TopBar, About, footer).
+  var PRAXIS_VERSION = '1.1.0';
 
   var STATION_LABELS = [
     'Evaluability & Scoping',
@@ -246,6 +248,12 @@
     '1.0': function(ctx) {
       var next = deepDefault(createEmptyContext(), ctx);
       next.version = '1.1';
+      return next;
+    },
+    // 1.1 -> 1.1.0: version string format change only, no field changes.
+    '1.1': function(ctx) {
+      var next = Object.assign({}, ctx);
+      next.version = '1.1.0';
       return next;
     }
   };

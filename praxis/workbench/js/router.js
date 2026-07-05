@@ -27,5 +27,19 @@
     window.location.hash = parts.join('&');
   }
 
-  window.PraxisRouter = { getRoute: getRoute, navigate: navigate };
+  // getRoute().station is a raw parseInt result: it can be NaN (unparseable,
+  // e.g. #station=abc) or out of range (e.g. #station=99). Callers that use
+  // the station to restore or open a project should read it through this
+  // guarded accessor instead of getRoute() directly. Returns null when there
+  // is no usable station in the hash.
+  function getGuardedStation() {
+    var s = getRoute().station;
+    if (typeof s !== 'number' || isNaN(s)) return null;
+    s = Math.round(s);
+    if (s < 0) s = 0;
+    if (s > 9) s = 9;
+    return s;
+  }
+
+  window.PraxisRouter = { getRoute: getRoute, navigate: navigate, getGuardedStation: getGuardedStation };
 })();

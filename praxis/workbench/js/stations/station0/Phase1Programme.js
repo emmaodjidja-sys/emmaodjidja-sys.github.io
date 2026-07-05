@@ -28,6 +28,8 @@
     var onChange = props.onChange;
     var onContinue = props.onContinue;
     var sectors = data.sectors || [];
+    var sensitivity = props.sensitivity || 'standard';
+    var onSensitivityChange = props.onSensitivityChange || function() {};
 
     var guideState = React.useState(function() {
       return !localStorage.getItem('wb-dismiss-phase1-guide');
@@ -130,6 +132,23 @@
             { value: 'medium', label: 'Medium', desc: '6-12 months' },
             { value: 'long', label: 'Long', desc: '>12 months' }
           ] })
+        ),
+
+        // Data Sensitivity (protection scoping). Applies immediately, not
+        // gated behind Review and continue, since it governs sharing
+        // guidance and export warnings used elsewhere in the workbench.
+        h('div', { style: { gridColumn: '1 / -1' } },
+          h('label', { className: 'wb-field-label' }, 'Data Sensitivity'),
+          h('div', { className: 'wb-field-helper' }, 'Sets the sharing guidance shown in the workbench and on exports'),
+          OptionCards({
+            ariaLabel: 'Data Sensitivity',
+            value: sensitivity,
+            onChange: onSensitivityChange,
+            options: PraxisProtection.SENSITIVITY_LEVELS.map(function(level) {
+              var variant = level.id === 'sensitive' ? 'amber' : (level.id === 'highly_sensitive' ? 'red' : null);
+              return { value: level.id, label: level.label, desc: level.desc, variant: variant };
+            })
+          })
         )
       )
       ), // end SectionCard

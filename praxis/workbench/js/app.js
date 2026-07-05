@@ -13,6 +13,19 @@
     var stateRef = React.useRef(state);
     stateRef.current = state;
 
+    // Router: tracks the station most recently written to the URL hash by
+    // OUR OWN navigate() call, so the hashchange listener below can tell an
+    // external hash change (back/forward, manual edit, deep link) apart from
+    // an echo of a change we made ourselves. Without this a station change
+    // would write the hash, the hashchange event would fire, and the
+    // listener would dispatch again, in a loop.
+    var routeStationRef = React.useRef(null);
+
+    // Tracks whether a project was loaded on the previous render, so the
+    // hash-clearing effect below can tell "a project just closed" apart from
+    // "no project has been opened yet" (the initial landing-page mount).
+    var projectWasLoadedRef = React.useRef(false);
+
     // Once-per-session flags for persist failure toast and size warning,
     // plus the sticky multi-tab conflict flag and error-toast rate limiter.
     var persistErrorToastRef = React.useRef(false);
@@ -65,9 +78,47 @@
       }
     }, [state.context, state.ui.projectLoaded, state.ui.activeStation, state.ui.experienceTier]);
 
-    // One-time listeners: flush pending saves when the page hides, detect
-    // writes from other tabs, and surface uncaught errors as toasts.
+    // Router: reflect the active station into the URL hash so the browser's
+    // Back/Forward buttons move between visited stations instead of leaving
+    // the app, and so the current station can be shared or bookmarked as a
+    // deep link. Runs whenever the active station changes while a project is
+    // open (station-rail clicks, staleness "review" jumps, INIT/LOAD_FILE).
     React.useEffect(function() {
+      if (!state.ui.projectLoaded) {
+        // A project just closed (Back to start, or a delete-all reset):
+        // clear any station left in the hash so it cannot leak into
+        // whatever opens next (a brand-new project, a worked example, or a
+        // hard reload of the empty landing page). replaceState (rather than
+        // navigate(), which assigns location.hash) does not push an extra
+        // history entry and does not fire a hashchange event, so it cannot
+        // trip the loop-guard below.
+        if (projectWasLoadedRef.current) {
+          routeStationRef.current = null;
+          history.replaceState(null, '', location.pathname + location.search);
+        }
+        projectWasLoadedRef.current = false;
+        return;
+      }
+      projectWasLoadedRef.current = true;
+      routeStationRef.current = state.ui.activeStation;
+      PraxisRouter.navigate(state.ui.activeStation);
+    }, [state.ui.projectLoaded, state.ui.activeStation]);
+
+    // One-time listeners: flush pending saves when the page hides, detect
+    // writes from other tabs, surface uncaught errors as toasts, and reflect
+    // external hash changes (Back/Forward, manual edit, deep link) back into
+    // the active station.
+    React.useEffect(function() {
+      function onHashChange() {
+        var s = PraxisRouter.getGuardedStation();
+        // null (no/unparsable station in the hash) or a value that just
+        // echoes our own navigate() call above: nothing to do.
+        if (s === null || s === routeStationRef.current) return;
+        routeStationRef.current = s;
+        if (stateRef.current.ui.projectLoaded) {
+          dispatch({ type: AT.SET_ACTIVE_STATION, station: s });
+        }
+      }
       function flush() {
         var s = stateRef.current;
         if (s.ui.projectLoaded) persistNowRef.current(s.context, s.ui);
@@ -113,12 +164,14 @@
       window.addEventListener('storage', onStorage);
       window.addEventListener('error', onWindowError);
       window.addEventListener('unhandledrejection', onRejection);
+      window.addEventListener('hashchange', onHashChange);
       return function() {
         document.removeEventListener('visibilitychange', onVisibility);
         window.removeEventListener('pagehide', onPageHide);
         window.removeEventListener('storage', onStorage);
         window.removeEventListener('error', onWindowError);
         window.removeEventListener('unhandledrejection', onRejection);
+        window.removeEventListener('hashchange', onHashChange);
       };
     }, []);
 

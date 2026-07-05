@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://www.emmanuelneneodjidja.org/praxis/workbench/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="../logo.svg">
-<link rel="manifest" href="manifest.json">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'">
 
 <!-- Fonts (self-hosted) -->
 <link rel="stylesheet" href="css/fonts.css">
@@ -92,7 +92,6 @@ window.loadSheetJS = (function() {
 
 <!-- Data constants -->
 <script defer src="data/indicator_bank.js"></script>
-<script defer src="js/demo-data.js"></script>
 <script defer src="js/demo-data-zd.js"></script>
 <script defer src="js/demo-data-gf.js"></script>
 
@@ -116,9 +115,9 @@ window.loadSheetJS = (function() {
 <!-- Shell components (React.createElement, no JSX) -->
 <script defer src="js/components/Icons.js"></script>
 <script defer src="js/components/Modal.js"></script>
+<script defer src="js/components/AboutModal.js"></script>
 <script defer src="js/components/FileDropZone.js"></script>
 <script defer src="js/components/ToastNotification.js"></script>
-<script defer src="js/components/ProgressRing.js"></script>
 <script defer src="js/components/StationHeader.js"></script>
 <script defer src="js/components/StalenessWarning.js"></script>
 <script defer src="js/components/SensitivityBanner.js"></script>
@@ -185,14 +184,21 @@ window.loadSheetJS = (function() {
 <!-- Root app (must be last) -->
 <script defer src="js/app.js"></script>
 
-<!-- Service Worker: disabled during development. Unregister any stale SW. -->
+<!-- No service worker ships with the workbench. This clears only the
+     workbench's own prior registration and caches, scoped to this app's
+     path and cache-name prefix, so it never touches the rest of this
+     origin (the personal site or other PRAXIS tools). -->
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(regs) {
-    regs.forEach(function(r) { r.unregister(); });
+  navigator.serviceWorker.getRegistration('/praxis/workbench/').then(function(reg) {
+    if (reg) reg.unregister();
   });
+}
+if (window.caches && caches.keys) {
   caches.keys().then(function(names) {
-    names.forEach(function(n) { caches.delete(n); });
+    names.forEach(function(n) {
+      if (n.indexOf('praxis-workbench-') === 0) caches.delete(n);
+    });
   });
 }
 </script>

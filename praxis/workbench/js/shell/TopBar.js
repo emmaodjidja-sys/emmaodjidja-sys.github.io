@@ -11,6 +11,9 @@
     var titleVal = React.useState(meta.title || '');
     var title = titleVal[0];
     var setTitle = titleVal[1];
+    var aboutState = React.useState(false);
+    var aboutOpen = aboutState[0];
+    var setAboutOpen = aboutState[1];
 
     React.useEffect(function() {
       setTitle(meta.title || '');
@@ -100,7 +103,7 @@
         type: 'button',
         className: 'wb-topbar-home',
         onClick: handleBackToStart,
-        title: PraxisI18n.t('shell.start'),
+        title: PraxisI18n.t('shell.start') + ' (PRAXIS Evaluation Workbench v' + PraxisSchema.PRAXIS_VERSION + ')',
         'aria-label': PraxisI18n.t('shell.start')
       },
         logo,
@@ -136,8 +139,16 @@
         h('button', {
           className: 'wb-btn wb-btn-ghost wb-btn-sm wb-topbar-save',
           onClick: handleSave
-        }, PraxisI18n.t('shell.save'))
-      )
+        }, PraxisI18n.t('shell.save')),
+        h('button', {
+          type: 'button',
+          className: 'wb-btn wb-btn-ghost wb-btn-sm on-chrome',
+          onClick: function() { setAboutOpen(true); },
+          title: 'About the workbench, version ' + PraxisSchema.PRAXIS_VERSION,
+          'aria-label': 'About the workbench'
+        }, PraxisIcons.info(14))
+      ),
+      h(AboutModal, { isOpen: aboutOpen, initialTab: 'about', dispatch: dispatch, onClose: function() { setAboutOpen(false); } })
     );
   }
 

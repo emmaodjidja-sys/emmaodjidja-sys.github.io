@@ -68,6 +68,10 @@
     var tierChoiceState = React.useState(null);
     var tierChoice = tierChoiceState[0];
     var setTierChoice = tierChoiceState[1];
+    // About/Privacy modal: null when closed, otherwise the tab to open on.
+    var aboutTabState = React.useState(null);
+    var aboutTab = aboutTabState[0];
+    var setAboutTab = aboutTabState[1];
 
     // Check for saved data without loading it into state
     var hasSaved = React.useMemo(function() {
@@ -88,7 +92,10 @@
       dispatch({ type: AT.SHOW_TOAST, message: message, toastType: type || 'error' });
     }
 
-    // Open the saved project, restoring the station and tier the user was on.
+    // Open the saved project, restoring the station and tier the user was
+    // on. A station named in the URL hash (deep link) takes precedence over
+    // the remembered station, so a bookmarked or shared #station=N link
+    // opens there instead of wherever the project was last left.
     function openSavedProject() {
       var saved = PraxisContext.loadSavedProject();
       if (!saved) {
@@ -96,7 +103,9 @@
         return;
       }
       var uiSaved = PraxisContext.getSavedUIState() || {};
-      dispatch({ type: AT.LOAD_FILE, context: saved, station: uiSaved.activeStation, tier: uiSaved.experienceTier });
+      var routeStation = PraxisRouter.getGuardedStation();
+      var station = routeStation !== null ? routeStation : uiSaved.activeStation;
+      dispatch({ type: AT.LOAD_FILE, context: saved, station: station, tier: uiSaved.experienceTier });
     }
 
     // Gate destructive actions behind a confirmation when a real saved
@@ -155,7 +164,20 @@
       ),
       h('h1', { style: { fontSize: '24px', fontWeight: 700, color: 'var(--chrome-text)', margin: '0 0 8px 0' } }, t('landing.title')),
       h('p', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)', lineHeight: '1.6', margin: '0 0 24px 0', maxWidth: '380px' } }, t('landing.subtitle')),
-      h('div', { style: { maxWidth: '260px' } }, stationPreview)
+      h('div', { style: { maxWidth: '260px' } }, stationPreview),
+      h('div', { style: { marginTop: '28px', fontSize: '11px', color: 'var(--chrome-text-dim)', display: 'flex', alignItems: 'center', gap: '8px' } },
+        h('span', null, 'PRAXIS Evaluation Workbench v' + PraxisSchema.PRAXIS_VERSION),
+        h('span', { 'aria-hidden': 'true' }, '·'),
+        h('button', {
+          type: 'button', onClick: function() { setAboutTab('about'); },
+          style: { background: 'none', border: 'none', padding: 0, color: 'inherit', font: 'inherit', textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer' }
+        }, 'About'),
+        h('span', { 'aria-hidden': 'true' }, '·'),
+        h('button', {
+          type: 'button', onClick: function() { setAboutTab('privacy'); },
+          style: { background: 'none', border: 'none', padding: 0, color: 'inherit', font: 'inherit', textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer' }
+        }, 'Privacy')
+      )
     );
 
     // Right panel content depends on mode
@@ -180,6 +202,10 @@
           onActivate: function(val) {
             guardDestructive(function() {
               try { localStorage.removeItem('praxis-workbench'); localStorage.removeItem('praxis-workbench-ui'); } catch (e) {}
+              // A brand-new project always starts at Station 0. A station
+              // left over in the URL hash from a previously closed project
+              // must not leak into this one (see EntryLanding demo picker
+              // below and the hash-clearing effect in app.js).
               dispatch({ type: AT.INIT, tier: val });
             });
           },
@@ -262,6 +288,9 @@
             onClick: function() {
               if (!d.ctx) return;
               guardDestructive(function() {
+                // A freshly opened worked example always starts at Station 0,
+                // regardless of any station left in the URL hash by a
+                // previously closed project.
                 dispatch({ type: AT.INIT, context: d.ctx, tier: 'practitioner', station: 0 });
               });
             }
@@ -365,9 +394,16 @@
       );
     }
 
+    var aboutModal = h(AboutModal, {
+      isOpen: aboutTab !== null,
+      initialTab: aboutTab || 'about',
+      dispatch: dispatch,
+      onClose: function() { setAboutTab(null); }
+    });
+
     return h('div', { className: 'wb-landing on-chrome', style: {
       fontFamily: "var(--font-sans)", zIndex: 100
-    }}, leftPanel, rightPanel, confirmModal);
+    }}, leftPanel, rightPanel, confirmModal, aboutModal);
   }
 
   window.EntryLanding = EntryLanding;

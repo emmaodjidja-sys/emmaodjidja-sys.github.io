@@ -335,6 +335,29 @@
     return null;
   }
 
+  // Removes every localStorage key this app owns (project, UI state, backup
+  // and its metadata), except the interface locale preference so a full
+  // reset does not also reset the user's chosen language. Used by the
+  // "Delete all workbench data" control (AboutModal). Pure side effect, no
+  // dispatch: callers still need to dispatch CLEAR_PROJECT to reset the
+  // in-memory state.
+  var LOCALE_KEY_EXCEPTION = 'praxis-workbench-locale';
+  function clearAllData() {
+    var removed = [];
+    try {
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('praxis-workbench') === 0 && k !== LOCALE_KEY_EXCEPTION) keys.push(k);
+      }
+      keys.forEach(function(k) {
+        localStorage.removeItem(k);
+        removed.push(k);
+      });
+    } catch (e) {}
+    return removed;
+  }
+
   // Raw saved blob that exists but cannot be read as a workbench project
   // (corrupt JSON or wrong schema). Lets the landing page offer a raw
   // download instead of silently hiding recoverable data.
@@ -360,6 +383,7 @@
     writeBackup: writeBackup,
     getBackupMeta: getBackupMeta,
     loadBackup: loadBackup,
+    clearAllData: clearAllData,
     getUnreadableSavedData: getUnreadableSavedData,
     defaultUI: defaultUI
   };

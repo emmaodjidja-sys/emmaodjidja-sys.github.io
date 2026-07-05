@@ -87,6 +87,12 @@
       });
     }
 
+    // Sensitivity applies immediately (it is safeguarding metadata, not a
+    // draft field), rather than waiting for the Phase 1 "Save" action.
+    function handleSensitivityChange(level) {
+      dispatch({ type: PraxisContext.ACTION_TYPES.SET_SENSITIVITY, level: level });
+    }
+
     function handleOverride(dimId, adjustedScore, justification) {
       setOverrides(function(prev) {
         var next = Object.assign({}, prev);
@@ -195,7 +201,9 @@
         data: projectMeta,
         onChange: handleMetaChange,
         onContinue: function() { setShowReview(true); },
-        tier: state.ui.experienceTier
+        tier: state.ui.experienceTier,
+        sensitivity: state.context.protection.sensitivity,
+        onSensitivityChange: handleSensitivityChange
       });
     } else if (currentPhase === 2) {
       content = h(Phase2ToR, {
