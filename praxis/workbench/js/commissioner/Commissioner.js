@@ -479,8 +479,9 @@
   }
 
   function levelSelect(value, label, onChange) {
+    var abbr = label.slice(0, 4);   // "Infl" / "Inte" - distinct (both words start with I)
     return h('select', { className: 'wb-cm-lvl-sel wb-cm-lvl-sel--' + (value || 'medium'), value: value || 'medium', 'aria-label': label, title: label, onChange: function(e) { onChange(e.target.value); } },
-      LEVELS.slice().reverse().map(function(l) { return h('option', { key: l, value: l }, label.charAt(0) + ': ' + l.charAt(0).toUpperCase() + l.slice(1)); }));
+      LEVELS.slice().reverse().map(function(l) { return h('option', { key: l, value: l }, abbr + ': ' + l.charAt(0).toUpperCase() + l.slice(1)); }));
   }
 
   // Influence (y) x interest (x) engagement grid. Purposeful: it tells the
