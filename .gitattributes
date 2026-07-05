@@ -1,0 +1,15 @@
+# Protect vendored binary assets from line-ending normalization.
+# core.autocrlf is enabled on the authoring machine; without these rules a
+# future checkout could inject CRLF into binary files and corrupt them.
+*.woff2 binary
+*.woff  binary
+*.ttf   binary
+*.otf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+# Minified vendor bundles: keep them byte-stable, never normalized.
+*.min.js -text
