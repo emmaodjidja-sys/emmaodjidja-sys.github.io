@@ -125,17 +125,30 @@
     var toc = props.toc;
     // Capture the toc once so incremental saves don't re-fire the bridge init.
     var initialTocRef = React.useRef(toc);
+    // Action to run once TOC_EXPORT arrives ('close' | 'advance' | null).
+    // Closing synchronously after posting PRAXIS_REQUEST_EXPORT would unmount
+    // the bridge listener before the export reply lands, dropping the save.
+    var pendingActionRef = React.useRef(null);
     var bridge = window.useTocBridge(iframeRef, initialTocRef.current, function(payload) {
       // Explicit export (Save button pressed inside/around the iframe)
       props.onSave(normaliseTocPayload(payload));
+      var after = pendingActionRef.current;
+      pendingActionRef.current = null;
+      if (after === 'advance' && props.onSaveAndAdvance) {
+        props.onSaveAndAdvance();
+      } else if (after) {
+        props.onClose();
+      }
     }, function(payload) {
-      // Incremental change stream — persist silently so canvas edits are never lost
+      // Incremental change stream, persisted silently so canvas edits are never lost
       if (props.onChange) props.onChange(normaliseTocPayload(payload));
     });
 
-    function handleSave() {
-      // Request an export from the iframe
+    function handleSave(afterAction) {
+      // Request an export from the iframe; the export callback above completes
+      // the save and then performs afterAction.
       if (iframeRef.current && bridge.ready) {
+        pendingActionRef.current = afterAction || null;
         iframeRef.current.contentWindow.postMessage({ type: 'PRAXIS_REQUEST_EXPORT' }, window.location.origin);
       }
     }
@@ -180,7 +193,7 @@
           : h('span', { style: { fontSize: 10, color: '#94A3B8', marginRight: 8 } }, 'Connecting\u2026'),
         h('button', {
           type: 'button',
-          onClick: function() { handleSave(); props.onClose(); },
+          onClick: function() { handleSave('close'); },
           disabled: !bridge.ready,
           style: {
             padding: '5px 14px', borderRadius: 5, border: '1px solid rgba(255,255,255,0.2)',
@@ -191,7 +204,7 @@
         }, 'Save and Return'),
         h('button', {
           type: 'button',
-          onClick: function() { handleSave(); if (props.onSaveAndAdvance) props.onSaveAndAdvance(); else props.onClose(); },
+          onClick: function() { handleSave('advance'); },
           disabled: !bridge.ready,
           title: 'Save and continue to Station 2: Evaluation Matrix',
           style: {
@@ -241,10 +254,13 @@
     var mode = ms[0]; var setMode = ms[1];
 
     function saveToc(tocSchema) {
+      // Stamp completed_at on explicit save (the completion signal StationRail
+      // and Station 9 consume) at the moment the ToC export is received.
+      var record = Object.assign({}, tocSchema, { completed_at: new Date().toISOString() });
       dispatch({
         type: PraxisContext.ACTION_TYPES.SAVE_STATION,
         stationId: 1,
-        payload: { toc: tocSchema }
+        payload: { toc: record }
       });
       dispatch({
         type: PraxisContext.ACTION_TYPES.SHOW_TOAST,

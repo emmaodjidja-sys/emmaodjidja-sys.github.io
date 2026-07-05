@@ -24,7 +24,9 @@
     rdd:                      'twoProportions',
     regression_discontinuity: 'twoProportions',
     pre_post:                 'singleProportion',
-    case_study:               'singleProportion'
+    prePost:                  'singleProportion',
+    case_study:               'singleProportion',
+    caseStudy:                'singleProportion'
   };
 
   var DEFAULT_CALCULATOR_ID = 'twoProportions';
@@ -39,10 +41,13 @@
   function designToCalculatorId(designRec) {
     if (!designRec) return DEFAULT_CALCULATOR_ID;
 
-    // Find top-ranked design
+    // Find top-ranked design. Station 3 saves ranked_designs (scored, sorted)
+    // and selected_design; older shapes used ranked/designs/selected.
     var topDesign = null;
 
-    if (designRec.ranked && Array.isArray(designRec.ranked) && designRec.ranked.length > 0) {
+    if (designRec.ranked_designs && Array.isArray(designRec.ranked_designs) && designRec.ranked_designs.length > 0) {
+      topDesign = designRec.ranked_designs[0];
+    } else if (designRec.ranked && Array.isArray(designRec.ranked) && designRec.ranked.length > 0) {
       topDesign = designRec.ranked[0];
     } else if (designRec.designs && Array.isArray(designRec.designs) && designRec.designs.length > 0) {
       // Sort by score descending, pick first
@@ -50,6 +55,10 @@
         return (b.score || 0) - (a.score || 0);
       });
       topDesign = sorted[0];
+    } else if (designRec.selected_design) {
+      topDesign = (typeof designRec.selected_design === 'object')
+        ? designRec.selected_design
+        : { id: designRec.selected_design };
     } else if (designRec.selected) {
       topDesign = designRec.selected;
     }
@@ -73,6 +82,10 @@
       designId ? { selected: { id: designId } } : null
     );
 
+    var readyState = React.useState(false);
+    var ready = readyState[0];
+    var setReady = readyState[1];
+
     React.useEffect(function () {
       function handleMessage(event) {
         if (event.origin !== window.location.origin) return;
@@ -81,12 +94,13 @@
         var type = event.data.type;
 
         if (type === 'SAMPLE_READY') {
-          // Calculator is ready — send initial configuration
+          setReady(true);
+          // Calculator is ready, send initial configuration
           var iframe = iframeRef.current;
           if (iframe && iframe.contentWindow) {
             iframe.contentWindow.postMessage({
               type: 'PRAXIS_INIT',
-              design: calculatorDesignId
+              payload: { design: calculatorDesignId }
             }, window.location.origin);
           }
         }
@@ -104,7 +118,11 @@
       };
     }, [iframeRef, calculatorDesignId, onExport]);
 
-    return { calculatorDesignId: calculatorDesignId };
+    // The calculator iframe unmounts when its overlay closes; callers reset the
+    // ready flag before re-mounting so the loading state reflects reality.
+    var resetReady = React.useCallback(function () { setReady(false); }, []);
+
+    return { calculatorDesignId: calculatorDesignId, ready: ready, resetReady: resetReady };
   }
 
   // ── Public API ──

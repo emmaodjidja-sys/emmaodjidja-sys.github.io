@@ -196,15 +196,59 @@
   }
 
   // ── Canvas Mode (iframe overlay) ──────────────────────────────────
+  var DESIGN_TOOL_SRC = '/praxis/tools/evaluation-design-advisor/';
+
   function CanvasMode(props) {
     var prefillAnswers = props.prefillAnswers;
     var onSave = props.onSave;
     var onClose = props.onClose;
     var iframeRef = React.useRef(null);
 
+    // Bump reloadKey to re-mount the iframe (Retry).
+    var reloadSt = React.useState(0);
+    var reloadKey = reloadSt[0];
+    var setReloadKey = reloadSt[1];
+
+    // After 10s without a ready signal from the tool, surface an error fallback.
+    var timedOutSt = React.useState(false);
+    var timedOut = timedOutSt[0];
+    var setTimedOut = timedOutSt[1];
+
     var bridge = window.useDesignBridge(iframeRef, prefillAnswers, function(payload) {
       onSave(payload);
     });
+    var ready = bridge.ready;
+
+    React.useEffect(function() {
+      if (ready) return undefined;
+      setTimedOut(false);
+      var timer = setTimeout(function() { setTimedOut(true); }, 10000);
+      return function() { clearTimeout(timer); };
+    }, [ready, reloadKey]);
+
+    var statusPanel = null;
+    if (!ready && timedOut) {
+      statusPanel = h('div', { className: 'wb-iframe-status', role: 'alert' },
+        h('div', { className: 'wb-iframe-status-title' }, 'Design Advisor did not load'),
+        h('div', { className: 'wb-iframe-status-desc' },
+          'The embedded tool did not respond. Check your connection and retry, or open the Design Advisor in a new tab.'),
+        h('div', { className: 'wb-iframe-status-actions' },
+          h('button', {
+            className: 'wb-btn wb-btn-primary wb-btn-sm',
+            onClick: function() { setTimedOut(false); setReloadKey(function(k) { return k + 1; }); }
+          }, 'Retry'),
+          h('a', {
+            className: 'wb-btn wb-btn-outline wb-btn-sm',
+            href: DESIGN_TOOL_SRC, target: '_blank', rel: 'noopener'
+          }, 'Open in new tab')
+        )
+      );
+    } else if (!ready) {
+      statusPanel = h('div', { className: 'wb-iframe-status', role: 'status', 'aria-live': 'polite' },
+        h('div', { className: 'wb-spinner', 'aria-hidden': 'true' }),
+        h('div', { className: 'wb-iframe-status-title' }, 'Loading Design Advisor...')
+      );
+    }
 
     return h('div', { className: 'wb-canvas-overlay' },
       // Header bar
@@ -215,7 +259,7 @@
             className: 'wb-btn wb-btn-primary',
             onClick: function() {
               // Request export from iframe
-              if (iframeRef.current) {
+              if (iframeRef.current && iframeRef.current.contentWindow) {
                 iframeRef.current.contentWindow.postMessage({ type: 'PRAXIS_REQUEST_EXPORT' }, window.location.origin);
               }
             }
@@ -226,13 +270,17 @@
           }, 'Close')
         )
       ),
-      // Iframe
-      h('iframe', {
-        ref: iframeRef,
-        src: '/praxis/tools/evaluation-design-advisor/',
-        className: 'wb-canvas-iframe',
-        title: 'Evaluation Design Advisor'
-      })
+      // Iframe with loading / error overlay
+      h('div', { className: 'wb-iframe-wrap' },
+        h('iframe', {
+          key: reloadKey,
+          ref: iframeRef,
+          src: DESIGN_TOOL_SRC,
+          className: 'wb-canvas-iframe',
+          title: 'Evaluation Design Advisor'
+        }),
+        statusPanel
+      )
     );
   }
 
@@ -259,13 +307,18 @@
     var overrides = overrideState[0];
     var setOverrides = overrideState[1];
 
-    // Merge base prefill with any user overrides
+    // Answers previously persisted to design_recommendation.answers (either by
+    // an advisor save or by handleChangeAnswer below); they survive navigation.
+    var savedAnswers = (context.design_recommendation && context.design_recommendation.answers) || {};
+
+    // Merge base prefill with persisted answers, then any session overrides
     var prefillAnswers = React.useMemo(function() {
       var merged = {};
       Object.keys(basePrefill).forEach(function(k) { merged[k] = basePrefill[k]; });
+      Object.keys(savedAnswers).forEach(function(k) { if (savedAnswers[k] != null) merged[k] = savedAnswers[k]; });
       Object.keys(overrides).forEach(function(k) { merged[k] = overrides[k]; });
       return merged;
-    }, [basePrefill, overrides]);
+    }, [basePrefill, savedAnswers, overrides]);
 
     function handleChangeAnswer(questionId, newValue) {
       setOverrides(function(prev) {
@@ -273,6 +326,15 @@
         Object.keys(prev).forEach(function(k) { next[k] = prev[k]; });
         next[questionId] = newValue;
         return next;
+      });
+      // Persist edited answers so they survive navigation (previously they lived
+      // only in local overrides state). deepMerge preserves ranked_designs.
+      var mergedAnswers = Object.assign({}, prefillAnswers);
+      mergedAnswers[questionId] = newValue;
+      dispatch({
+        type: 'SAVE_STATION',
+        stationId: 3,
+        data: { design_recommendation: { answers: mergedAnswers } }
       });
     }
 
@@ -283,7 +345,12 @@
     var filledCount = Object.keys(prefillAnswers).length;
 
     function handleSave(payload) {
-      dispatch({ type: 'SAVE_STATION', stationId: 3, data: { design_recommendation: payload } });
+      // Stamp completed_at on save (the sole completion signal StationRail and
+      // Station 9 consume), but only when the export carries ranked designs;
+      // an early save with no results must not mark the station complete.
+      var hasDesigns = payload && payload.ranked_designs && payload.ranked_designs.length;
+      var record = Object.assign({}, payload, { completed_at: hasDesigns ? new Date().toISOString() : null });
+      dispatch({ type: 'SAVE_STATION', stationId: 3, data: { design_recommendation: record } });
       setMode('landing');
     }
 

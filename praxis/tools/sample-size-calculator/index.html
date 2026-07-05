@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sample Size Calculator — PRAXIS Evaluation Toolkit</title>
+<title>Sample Size Calculator | PRAXIS Evaluation Toolkit</title>
 <meta name="description" content="Free sample size calculator for 9 evaluation designs with qualitative sample planning. Coverage surveys, cluster RCTs, stepped-wedge, ITS power assessment, LQAS, DiD and more.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -860,7 +860,14 @@ function QualMethodCard(props) {
 function App() {
   /* ── State ─────────────────────────────────────────────────── */
   var tierSt = useState('practitioner'); var tier = tierSt[0]; var setTier = tierSt[1];
-  var designSt = useState('singleProportion'); var activeDesign = designSt[0]; var setActiveDesign = designSt[1];
+  // When embedded in the PRAXIS Workbench, seed the active design from the
+  // design recommendation the bridge stashed on window._praxisInitSample.
+  var designSt = useState(function(){
+    var init = window._praxisInitSample;
+    if (init && init.design && DESIGNS.some(function(d){ return d.id === init.design; })) return init.design;
+    return 'singleProportion';
+  });
+  var activeDesign = designSt[0]; var setActiveDesign = designSt[1];
   var filterSt = useState(null); var wizardFilter = filterSt[0]; var setWizardFilter = filterSt[1];
 
   /* Per-design params */
@@ -959,6 +966,39 @@ function App() {
 
   var quantN = (result && !result.error) ? (result.primary || 0) : 0;
   var qualN = qualTotals.fgdPart + qualTotals.kiis + qualTotals.idis;
+
+  /* ── Workbench bridge sync ─────────────────────────────────── */
+  // The PRAXIS_INIT message can arrive after this component mounts, so listen
+  // for the praxis-init-sample event as well as reading the synchronous stash.
+  useEffect(function(){
+    function onInit(e){
+      var p = e && e.detail;
+      if (p && p.design && DESIGNS.some(function(d){ return d.id === p.design; })) setActiveDesign(p.design);
+    }
+    window.addEventListener('praxis-init-sample', onInit);
+    return function(){ window.removeEventListener('praxis-init-sample', onInit); };
+  }, []);
+
+  // Keep the latest sample plan available to the bridge export handler so
+  // PRAXIS_REQUEST_EXPORT can post it on demand. Fields match Station4.js.
+  useEffect(function(){
+    var designName = activeDesign;
+    for (var i = 0; i < DESIGNS.length; i++) { if (DESIGNS[i].id === activeDesign) { designName = DESIGNS[i].name; break; } }
+    var sampleSize = (result && !result.error && result.primary != null) ? result.primary : null;
+    var powerFrac = (typeof currentParams.power === 'number') ? currentParams.power / 100 : null;
+    var qualParts = [];
+    if (qualMethods.fgd) qualParts.push(qualTotals.fgds + ' FGDs');
+    if (qualMethods.kii) qualParts.push(qualTotals.kiis + ' KIIs');
+    if (qualMethods.idi) qualParts.push(qualTotals.idis + ' IDIs');
+    if (qualMethods.observation) qualParts.push(qualTotals.obs + ' observation sessions');
+    var qualitative = qualParts.length ? (qualParts.join(', ') + ' (' + qualTotals.days + ' field days)') : '';
+    window._praxisLatestSample = {
+      design: designName,
+      sampleSize: sampleSize,
+      power: powerFrac,
+      qualitative: qualitative
+    };
+  }, [activeDesign, result, currentParams, qualTotals, qualMethods]);
 
   /* ── Render ────────────────────────────────────────────────── */
   return h('div',null,
@@ -1219,6 +1259,12 @@ function App() {
     if (e.data.type === 'PRAXIS_INIT' && e.data.payload) {
       window._praxisInitSample = e.data.payload;
       window.dispatchEvent(new CustomEvent('praxis-init-sample', { detail: e.data.payload }));
+    }
+    if (e.data.type === 'PRAXIS_REQUEST_EXPORT') {
+      // Workbench asked for the current sample plan (Save to Workbench).
+      if (typeof window._praxisExportSample === 'function') {
+        window._praxisExportSample(window._praxisLatestSample || {});
+      }
     }
   });
 

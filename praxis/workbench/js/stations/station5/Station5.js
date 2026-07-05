@@ -15,10 +15,10 @@
     React.useEffect(function() { setLocalInst(instruments); }, [instruments.length]);
 
     function generate() {
-      var sample = context.sampling || {};
+      var sample = context.sample_parameters || {};
       var scaffolded = InstrumentScaffold.scaffoldInstruments(matrixRows, sample);
       setLocalInst(scaffolded);
-      saveInstruments(scaffolded);
+      saveInstrumentsExplicit(scaffolded);
     }
 
     // Debounced auto-save — persists silently without toasting on every keystroke
@@ -79,12 +79,27 @@
       );
     }
 
-    // Upstream badges
-    var designMethod = (context.design || {}).method || 'contribution analysis';
-    var sampleInfo = context.sampling && context.sampling.result ? context.sampling.result.totalSample + ' respondents' : '';
+    // Upstream badges. The design comes from Station 3's design_recommendation
+    // (selected_design or top ranked design); the sample from Station 4's
+    // sample_parameters. Neither context.design nor context.sampling exist.
+    var designRec = context.design_recommendation || {};
+    var topDesign = designRec.selected_design ||
+      ((designRec.ranked_designs && designRec.ranked_designs.length) ? designRec.ranked_designs[0] : null);
+    var designLabel = '';
+    if (topDesign) {
+      designLabel = (typeof topDesign === 'string')
+        ? topDesign
+        : (topDesign.name || topDesign.short || topDesign.id || '');
+    }
+    var sp = context.sample_parameters || {};
+    var totalSample = (sp.result && (sp.result.totalSample || sp.result.primary)) || sp.sampleSize || null;
+    var sampleInfo = totalSample ? totalSample + ' respondents' : '';
     var badges = h('div', { className: 'wb-context-badges' },
       matrixRows.length ? h('span', { className: 'wb-context-badge' }, 'Matrix: ' + matrixRows.length + ' EQs') : null,
-      h('span', { className: 'wb-context-badge' }, 'Design: ' + designMethod),
+      designLabel
+        ? h('span', { className: 'wb-context-badge' }, 'Design: ' + designLabel)
+        : h('span', { className: 'wb-context-badge' },
+            'No design selected yet. Complete Station 3 to see the recommended design here.'),
       sampleInfo ? h('span', { className: 'wb-context-badge' }, 'Sample: ' + sampleInfo) : null);
 
     // GATE: no matrix rows

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Evaluation Design Advisor — PRAXIS Evaluation Toolkit</title>
+<title>Evaluation Design Advisor | PRAXIS Evaluation Toolkit</title>
 <meta name="description" content="Free evaluation design advisor. Answer 10 context questions, get scored recommendations across 16 evaluation designs with trade-offs and justification.">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -36,7 +36,7 @@ body{margin:0;background:#FAFBFC;}
 </nav>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useMemo, useCallback } = React;
+const { useState, useMemo, useCallback, useEffect } = React;
 
 // ── Design database ─────────────────────────────────────────────────
 const DESIGNS = {
@@ -217,7 +217,9 @@ function DesignResult({ design, rank }) {
 
 // ── Main App ────────────────────────────────────────────────────────
 function App() {
-  const [answers, setAnswers] = useState({});
+  // When embedded in the PRAXIS Workbench, seed the answers from the design
+  // recommendation the bridge stashed on window._praxisPrefillAnswers.
+  const [answers, setAnswers] = useState(() => (window._praxisPrefillAnswers && typeof window._praxisPrefillAnswers === "object") ? window._praxisPrefillAnswers : {});
   const [showResults, setShowResults] = useState(false);
   const handleAnswer = useCallback((qId, value) => { setAnswers((prev) => ({ ...prev, [qId]: value })); setShowResults(false); }, []);
   const answeredCount = Object.keys(answers).length;
@@ -225,6 +227,23 @@ function App() {
   const minAnswered = answeredCount >= 4;
   const results = useMemo(() => (minAnswered || allAnswered) ? scoreDesigns(answers) : [], [answers, minAnswered, allAnswered]);
   const topResults = results.slice(0, 6);
+
+  // The PRAXIS_INIT message can arrive after this component mounts (the bridge
+  // stashes it synchronously, but also re-dispatches via the praxis-prefill event).
+  useEffect(() => {
+    function onPrefill(e) {
+      if (e && e.detail && typeof e.detail === "object") { setAnswers(e.detail); setShowResults(true); }
+    }
+    window.addEventListener("praxis-prefill", onPrefill);
+    return () => window.removeEventListener("praxis-prefill", onPrefill);
+  }, []);
+
+  // Keep the latest answers and results available to the bridge export handler
+  // so PRAXIS_REQUEST_EXPORT can post the current recommendation on demand.
+  useEffect(() => {
+    window._praxisLatestAnswers = answers;
+    window._praxisLatestResults = results;
+  }, [answers, results]);
 
   return (
     <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", maxWidth: 960, margin: "0 auto", padding: "20px 16px 40px", minHeight: "100vh" }}>
@@ -301,6 +320,12 @@ function App() {
     if (e.data.type === 'PRAXIS_INIT' && e.data.payload && e.data.payload.answers) {
       window._praxisPrefillAnswers = e.data.payload.answers;
       window.dispatchEvent(new CustomEvent('praxis-prefill', { detail: e.data.payload.answers }));
+    }
+    if (e.data.type === 'PRAXIS_REQUEST_EXPORT') {
+      // Workbench asked for the current recommendation (Save to Workbench).
+      if (typeof window._praxisExportDesign === 'function') {
+        window._praxisExportDesign(window._praxisLatestAnswers || {}, window._praxisLatestResults || []);
+      }
     }
   });
 

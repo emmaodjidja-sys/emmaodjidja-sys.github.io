@@ -24,22 +24,33 @@
     var nodes = praxisToc.nodes || [];
     var connections = praxisToc.connections || [];
 
-    // Find the goal node (type === 'goal' or 'impact')
+    // All ToC producers (toc-builder, TocInline, demo data) emit n.level and
+    // n.title; older payloads used n.type and n.label/n.text. Read both.
+    function nodeLevel(n) { return n.level || n.type || ''; }
+    function nodeText(n) { return n.title || n.label || n.text || ''; }
+
+    // Connection endpoints: toc-builder and demo data emit sourceId/targetId,
+    // TocInline emits from/to, older payloads used source/target.
+    function connSource(c) { return c.source || c.from || c.sourceId; }
+    function connTarget(c) { return c.target || c.to || c.targetId; }
+
+    // Find the goal node (level 'goal' or 'impact')
     var goalNode = nodes.filter(function(n) {
-      return n.type === 'goal' || n.type === 'impact';
+      var lvl = nodeLevel(n);
+      return lvl === 'goal' || lvl === 'impact';
     })[0];
-    var goal = goalNode ? (goalNode.label || goalNode.text || '') : '';
+    var goal = goalNode ? nodeText(goalNode) : '';
 
     // Find outcome nodes
-    var outcomeNodes = nodes.filter(function(n) { return n.type === 'outcome'; });
+    var outcomeNodes = nodes.filter(function(n) { return nodeLevel(n) === 'outcome'; });
     // Find output nodes
-    var outputNodes = nodes.filter(function(n) { return n.type === 'output'; });
+    var outputNodes = nodes.filter(function(n) { return nodeLevel(n) === 'output'; });
 
     // Build a map of connections: source -> [target]
     var connMap = {};
     connections.forEach(function(c) {
-      var src = c.source || c.from;
-      var tgt = c.target || c.to;
+      var src = connSource(c);
+      var tgt = connTarget(c);
       if (!connMap[src]) connMap[src] = [];
       connMap[src].push(tgt);
     });
@@ -47,8 +58,8 @@
     // Also build reverse map: target -> [source]
     var reverseMap = {};
     connections.forEach(function(c) {
-      var src = c.source || c.from;
-      var tgt = c.target || c.to;
+      var src = connSource(c);
+      var tgt = connTarget(c);
       if (!reverseMap[tgt]) reverseMap[tgt] = [];
       reverseMap[tgt].push(src);
     });
@@ -62,28 +73,35 @@
       var inputIds = reverseMap[oc.id] || [];
       var outputs = inputIds
         .map(function(id) { return nodeById[id]; })
-        .filter(function(n) { return n && n.type === 'output'; })
-        .map(function(n) { return n.label || n.text || ''; });
+        .filter(function(n) { return n && nodeLevel(n) === 'output'; })
+        .map(nodeText);
 
       // If no outputs found via connections, try forward connections FROM outputs to this outcome
       if (outputs.length === 0) {
         outputNodes.forEach(function(outNode) {
           var targets = connMap[outNode.id] || [];
           if (targets.indexOf(oc.id) >= 0) {
-            outputs.push(outNode.label || outNode.text || '');
+            outputs.push(nodeText(outNode));
           }
         });
       }
 
       return {
-        text: oc.label || oc.text || '',
+        text: nodeText(oc),
         outputs: outputs
       };
     });
 
-    // Extract assumptions from nodes of type 'assumption' or from narrative
-    var assumptionNodes = nodes.filter(function(n) { return n.type === 'assumption'; });
-    var assumptions = assumptionNodes.map(function(n) { return n.label || n.text || ''; });
+    // Harvest per-node assumptions[] arrays. Producers attach assumptions to
+    // nodes (as {text, status, ...} objects or plain strings); there are no
+    // nodes with a dedicated 'assumption' level.
+    var assumptions = [];
+    nodes.forEach(function(n) {
+      (n.assumptions || []).forEach(function(a) {
+        var text = (typeof a === 'string') ? a : ((a && a.text) || '');
+        if (text) assumptions.push(text);
+      });
+    });
 
     // Also pull from narrative if available
     if (praxisToc.narrative && praxisToc.narrative.systemAssumptions) {
