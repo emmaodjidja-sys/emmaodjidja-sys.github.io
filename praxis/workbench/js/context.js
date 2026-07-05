@@ -131,7 +131,7 @@
 
         var loadedContext = PraxisSchema.migrate(check.context);
         var loadedUI = Object.assign({}, state.ui, { projectLoaded: true });
-        if (typeof action.station === 'number' && action.station >= 0 && action.station <= 9) {
+        if (typeof action.station === 'number' && action.station >= 0 && action.station <= 10) {
           loadedUI.activeStation = action.station;
         }
         if (action.tier === 'foundation' || action.tier === 'practitioner' || action.tier === 'advanced') {
@@ -276,7 +276,7 @@
       var parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return null;
       var out = {};
-      if (typeof parsed.activeStation === 'number' && parsed.activeStation >= 0 && parsed.activeStation <= 9) {
+      if (typeof parsed.activeStation === 'number' && parsed.activeStation >= 0 && parsed.activeStation <= 10) {
         out.activeStation = parsed.activeStation;
       }
       if (parsed.experienceTier === 'foundation' || parsed.experienceTier === 'practitioner' || parsed.experienceTier === 'advanced') {

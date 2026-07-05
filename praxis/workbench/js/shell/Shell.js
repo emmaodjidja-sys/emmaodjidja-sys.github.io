@@ -63,6 +63,8 @@
       stationContent = h(Station8, { state: state, dispatch: dispatch });
     } else if (activeStation === 9 && typeof Station9 !== 'undefined') {
       stationContent = h(Station9, { state: state, dispatch: dispatch });
+    } else if (activeStation === 10 && typeof Commissioner !== 'undefined') {
+      stationContent = h(Commissioner, { state: state, dispatch: dispatch });
     } else {
       stationContent = h('div', { className: 'wb-station-empty' },
         h('h3', { className: 'wb-station-empty-title' },
@@ -82,10 +84,11 @@
         h(StationRail, { state: state, dispatch: dispatch, onHelpToggle: function() { setHelpOpen(!helpOpen); } }),
         h('div', { className: 'wb-main' },
           h('div', { className: 'wb-panel' },
-            // Planning (index 9) is an optional station that renders its own header and view toggle.
-            activeStation !== 9 ? h(StationHeader, { stationId: activeStation, context: context }) : null,
-            activeStation !== 9 ? h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }) : null,
-            (activeStation !== 9 && typeof SummaryBar !== 'undefined')
+            // Planning (index 9) and Commissioner (index 10) are optional surfaces that
+            // render their own header; they opt out of the shared header/summary/staleness.
+            (activeStation !== 9 && activeStation !== 10) ? h(StationHeader, { stationId: activeStation, context: context }) : null,
+            (activeStation !== 9 && activeStation !== 10) ? h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }) : null,
+            (activeStation !== 9 && activeStation !== 10 && typeof SummaryBar !== 'undefined')
               ? h('div', { className: 'wb-summary-bar-wrap' },
                   h(SummaryBar, { stationId: activeStation, context: context }))
               : null,

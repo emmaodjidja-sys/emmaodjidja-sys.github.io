@@ -2527,6 +2527,77 @@
     ],
     "completed_at": "2024-07-05T10:00:00.000Z"
   },
+  "commissioner": {
+    "governance": {
+      "funder_profile": "global_fund",
+      "oversight_body": "Independent Evaluation Panel (IEP)",
+      "evaluation_manager": "ELO Evaluation Manager",
+      "decision_clock": "Grant Cycle 8 (GC8) funding requests",
+      "lifecycle_stage": "track",
+      "purpose": "Give the Global Fund Board, Strategy Committee and Secretariat an independent evaluation of data use and decision-making in sub-national tailoring (SNT) for optimal malaria programming, to inform tailored, locally appropriate approaches and related investment and grant design.",
+      "primary_use": "Shape GC8 malaria funding-request design, and Secretariat processes and indicators, so investments better incentivise SNT and financial optimisation."
+    },
+    "users": [
+      { "id": "usr_board", "name": "Global Fund Board", "role": "Governance and strategic accountability", "tier": "primary", "intended_use": "Endorse the strategic direction on SNT and evidence-based malaria investment, and hold the Secretariat to account for acting on the findings.", "decision_window": "Board decisions on the malaria portfolio", "influence": "high", "interest": "medium", "eq_refs": ["eq_13", "eq_18", "eq_21"] },
+      { "id": "usr_sc", "name": "Strategy Committee (SC)", "role": "Oversight of the evaluation function via the IEP", "tier": "primary", "intended_use": "Steer strategic priorities on SNT and financial optimisation, and oversee that the evaluation is used.", "decision_window": "Strategy Committee cycle", "influence": "high", "interest": "high", "eq_refs": ["eq_8", "eq_13", "eq_16", "eq_26"] },
+      { "id": "usr_sec", "name": "Secretariat, Global Fund Malaria Team", "role": "Programme, process and grant design", "tier": "primary", "intended_use": "Improve grant design, processes and indicators to incentivise SNT and financial optimisation ahead of GC8.", "decision_window": "GC8 process and applicant guidance design", "influence": "high", "interest": "high", "eq_refs": ["eq_16", "eq_18", "eq_19", "eq_20", "eq_21", "eq_26"] },
+      { "id": "usr_nmcp", "name": "NMCPs and Principal Recipients", "role": "Implementers and applicants", "tier": "secondary", "intended_use": "Strengthen sub-national data generation and use, and reflect SNT and stratification in their funding requests.", "decision_window": "GC8 funding requests", "influence": "medium", "interest": "high", "eq_refs": ["eq_1", "eq_4", "eq_5", "eq_13", "eq_15", "eq_23"] },
+      { "id": "usr_ta", "name": "Technical partners and TA providers", "role": "Technical assistance (WHO, RBM)", "tier": "secondary", "intended_use": "Align technical assistance to SNT and allocative-efficiency modelling, and inform the WHO SNT guidance under development.", "decision_window": "TA planning for GC8", "influence": "medium", "interest": "medium", "eq_refs": ["eq_17", "eq_22", "eq_26"] },
+      { "id": "usr_sub", "name": "CCMs and sub-national teams", "role": "Sub-national decision-makers", "tier": "secondary", "intended_use": "Use disaggregated analysis for epidemiological stratification and intervention-mix decisions in their districts.", "decision_window": "NMSP and sub-national planning", "influence": "low", "interest": "high", "eq_refs": ["eq_7", "eq_9", "eq_12", "eq_23"] },
+      { "id": "usr_donor", "name": "Donors and the global malaria community", "role": "Co-financiers", "tier": "secondary", "intended_use": "Inform the malaria funding landscape and complementary investment in SNT and data systems.", "decision_window": "Replenishment and co-financing", "influence": "medium", "interest": "low", "eq_refs": ["eq_13", "eq_18"] }
+    ],
+    "gate": {
+      "decision": "conditions",
+      "decided_by": "ELO, Secretariat Teams, External Reference Group and IEP",
+      "decided_at": "2024-06-28T10:00:00.000Z",
+      "note": "Inception report (max 20 pages) reviewed by the ELO, Secretariat Teams, the External Reference Group and the IEP before country-insight fieldwork. Evaluation framework, data-collection tools and country selection (5-7 of the 12 HBHI countries) confirmed.",
+      "conditions": [
+        { "id": "cond_gf_1", "text": "Supplier to document how strength of evidence will be assessed and recorded (required in both the bidder and inception requirements).", "resolved": true },
+        { "id": "cond_gf_2", "text": "Finalise the criteria and shortlist for the 5-7 country insight studies with the ELO before data collection.", "resolved": false }
+      ]
+    },
+    "appraisal": {
+      "profile": "global_fund",
+      "evidence": [
+        { "eq_id": "eq_1", "rating": 2, "justification": "Sub-national systems adequacy evidenced across the HBHI portfolio analysis and country insights." },
+        { "eq_id": "eq_4", "rating": 3, "justification": "Data quality at sub-national level is uneven; verification varies by country." },
+        { "eq_id": "eq_8", "rating": 3, "justification": "Decision-making challenges documented but attribution to Global Fund investment is limited." },
+        { "eq_id": "eq_13", "rating": 2, "justification": "Extent to which funding requests are based on SNT well evidenced from GC6/GC7 analysis." },
+        { "eq_id": "eq_16", "rating": 3, "justification": "How GF processes can better incentivise SNT-based requests: promising but not yet triangulated." },
+        { "eq_id": "eq_20", "rating": 2, "justification": "PUDR and DHIS dashboard evidence is solid from the portfolio analysis." },
+        { "eq_id": "eq_26", "rating": 3, "justification": "TA focus on SNT is partial; scope for GC8 expansion identified." }
+      ]
+    },
+    "timeline": [
+      { "id": "del_wp", "name": "Evaluation workplan", "type": "Within 10 days of contract", "due_date": "2024-04-05", "reviewers": "ELO Evaluation Manager", "status": "accepted", "note": "" },
+      { "id": "del_inc", "name": "Inception report (max 20 pp)", "type": "Design gate", "due_date": "2024-06-28", "reviewers": "ELO, Secretariat Teams, External Reference Group, IEP", "status": "accepted", "note": "Framework, tools and country selection confirmed." },
+      { "id": "del_prelim", "name": "Preliminary findings", "type": "Milestone", "due_date": "2024-08-30", "reviewers": "IEP (September meeting)", "status": "accepted", "note": "" },
+      { "id": "del_d1", "name": "First draft report", "type": "Draft", "due_date": "2024-09-30", "reviewers": "ELO, IEP focal points, Secretariat Teams", "status": "accepted", "note": "" },
+      { "id": "del_d2", "name": "Second draft report", "type": "Draft", "due_date": "2024-11-15", "reviewers": "ELO, IEP, Secretariat Teams", "status": "accepted", "note": "Recommendation Workshop held before final." },
+      { "id": "del_final", "name": "Final report (40-50 pp)", "type": "Final", "due_date": "2025-01-15", "reviewers": "ELO (approval)", "status": "accepted", "note": "" },
+      { "id": "del_learn", "name": "Learning and dissemination products", "type": "Q1 2025", "due_date": "2025-03-31", "reviewers": "ELO, IEP, User Group", "status": "accepted", "note": "" }
+    ],
+    "management_response": [
+      { "id": "rec_gf_1", "code": "R1", "recommendation": "Strengthen sub-national data compilation and analytical capacity ahead of GC8 funding requests.", "disposition": "agree", "owner": "Global Fund Malaria Team", "secondary_owner": "National Malaria Control Programmes", "due_date": "2025-03-31", "status": "done", "actions": "Reflected in GC8 applicant guidance and the SNT technical brief.", "evidence_note": "GC8 guidance published Q1 2025.", "next_review": "2025-06-30" },
+      { "id": "rec_gf_2", "code": "R2", "recommendation": "Adjust Global Fund processes and indicators to incentivise SNT and financial optimisation in funding requests.", "disposition": "agree", "owner": "MECA / SIID", "secondary_owner": "Country Teams", "due_date": "2026-09-30", "status": "in_progress", "actions": "Indicator review underway with the modular framework team.", "evidence_note": "", "next_review": "2026-08-31" },
+      { "id": "rec_gf_3", "code": "R3", "recommendation": "Expand technical-assistance scope to cover SNT and allocative-efficiency modelling.", "disposition": "partial", "owner": "Global Fund Malaria Team", "secondary_owner": "TA providers", "due_date": "2026-12-31", "status": "planned", "actions": "Feasible within the existing TA envelope for priority countries only.", "evidence_note": "", "next_review": "2026-09-30" },
+      { "id": "rec_gf_4", "code": "R4", "recommendation": "Support countries to consolidate and maintain malaria data repositories (MDRs) linked to DHIS2.", "disposition": "agree", "owner": "Global Fund Malaria Team", "secondary_owner": "WHO / TA providers", "due_date": "2027-03-31", "status": "planned", "actions": "", "evidence_note": "", "next_review": "2026-10-31" }
+    ],
+    "dissemination": [
+      { "id": "dis_deck", "product": "Summative slide deck on final findings", "format": "Slide deck", "audience": "IEP and Secretariat", "due_date": "2025-02-15", "status": "delivered", "note": "" },
+      { "id": "dis_brief", "product": "Evaluation brief (findings, recommendations, management response, IEP commentary)", "format": "ELO standard brief", "audience": "Board and Strategy Committee", "due_date": "2025-02-28", "status": "delivered", "note": "" },
+      { "id": "dis_story", "product": "Storyboard for e-learning / multimedia", "format": "Storyboard", "audience": "Country stakeholders and applicants", "due_date": "2025-03-15", "status": "in_progress", "note": "" },
+      { "id": "dis_learn", "product": "Learning brief on confirmed learning topics", "format": "Learning brief", "audience": "User Group and country teams", "due_date": "2025-03-31", "status": "planned", "note": "Topics to be confirmed with the User Group." },
+      { "id": "dis_ws", "product": "Learning and engagement workshop", "format": "Workshop", "audience": "Secretariat and technical partners", "due_date": "2025-03-20", "status": "planned", "note": "" }
+    ],
+    "risks": [
+      { "id": "rsk_country", "risk": "Delays scheduling and accessing the 5-7 country insight studies.", "category": "Delivery", "likelihood": "medium", "impact": "high", "mitigation": "Shortlist countries early with the ELO; report slippage to the Evaluation Manager as it emerges.", "owner": "Supplier / ELO", "status": "mitigating" },
+      { "id": "rsk_data", "risk": "Sub-national data quality and availability limit the portfolio and country analysis.", "category": "Data", "likelihood": "high", "impact": "high", "mitigation": "Triangulate DHIS2, MDR and KII evidence; flag data gaps explicitly rather than over-claim.", "owner": "Supplier", "status": "open" },
+      { "id": "rsk_attr", "risk": "Attribution to Global Fund investment cannot be established; only contribution.", "category": "Method", "likelihood": "medium", "impact": "medium", "mitigation": "Frame as contribution analysis and state the limits transparently, as the ToR requires.", "owner": "Team Leader", "status": "mitigating" },
+      { "id": "rsk_access", "risk": "Access to, and candour of, sub-national key informants.", "category": "Access", "likelihood": "medium", "impact": "medium", "mitigation": "Anonymity assurances and confidentiality of KIIs, consistent with the Belmont principles.", "owner": "Supplier", "status": "closed" }
+    ],
+    "completed_at": "2024-08-30T10:00:00.000Z"
+  },
   "staleness": {
     "0": false,
     "1": false,

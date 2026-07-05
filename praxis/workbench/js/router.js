@@ -37,7 +37,7 @@
     if (typeof s !== 'number' || isNaN(s)) return null;
     s = Math.round(s);
     if (s < 0) s = 0;
-    if (s > 9) s = 9;
+    if (s > 10) s = 10;
     return s;
   }
 

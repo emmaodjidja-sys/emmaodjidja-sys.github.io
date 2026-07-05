@@ -6,7 +6,12 @@
   //   1.1    adds the optional Planning station (planning field, station index 9)
   //   1.1.0  version string switched to semantic-version format (no field changes).
   //          This is also the version displayed in the app (TopBar, About, footer).
-  var PRAXIS_VERSION = '1.1.0';
+  //   1.2.0  adds the optional Commissioner surface (commissioner field, station index 10)
+  //   1.3.0  extends the Commissioner surface into a utilization-focused commissioning
+  //          cockpit: intended-user register (users), governance purpose/primary_use,
+  //          delivery-schedule tracking (timeline), dissemination/use products
+  //          (dissemination) and a delivery-risk register (risks). Fully additive.
+  var PRAXIS_VERSION = '1.3.0';
 
   var STATION_LABELS = [
     'Evaluability & Scoping',
@@ -30,7 +35,8 @@
     6: ['analysis_plan'],
     7: ['report_structure'],
     8: ['presentation'],
-    9: ['planning']
+    9: ['planning'],
+    10: ['commissioner']
   };
 
   function createEmptyContext() {
@@ -133,7 +139,35 @@
       // Optional Planning station (index 9): contract, budget, deliverables, invoices, ratings.
       planning: { contract: {}, budget_lines: [], deliverables: [], invoices: [], completed_at: null },
 
-      staleness: { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false },
+      // Optional Commissioner surface (index 10): a utilization-focused commissioning
+      // cockpit over the shared evaluation context. Four movements mirror the
+      // commissioner's arc: Commission (design for use) -> Assure (gate before spend)
+      // -> Deliver (track the schedule) -> Use (uptake and dissemination).
+      commissioner: {
+        governance: {
+          funder_profile: '', oversight_body: '', evaluation_manager: '',
+          decision_clock: '', lifecycle_stage: '',
+          purpose: '',      // the evaluation's purpose in one or two sentences
+          primary_use: ''   // the single headline intended use (the decision it serves)
+        },
+        // Intended-user register (utilization-focused evaluation): the named primary
+        // and secondary users, the use each will make of the evaluation, when they
+        // need it, and their influence/interest for engagement planning.
+        users: [],          // [{ id, name, role, tier, intended_use, decision_window, influence, interest, engagement }]
+        gate: { decision: '', decided_by: '', decided_at: null, note: '', conditions: [] },
+        appraisal: { profile: '', evidence: [] },
+        // Delivery / assurance schedule: the ToR deliverables with their review bodies,
+        // due dates and acceptance status, tracked to on-time delivery.
+        timeline: [],       // [{ id, name, type, due_date, reviewers, status, note }]
+        management_response: [],
+        // Use and dissemination products keyed to the audiences that must act on them.
+        dissemination: [],  // [{ id, product, format, audience, due_date, status, note }]
+        // Delivery-risk register: risks reported to the evaluation manager with mitigation.
+        risks: [],          // [{ id, risk, category, likelihood, impact, mitigation, owner, status }]
+        completed_at: null
+      },
+
+      staleness: { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false },
       reviews: []
     };
   }
@@ -254,6 +288,22 @@
     '1.1': function(ctx) {
       var next = Object.assign({}, ctx);
       next.version = '1.1.0';
+      return next;
+    },
+    // 1.1.0 -> 1.2.0: deep-default against the current empty context, which adds
+    // the commissioner field and staleness key 10.
+    '1.1.0': function(ctx) {
+      var next = deepDefault(createEmptyContext(), ctx);
+      next.version = '1.2.0';
+      return next;
+    },
+    // 1.2.0 -> 1.3.0: deep-default against the current empty context, which adds
+    // the extended commissioner fields (users, timeline, dissemination, risks and
+    // governance.purpose / governance.primary_use). Existing commissioner data is
+    // preserved; the new fields default to empty.
+    '1.2.0': function(ctx) {
+      var next = deepDefault(createEmptyContext(), ctx);
+      next.version = '1.3.0';
       return next;
     }
   };

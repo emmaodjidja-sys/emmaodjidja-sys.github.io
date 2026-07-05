@@ -314,6 +314,14 @@
               dispatch({ type: AT.INIT, context: window.PRAXIS_DEMO_GF, tier: 'practitioner', station: 9 });
             });
           }
+        }),
+        h(ActionCard, { key: 'commissioner', title: 'Commissioner cockpit', desc: 'Commission for use: name the intended users and the decisions they must make, quality-assure the design before spend, hold delivery to schedule, and drive findings to implementation. Opens the Global Fund Malaria SNT worked example at the optional Commissioner surface.', accent: 'var(--blue)',
+          onClick: function() {
+            if (!window.PRAXIS_DEMO_GF) return;
+            guardDestructive(function() {
+              dispatch({ type: AT.INIT, context: window.PRAXIS_DEMO_GF, tier: 'practitioner', station: 10 });
+            });
+          }
         })
       ];
 

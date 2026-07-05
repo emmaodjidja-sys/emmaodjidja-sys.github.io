@@ -85,6 +85,22 @@
       'aria-current': planningActive ? 'step' : null
     }, h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, 'P'), planningDone ? completedBadge() : null);
 
+    // Commissioner (optional surface, index 10), a separate rail button kept out of
+    // the numbered 0-8 flow. Shows a completion check once commissioner review is recorded.
+    var commActive = activeStation === 10;
+    var commDone = !!(context.commissioner && context.commissioner.completed_at != null);
+    var cCls = 'wb-rail-btn wb-rail-btn--planning';
+    if (commActive) cCls += ' wb-rail-btn--active';
+    if (commDone) cCls += ' wb-rail-btn--completed';
+    var commBtn = h('button', {
+      key: 'commissioner',
+      className: cCls,
+      onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 10 }); },
+      title: 'Commissioner (optional)',
+      'aria-label': 'Commissioner, optional' + (commDone ? ', completed' : ''),
+      'aria-current': commActive ? 'step' : null
+    }, h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, 'C'), commDone ? completedBadge() : null);
+
     // Help button at bottom of rail
     var helpBtn = h('button', {
       key: 'help',
@@ -96,7 +112,7 @@
       'aria-label': 'Help'
     }, h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, '?'));
 
-    return h('nav', { className: 'wb-rail', 'aria-label': 'Stations' }, buttons.concat([planningBtn, helpBtn]));
+    return h('nav', { className: 'wb-rail', 'aria-label': 'Stations' }, buttons.concat([planningBtn, commBtn, helpBtn]));
   }
 
   window.StationRail = StationRail;
