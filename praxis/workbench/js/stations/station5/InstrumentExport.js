@@ -133,6 +133,30 @@
   }
 
   // ============================================================================
+  // XML-safe identifier from arbitrary text. Lowercase, non-alphanumerics to
+  // underscore, collapsed, trimmed. Returns '' when nothing usable remains.
+  // ============================================================================
+  function toIdent(text) {
+    return String(text == null ? '' : text)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  // Return a name guaranteed unique within `used` (a name->true map), suffixing
+  // _2, _3, ... on collision. `fallback` is used when the base is empty.
+  function uniqueName(base, fallback, used) {
+    var name = base || fallback;
+    if (used[name]) {
+      var k = 2;
+      while (used[name + '_' + k]) k++;
+      name = name + '_' + k;
+    }
+    used[name] = true;
+    return name;
+  }
+
+  // ============================================================================
   // Build XLSForm workbook data (returns XLSX workbook object)
   // ============================================================================
   function buildXLSFormWorkbook(instrument) {
@@ -145,25 +169,29 @@
     var customLists = {};
     var usedStandardLists = {};
     var questionIndex = 0;
+    // All node names (groups + questions) must be unique across the whole form,
+    // or pyxform (KoboToolbox's importer) rejects the file.
+    var usedNodeNames = {};
 
     // Survey header
     surveyData.push(['type', 'name', 'label', 'required', 'relevant', 'constraint', 'constraint_message']);
 
-    (instrument.sections || []).forEach(function(section) {
-      var groupName = 'grp_' + (section.eqId || section.label || 'section').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+    (instrument.sections || []).forEach(function(section, sIdx) {
+      var groupBase = 'grp_' + toIdent(section.eqId || section.label || ('section_' + (sIdx + 1)));
+      var groupName = uniqueName(groupBase, 'grp_section_' + (sIdx + 1), usedNodeNames);
 
       // begin_group
       surveyData.push(['begin_group', groupName, section.label, '', '', '', '']);
 
       (section.questions || []).forEach(function(q) {
         questionIndex++;
-        var name = sanitizeName(q.text, questionIndex);
+        var name = uniqueName(sanitizeName(q.text, questionIndex), 'q' + questionIndex, usedNodeNames);
         var xlsType = mapResponseType(q, customLists, usedStandardLists);
         var required = q.required ? 'yes' : '';
         surveyData.push([xlsType, name, q.text, required, '', '', '']);
       });
 
-      // end_group
+      // end_group (name matches begin_group)
       surveyData.push(['end_group', groupName, '', '', '', '', '']);
     });
 
@@ -180,18 +208,20 @@
       }
     });
 
-    // Add custom lists
+    // Add custom lists. Choice names must be unique and non-empty within a list.
     Object.keys(customLists).forEach(function(listName) {
-      customLists[listName].forEach(function(opt) {
-        var optName = opt.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
-        choicesData.push([listName, optName, opt]);
+      var usedInList = {};
+      customLists[listName].forEach(function(opt, i) {
+        var optName = uniqueName(toIdent(opt), 'opt' + (i + 1), usedInList);
+        choicesData.push([listName, optName, String(opt == null ? '' : opt)]);
       });
     });
 
     // Settings sheet
+    var formId = toIdent(instrument.name) || 'instrument_form';
     var settingsData = [
       ['form_title', 'form_id'],
-      [instrument.name, instrument.name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_')]
+      [instrument.name, formId]
     ];
 
     // Create workbook

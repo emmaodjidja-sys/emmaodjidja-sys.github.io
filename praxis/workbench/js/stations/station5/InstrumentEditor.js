@@ -90,10 +90,13 @@
       // Export bar
       h('div', { style: { padding: 10, borderTop: '1px solid #E2E8F0', display: 'flex', gap: 4, flexWrap: 'wrap' } },
         h('button', { className: 'wb-btn wb-btn-sm', style: { background: '#1a365d', color: '#fff', flex: 1 },
+          title: 'Download every question as an XLSForm (.xlsx) ready to import into KoboToolbox or ODK',
           onClick: function() { onExport('xlsform'); } }, 'XLSForm'),
         h('button', { className: 'wb-btn wb-btn-sm', style: { flex: 1 },
+          title: 'Download as a Word questionnaire (.doc)',
           onClick: function() { onExport('word'); } }, 'Word'),
         h('button', { className: 'wb-btn wb-btn-sm', style: { flex: 1 },
+          title: 'Open a print-ready version to save as PDF',
           onClick: function() { onExport('pdf'); } }, 'PDF')));
 
     // RIGHT PANEL
