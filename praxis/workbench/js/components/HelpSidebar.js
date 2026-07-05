@@ -11,19 +11,19 @@
     },
     1: {
       title: 'Theory of Change',
-      foundation: 'Map out how your programme is expected to create change — from activities to outcomes to impact. You can use the simple guided builder or the full visual canvas.',
+      foundation: 'Map out how your programme is expected to create change, from activities to outcomes to impact. You can use the simple guided builder or the full visual canvas.',
       practitioner: 'Build a theory of change with assumption testing, evidence strength ratings, and knowledge source tracking. Supports traceability codes.',
       advanced: 'Full ToC canvas with bidirectional connections, evidence taxonomies, and traceability. Export to SVG/PNG/JSON.'
     },
     2: {
       title: 'Evaluation Matrix',
-      foundation: 'Create the core document that guides your evaluation — a table linking your evaluation questions to indicators, data sources, and how you\'ll judge success.',
+      foundation: 'Create the core document that guides your evaluation: a table linking your evaluation questions to indicators, data sources, and how you\'ll judge success.',
       practitioner: 'Table-first matrix with auto-suggested evaluation questions from ToC × DAC criteria. Inline editing with indicator bank integration.',
       advanced: 'Full matrix with sub-questions, judgement criteria templates, and multi-format export (Word/Excel/JSON).'
     },
     3: {
       title: 'Design Advisor',
-      foundation: 'Get recommendations for which evaluation design fits your situation best. Most questions are pre-filled from your earlier work — you just need to answer two more.',
+      foundation: 'Get recommendations for which evaluation design fits your situation best. Most questions are pre-filled from your earlier work. You only need to answer two more.',
       practitioner: '8 of 10 design advisor questions pre-filled from evaluability assessment. Scores 16 designs across experimental, quasi-experimental, theory-based, and participatory families.',
       advanced: 'Full design scoring with validity threat analysis, cost/rigour/complexity ratings, and exportable recommendation report.'
     },
@@ -43,19 +43,19 @@
       title: 'Analysis Framework',
       foundation: 'Plan how you\'ll analyse the data you collect. Links each evaluation question to analysis methods.',
       practitioner: 'Analysis framework scaffold linked to evaluation matrix. Method and software selection per EQ.',
-      advanced: 'Coming soon: full analysis plan with statistical specifications and software code templates.'
+      advanced: 'Advanced tier. Statistical specifications and software code templates are not yet enabled.'
     },
     7: {
       title: 'Report Builder',
       foundation: 'Structure your evaluation report with a professional outline. Sections are auto-generated from your evaluation questions.',
       practitioner: 'Report outline auto-populated from matrix. Editable section structure with standard evaluation report format.',
-      advanced: 'Coming soon: full report generation with finding templates and evidence synthesis framework.'
+      advanced: 'Advanced tier. Finding templates and an evidence synthesis framework are not yet enabled.'
     },
     8: {
       title: 'Deck Generator',
-      foundation: 'Create a summary presentation of your evaluation plan — useful for stakeholder briefings and approval meetings.',
+      foundation: 'Create a summary presentation of your evaluation plan, useful for stakeholder briefings and approval meetings.',
       practitioner: 'Structured summary pulling from all stations. Export as PDF for stakeholder presentations.',
-      advanced: 'Coming soon: full slide generation with data visualisation templates.'
+      advanced: 'Advanced tier. Data visualisation templates for slides are not yet enabled.'
     }
   };
 
@@ -84,8 +84,9 @@
         h('button', {
           className: 'wb-btn wb-btn-ghost wb-btn-sm',
           onClick: onClose,
+          'aria-label': 'Close help',
           style: { fontSize: '14px', padding: '2px 6px', color: 'var(--slate)' }
-        }, '\u00D7')
+        }, PraxisIcons.close(16))
       ),
       // Content
       h('div', { style: { flex: 1, overflow: 'auto', padding: '16px' } },
@@ -100,7 +101,7 @@
         ),
 
         h('div', { style: { fontSize: '11px', color: 'var(--slate)', lineHeight: '1.5' } },
-          h('p', { style: { marginBottom: '8px' } }, 'Tip: You can change your experience tier using the badge in the top bar. This adjusts the language and detail level without changing the layout.'),
+          h('p', { style: { marginBottom: '8px' } }, 'Change your experience tier using the badge in the top bar. This adjusts the language and detail level without changing the layout.'),
           h('p', null, 'Your progress is saved automatically. You can also download a .praxis file at any time using the Save button.')
         )
       )

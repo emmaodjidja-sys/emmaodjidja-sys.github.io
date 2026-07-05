@@ -185,7 +185,7 @@
         h(SectionCard, { title: 'Planning', bodyType: 'empty' },
           h('div', { className: 'wb-station-empty' },
             h('div', { className: 'wb-station-empty-title' }, 'No planning data yet'),
-            h('div', { className: 'wb-station-empty-desc' }, 'Load a demo evaluation to see a fully worked budget, deliverable schedule, invoices and quality ratings, or add them by opening a saved .praxis project.'))));
+            h('div', { className: 'wb-station-empty-desc' }, 'Open a worked example to see a complete budget, deliverable schedule, invoices and quality ratings, or open a saved .praxis project.'))));
     }
 
     var body = view === 'evaluator'
@@ -339,8 +339,9 @@
           h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { api.patchDeliverable(d.id, { status: 'accepted', accepted_at: new Date().toISOString() }, false, 'Accepted ' + (d.code || d.title)); } }, 'Accept'),
           h('button', { className: 'wb-btn wb-btn-sm', onClick: function() { api.patchDeliverable(d.id, { status: 'revise' }, false, 'Requested revision of ' + (d.code || d.title)); } }, 'Request revision')) : null,
         // rating toggle
-        h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost wb-plan-rate-toggle', onClick: function() { api.setRatingId(expanded ? null : d.id); } },
-          (mean != null ? 'Edit quality rating' : 'Rate quality') + (expanded ? '  \u25B2' : '  \u25BC')),
+        h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost wb-plan-rate-toggle', style: { display: 'inline-flex', alignItems: 'center', gap: 6 }, onClick: function() { api.setRatingId(expanded ? null : d.id); } },
+          (mean != null ? 'Edit quality rating' : 'Rate quality'),
+          expanded ? PraxisIcons.chevronUp(12) : PraxisIcons.chevronDown(12)),
         expanded ? ratingPanel(d, api) : null);
     }) : h('div', { className: 'wb-station-empty' },
         h('div', { className: 'wb-station-empty-title' }, 'Nothing submitted yet'),
@@ -393,7 +394,7 @@
               return h('td', { key: s.v, className: 'wb-th--center' },
                 h('button', { className: 'wb-plan-score' + (on ? ' wb-plan-score--on' : ''), title: s.label,
                   'aria-label': c.label + ': ' + s.label, onClick: function() { api.setRating(d.id, c.key, s.v); } },
-                  on ? '\u2713' : ''));
+                  on ? PraxisIcons.check(14) : ''));
             }));
         }))),
       h('div', { className: 'wb-plan-rubric-scale' }, SCALE.map(function(s) { return h('span', { key: s.v, className: 'wb-plan-rubric-scale-item' }, s.v + ' ' + s.label); })),

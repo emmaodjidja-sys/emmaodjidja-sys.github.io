@@ -95,7 +95,7 @@
                 className: 'wb-btn wb-btn-ghost wb-btn-sm',
                 onClick: function () { setShowCalculator(false); },
                 'aria-label': 'Close calculator'
-              }, '\u2715')
+              }, PraxisIcons.close(16))
             )
           ),
           // iframe
@@ -129,7 +129,7 @@
                     e.preventDefault();
                     dispatch({ type: 'SET_ACTIVE_STATION', station: 3 });
                   }
-                }, 'Change design \u2192')
+                }, 'Change design ', PraxisIcons.chevronRight())
               ),
               topDesign.family
                 ? h('span', { className: 'wb-badge' }, topDesign.family)

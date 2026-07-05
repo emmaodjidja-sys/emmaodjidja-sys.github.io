@@ -168,7 +168,7 @@
           },
           onMouseEnter: function(e) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; },
           onMouseLeave: function(e) { e.currentTarget.style.background = 'none'; }
-        }, '\u2190 Back to Stations'),
+        }, PraxisIcons.chevronLeft(), 'Back to Stations'),
         h('div', {
           style: { width: 1, height: 20, background: 'rgba(255,255,255,0.12)', margin: '0 4px' }
         }),
@@ -176,7 +176,7 @@
           'Station 1: Theory of Change'),
         h('div', { style: { flex: 1 } }),
         bridge.ready
-          ? h('span', { style: { fontSize: 10, color: 'var(--teal, #2EC4B6)', marginRight: 8, fontWeight: 600 } }, '\u2713 Connected')
+          ? h('span', { style: { fontSize: 10, color: 'var(--teal, #2EC4B6)', marginRight: 8, fontWeight: 600 } }, PraxisIcons.check(12), ' Connected')
           : h('span', { style: { fontSize: 10, color: '#94A3B8', marginRight: 8 } }, 'Connecting\u2026'),
         h('button', {
           type: 'button',
@@ -188,19 +188,20 @@
             fontSize: 12, fontWeight: 600, cursor: bridge.ready ? 'pointer' : 'default',
             opacity: bridge.ready ? 1 : 0.5, marginRight: 8
           }
-        }, 'Save & Return'),
+        }, 'Save and Return'),
         h('button', {
           type: 'button',
           onClick: function() { handleSave(); if (props.onSaveAndAdvance) props.onSaveAndAdvance(); else props.onClose(); },
           disabled: !bridge.ready,
           title: 'Save and continue to Station 2: Evaluation Matrix',
           style: {
+            display: 'flex', alignItems: 'center', gap: 6,
             padding: '5px 14px', borderRadius: 5, border: 'none',
             background: 'var(--teal, #2EC4B6)', color: 'var(--navy, #0B1A2E)',
             fontSize: 12, fontWeight: 700, cursor: bridge.ready ? 'pointer' : 'default',
             opacity: bridge.ready ? 1 : 0.5
           }
-        }, 'Save & Continue to Station 2 →')
+        }, 'Save and continue to Station 2', PraxisIcons.chevronRight())
       ),
 
       // Iframe
@@ -296,19 +297,21 @@
             h('button', {
               type: 'button',
               className: 'wb-btn wb-btn-ghost wb-btn-sm',
+              style: { display: 'flex', alignItems: 'center', gap: 6 },
               onClick: function() { setMode('landing'); }
-            }, '\u2190 Back'),
+            }, PraxisIcons.chevronLeft(), 'Back'),
             h('span', { style: { fontSize: 14, fontWeight: 600, color: 'var(--text)' } }, 'Guided Builder')
           ),
           h('button', {
             type: 'button',
             className: 'wb-btn wb-btn-primary wb-btn-sm',
+            style: { display: 'flex', alignItems: 'center', gap: 6 },
             title: 'Continue to Station 2: Evaluation Matrix',
             onClick: function() {
               setMode('landing');
               dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 2 });
             }
-          }, 'Continue to Station 2 \u2192')
+          }, 'Continue to Station 2', PraxisIcons.chevronRight())
         ),
         h(window.TocInline, {
           tocData: hasData ? toc : null,
@@ -327,7 +330,7 @@
         // Station intro
         h('p', { className: 'wb-station-desc', style: { marginBottom: 20 } },
           'Define the causal pathway from programme activities to intended impact. ' +
-          'Your Theory of Change anchors every downstream evaluation decision\u2014design, ' +
+          'Your Theory of Change anchors every downstream evaluation decision, design, ' +
           'matrix, indicators, and data collection all trace back to what you build here.'),
 
         // If ToC data exists, show summary

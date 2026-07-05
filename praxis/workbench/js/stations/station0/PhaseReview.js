@@ -30,9 +30,9 @@
       h(SectionCard, { title: 'Review: ' + phaseTitle, variant: 'complete' },
         // Header
         h('div', { className: 'wb-review-header' },
-          h('span', { className: 'wb-review-header-check' }, '\u2713'),
+          h('span', { className: 'wb-review-header-check' }, PraxisIcons.check(12)),
           h('h3', { className: 'wb-review-header-title' },
-            'Phase ' + phaseNumber + ' Complete \u2014 ' + phaseTitle
+            'Phase ' + phaseNumber + ' Complete. ' + phaseTitle
           )
         ),
 
@@ -44,7 +44,10 @@
               h('div', { className: 'wb-review-label' }, formatLabel(key)),
               val
                 ? h('div', { className: 'wb-review-value' }, val)
-                : h('a', { className: 'wb-review-add-link', onClick: onEdit }, 'Not yet specified \u2190 Add')
+                : h('div', { className: 'wb-review-value' },
+                    h('span', { style: { color: 'var(--slate)' } }, 'Not specified'),
+                    h('a', { className: 'wb-review-add-link', onClick: onEdit, style: { display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8 } }, PraxisIcons.plus(12), 'Add')
+                  )
             );
           })
         ),
@@ -60,8 +63,8 @@
 
       // Action buttons (outside SectionCard)
       h('div', { className: 'wb-review-actions' },
-        h('button', { className: 'wb-btn wb-btn-outline', onClick: onEdit }, '\u2190 Edit Phase ' + phaseNumber),
-        h('button', { className: 'wb-btn wb-btn-primary', onClick: onContinue }, continueLabel + ' \u2192')
+        h('button', { className: 'wb-btn wb-btn-outline', onClick: onEdit, style: { display: 'flex', alignItems: 'center', gap: 6 } }, PraxisIcons.chevronLeft(), 'Edit Phase ' + phaseNumber),
+        h('button', { className: 'wb-btn wb-btn-primary', onClick: onContinue, style: { display: 'flex', alignItems: 'center', gap: 6 } }, continueLabel, PraxisIcons.chevronRight())
       )
     );
   }

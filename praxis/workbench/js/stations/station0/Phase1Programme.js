@@ -46,7 +46,7 @@
       // Guidance banner
       showGuide ? h('div', { className: 'wb-guidance' },
         h('span', { className: 'wb-guidance-text' }, 'Start by entering basic programme details. These inform the evaluability scoring in Phase 3 and carry forward to every downstream station.'),
-        h('button', { className: 'wb-guidance-close', onClick: dismissGuide }, '\u00D7')
+        h('button', { className: 'wb-guidance-close', onClick: dismissGuide }, PraxisIcons.close(16))
       ) : null,
 
       // Form grid
@@ -74,10 +74,10 @@
                 key: s,
                 className: 'wb-chip' + (selected ? ' wb-chip--selected' : ''),
                 onClick: function() { toggleSector(s); }
-              }, selected ? '\u2713 ' + s : s);
+              }, selected ? PraxisIcons.check(12) : null, selected ? ' ' + s : s);
             })
           ),
-          sectors.length >= 5 ? h('div', { style: { fontSize: '11px', color: '#D97706', marginTop: 6 } }, 'Multiple sectors selected \u2014 consider designating a primary sector in the context drawer.') : null
+          sectors.length >= 5 ? h('div', { style: { fontSize: '11px', color: '#D97706', marginTop: 6 } }, 'Multiple sectors selected. Consider designating a primary sector in the context drawer.') : null
         ),
 
         // Country/Region
@@ -89,10 +89,10 @@
         // Budget Range
         h('div', null,
           h('label', { className: 'wb-field-label' }, 'Budget Range'),
-          h('div', { className: 'wb-field-helper' }, 'Often not in the ToR \u2014 skip if unknown'),
+          h('div', { className: 'wb-field-helper' }, 'Often not in the ToR, skip if unknown'),
           OptionCards({ value: data.budget, onChange: function(v) { onChange('budget', v); }, options: [
             { value: 'low', label: 'Low', desc: '<$200K' },
-            { value: 'medium', label: 'Medium', desc: '$200K\u2013$1M' },
+            { value: 'medium', label: 'Medium', desc: '$200K-$1M' },
             { value: 'high', label: 'High', desc: '>$1M' }
           ] })
         ),
@@ -122,7 +122,7 @@
           h('label', { className: 'wb-field-label' }, 'Timeline'),
           OptionCards({ value: data.timeline, onChange: function(v) { onChange('timeline', v); }, options: [
             { value: 'short', label: 'Short', desc: '<6 months' },
-            { value: 'medium', label: 'Medium', desc: '6\u201312 months' },
+            { value: 'medium', label: 'Medium', desc: '6-12 months' },
             { value: 'long', label: 'Long', desc: '>12 months' }
           ] })
         )
@@ -137,7 +137,7 @@
             // Draft is auto-saved by app.js — this is informational
             if (props.onShowToast) props.onShowToast('Draft saved automatically');
           } }, 'Save Draft'),
-          h('button', { className: 'wb-btn wb-btn-primary', onClick: onContinue }, 'Review & Continue \u2192')
+          h('button', { className: 'wb-btn wb-btn-primary', onClick: onContinue, style: { display: 'flex', alignItems: 'center', gap: 6 } }, 'Review and continue', PraxisIcons.chevronRight())
         )
       )
     );

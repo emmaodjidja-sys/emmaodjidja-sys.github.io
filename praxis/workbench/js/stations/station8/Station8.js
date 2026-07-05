@@ -511,10 +511,10 @@
       h('div', { className: 'wb-toolbar s8-no-print' },
         h('span', { className: 's8-toolbar-stat' }, includedCount + ' of ' + slides.length + ' slides included'),
         h('span', { className: 'wb-toolbar-spacer' }),
-        h('button', { className: 'wb-btn wb-btn-sm', onClick: handleRegenerate, title: 'Regenerate from current data' }, '↻ Regenerate'),
+        h('button', { className: 'wb-btn wb-btn-sm', onClick: handleRegenerate, title: 'Regenerate from current data', style: { display: 'flex', alignItems: 'center', gap: 6 } }, PraxisIcons.refresh(14), 'Regenerate'),
         h('span', { className: 'wb-toolbar-divider' }),
-        h('button', { className: 'wb-btn wb-btn-sm', onClick: handlePrint, title: 'Print or save as PDF' }, '⎙ Download PDF'),
-        h('button', { className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: handleOpenDeckTool, title: 'Open in deck generator' }, 'Open Deck Tool ↗')
+        h('button', { className: 'wb-btn wb-btn-sm', onClick: handlePrint, title: 'Print or save as PDF', style: { display: 'flex', alignItems: 'center', gap: 6 } }, PraxisIcons.print(14), 'Download PDF'),
+        h('button', { className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: handleOpenDeckTool, title: 'Open in deck generator', style: { display: 'flex', alignItems: 'center', gap: 6 } }, 'Open deck tool', PraxisIcons.externalLink(14))
       ),
 
       // Slide cards
@@ -538,14 +538,14 @@
                   disabled: si === 0,
                   title: 'Move up',
                   'aria-label': 'Move slide up'
-                }, '▲'),
+                }, PraxisIcons.chevronUp(14)),
                 h('button', {
                   className: 'wb-reorder-btn',
                   onClick: function () { handleMoveDown(si); },
                   disabled: si === slides.length - 1,
                   title: 'Move down',
                   'aria-label': 'Move slide down'
-                }, '▼'),
+                }, PraxisIcons.chevronDown(14)),
                 h('button', {
                   className: 'wb-btn wb-btn-sm s8-include-btn' + (slide.included ? ' wb-btn--active' : ''),
                   onClick: function () { handleToggleInclude(si); },
@@ -590,7 +590,7 @@
         h('button', { className: 'wb-btn wb-btn-teal', onClick: handleSave }, 'Save'),
         h('span', { className: 'wb-toolbar-spacer' }),
         h('p', { className: 's8-footer-note' },
-          'Data is passed to the Deck Tool via sessionStorage — nothing leaves your browser.')
+          'Data is passed to the Deck Tool via sessionStorage. Nothing leaves your browser.')
       ),
 
       // Navigation

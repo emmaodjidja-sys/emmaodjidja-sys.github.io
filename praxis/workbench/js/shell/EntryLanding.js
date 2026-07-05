@@ -38,7 +38,7 @@
     return h('div', {
       onClick: props.onClick,
       style: { fontSize: '12px', color: 'var(--chrome-text-dim)', cursor: 'pointer', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '4px' }
-    }, '\u2190 ', t('common.back'));
+    }, PraxisIcons.chevronLeft(), t('common.back'));
   }
 
   function EntryLanding(props) {
@@ -113,7 +113,7 @@
       // Station selector
       rightContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
-        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Jump to a station'),
+        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Go to a station'),
         LABELS.map(function(name, i) {
           return h('div', {
             key: i, onClick: function() {
@@ -145,7 +145,7 @@
       ];
       rightContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
-        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Load a demo'),
+        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Open a worked example'),
         demos.map(function(d) {
           return h(ActionCard, {
             key: d.key, title: d.title, accent: d.accent, desc: d.desc,
@@ -162,8 +162,13 @@
         h(ActionCard, { key: 'new', title: '+ ' + t('landing.new'), desc: t('landing.new_desc'), accent: 'var(--teal)', onClick: function() { setMode('tier'); } }),
         h(ActionCard, { key: 'open', title: t('landing.open'), desc: t('landing.open_desc'), accent: 'var(--blue)', onClick: function() { setMode('open'); } }),
         h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: 'var(--purple)', onClick: function() { setMode('quick'); } }),
-        h(ActionCard, { key: 'demo', title: 'Load a demo', desc: 'Explore a fully worked evaluation across all 9 stations. Choose Global Fund Malaria SNT or Gavi Zero-Dose.', accent: 'var(--amber)',
+        h(ActionCard, { key: 'demo', title: 'Worked examples', desc: 'A complete worked evaluation across all nine stations. Global Fund Malaria SNT or Gavi Zero-Dose.', accent: 'var(--amber)',
           onClick: function() { setMode('demo'); }
+        }),
+        h(ActionCard, { key: 'planning', title: 'Planning and contract management', desc: 'Budget, deliverables, invoices and quality review across an evaluation contract. Opens a worked example at the optional Planning station.', accent: 'var(--green)',
+          onClick: function() {
+            if (window.PRAXIS_DEMO_GF) dispatch({ type: AT.INIT, context: window.PRAXIS_DEMO_GF, tier: 'practitioner', station: 9 });
+          }
         })
       ];
 

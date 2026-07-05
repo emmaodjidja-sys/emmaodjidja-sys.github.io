@@ -160,7 +160,7 @@
         var isCompleted = currentPhase > num || (currentPhase === num && showReview);
         var cls = 'wb-phase' + (isCurrent ? ' wb-phase--current' : '') + (isCompleted ? ' wb-phase--completed' : '') + (!isCurrent && !isCompleted ? ' wb-phase--upcoming' : '');
         return h('div', { key: num, className: cls },
-          h('span', { className: 'wb-phase-num' }, isCompleted ? '\u2713' : num),
+          h('span', { className: 'wb-phase-num' }, isCompleted ? PraxisIcons.check(12) : num),
           h('span', { style: { fontSize: '12px' } }, label)
         );
       })

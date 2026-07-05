@@ -3,10 +3,10 @@
   var h = React.createElement;
 
   var META = {
-    info:    { icon: 'ℹ', cls: 'wb-toast--info' },     // information source
-    success: { icon: '✓', cls: 'wb-toast--success' },  // check mark
-    warning: { icon: '⚠', cls: 'wb-toast--warning' },  // warning sign
-    error:   { icon: '✕', cls: 'wb-toast--error' }     // multiplication x
+    info:    { icon: PraxisIcons.info, cls: 'wb-toast--info' },
+    success: { icon: PraxisIcons.check, cls: 'wb-toast--success' },
+    warning: { icon: PraxisIcons.warning, cls: 'wb-toast--warning' },
+    error:   { icon: PraxisIcons.errorCircle, cls: 'wb-toast--error' }
   };
   var DURATION = { info: 4000, success: 4000, warning: 6000, error: 0 };
 
@@ -50,13 +50,13 @@
       visible.map(function(toast) {
         var meta = META[toast.type] || META.info;
         return h('div', { key: toast.id, className: 'wb-toast ' + meta.cls },
-          h('span', { className: 'wb-toast-icon', 'aria-hidden': 'true' }, meta.icon),
+          h('span', { className: 'wb-toast-icon', 'aria-hidden': 'true' }, meta.icon(16)),
           h('span', { className: 'wb-toast-msg' }, toast.message),
           h('button', {
             className: 'wb-toast-dismiss', type: 'button',
             'aria-label': 'Dismiss notification',
             onClick: function() { dismiss(toast.id); }
-          }, '×')
+          }, PraxisIcons.close(14))
         );
       })
     );

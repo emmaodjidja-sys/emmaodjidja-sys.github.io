@@ -59,7 +59,7 @@
           'Station ' + activeStation + ': ' + stationName
         ),
         h('p', { className: 'wb-station-empty-desc' },
-          'This station will be available soon.'
+          PraxisI18n.t('empty.desc')
         )
       );
     }

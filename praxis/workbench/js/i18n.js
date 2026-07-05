@@ -18,11 +18,11 @@
     "landing.title": "Evaluation Workbench",
     "landing.subtitle": "Design a complete evaluation from scoping to final report. Nine integrated stations guide you through the full evaluation lifecycle.",
     "landing.new": "New Evaluation",
-    "landing.new_desc": "Start from scratch with guided intake",
+    "landing.new_desc": "Begin a new evaluation with guided intake",
     "landing.open": "Open .praxis File",
     "landing.open_desc": "Resume from a saved evaluation package",
-    "landing.quick": "Quick Mode",
-    "landing.quick_desc": "Jump to a single station without a full project",
+    "landing.quick": "Single station",
+    "landing.quick_desc": "Open a single station without creating a full project",
     "landing.continue": "Continue",
     "landing.last_edited": "Last edited {time} · Station {station}",
 
@@ -55,11 +55,11 @@
     "staleness.dismiss": "Dismiss",
 
     "sensitivity.standard": "Standard",
-    "sensitivity.sensitive": "Sensitive data — handle with care",
-    "sensitivity.highly": "HIGHLY SENSITIVE — encryption recommended",
+    "sensitivity.sensitive": "Sensitive data. Handle with care.",
+    "sensitivity.highly": "HIGHLY SENSITIVE. Encryption recommended.",
 
     "empty.title": "Station {n}: {name}",
-    "empty.desc": "This station will be available soon.",
+    "empty.desc": "This station is not part of the current release.",
 
     "common.save_draft": "Save Draft",
     "common.continue": "Continue",

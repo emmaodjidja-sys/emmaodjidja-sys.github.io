@@ -89,10 +89,8 @@
               onClick: function() { setExpandedDim(isExpanded ? null : dim.id); }
             },
               h('span', {
-                style: { fontSize: '10px', color: 'var(--slate)', marginRight: -4,
-                  transform: isExpanded ? 'rotate(90deg)' : 'none',
-                  transition: 'transform 0.15s', display: 'inline-block' }
-              }, '\u25B6'),
+                style: { color: 'var(--slate)', marginRight: -4, display: 'inline-flex', alignItems: 'center' }
+              }, isExpanded ? PraxisIcons.chevronDown(12) : PraxisIcons.chevronRight(12)),
               h('span', { className: 'wb-dimension-label' },
                 dim.label,
                 ov && ov.adjustedScore != null
@@ -169,7 +167,7 @@
       scoringResult.blockers.length > 0 ? h(SectionCard, { title: 'Constraints', variant: 'warning' },
         scoringResult.blockers.map(function(b, i) {
           return h('p', { key: i, style: { fontSize: '12px', color: '#92400E', margin: '4px 0', lineHeight: '1.5' } },
-            b.label + ' scored ' + b.score + '/' + b.max + ' \u2014 below the 40\u2009% threshold.'
+            b.label + ' scored ' + b.score + '/' + b.max + ', below the 40% threshold.'
           );
         })
       ) : null,

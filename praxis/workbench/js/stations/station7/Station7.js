@@ -19,21 +19,21 @@
   // ── Word count guidance ──
 
   var WORD_GUIDANCE = {
-    executive_summary: { min: 500,  max: 800,  label: '500–800 words' },
-    introduction:      { min: 800,  max: 1200, label: '800–1,200 words' },
-    methodology:       { min: 1500, max: 2500, label: '1,500–2,500 words' },
-    finding:           { min: 1000, max: 2000, label: '1,000–2,000 words' },
-    conclusions:       { min: 800,  max: 1500, label: '800–1,500 words' },
-    recommendations:   { min: 600,  max: 1200, label: '600–1,200 words' },
+    executive_summary: { min: 500,  max: 800,  label: '500-800 words' },
+    introduction:      { min: 800,  max: 1200, label: '800-1,200 words' },
+    methodology:       { min: 1500, max: 2500, label: '1,500-2,500 words' },
+    finding:           { min: 1000, max: 2000, label: '1,000-2,000 words' },
+    conclusions:       { min: 800,  max: 1500, label: '800-1,500 words' },
+    recommendations:   { min: 600,  max: 1200, label: '600-1,200 words' },
     annexes:           { min: 0,    max: 0,    label: 'Variable' }
   };
 
   // ── Safe accessors ──
 
-  function safe(v, fallback) { return v != null && v !== '' ? v : (fallback || '—'); }
-  function list(arr) { return Array.isArray(arr) && arr.length > 0 ? arr.join(', ') : '—'; }
+  function safe(v, fallback) { return v != null && v !== '' ? v : (fallback || '-'); }
+  function list(arr) { return Array.isArray(arr) && arr.length > 0 ? arr.join(', ') : '-'; }
   function purposeLabel(arr) {
-    if (!Array.isArray(arr) || arr.length === 0) return '—';
+    if (!Array.isArray(arr) || arr.length === 0) return '-';
     return arr.map(function (p) {
       return p.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
     }).join(', ');
@@ -86,7 +86,7 @@
       autoContent: [
         'Programme: ' + safe(meta.programme_name),
         'Sector: ' + safe(meta.sector),
-        'Country and scope: ' + safe(meta.country) + ' — ' + safe(tor.geographic_scope),
+        'Country and scope: ' + safe(meta.country) + ', ' + safe(tor.geographic_scope),
         'Target population: ' + safe(tor.target_population),
         'Evaluation purpose: ' + purposeText,
         'Causal inference level: ' + safe(tor.causal_inference_level),
@@ -115,7 +115,7 @@
           ', power ' + safe(sample.params && sample.params.power) +
           ', alpha ' + safe(sample.params && sample.params.alpha) +
           ', ICC ' + safe(sample.params && sample.params.icc),
-        'Qualitative methods: ' + (qualBreakdown || '—'),
+        'Qualitative methods: ' + (qualBreakdown || '-'),
         'Instruments: ' + instrItems.length + ' (' + instrItems.map(function (i) { return i.title || i.name; }).join('; ') + ')',
         'Analysis methods: ' + analysisMethods,
         'Comparison feasibility: ' + safe(tor.comparison_feasibility),
@@ -135,7 +135,7 @@
 
       sections.push({
         id: uid('sec'), sectionType: 'finding', type: 'finding',
-        title: 'Findings: EQ' + (eq.number || i + 1) + ' — ' + eqText,
+        title: 'Findings: EQ' + (eq.number || i + 1) + '. ' + eqText,
         criterion: criterion,
         eqId: eq.id,
         eqNumber: eq.number || i + 1,
@@ -143,7 +143,7 @@
           'Question: ' + eqText,
           'Criterion: ' + criterion,
           subQs ? 'Sub-questions:\n' + subQs : null,
-          'Indicators: ' + (indicators || '—'),
+          'Indicators: ' + (indicators || '-'),
           'Data sources: ' + sources,
           'Judgement criteria: ' + judgement
         ].filter(Boolean).join('\n'),
@@ -340,7 +340,7 @@
           disabled: index === 0,
           title: 'Move up',
           'aria-label': 'Move section up'
-        }, '▲'),
+        }, PraxisIcons.chevronUp(14)),
         h('span', { className: 'wb-reorder-index' }, index + 1),
         h('button', {
           className: 'wb-reorder-btn',
@@ -348,7 +348,7 @@
           disabled: index === total - 1,
           title: 'Move down',
           'aria-label': 'Move section down'
-        }, '▼'),
+        }, PraxisIcons.chevronDown(14)),
         h('span', {
           className: statusDotCls,
           title: hasDraft ? 'Has draft content' : 'No draft content yet',
@@ -432,13 +432,13 @@
               onClick: onEdit,
               title: 'Edit',
               'aria-label': 'Edit section'
-            }, '✎'),
+            }, PraxisIcons.edit(14)),
         h('button', {
           className: 'wb-icon-action-btn wb-icon-action-btn--danger',
           onClick: function () { onRemove(sec.id); },
           title: 'Remove section',
           'aria-label': 'Remove section'
-        }, '✕')
+        }, PraxisIcons.close(14))
       )
     );
   }

@@ -56,7 +56,7 @@
           h('span', { className: 'wb-modal-title', id: titleId }, title),
           h('button', {
             className: 'wb-modal-close', onClick: onClose, 'aria-label': 'Close', type: 'button'
-          }, '×')
+          }, PraxisIcons.close(16))
         ),
         h('div', { className: 'wb-modal-body' }, props.children)
       )

@@ -78,7 +78,7 @@
           return h('div', { key: sec.id },
             h('div', { style: { padding: '6px 12px', fontSize: 12, fontWeight: 600, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
               onClick: function() { toggleSection(sec.id); } },
-              h('span', { style: { fontSize: 10, transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0)', transition: 'transform 0.15s', display: 'inline-block' } }, '▼'),
+              isCollapsed ? PraxisIcons.chevronRight(12) : PraxisIcons.chevronDown(12),
               sec.label),
             !isCollapsed ? (sec.questions || []).map(function(q) {
               var isActive = q.id === (activeQuestion && activeQuestion.id);
@@ -102,16 +102,16 @@
     // RIGHT PANEL
     var eqBanner = eqRow ? h('div', { style: { background: '#EBF8FF', borderRadius: 6, padding: '8px 12px', marginBottom: 12, fontSize: 12 } },
       h('strong', { style: { color: '#2B6CB0' } }, 'EQ: '), eqRow.question || eqRow.text || '',
-      eqRow.indicators && eqRow.indicators.length ? h('span', { style: { color: '#718096', marginLeft: 8 } }, '→ ' + eqRow.indicators.length + ' indicator(s)') : null) : null;
+      eqRow.indicators && eqRow.indicators.length ? h('span', { style: { color: '#718096', marginLeft: 8 } }, eqRow.indicators.length + ' indicator(s)') : null) : null;
 
     // Top navigation bar: back to instrument list, jump to prev/next station
     var navBar = h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap' } },
       h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
-        h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: onBack }, '← Back to instruments'),
-        onPrev ? h('button', { className: 'wb-btn wb-btn-sm', onClick: onPrev, title: 'Save and go to Station 4: Sample Size' }, '← Station 4') : null
+        h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: onBack }, PraxisIcons.chevronLeft(), 'Back to instruments'),
+        onPrev ? h('button', { className: 'wb-btn wb-btn-sm', onClick: onPrev, title: 'Save and go to Station 4: Sample Size' }, PraxisIcons.chevronLeft(), 'Station 4') : null
       ),
       h('div', { style: { fontSize: 11, color: '#64748B', fontWeight: 500 } }, 'Station 5 of 9'),
-      onNext ? h('button', { className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: onNext, title: 'Save and continue to Station 6: Analysis Framework' }, 'Continue to Station 6 →') : null
+      onNext ? h('button', { className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: onNext, title: 'Save and continue to Station 6: Analysis Framework' }, 'Continue to Station 6', PraxisIcons.chevronRight()) : null
     );
 
     var rightPanel = h('div', { style: { flex: 1, padding: '16px 20px', overflowY: 'auto' } },

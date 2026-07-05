@@ -16,8 +16,8 @@
     var text = PraxisI18n.t(i18nKey);
     if (text === i18nKey) {
       text = isHighly
-        ? 'HIGHLY SENSITIVE — Encryption recommended. Do not share outside core evaluation team without explicit authorisation.'
-        : 'SENSITIVE — Contains programme-sensitive data. Share only with authorised team members.';
+        ? 'HIGHLY SENSITIVE. Encryption recommended. Do not share outside the core evaluation team without explicit authorisation.'
+        : 'SENSITIVE. Contains programme-sensitive data. Share only with authorised team members.';
     }
 
     return h('div', { className: className },

@@ -61,7 +61,7 @@
                 key: p,
                 className: 'wb-chip' + (selected ? ' wb-chip--selected' : ''),
                 onClick: function() { togglePurpose(p); }
-              }, selected ? '\u2713 ' + p : p);
+              }, selected ? PraxisIcons.check(12) : null, selected ? ' ' + p : p);
             })
           )
         ),
@@ -127,7 +127,7 @@
         // Target population
         h('div', null,
           h('label', { className: 'wb-field-label' }, 'Target Population'),
-          h('input', { className: 'wb-input', type: 'text', value: data.target_population || '', placeholder: 'e.g. Adolescent girls aged 10\u201319', onChange: function(e) { onChange('target_population', e.target.value); } })
+          h('input', { className: 'wb-input', type: 'text', value: data.target_population || '', placeholder: 'e.g. Adolescent girls aged 10-19', onChange: function(e) { onChange('target_population', e.target.value); } })
         ),
 
         // Evaluation questions
@@ -136,7 +136,7 @@
           questions.map(function(q, i) {
             return h('div', { key: i, style: { display: 'flex', gap: '6px', marginBottom: 6 } },
               h('input', { className: 'wb-input', type: 'text', value: q, style: { flex: 1 }, placeholder: 'Evaluation question ' + (i + 1), onChange: function(e) { updateQuestion(i, e.target.value); } }),
-              h('button', { className: 'wb-btn wb-btn-outline', style: { padding: '4px 10px', fontSize: '12px' }, onClick: function() { removeQuestion(i); } }, '\u00D7')
+              h('button', { className: 'wb-btn wb-btn-outline', style: { padding: '4px 10px', fontSize: '12px' }, onClick: function() { removeQuestion(i); } }, PraxisIcons.close(16))
             );
           }),
           h('button', { className: 'wb-btn wb-btn-outline', style: { fontSize: '12px', marginTop: 4 }, onClick: addQuestion }, '+ Add question')
@@ -147,8 +147,8 @@
       h('div', { className: 'wb-panel-footer' },
         h('span', { style: { fontSize: '11px', color: '#64748B' } }, 'Phase 2 of 3 \u00B7 Terms of Reference'),
         h('div', { style: { display: 'flex', gap: '8px' } },
-          h('button', { className: 'wb-btn wb-btn-outline', onClick: props.onBack }, '\u2190 Back'),
-          h('button', { className: 'wb-btn wb-btn-primary', onClick: props.onContinue }, 'Review & Continue \u2192')
+          h('button', { className: 'wb-btn wb-btn-outline', onClick: props.onBack, style: { display: 'flex', alignItems: 'center', gap: 6 } }, PraxisIcons.chevronLeft(), 'Back'),
+          h('button', { className: 'wb-btn wb-btn-primary', onClick: props.onContinue, style: { display: 'flex', alignItems: 'center', gap: 6 } }, 'Review and continue', PraxisIcons.chevronRight())
         )
       )
     );

@@ -27,8 +27,9 @@
             width: 28, height: 28, border: '1px solid var(--border)', borderRadius: 4,
             background: 'var(--surface)', cursor: 'pointer', fontSize: '11px', color: 'var(--text-tertiary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '8px auto 0'
-          }
-        }, '{ }')
+          },
+          'aria-label': 'Open context panel', title: 'Context'
+        }, PraxisIcons.info(16))
       );
     }
 
@@ -47,7 +48,7 @@
     return h('aside', { className: 'wb-drawer wb-drawer--open' },
       h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderBottom: '1px solid var(--border)' } },
         h('span', { style: { fontSize: '12px', fontWeight: 600, color: 'var(--text)' } }, 'Context'),
-        h('button', { onClick: toggle, className: 'wb-btn wb-btn-ghost wb-btn-sm', style: { fontSize: '14px', padding: '2px 6px' } }, '\u00D7')
+        h('button', { onClick: toggle, className: 'wb-btn wb-btn-ghost wb-btn-sm', 'aria-label': 'Collapse context panel', style: { fontSize: '14px', padding: '2px 6px' } }, PraxisIcons.close(16))
       ),
       h('div', { style: { padding: '12px', flex: 1, overflow: 'auto' } },
         items.length > 0

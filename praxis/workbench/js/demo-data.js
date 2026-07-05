@@ -279,7 +279,7 @@
           ]
         },
         {
-          id: 'inst_2', title: 'KII Guide — District Health Director', name: 'KII Guide — District Health Director',
+          id: 'inst_2', title: 'KII Guide - District Health Director', name: 'KII Guide - District Health Director',
           type: 'kii', method: 'Semi-structured interview', targetSample: '36 KIIs',
           sections: [
             {

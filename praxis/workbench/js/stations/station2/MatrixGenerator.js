@@ -231,7 +231,7 @@
         ].concat(isHealth ? ["Is there a pro-poor or pro-equity gradient in programme coverage and outcomes?"] : [])
          .concat(["Were marginalised or hard-to-reach populations adequately served?"])
          .concat(isFCV ? ["Were conflict-affected, displaced, or hard-to-reach populations reached equitably?"] : []),
-        rationale: "Equity assessment \u2014 required by OECD-DAC 2019 revision.",
+        rationale: "Equity assessment, required by the OECD-DAC 2019 revision.",
         judgementCriteria: "",
         _isEquity: true,
       });
@@ -245,7 +245,7 @@
             "What adaptations were made and were they appropriate?",
             "What were the main barriers and facilitators of implementation?"
           ].concat(isHealth ? ["Were services delivered to minimum quality standards?"] : []),
-          rationale: "Process/implementation question \u2014 explains why outcomes were or were not achieved.",
+          rationale: "Process/implementation question that explains why outcomes were or were not achieved.",
           judgementCriteria: "",
         });
       } else {
@@ -259,7 +259,7 @@
             "How did the programme interact with the existing health system and other concurrent interventions?",
             "What mechanisms explain why the programme worked differently in different settings?"
           ].concat(isFCV ? ["How did the conflict/crisis context affect implementation feasibility and quality?"] : []),
-          rationale: "Primary question for a process evaluation \u2014 investigates implementation mechanisms in depth.",
+          rationale: "Primary question for a process evaluation that investigates implementation mechanisms in depth.",
           judgementCriteria: "",
         });
       }
@@ -375,12 +375,12 @@
     switch (criterion) {
       case "effectiveness":
         if (topInd.level === "outcome" || topInd.level === "output")
-          return '[Set target for ' + topInd.name + '] \u2014 e.g., "' + topInd.name + ' reaches [X]% by [date], with <[Y] pp gap between Q1 and Q5"';
+          return '[Set target for ' + topInd.name + ']. For example: "' + topInd.name + ' reaches [X]% by [date], with <[Y] pp gap between Q1 and Q5"';
         return "Programme achieves [X]% of planned outputs and [Y]% of intended outcome targets";
       case "efficiency":
         return "Unit cost per beneficiary is within [X]% of comparable programme benchmarks";
       case "impact":
-        return '[Specify measurable change expected in ' + topInd.name + '] \u2014 e.g., "[Z]% reduction from baseline by endline"';
+        return '[Specify measurable change expected in ' + topInd.name + ']. For example: "[Z]% reduction from baseline by endline"';
       case "sustainability":
         return "Government co-financing reaches [X]% by programme end; key approaches integrated into national guidelines";
       case "relevance":
@@ -456,7 +456,7 @@
       return "To what extent are the results related to " + outcome + " likely to be sustained?";
     },
     impact: function(outcome) {
-      return "What broader effects \u2014 intended or unintended \u2014 has the programme had beyond " + outcome + "?";
+      return "What broader effects, intended or unintended, has the programme had beyond " + outcome + "?";
     },
     coherence: function(outcome) {
       return "To what extent is the programme's approach to " + outcome + " coherent with other interventions?";

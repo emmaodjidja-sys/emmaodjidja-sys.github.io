@@ -1,6 +1,6 @@
 /**
- * StationNav.js — Bottom navigation bar for every station.
- * Shows: ← Previous Station | Station N of 9 | Save & Continue →
+ * StationNav.js - Bottom navigation bar for every station.
+ * Previous station, position indicator, and continue/save controls.
  */
 (function() {
   'use strict';
@@ -49,7 +49,8 @@
             style: { fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 },
             onClick: function() { goTo(stationId - 1); }
           },
-            '\u2190 Station ' + stationId + ': ' + LABELS[stationId - 1]
+            PraxisIcons.chevronLeft(),
+            'Station ' + stationId + ': ' + LABELS[stationId - 1]
           )
         : h('div'),
 
@@ -65,14 +66,15 @@
             style: { fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 },
             onClick: handleNext
           },
-            'Continue to Station ' + (stationId + 1) + ' \u2192'
+            'Continue to Station ' + (stationId + 1),
+            PraxisIcons.chevronRight()
           )
         : onSave
           ? h('button', {
               className: 'wb-btn wb-btn-teal',
               style: { fontSize: 12 },
               onClick: onSave
-            }, 'Save & Finish')
+            }, 'Save and finish')
           : h('div')
     );
   }

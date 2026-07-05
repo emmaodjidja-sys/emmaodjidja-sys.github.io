@@ -51,7 +51,7 @@
       onClick: props.onClick,
       title: 'Remove',
       'aria-label': 'Remove'
-    }, '\u00D7');
+    }, PraxisIcons.close(16));
   }
 
   function ActivityRow(props) {

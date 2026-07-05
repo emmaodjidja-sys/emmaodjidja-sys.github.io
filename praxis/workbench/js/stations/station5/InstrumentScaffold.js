@@ -12,15 +12,15 @@
     var text = (typeof indicator === 'string' ? indicator : (indicator && (indicator.name || indicator.text)) || '').toLowerCase();
 
     if (/%|rate|proportion|number of|count|index|ratio/.test(text)) {
-      return { type: 'numeric', config: { min: 0 }, reason: 'count/rate indicator \u2192 numeric' };
+      return { type: 'numeric', config: { min: 0 }, reason: 'count/rate indicator to numeric' };
     }
     if (/perception|satisfaction|attitude|opinion|confidence|trust|agree/.test(text)) {
-      return { type: 'likert', config: { points: 5, includeNA: true }, reason: 'perception indicator \u2192 Likert scale' };
+      return { type: 'likert', config: { points: 5, includeNA: true }, reason: 'perception indicator to Likert scale' };
     }
     if (/yes\/no|existence|availability|presence/.test(text)) {
-      return { type: 'select_one', config: { options: ['Yes', 'No'] }, reason: 'binary indicator \u2192 yes/no' };
+      return { type: 'select_one', config: { options: ['Yes', 'No'] }, reason: 'binary indicator to yes/no' };
     }
-    return { type: 'text', config: { maxLength: 500 }, reason: 'qualitative indicator \u2192 open text' };
+    return { type: 'text', config: { maxLength: 500 }, reason: 'qualitative indicator to open text' };
   }
 
   // ============================================================================

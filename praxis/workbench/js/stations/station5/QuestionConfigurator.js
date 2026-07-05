@@ -30,7 +30,7 @@
 
     // Suggestion pill
     var pill = suggested ? h('div', { style: { fontSize: 12, color: '#2B6CB0', background: '#EBF8FF', borderRadius: 12, padding: '3px 10px', display: 'inline-block', marginBottom: 10 } },
-      'Suggested: ', h('strong', null, suggested.type), ' \u2014 ', suggested.reason) : null;
+      'Suggested: ', h('strong', null, suggested.type), '. ', suggested.reason) : null;
 
     // Type buttons
     var typeRow = h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
@@ -67,8 +67,8 @@
           return h('div', { key: i, style: { display: 'flex', gap: 4, marginBottom: 4 } },
             h('input', { type: 'text', value: o, style: { flex: 1, fontSize: 12, padding: '4px 6px', border: '1px solid #CBD5E0', borderRadius: 4 },
               onChange: function(e) { var nOpts = opts.slice(); nOpts[i] = e.target.value; updateCfg({ options: nOpts }); } }),
-            h('button', { style: { border: 'none', background: 'none', color: '#E53E3E', cursor: 'pointer', fontSize: 14 },
-              onClick: function() { updateCfg({ options: opts.filter(function(_, j) { return j !== i; }) }); } }, '\u00d7'));
+            h('button', { 'aria-label': 'Remove option', style: { border: 'none', background: 'none', color: '#E53E3E', cursor: 'pointer', fontSize: 14 },
+              onClick: function() { updateCfg({ options: opts.filter(function(_, j) { return j !== i; }) }); } }, PraxisIcons.close(14)));
         }),
         h('button', { className: 'wb-btn wb-btn-sm', style: { marginTop: 6 },
           onClick: function() { updateCfg({ options: opts.concat(['Option ' + (opts.length + 1)])}); } }, '+ Add option'));

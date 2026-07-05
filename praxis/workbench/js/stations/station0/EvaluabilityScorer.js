@@ -178,7 +178,7 @@
     }
     if (meta.operating_context === 'fragile' || meta.operating_context === 'humanitarian') {
       recommendations.push(
-        'Adapt methods for the operating context \u2014 consider remote data collection and safety protocols.'
+        'Adapt methods for the operating context. Consider remote data collection and safety protocols.'
       );
     }
     if (meta.timeline === 'short' && tor.comparison_feasibility === 'randomisable') {
@@ -188,7 +188,7 @@
     }
     if (meta.timeline === 'short') {
       recommendations.push(
-        'Consider rapid evaluation methods suited to the short timeline \u2014 real-time evaluation, rapid assessment protocols, or a focused evaluability assessment before a full evaluation.'
+        'Consider rapid evaluation methods suited to the short timeline, such as real-time evaluation, rapid assessment protocols, or a focused evaluability assessment before a full evaluation.'
       );
     }
     if (meta.operating_context === 'humanitarian' && isMultiCountry(meta) && tor.comparison_feasibility === 'randomisable') {

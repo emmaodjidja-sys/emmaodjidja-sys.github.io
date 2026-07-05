@@ -103,9 +103,9 @@
         threats: 'Attrition bias: differential dropout between treatment/control can bias ITT estimates. Check attrition rates and compute Lee (2009) bounds.\nContamination/spillovers: if control units receive indirect benefits, treatment effects are underestimated.\nHawthorne effect: awareness of being studied may alter behaviour independent of the intervention.'
       };
       if (isQuasiExp && selectedDesign === 'did' && (f.hasRate || hasAdmin)) return {
-        method: 'Difference-in-differences (DID) estimation exploiting phased rollout. IMPORTANT: If treatment timing is staggered across units, use heterogeneity-robust DID estimators (Callaway & Sant’Anna 2021, Sun & Abraham 2021) rather than naive two-way fixed effects, which produce biased estimates under staggered adoption (Goodman-Bacon 2021).',
-        steps: '1. Construct panel dataset: facility/district-level outcomes across pre/post periods and treatment/comparison regions. 2. Test parallel trends assumption visually (event study plot) and with Rambachan & Roth (2023) sensitivity analysis (honestdid). 3. If staggered rollout: use Callaway-Sant’Anna group-time ATT estimator (csdid). If common treatment timing: use TWFE with reghdfe. 4. Conduct event study to visualise dynamic treatment effects. 5. Robustness: vary treatment timing window, test with synthetic control (synth/scpi) for largest units, Oster (2019) bounds for omitted variable bias.',
-        software: 'Stata: csdid (Callaway-Sant’Anna), did_multiplegt (de Chaisemartin-D’Haultfoeuille), eventstudyinteract (Sun-Abraham), reghdfe (naive TWFE for comparison only), honestdid for sensitivity. R: did package, fixest (feols/sunab), HonestDiD. Python: linearmodels for panel data.',
+        method: 'Difference-in-differences (DID) estimation exploiting phased rollout. IMPORTANT: If treatment timing is staggered across units, use heterogeneity-robust DID estimators (Callaway & Sant\'Anna 2021, Sun & Abraham 2021) rather than naive two-way fixed effects, which produce biased estimates under staggered adoption (Goodman-Bacon 2021).',
+        steps: '1. Construct panel dataset: facility/district-level outcomes across pre/post periods and treatment/comparison regions. 2. Test parallel trends assumption visually (event study plot) and with Rambachan & Roth (2023) sensitivity analysis (honestdid). 3. If staggered rollout: use Callaway-Sant\'Anna group-time ATT estimator (csdid). If common treatment timing: use TWFE with reghdfe. 4. Conduct event study to visualise dynamic treatment effects. 5. Robustness: vary treatment timing window, test with synthetic control (synth/scpi) for largest units, Oster (2019) bounds for omitted variable bias.',
+        software: 'Stata: csdid (Callaway-Sant\'Anna), did_multiplegt (de Chaisemartin-D\'Haultfoeuille), eventstudyinteract (Sun-Abraham), reghdfe (naive TWFE for comparison only), honestdid for sensitivity. R: did package, fixest (feols/sunab), HonestDiD. Python: linearmodels for panel data.',
         type: 'quantitative',
         threats: 'Parallel trends violation: if treatment regions were selected on need, pre-trends may diverge. Test with event study and honestdid sensitivity.\nStaggered treatment bias: if rollout timing varies, naive TWFE produces biased ATT estimates (Goodman-Bacon 2021).\nAnticipation effects: units may change behaviour before formal treatment begins.'
       };
@@ -393,13 +393,13 @@
               className: 'wb-threats-toggle' + (threatsOpen ? ' wb-threats-toggle--open' : ''),
               onClick: function () { setThreatsOpen(!threatsOpen); }
             },
-              h('span', { className: 'wb-threats-toggle-caret' }, '▶'),
+              h('span', { className: 'wb-threats-toggle-caret' }, PraxisIcons.chevronRight(14)),
               'Validity Threats (' + threatsCount + ')'
             ),
             threatsOpen ? h('div', { className: 'wb-threats-body' },
               card.threats.split('\n').map(function (threat, ti) {
                 return h('div', { key: ti, className: 'wb-threats-item' },
-                  h('span', { className: 'wb-threats-marker' }, '⚠'),
+                  h('span', { className: 'wb-threats-marker' }, PraxisIcons.warning(14)),
                   threat
                 );
               })
@@ -470,7 +470,7 @@
           t += '<div style="margin:0 0 6pt;padding:6pt 10pt;background:#FFFBEB;border-left:3pt solid #F59E0B;border-radius:3pt">';
           t += '<p style="margin:0 0 3pt;font-size:9pt;font-weight:bold;color:#B45309">VALIDITY THREATS</p>';
           card.threats.split('\n').forEach(function (threat) {
-            t += '<p style="margin:0 0 2pt;font-size:8.5pt;color:#78350F;line-height:1.4">⚠ ' + esc(threat) + '</p>';
+            t += '<p style="margin:0 0 2pt;font-size:8.5pt;color:#78350F;line-height:1.4">' + esc(threat) + '</p>';
           });
           t += '</div>';
         }
@@ -672,7 +672,7 @@
         h('span', { className: 'wb-guidance-text' },
           h('strong', null, 'Evaluation design: '),
           selectedDesign.toUpperCase(),
-          ' — analysis method suggestions are tailored to this design.'
+          '. Analysis method suggestions are tailored to this design.'
         )
       ) : null,
 
@@ -729,8 +729,8 @@
               h('div', {
                 className: 'wb-tab-heading wb-tab-heading--' + (activeTab === 'quantitative' ? 'quant' : 'qual')
               }, activeTab === 'quantitative'
-                ? 'Quantitative Analysis Methods — statistical and numerical approaches'
-                : 'Qualitative Analysis Methods — interpretive and thematic approaches'),
+                ? 'Quantitative Analysis Methods: statistical and numerical approaches'
+                : 'Qualitative Analysis Methods: interpretive and thematic approaches'),
 
               // EQ cards
               visibleCards.length > 0

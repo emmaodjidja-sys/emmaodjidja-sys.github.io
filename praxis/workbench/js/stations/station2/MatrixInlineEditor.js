@@ -69,7 +69,7 @@
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
         d.inds.map(function(ind, i) {
           return h('span', { key: i, className: 'wb-badge wb-badge-teal', style: { fontSize: 10 } }, ind.code || ind.name,
-            h('span', { onClick: function() { rmInd(i); }, style: { marginLeft: 4, cursor: 'pointer', fontWeight: 700 } }, '\u00d7'));
+            h('span', { onClick: function() { rmInd(i); }, style: { marginLeft: 4, cursor: 'pointer', fontWeight: 700 } }, PraxisIcons.close(14)));
         })),
       h('div', { style: { marginTop: 6, display: 'flex', gap: 8 } },
         h('button', { className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { props.onOpenIndicatorBank(row.id); } }, '+ From Indicator Bank'),
@@ -87,7 +87,7 @@
         expanded ? ['rubric', 'binary', 'freetext'].map(function(t) {
           return h('button', { key: t, className: 'wb-btn wb-btn-sm ' + (tmpl === t ? 'wb-btn-primary' : 'wb-btn-ghost'),
             onClick: function() { setTmpl(t); } }, TMPL_LABELS[t]);
-        }) : h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { setExpanded(true); } }, 'Other formats \u25B8')),
+        }) : h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { setExpanded(true); } }, 'Other formats ', PraxisIcons.chevronRight(12))),
       jcContent);
 
     return h('div', { style: { background: '#F8FAFC', border: '2px solid var(--blue)', borderRadius: 'var(--radius-md)', padding: 16, marginTop: -1 } },

@@ -40,12 +40,11 @@
 
     return h(Modal, { isOpen: true, onClose: props.onClose, title: 'Add Evaluation Questions', width: '640px' },
       h('div', { className: 'wb-guidance', style: { marginBottom: 14 } },
-        h('span', { style: { fontSize: 14 } }, '\u2728'),
         h('span', { className: 'wb-guidance-text' },
           'Based on your Theory of Change and DAC criteria, these questions address gaps in your matrix.')),
       h('div', { style: { maxHeight: 320, overflowY: 'auto', marginBottom: 14 } },
         suggestions.length === 0
-          ? h('p', { style: { fontSize: 12, color: 'var(--slate)', padding: 12 } }, 'No additional suggestions \u2014 your matrix covers all DAC criteria.')
+          ? h('p', { style: { fontSize: 12, color: 'var(--slate)', padding: 12 } }, 'No additional suggestions. Your matrix covers all DAC criteria.')
           : suggestions.map(function(s, i) {
             var dac = OECD_DAC[s.criterion] || {};
             return h('div', { key: i, className: 'wb-card wb-card--interactive' + (sel[i] ? ' wb-card--selected' : ''),
@@ -71,7 +70,7 @@
           h('input', { className: 'wb-input', style: { flex: 1, fontSize: 12 }, placeholder: 'Type your evaluation question\u2026',
             value: custom.text, onChange: function(e) {
               setCustom(Object.assign({}, custom, { text: e.target.value })); checkOverlap(e.target.value); } })),
-        overlap ? h('p', { style: { fontSize: 10, color: 'var(--amber)', marginTop: 4 } }, '\u26a0 ' + overlap) : null),
+        overlap ? h('p', { style: { fontSize: 10, color: 'var(--amber)', marginTop: 4 } }, PraxisIcons.warning(14), ' ' + overlap) : null),
       h('div', { className: 'wb-modal-footer', style: { margin: '14px -18px -18px', padding: '12px 18px' } },
         h('span', { style: { flex: 1, fontSize: 11, color: 'var(--slate)' } }, selCount + ' question' + (selCount !== 1 ? 's' : '') + ' selected'),
         h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: props.onClose }, 'Cancel'),

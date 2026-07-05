@@ -173,7 +173,7 @@
                 (ec.row.question || ec.row.text || ec.row.id || '').slice(0, 60)),
               localInst.map(function(inst) {
                 return h('td', { key: inst.id, className: 'wb-td--center' },
-                  ec.covered[inst.id] ? h('span', { className: 'wb-coverage-mark' },'\u2713') : '\u2014');
+                  ec.covered[inst.id] ? h('span', { className: 'wb-coverage-mark' }, PraxisIcons.check(12)) : '-');
               }));
           })))));
 

@@ -45,8 +45,9 @@
         ),
         collapsible ? h('button', {
           className: 'wb-sec-chevron',
+          'aria-label': collapsed ? 'Expand section' : 'Collapse section',
           onClick: function() { setCollapsed(!collapsed); }
-        }, collapsed ? '\u25B6' : '\u25BC') : null
+        }, collapsed ? PraxisIcons.chevronRight(12) : PraxisIcons.chevronDown(12)) : null
       ) : null,
 
       // Body
