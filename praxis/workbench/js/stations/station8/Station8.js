@@ -48,8 +48,12 @@
   }
 
   // ── Print CSS injection ──
+  // Every rule is scoped under body.s8-print, a class present only while
+  // Station 8 is mounted, so printing any other station is unaffected. The
+  // style node itself is also removed on unmount (see the mount effect).
 
   var PRINT_STYLE_ID = 'station8-print-css';
+  var PRINT_BODY_CLASS = 's8-print';
 
   function ensurePrintCSS() {
     if (document.getElementById(PRINT_STYLE_ID)) return;
@@ -57,20 +61,20 @@
     style.id = PRINT_STYLE_ID;
     style.textContent = [
       '@media print {',
-      '  body * { visibility: hidden; }',
-      '  .s8-print-root, .s8-print-root * { visibility: visible; }',
-      '  .s8-print-root { position: absolute; left: 0; top: 0; width: 100%; }',
-      '  .s8-slide-card { break-inside: avoid; page-break-inside: avoid; break-after: page; page-break-after: always; margin: 0 0 0 0; border: none !important; box-shadow: none !important; }',
-      '  .s8-slide-card:last-child { break-after: auto; page-break-after: auto; }',
-      '  .s8-slide-header-print { display: flex !important; align-items: center; padding: 18px 28px; background: #0B1A2E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
-      '  .s8-slide-header-print .s8-slide-num-print { color: var(--teal); font-size: 13px; font-weight: 700; margin-right: 16px; }',
-      '  .s8-slide-header-print .s8-slide-title-print { color: #fff; font-size: 18px; font-weight: 700; }',
-      '  .s8-slide-body-print { padding: 24px 28px; font-size: 13px; line-height: 1.6; }',
-      '  .s8-slide-body-print .wb-param-label { font-size: 10px; }',
-      '  .s8-slide-body-print .wb-param-value { font-size: 14px; }',
-      '  .s8-talking-points { border-top: 1px solid #E2E8F0; padding: 12px 28px; font-size: 11px; color: #475569; font-style: italic; }',
-      '  .s8-no-print { display: none !important; }',
-      '  .s8-excluded-slide { display: none !important; }',
+      '  body.s8-print * { visibility: hidden; }',
+      '  body.s8-print .s8-print-root, body.s8-print .s8-print-root * { visibility: visible; }',
+      '  body.s8-print .s8-print-root { position: absolute; left: 0; top: 0; width: 100%; }',
+      '  body.s8-print .s8-slide-card { break-inside: avoid; page-break-inside: avoid; break-after: page; page-break-after: always; margin: 0 0 0 0; border: none !important; box-shadow: none !important; }',
+      '  body.s8-print .s8-slide-card:last-child { break-after: auto; page-break-after: auto; }',
+      '  body.s8-print .s8-slide-header-print { display: flex !important; align-items: center; padding: 18px 28px; background: #0B1A2E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
+      '  body.s8-print .s8-slide-header-print .s8-slide-num-print { color: var(--teal); font-size: 13px; font-weight: 700; margin-right: 16px; }',
+      '  body.s8-print .s8-slide-header-print .s8-slide-title-print { color: #fff; font-size: 18px; font-weight: 700; }',
+      '  body.s8-print .s8-slide-body-print { padding: 24px 28px; font-size: 13px; line-height: 1.6; }',
+      '  body.s8-print .s8-slide-body-print .wb-param-label { font-size: 10px; }',
+      '  body.s8-print .s8-slide-body-print .wb-param-value { font-size: 14px; }',
+      '  body.s8-print .s8-talking-points { display: block !important; border-top: 1px solid #E2E8F0; padding: 12px 28px; font-size: 11px; color: #475569; font-style: italic; }',
+      '  body.s8-print .s8-no-print { display: none !important; }',
+      '  body.s8-print .s8-excluded-slide { display: none !important; }',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -421,7 +425,15 @@
     var slides = _slides[0];
     var setSlides = _slides[1];
 
-    useEffect(function () { ensurePrintCSS(); }, []);
+    useEffect(function () {
+      document.body.classList.add(PRINT_BODY_CLASS);
+      ensurePrintCSS();
+      return function () {
+        document.body.classList.remove(PRINT_BODY_CLASS);
+        var styleEl = document.getElementById(PRINT_STYLE_ID);
+        if (styleEl && styleEl.parentNode) styleEl.parentNode.removeChild(styleEl);
+      };
+    }, []);
 
     // ── Handlers ──
 
@@ -522,7 +534,7 @@
         slides.map(function (slide, si) {
           var excluded = !slide.included;
           var slideCls = 'wb-slide s8-slide-card';
-          if (excluded) slideCls += ' wb-slide--excluded s8-excluded-slide-screen';
+          if (excluded) slideCls += ' wb-slide--excluded s8-excluded-slide';
           return h('div', { key: slide.id, className: slideCls },
 
             // Header (screen)

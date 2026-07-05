@@ -22,16 +22,24 @@
 
 <!-- SheetJS loaded on demand by stations that need it (Station 2 export, Station 5 export) -->
 <script>
-window.loadSheetJS = function() {
-  if (window.XLSX) return Promise.resolve();
-  return new Promise(function(resolve, reject) {
-    var s = document.createElement('script');
-    s.src = 'vendor/xlsx.full.min.js';
-    s.onload = resolve;
-    s.onerror = function() { reject(new Error('Failed to load SheetJS')); };
-    document.head.appendChild(s);
-  });
-};
+window.loadSheetJS = (function() {
+  var pending = null;
+  return function() {
+    if (window.XLSX) return Promise.resolve();
+    if (pending) return pending;
+    pending = new Promise(function(resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'vendor/xlsx.full.min.js';
+      s.onload = resolve;
+      s.onerror = function() {
+        pending = null;
+        reject(new Error('Failed to load SheetJS'));
+      };
+      document.head.appendChild(s);
+    });
+    return pending;
+  };
+})();
 </script>
 
 <!-- Workbench CSS -->
@@ -54,6 +62,7 @@ window.loadSheetJS = function() {
 <!-- Foundation JS (dependency order) -->
 <script src="js/schema.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/export-utils.js"></script>
 <script src="js/staleness.js"></script>
 <script src="js/protection.js"></script>
 <script src="js/i18n.js"></script>

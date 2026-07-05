@@ -9,6 +9,10 @@
     document.body.removeChild(a); URL.revokeObjectURL(url);
   };
 
+  var escHtml = window.PraxisExportUtils.escHtml;
+  var exportFilename = window.PraxisExportUtils.exportFilename;
+  var versionStamp = window.PraxisExportUtils.versionStamp;
+
   // ============================================================================
   // Ensure the SheetJS (XLSX) library is loaded before any .xlsx export.
   // The library is vendored and loaded on demand by window.loadSheetJS (index.html).
@@ -40,26 +44,47 @@
   // ============================================================================
   var choiceListCounter = 0;
 
+  // Register a generated choice list and return its list name.
+  function addCustomList(opts, choiceLists) {
+    choiceListCounter++;
+    var listName = 'list_' + choiceListCounter;
+    choiceLists[listName] = opts;
+    return listName;
+  }
+
+  // Order-insensitive full-set comparison against a standard list: same length
+  // and the same set of trimmed, case-insensitive labels. Anything less exact
+  // must NOT be rewritten to the standard list; the user's options are kept.
+  function matchesStandardList(opts, listName) {
+    var std = STANDARD_CHOICES[listName];
+    if (!std || opts.length !== std.length) return false;
+    var a = opts.map(function(o) { return String(o == null ? '' : o).trim().toLowerCase(); }).sort();
+    var b = std.map(function(item) { return String(item.label).trim().toLowerCase(); }).sort();
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
+  var SUBSTITUTABLE_LISTS = ['yesno', 'gender', 'displacement', 'age_group'];
+
   function getListName(q, choiceLists) {
     var rt = q.responseType;
     var cfg = q.responseConfig || {};
 
     if (rt === 'likert') {
       var pts = cfg.points || 5;
-      return 'likert' + pts;
+      return 'likert' + pts + (cfg.includeNA ? '_na' : '');
     }
     if (rt === 'select_one' || rt === 'select_multiple') {
       var opts = cfg.options || [];
-      // Check well-known lists
-      if (opts.length === 2 && opts[0] === 'Yes' && opts[1] === 'No') return 'yesno';
-      if (opts.indexOf('Male') >= 0 && opts.indexOf('Female') >= 0) return 'gender';
-      if (opts.indexOf('Host community') >= 0 && opts.indexOf('IDP') >= 0) return 'displacement';
-      if (opts.indexOf('18-24') >= 0) return 'age_group';
-      // Custom list
-      choiceListCounter++;
-      var listName = 'list_' + choiceListCounter;
-      choiceLists[listName] = opts;
-      return listName;
+      // Substitute a standard list only on an exact full-set match, which keeps
+      // naming stable without ever rewriting custom answer options.
+      for (var i = 0; i < SUBSTITUTABLE_LISTS.length; i++) {
+        if (matchesStandardList(opts, SUBSTITUTABLE_LISTS[i])) return SUBSTITUTABLE_LISTS[i];
+      }
+      // Custom list: export the user's options verbatim.
+      return addCustomList(opts, choiceLists);
     }
     return null;
   }
@@ -115,8 +140,16 @@
   // Resolve the choice items for a standard/generated list name.
   // Falls back to a generated 1..N Likert scale for any likert<N> not hard-coded,
   // so no question can reference a choice list that has no rows in the workbook.
+  // A likert<N>_na list is the likert<N> list plus a trailing 'na' choice,
+  // emitted when the question has includeNA set.
   // ============================================================================
   function standardChoiceItems(listName) {
+    var na = /^(likert\d+)_na$/.exec(listName);
+    if (na) {
+      var base = standardChoiceItems(na[1]);
+      if (!base) return null;
+      return base.concat([{ name: 'na', label: "Don't know or not applicable" }]);
+    }
     if (STANDARD_CHOICES[listName]) return STANDARD_CHOICES[listName];
     var m = /^likert(\d+)$/.exec(listName);
     if (m) {
@@ -188,7 +221,8 @@
         var name = uniqueName(sanitizeName(q.text, questionIndex), 'q' + questionIndex, usedNodeNames);
         var xlsType = mapResponseType(q, customLists, usedStandardLists);
         var required = q.required ? 'yes' : '';
-        surveyData.push([xlsType, name, q.text, required, '', '', '']);
+        var nc = numericConstraint(q);
+        surveyData.push([xlsType, name, q.text, required, '', nc.constraint, nc.message]);
       });
 
       // end_group (name matches begin_group)
@@ -217,11 +251,13 @@
       });
     });
 
-    // Settings sheet
+    // Settings sheet. form_title must never be blank or KoboToolbox shows an
+    // unnamed form; version lets field teams confirm they deployed this export.
+    var formTitle = String(instrument.name == null ? '' : instrument.name).trim() || 'Evaluation Instrument';
     var formId = toIdent(instrument.name) || 'instrument_form';
     var settingsData = [
-      ['form_title', 'form_id'],
-      [instrument.name, formId]
+      ['form_title', 'form_id', 'version'],
+      [formTitle, formId, versionStamp()]
     ];
 
     // Create workbook
@@ -244,7 +280,7 @@
 
     if (rt === 'likert') {
       var pts = cfg.points || 5;
-      var listName = 'likert' + pts;
+      var listName = 'likert' + pts + (cfg.includeNA ? '_na' : '');
       usedStandardLists[listName] = true;
       return 'select_one ' + listName;
     }
@@ -255,19 +291,68 @@
       if (STANDARD_CHOICES[ln]) usedStandardLists[ln] = true;
       return (rt === 'select_one' ? 'select_one ' : 'select_multiple ') + ln;
     }
+    if (rt === 'ranking') {
+      var items = cfg.items || [];
+      if (items.length === 0) return 'text'; // fallback for empty item list
+      return 'rank ' + addCustomList(items, customLists);
+    }
     if (rt === 'numeric') return (cfg.decimal ? 'decimal' : 'integer');
     if (rt === 'date') return 'date';
     return 'text';
+  }
+
+  // Build XLSForm constraint expression and message for a numeric question.
+  // Returns { constraint: '', message: '' } when no bounds are set.
+  function numericConstraint(q) {
+    var out = { constraint: '', message: '' };
+    if (q.responseType !== 'numeric') return out;
+    var cfg = q.responseConfig || {};
+    var hasMin = cfg.min != null && cfg.min !== '';
+    var hasMax = cfg.max != null && cfg.max !== '';
+    if (hasMin && hasMax) {
+      out.constraint = '. >= ' + cfg.min + ' and . <= ' + cfg.max;
+      out.message = 'Value must be between ' + cfg.min + ' and ' + cfg.max + '.';
+    } else if (hasMin) {
+      out.constraint = '. >= ' + cfg.min;
+      out.message = 'Value must be at least ' + cfg.min + '.';
+    } else if (hasMax) {
+      out.constraint = '. <= ' + cfg.max;
+      out.message = 'Value must be at most ' + cfg.max + '.';
+    }
+    return out;
+  }
+
+  // ============================================================================
+  // Preflight: every question needs label text, or pyxform (KoboToolbox's
+  // importer) rejects the file with an opaque error. Returns [] when clean.
+  // ============================================================================
+  function preflightProblems(instrument) {
+    var problems = [];
+    (instrument.sections || []).forEach(function(section, sIdx) {
+      var sectionLabel = section.label || ('Section ' + (sIdx + 1));
+      (section.questions || []).forEach(function(q, qIdx) {
+        var label = String(q.text == null ? '' : q.text).trim();
+        if (!label) {
+          problems.push('Question ' + (qIdx + 1) + ' in "' + sectionLabel + '" has an empty label');
+        }
+      });
+    });
+    return problems;
   }
 
   // ============================================================================
   // Export as XLSForm (.xlsx download)
   // ============================================================================
   function exportAsXLSForm(instrument) {
+    var problems = preflightProblems(instrument);
+    if (problems.length > 0) {
+      var detail = problems[0] + (problems.length > 1 ? ' (and ' + (problems.length - 1) + ' more)' : '');
+      return Promise.reject(new Error(detail + '. Add label text to every question before exporting.'));
+    }
     return ensureXLSX().then(function() {
       var XLSX = window.XLSX;
       var wb = buildXLSFormWorkbook(instrument);
-      var filename = (instrument.name || 'instrument').replace(/\s+/g, '_') + '_XLSForm.xlsx';
+      var filename = exportFilename(instrument.name, 'xlsform', 'xlsx');
       var wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
       var blob = new Blob([wbOut], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       downloadBlob(blob, filename);
@@ -285,6 +370,7 @@
     html += '.q{margin:8px 0 16px 12px;} .q-num{font-weight:bold;color:#4a5568;} ';
     html += '.opts{margin:4px 0 0 24px;list-style:none;padding:0;} .opts li::before{content:"\\2610 ";font-size:14pt;} ';
     html += '.likert{margin:4px 0 0 24px;font-style:italic;color:#718096;} ';
+    html += '.rank{margin:4px 0 0 24px;padding-left:18px;} .rank-hint{margin:4px 0 0 24px;font-style:italic;color:#718096;font-size:10pt;} ';
     html += '.text-line{border-bottom:1px solid #a0aec0;display:inline-block;width:80%;min-height:18px;margin-top:4px;} ';
     html += '</style></head><body>';
     html += '<h1>' + escHtml(instrument.name) + '</h1>';
@@ -303,8 +389,7 @@
     html += '</body></html>';
 
     var blob = new Blob([html], { type: 'application/msword' });
-    var filename = (instrument.name || 'instrument').replace(/\s+/g, '_') + '.doc';
-    downloadBlob(blob, filename);
+    downloadBlob(blob, exportFilename(instrument.name, 'instrument', 'doc'));
   }
 
   function renderResponseHtml(q) {
@@ -315,18 +400,19 @@
     }
     if (q.responseType === 'likert') {
       var pts = cfg.points || 5;
-      var labels = standardChoiceItems('likert' + pts) || STANDARD_CHOICES.likert5;
+      var listName = 'likert' + pts + (cfg.includeNA ? '_na' : '');
+      var labels = standardChoiceItems(listName) || STANDARD_CHOICES.likert5;
       var scale = labels.map(function(l) { return l.name + '=' + l.label; }).join('  |  ');
       return '<div class="likert">' + scale + '</div>';
+    }
+    if (q.responseType === 'ranking') {
+      var rankItems = (cfg.items || []).map(function(it) { return '<li>' + escHtml(it) + ' ____</li>'; }).join('');
+      return '<div class="rank-hint">Rank each item (1 = highest priority)</div><ol class="rank">' + rankItems + '</ol>';
     }
     if (q.responseType === 'numeric') {
       return '<br><span class="text-line">&nbsp;</span> (number)';
     }
     return '<br><span class="text-line">&nbsp;</span>';
-  }
-
-  function escHtml(s) {
-    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   // ============================================================================
@@ -339,6 +425,7 @@
     html += 'h1{font-size:20pt;color:#1a365d;} h2{font-size:13pt;color:#2a4365;border-bottom:1px solid #cbd5e0;padding-bottom:4px;margin-top:20px;} ';
     html += '.q{margin:6px 0 14px 8px;} .q-num{font-weight:bold;} ';
     html += '.opts{margin:4px 0 0 20px;} .likert{font-style:italic;color:#555;margin-top:4px;} ';
+    html += '.rank{margin:4px 0 0 20px;padding-left:18px;} .rank-hint{margin:4px 0 0 20px;font-style:italic;color:#555;font-size:10pt;} ';
     html += '.text-line{border-bottom:1px solid #888;display:inline-block;width:80%;min-height:16px;margin-top:4px;} ';
     html += '</style></head><body>';
     html += '<h1>' + escHtml(instrument.name) + '</h1>';
@@ -356,12 +443,46 @@
     html += '</body></html>';
 
     var win = window.open('', '_blank');
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-      win.focus();
-      win.print();
+    if (!win) {
+      showPopupBlockedNotice();
+      return;
     }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.print();
+  }
+
+  // The PDF path opens a print window; when the browser blocks it the export
+  // must not fail silently. This module has no dispatch handle, so it renders
+  // a toast directly using the app's toast classes.
+  function showPopupBlockedNotice() {
+    var existing = document.getElementById('praxis-popup-blocked-notice');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    var wrap = document.createElement('div');
+    wrap.id = 'praxis-popup-blocked-notice';
+    wrap.className = 'wb-toast-container';
+    wrap.setAttribute('role', 'alert');
+    var toastEl = document.createElement('div');
+    toastEl.className = 'wb-toast wb-toast--error';
+    var msg = document.createElement('span');
+    msg.className = 'wb-toast-msg';
+    msg.textContent = 'The browser blocked the print window. Allow popups for this site, then export the PDF again.';
+    toastEl.appendChild(msg);
+    var dismiss = document.createElement('button');
+    dismiss.className = 'wb-toast-dismiss';
+    dismiss.type = 'button';
+    dismiss.setAttribute('aria-label', 'Dismiss notification');
+    dismiss.textContent = 'Dismiss';
+    dismiss.onclick = function() {
+      if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+    };
+    toastEl.appendChild(dismiss);
+    wrap.appendChild(toastEl);
+    document.body.appendChild(wrap);
+    setTimeout(function() {
+      if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+    }, 10000);
   }
 
   // ============================================================================
