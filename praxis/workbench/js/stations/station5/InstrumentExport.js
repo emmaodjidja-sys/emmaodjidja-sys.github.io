@@ -10,6 +10,17 @@
   };
 
   // ============================================================================
+  // Ensure the SheetJS (XLSX) library is loaded before any .xlsx export.
+  // The library is vendored and loaded on demand by window.loadSheetJS (index.html).
+  // Returns a Promise that resolves once window.XLSX is available.
+  // ============================================================================
+  function ensureXLSX() {
+    if (window.XLSX) return Promise.resolve();
+    if (typeof window.loadSheetJS === 'function') return window.loadSheetJS();
+    return Promise.reject(new Error('Spreadsheet library (SheetJS) is unavailable'));
+  }
+
+  // ============================================================================
   // Name sanitiser: "In your opinion, does this programme address..." → q5_programme_address
   // ============================================================================
   function sanitizeName(text, index) {
@@ -101,6 +112,27 @@
   };
 
   // ============================================================================
+  // Resolve the choice items for a standard/generated list name.
+  // Falls back to a generated 1..N Likert scale for any likert<N> not hard-coded,
+  // so no question can reference a choice list that has no rows in the workbook.
+  // ============================================================================
+  function standardChoiceItems(listName) {
+    if (STANDARD_CHOICES[listName]) return STANDARD_CHOICES[listName];
+    var m = /^likert(\d+)$/.exec(listName);
+    if (m) {
+      var n = parseInt(m[1], 10);
+      if (n >= 2 && n <= 11) {
+        var items = [];
+        for (var i = 1; i <= n; i++) items.push({ name: String(i), label: String(i) });
+        items[0].label = '1 (Strongly disagree)';
+        items[n - 1].label = n + ' (Strongly agree)';
+        return items;
+      }
+    }
+    return null;
+  }
+
+  // ============================================================================
   // Build XLSForm workbook data (returns XLSX workbook object)
   // ============================================================================
   function buildXLSFormWorkbook(instrument) {
@@ -138,9 +170,9 @@
     // Build choices sheet
     choicesData.push(['list_name', 'name', 'label']);
 
-    // Add used standard lists
+    // Add used standard lists (Likert scales of any size are generated on demand)
     Object.keys(usedStandardLists).forEach(function(listName) {
-      var items = STANDARD_CHOICES[listName];
+      var items = standardChoiceItems(listName);
       if (items) {
         items.forEach(function(item) {
           choicesData.push([listName, item.name, item.label]);
@@ -202,13 +234,15 @@
   // Export as XLSForm (.xlsx download)
   // ============================================================================
   function exportAsXLSForm(instrument) {
-    var XLSX = window.XLSX;
-    var wb = buildXLSFormWorkbook(instrument);
-    var filename = (instrument.name || 'instrument').replace(/\s+/g, '_') + '_XLSForm.xlsx';
-    var wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    var blob = new Blob([wbOut], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    downloadBlob(blob, filename);
-    return wb;  // return for testing
+    return ensureXLSX().then(function() {
+      var XLSX = window.XLSX;
+      var wb = buildXLSFormWorkbook(instrument);
+      var filename = (instrument.name || 'instrument').replace(/\s+/g, '_') + '_XLSForm.xlsx';
+      var wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      var blob = new Blob([wbOut], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      downloadBlob(blob, filename);
+      return wb;  // resolved value, also used by tests
+    });
   }
 
   // ============================================================================
@@ -251,7 +285,7 @@
     }
     if (q.responseType === 'likert') {
       var pts = cfg.points || 5;
-      var labels = STANDARD_CHOICES['likert' + pts] || STANDARD_CHOICES.likert5;
+      var labels = standardChoiceItems('likert' + pts) || STANDARD_CHOICES.likert5;
       var scale = labels.map(function(l) { return l.name + '=' + l.label; }).join('  |  ');
       return '<div class="likert">' + scale + '</div>';
     }

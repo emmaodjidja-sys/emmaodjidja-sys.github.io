@@ -40,24 +40,33 @@
     PraxisUtils.downloadBlob(blob, 'evaluation-matrix.doc');
   }
 
+  // Ensure SheetJS (XLSX) is loaded before building the workbook.
+  function ensureXLSX() {
+    if (window.XLSX) return Promise.resolve();
+    if (typeof window.loadSheetJS === 'function') return window.loadSheetJS();
+    return Promise.reject(new Error('Spreadsheet library (SheetJS) is unavailable'));
+  }
+
   function exportAsExcel(rows, context) {
-    if (typeof XLSX === 'undefined') { alert('SheetJS not loaded'); return; }
-    var data = rows.map(function(row, i) {
-      return {
-        '#': i + 1,
-        'Criterion': criterionLabel(row.criterion),
-        'Evaluation Question': row.question || '',
-        'Indicators': indicatorText(row),
-        'Data Sources': sourcesText(row),
-        'Judgement Criteria': row.judgementCriteria || ''
-      };
+    return ensureXLSX().then(function() {
+      var XLSX = window.XLSX;
+      var data = rows.map(function(row, i) {
+        return {
+          '#': i + 1,
+          'Criterion': criterionLabel(row.criterion),
+          'Evaluation Question': row.question || '',
+          'Indicators': indicatorText(row),
+          'Data Sources': sourcesText(row),
+          'Judgement Criteria': row.judgementCriteria || ''
+        };
+      });
+      var ws = XLSX.utils.json_to_sheet(data);
+      // Column widths
+      ws['!cols'] = [{ wch: 4 }, { wch: 14 }, { wch: 55 }, { wch: 30 }, { wch: 25 }, { wch: 30 }];
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Evaluation Matrix');
+      XLSX.writeFile(wb, 'evaluation-matrix.xlsx');
     });
-    var ws = XLSX.utils.json_to_sheet(data);
-    // Column widths
-    ws['!cols'] = [{ wch: 4 }, { wch: 14 }, { wch: 55 }, { wch: 30 }, { wch: 25 }, { wch: 30 }];
-    var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Evaluation Matrix');
-    XLSX.writeFile(wb, 'evaluation-matrix.xlsx');
   }
 
   function exportAsJSON(rows, context) {

@@ -205,7 +205,7 @@
   // ── Export as Word outline (docx via HTML) ──
 
   function exportWordOutline(sections, programmeName) {
-    var title = (programmeName || 'Evaluation') + ' — Draft Evaluation Report Outline';
+    var title = (programmeName || 'Evaluation') + ': Draft Evaluation Report Outline';
     var html = [
       '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">',
       '<head><meta charset="utf-8"><title>' + title + '</title>',
@@ -236,7 +236,8 @@
         html.push('<p class="word-count">[Suggested length: ' + wg.label + ']</p>');
       }
       if (sec.autoContent) {
-        html.push('<div class="auto-content">' + sec.autoContent.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>');
+        var acText = Array.isArray(sec.autoContent) ? sec.autoContent.join('\n') : String(sec.autoContent);
+        html.push('<div class="auto-content">' + acText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>');
       }
       if (sec.draftContent) {
         html.push('<div class="draft-content">' + sec.draftContent.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>');

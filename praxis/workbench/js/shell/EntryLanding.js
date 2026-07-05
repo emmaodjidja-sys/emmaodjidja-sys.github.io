@@ -136,9 +136,9 @@
     } else if (mode === 'demo') {
       // Demo picker — one card per pre-populated example evaluation
       var demos = [
-        { key: 'rssh', title: 'Global Fund RSSH', accent: 'var(--blue)',
-          desc: 'Health system strengthening evaluation, Ghana. 7 evaluation questions, instruments, and a difference-in-differences sample strategy.',
-          ctx: window.PRAXIS_DEMO },
+        { key: 'gf', title: 'Global Fund Malaria SNT', accent: 'var(--blue)',
+          desc: 'Independent evaluation of sub-national tailoring of malaria interventions across 12 HBHI countries. 26 evaluation questions, contribution analysis, and a mixed-methods country-insights sample.',
+          ctx: window.PRAXIS_DEMO_GF },
         { key: 'zd', title: 'Gavi Zero-Dose', accent: 'var(--teal)',
           desc: 'Multi-country immunisation equity evaluation (8 countries). 8 evaluation questions, contribution analysis, and 126 key informant interviews.',
           ctx: window.PRAXIS_DEMO_ZD }
@@ -162,7 +162,7 @@
         h(ActionCard, { key: 'new', title: '+ ' + t('landing.new'), desc: t('landing.new_desc'), accent: 'var(--teal)', onClick: function() { setMode('tier'); } }),
         h(ActionCard, { key: 'open', title: t('landing.open'), desc: t('landing.open_desc'), accent: 'var(--blue)', onClick: function() { setMode('open'); } }),
         h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: 'var(--purple)', onClick: function() { setMode('quick'); } }),
-        h(ActionCard, { key: 'demo', title: 'Load a demo', desc: 'Explore a fully worked evaluation across all 9 stations. Choose Global Fund RSSH or Gavi Zero-Dose.', accent: 'var(--amber)',
+        h(ActionCard, { key: 'demo', title: 'Load a demo', desc: 'Explore a fully worked evaluation across all 9 stations. Choose Global Fund Malaria SNT or Gavi Zero-Dose.', accent: 'var(--amber)',
           onClick: function() { setMode('demo'); }
         })
       ];

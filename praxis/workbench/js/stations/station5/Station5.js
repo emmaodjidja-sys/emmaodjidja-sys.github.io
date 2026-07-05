@@ -39,12 +39,24 @@
       dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: 'Instruments saved', toastType: 'success' });
     }
 
+    function toast(message, toastType) {
+      dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: message, toastType: toastType });
+    }
+
     function handleExport(format) {
       var inst = localInst.filter(function(i) { return i.id === editingId; })[0];
       if (!inst) return;
-      if (format === 'xlsform') InstrumentExport.exportAsXLSForm(inst);
-      else if (format === 'word') InstrumentExport.exportAsWord(inst);
-      else if (format === 'pdf') InstrumentExport.exportAsPDF(inst);
+      if (format === 'word') { InstrumentExport.exportAsWord(inst); return; }
+      if (format === 'pdf') { InstrumentExport.exportAsPDF(inst); return; }
+      if (format === 'xlsform') {
+        var qTotal = (inst.sections || []).reduce(function(s, sec) { return s + (sec.questions || []).length; }, 0);
+        toast('Preparing XLSForm (' + qTotal + ' questions)...', 'info');
+        InstrumentExport.exportAsXLSForm(inst).then(function() {
+          toast('XLSForm downloaded (' + qTotal + ' questions)', 'success');
+        }).catch(function(err) {
+          toast('XLSForm export failed: ' + ((err && err.message) || 'unknown error'), 'error');
+        });
+      }
     }
 
     function handleInstChange(updated) {

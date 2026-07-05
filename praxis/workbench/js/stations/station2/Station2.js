@@ -37,10 +37,21 @@
       dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: 'Evaluation matrix saved', toastType: 'success' });
     }
 
+    function toast(message, toastType) {
+      dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: message, toastType: toastType });
+    }
+
     function handleExport(fmt) {
       var mc = MatrixGenerator.praxisContextToMatrixContext(context);
       if (fmt === 'word') MatrixExport.exportAsWord(rows, mc);
-      else if (fmt === 'excel') MatrixExport.exportAsExcel(rows, mc);
+      else if (fmt === 'excel') {
+        toast('Preparing Excel (' + rows.length + ' evaluation questions)...', 'info');
+        MatrixExport.exportAsExcel(rows, mc).then(function() {
+          toast('Excel downloaded (' + rows.length + ' rows)', 'success');
+        }).catch(function(err) {
+          toast('Excel export failed: ' + ((err && err.message) || 'unknown error'), 'error');
+        });
+      }
       else MatrixExport.exportAsJSON(rows, mc);
       setShowExport(false);
     }
