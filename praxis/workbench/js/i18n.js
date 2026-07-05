@@ -1,8 +1,14 @@
 (function() {
   'use strict';
 
-  // Inline defaults for all English strings — ensures t() works even if XHR fails
-  var strings = {
+  var LOCALE_KEY = 'praxis-workbench-locale';
+  var SUPPORTED = { en: true, fr: true };
+
+  // Inline English defaults. These always ship with the shell so t() resolves
+  // even if the lang/*.js tables fail to load. They take precedence over
+  // window.PRAXIS_LANG_EN for any shared key, so corrected copy here can never
+  // be overridden by a stale language file. No em or en dashes.
+  var inlineDefaults = {
     "shell.brand": "PRAXIS",
     "shell.workbench": "Workbench",
     "shell.save": "Save .praxis",
@@ -55,11 +61,12 @@
     "staleness.dismiss": "Dismiss",
 
     "sensitivity.standard": "Standard",
-    "sensitivity.sensitive": "Sensitive data. Handle with care.",
+    "sensitivity.sensitive": "SENSITIVE. Contains programme-sensitive data. Share only with authorised team members.",
     "sensitivity.highly": "HIGHLY SENSITIVE. Encryption recommended.",
+    "sensitivity.highly_sensitive": "HIGHLY SENSITIVE. Encryption recommended. Do not share outside the core evaluation team without explicit authorisation.",
 
     "empty.title": "Station {n}: {name}",
-    "empty.desc": "This station is not part of the current release.",
+    "empty.desc": "This station could not be loaded. Refresh the page to try again.",
 
     "common.save_draft": "Save Draft",
     "common.continue": "Continue",
@@ -67,26 +74,49 @@
     "common.back": "Back",
     "common.next": "Next"
   };
-  var currentLocale = 'en';
 
-  var LANG_VERSION = '2026-06-08';
-
-  function loadLocale(locale) {
-    try {
-      var xhr = new XMLHttpRequest();
-      var path = (window.PRAXIS_BASE_PATH || '') + 'lang/' + locale + '.json?v=' + LANG_VERSION;
-      xhr.open('GET', path, false);
-      xhr.send();
-      if (xhr.status === 200) {
-        strings = JSON.parse(xhr.responseText);
-        currentLocale = locale;
+  // Shallow own-key merge; later arguments win.
+  function assign(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var src = arguments[i];
+      if (!src) continue;
+      for (var k in src) {
+        if (Object.prototype.hasOwnProperty.call(src, k)) target[k] = src[k];
       }
-    } catch (e) {
     }
+    return target;
   }
 
+  // English table: the loaded union with inline defaults layered on top so
+  // corrected inline copy wins. French table: the loaded translations; any
+  // missing key falls back to English in t().
+  var TABLES = {
+    en: assign({}, window.PRAXIS_LANG_EN || {}, inlineDefaults),
+    fr: assign({}, window.PRAXIS_LANG_FR || {})
+  };
+
+  function readStoredLocale() {
+    try {
+      var v = localStorage.getItem(LOCALE_KEY);
+      if (v && SUPPORTED[v]) return v;
+    } catch (e) {}
+    return 'en';
+  }
+
+  var currentLocale = readStoredLocale();
+
+  function applyDocumentLang() {
+    try {
+      if (document && document.documentElement) document.documentElement.lang = currentLocale;
+    } catch (e) {}
+  }
+  applyDocumentLang();
+
   function t(key, vars) {
-    var str = strings[key] || key;
+    var table = TABLES[currentLocale] || TABLES.en;
+    var str = table[key];
+    if (str === undefined || str === null) str = TABLES.en[key];
+    if (str === undefined || str === null) str = key;
     if (vars) {
       Object.keys(vars).forEach(function(k) {
         str = str.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]);
@@ -95,13 +125,18 @@
     return str;
   }
 
+  // Persists the locale, updates document.documentElement.lang, and updates
+  // this module's state. It does NOT force a re-render on its own; the caller
+  // (TopBar) dispatches SET_LOCALE so React re-evaluates every t() call.
   function setLocale(locale) {
-    loadLocale(locale);
+    if (!SUPPORTED[locale]) return currentLocale;
+    currentLocale = locale;
+    try { localStorage.setItem(LOCALE_KEY, locale); } catch (e) {}
+    applyDocumentLang();
+    return currentLocale;
   }
 
   function getLocale() { return currentLocale; }
-
-  try { loadLocale('en'); } catch (e) { }
 
   window.PraxisI18n = { t: t, setLocale: setLocale, getLocale: getLocale };
 })();

@@ -16,7 +16,8 @@
     SHOW_TOAST: 'SHOW_TOAST',
     DISMISS_TOAST: 'DISMISS_TOAST',
     CLEAR_STALE: 'CLEAR_STALE',
-    SET_PERSIST_STATUS: 'SET_PERSIST_STATUS'
+    SET_PERSIST_STATUS: 'SET_PERSIST_STATUS',
+    SET_LOCALE: 'SET_LOCALE'
   };
 
   var defaultUI = {
@@ -27,7 +28,10 @@
     toasts: [],
     // 'saved' | 'saving' | 'error' | 'conflict', driven by the persist logic in app.js
     persistStatus: 'saved',
-    lastSavedAt: null
+    lastSavedAt: null,
+    // Interface language. Mirrors PraxisI18n's own locale state; changing it
+    // via SET_LOCALE forces a re-render so every t() call re-evaluates.
+    locale: (window.PraxisI18n && window.PraxisI18n.getLocale) ? window.PraxisI18n.getLocale() : 'en'
   };
 
   function pushToast(ui, message, type) {
@@ -180,6 +184,11 @@
           persistStatus: action.status,
           lastSavedAt: action.at !== undefined ? action.at : state.ui.lastSavedAt
         })};
+
+      case ACTION_TYPES.SET_LOCALE:
+        // PraxisI18n.setLocale already persisted the locale and updated its own
+        // state; storing it here only forces the re-render that refreshes t().
+        return { context: state.context, ui: Object.assign({}, state.ui, { locale: action.locale }) };
 
       case ACTION_TYPES.SHOW_TOAST:
         var toasts = state.ui.toasts.concat([{ id: PraxisUtils.uid('toast_'), message: action.message, type: action.toastType || 'info' }]);

@@ -59,6 +59,37 @@
       indicator = h('span', { style: indicatorTextStyle }, dot('var(--green)'), 'Saved ' + PraxisUtils.formatTime(lastSavedAt));
     }
 
+    // Interface language switcher (EN | FR). Active locale is read from the
+    // i18n module, which re-evaluates on the re-render triggered by SET_LOCALE.
+    var activeLocale = PraxisI18n.getLocale();
+    function chooseLocale(loc) {
+      if (PraxisI18n.getLocale() === loc) return;
+      PraxisI18n.setLocale(loc);
+      dispatch({ type: PraxisContext.ACTION_TYPES.SET_LOCALE, locale: loc });
+    }
+    function langButton(loc, label, srLabel) {
+      var isActive = activeLocale === loc;
+      return h('button', {
+        type: 'button',
+        onClick: function() { chooseLocale(loc); },
+        'aria-pressed': isActive ? 'true' : 'false',
+        'aria-label': srLabel,
+        style: {
+          border: 'none', cursor: 'pointer', padding: '3px 9px',
+          fontSize: 'var(--text-xs)', fontWeight: 600, letterSpacing: '0.03em',
+          fontFamily: 'inherit', lineHeight: 1.4,
+          background: isActive ? 'rgba(255,255,255,0.16)' : 'transparent',
+          color: isActive ? '#fff' : 'rgba(255,255,255,0.55)'
+        }
+      }, label);
+    }
+    var langSwitch = h('div', {
+      role: 'group',
+      'aria-label': 'Interface language',
+      title: 'Interface language. French covers the shell and Station 0; station content translation is in progress.',
+      style: { display: 'inline-flex', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', overflow: 'hidden' }
+    }, langButton('en', 'EN', 'English'), langButton('fr', 'FR', 'French'));
+
     var logo = h('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none' },
       h('circle', { cx: 12, cy: 12, r: 10, stroke: 'var(--teal)', strokeWidth: 2 }),
       h('path', { d: 'M8 12l3 3 5-5', stroke: 'var(--teal)', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
@@ -83,12 +114,14 @@
           className: 'wb-topbar-title-input',
           value: title,
           placeholder: 'Untitled evaluation',
+          'aria-label': 'Evaluation title',
           onChange: function(e) { setTitle(e.target.value); },
           onBlur: handleBlur
         })
       ),
       h('div', { className: 'wb-topbar-actions' },
         indicator,
+        langSwitch,
         h(ExperienceTierBadge, { tier: state.ui.experienceTier, dispatch: dispatch }),
         h('button', {
           className: 'wb-btn wb-btn-ghost wb-btn-sm wb-topbar-start',
@@ -103,7 +136,7 @@
         h('button', {
           className: 'wb-btn wb-btn-ghost wb-btn-sm wb-topbar-save',
           onClick: handleSave
-        }, 'Save')
+        }, PraxisI18n.t('shell.save'))
       )
     );
   }

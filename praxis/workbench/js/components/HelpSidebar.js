@@ -43,19 +43,25 @@
       title: 'Analysis Framework',
       foundation: 'Plan how you\'ll analyse the data you collect. Links each evaluation question to analysis methods.',
       practitioner: 'Analysis framework scaffold linked to evaluation matrix. Method and software selection per EQ.',
-      advanced: 'Advanced tier. Statistical specifications and software code templates are not yet enabled.'
+      advanced: 'Maps each evaluation question to recommended analytical methods and software, with a method engine that suggests appropriate estimators. Exports as a structured analysis plan.'
     },
     7: {
       title: 'Report Builder',
       foundation: 'Structure your evaluation report with a professional outline. Sections are auto-generated from your evaluation questions.',
       practitioner: 'Report outline auto-populated from matrix. Editable section structure with standard evaluation report format.',
-      advanced: 'Advanced tier. Finding templates and an evidence synthesis framework are not yet enabled.'
+      advanced: 'Builds the full report structure from the matrix and evaluation questions, with editable sections in a standard evaluation report format. Exports the outline to Word and JSON.'
     },
     8: {
       title: 'Deck Generator',
       foundation: 'Create a summary presentation of your evaluation plan, useful for stakeholder briefings and approval meetings.',
       practitioner: 'Structured summary pulling from all stations. Export as PDF for stakeholder presentations.',
-      advanced: 'Advanced tier. Data visualisation templates for slides are not yet enabled.'
+      advanced: 'Assembles a stakeholder briefing deck from every station, with slide-level control over what is included. Exports for stakeholder presentations.'
+    },
+    9: {
+      title: 'Planning',
+      foundation: 'Plan the practical side of the evaluation. Record the contract and its budget lines, list the deliverables and their due dates, log invoices against the budget, and note the quality review for each milestone.',
+      practitioner: 'Commissioning and delivery management: contract terms and budget lines, deliverable schedule, invoice tracking against budget, and quality review status per deliverable. Evaluator and commissioner views share the same record.',
+      advanced: 'Full engagement management. Track contract value and budget lines, milestone deliverables with due dates, invoices reconciled against the budget, and a quality review log that records reviewer sign-off before each deliverable is released.'
     }
   };
 
