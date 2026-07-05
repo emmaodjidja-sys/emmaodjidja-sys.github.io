@@ -1,0 +1,96 @@
+/**
+ * print.css: application-wide print stylesheet (linked with media="print").
+ *
+ * Station 8 injects its own print isolation scoped under body.s8-print and
+ * removes it on unmount. To avoid fighting that isolation, every content
+ * layout rule here is scoped to body:not(.s8-print); when Station 8 is the
+ * active print target its own rules take over untouched.
+ */
+@media print {
+
+  /* Hide application chrome that should never appear on paper. */
+  body:not(.s8-print) .wb-topbar,
+  body:not(.s8-print) .wb-rail,
+  body:not(.s8-print) .wb-drawer,
+  body:not(.s8-print) .wb-toast-container,
+  body:not(.s8-print) .wb-skip-link,
+  body:not(.s8-print) .wb-summary-bar-wrap,
+  body:not(.s8-print) .wb-panel-footer,
+  body:not(.s8-print) .wb-sensitivity-banner,
+  body:not(.s8-print) .wb-toolbar,
+  body:not(.s8-print) .wb-action-bar {
+    display: none !important;
+  }
+
+  /* Release the fixed full-viewport layout so content flows across pages. */
+  html,
+  body:not(.s8-print) {
+    overflow: visible !important;
+    height: auto !important;
+    background: #fff !important;
+  }
+  body:not(.s8-print) .wb-app,
+  body:not(.s8-print) .wb-shell,
+  body:not(.s8-print) .wb-main,
+  body:not(.s8-print) .wb-panel,
+  body:not(.s8-print) .wb-panel-content {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* Station 2 evaluation matrix: print full table with borders. */
+  body:not(.s8-print) .wb-table-container {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  body:not(.s8-print) .wb-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 10px !important;
+  }
+  body:not(.s8-print) .wb-table th,
+  body:not(.s8-print) .wb-table td {
+    border: 1px solid #94A3B8 !important;
+    padding: 4px 6px !important;
+    vertical-align: top !important;
+    white-space: normal !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body:not(.s8-print) .wb-table thead {
+    display: table-header-group;
+  }
+  body:not(.s8-print) .wb-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Station 7 report outline: keep each section together on the page. */
+  body:not(.s8-print) .wb-section-card-main,
+  body:not(.s8-print) .wb-report-header-row,
+  body:not(.s8-print) .wb-draft-editor,
+  body:not(.s8-print) .wb-draft-preview {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 4px;
+    padding: 10px 12px !important;
+    margin: 0 0 10px 0 !important;
+  }
+  body:not(.s8-print) .wb-reorder-col,
+  body:not(.s8-print) .wb-section-card-actions,
+  body:not(.s8-print) .wb-icon-action-btn,
+  body:not(.s8-print) .wb-report-header-actions {
+    display: none !important;
+  }
+  body:not(.s8-print) .wb-auto-content-fade {
+    max-height: none !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+  }
+}

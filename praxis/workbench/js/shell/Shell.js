@@ -12,6 +12,16 @@
     var setHelpOpen = helpState[1];
     var stationName = PraxisSchema.STATION_LABELS[activeStation] || ('Station ' + activeStation);
 
+    // Move focus to the station content region when the station changes so
+    // keyboard and screen-reader users land in the new content. Skipped on
+    // first mount to avoid stealing focus from the initial load.
+    var mainRef = React.useRef(null);
+    var mountedRef = React.useRef(false);
+    React.useEffect(function() {
+      if (!mountedRef.current) { mountedRef.current = true; return; }
+      if (mainRef.current) mainRef.current.focus();
+    }, [activeStation]);
+
     function handleStaleDismiss(action) {
       if (action === 'dismiss') {
         dispatch({ type: PraxisContext.ACTION_TYPES.CLEAR_STALE, stationId: activeStation });
@@ -65,6 +75,7 @@
     }
 
     return h(React.Fragment, null,
+      h('a', { className: 'wb-skip-link', href: '#wb-station-main' }, 'Skip to station content'),
       h(SensitivityBanner, { context: context }),
       h(TopBar, { state: state, dispatch: dispatch }),
       h('div', { className: 'wb-shell' },
@@ -78,7 +89,7 @@
               ? h('div', { className: 'wb-summary-bar-wrap' },
                   h(SummaryBar, { stationId: activeStation, context: context }))
               : null,
-            h('div', { className: 'wb-panel-content' }, stationContent)
+            h('div', { className: 'wb-panel-content', id: 'wb-station-main', tabIndex: -1, ref: mainRef }, stationContent)
           )
         ),
         h(ContextDrawer, { state: state, dispatch: dispatch })

@@ -55,7 +55,7 @@
     }
 
     return h('div', null,
-      // Score display — composite card
+      // Score display: composite card
       h('div', { className: 'wb-composite-card' },
         h('span', { className: 'wb-composite-score' }, adjustedTotal),
         h('div', null,
@@ -74,7 +74,7 @@
         )
       ) : null,
 
-      // Dimension breakdown — uses .wb-dimension design-system classes
+      // Dimension breakdown: uses .wb-dimension design-system classes
       h(SectionCard, { title: 'Dimension Scores', badge: scoringResult.dimensions.length + ' dimensions', bodyType: 'scoring' },
         scoringResult.dimensions.map(function(dim) {
           var isExpanded = expandedDim === dim.id;
@@ -82,11 +82,24 @@
           var displayScore = ov && ov.adjustedScore != null ? ov.adjustedScore : dim.system_score;
           var pct = Math.round((displayScore / dim.max) * 100);
 
-          return h('div', { key: dim.id, style: { cursor: 'pointer' } },
-            // Dimension row — collapsed
+          var panelId = 'wb-dim-panel-' + dim.id;
+          function toggleDim() { setExpandedDim(isExpanded ? null : dim.id); }
+          return h('div', { key: dim.id },
+            // Dimension row: collapsed (disclosure toggle)
             h('div', {
               className: 'wb-dimension',
-              onClick: function() { setExpandedDim(isExpanded ? null : dim.id); }
+              role: 'button',
+              tabIndex: 0,
+              'aria-expanded': isExpanded ? 'true' : 'false',
+              'aria-controls': panelId,
+              style: { cursor: 'pointer' },
+              onClick: toggleDim,
+              onKeyDown: function(e) {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                  e.preventDefault();
+                  toggleDim();
+                }
+              }
             },
               h('span', {
                 style: { color: 'var(--slate)', marginRight: -4, display: 'inline-flex', alignItems: 'center' }
@@ -116,7 +129,7 @@
             ),
 
             // Expanded detail
-            isExpanded ? h('div', { style: { padding: '4px 0 12px 28px' } },
+            isExpanded ? h('div', { id: panelId, style: { padding: '4px 0 12px 28px' } },
               h('p', { style: { fontSize: '12px', color: 'var(--text)', margin: '0 0 6px', lineHeight: '1.5' } },
                 h('strong', null, 'What drove this score: '), droveText(dim)
               ),
@@ -125,12 +138,13 @@
               ),
               // Override panel
               h('div', { className: 'wb-card', style: { padding: '10px 14px' } },
-                h('label', { className: 'wb-field-label' },
+                h('label', { className: 'wb-field-label', htmlFor: 'wb-ov-' + dim.id },
                   'Evaluator override',
                   h('span', { className: 'wb-field-hint' }, 'System: ' + dim.system_score + '/' + dim.max)
                 ),
                 h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: 8 } },
                   h('input', {
+                    id: 'wb-ov-' + dim.id,
                     className: 'wb-input',
                     type: 'number',
                     min: 0,
@@ -147,8 +161,9 @@
                   }),
                   h('span', { style: { fontSize: '12px', color: 'var(--slate)' } }, '/ ' + dim.max)
                 ),
-                h('label', { className: 'wb-field-label' }, 'Justification'),
+                h('label', { className: 'wb-field-label', htmlFor: 'wb-ovj-' + dim.id }, 'Justification'),
                 h('textarea', {
+                  id: 'wb-ovj-' + dim.id,
                   className: 'wb-input wb-textarea',
                   rows: 2,
                   placeholder: 'Reason for adjusting this dimension score...',

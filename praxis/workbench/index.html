@@ -17,8 +17,8 @@
 <link rel="stylesheet" href="css/fonts.css">
 
 <!-- React 18 (self-hosted) -->
-<script src="vendor/react.production.min.js"></script>
-<script src="vendor/react-dom.production.min.js"></script>
+<script defer src="vendor/react.production.min.js"></script>
+<script defer src="vendor/react-dom.production.min.js"></script>
 
 <!-- SheetJS loaded on demand by stations that need it (Station 2 export, Station 5 export) -->
 <script>
@@ -49,102 +49,141 @@ window.loadSheetJS = (function() {
 <link rel="stylesheet" href="css/stations.css">
 <link rel="stylesheet" href="css/sensitivity.css">
 <link rel="stylesheet" href="css/planning.css">
+<link rel="stylesheet" href="css/print.css" media="print">
 </head>
 <body>
-<div id="root"></div>
+<div id="root">
+  <!-- Static first-paint loading state. React replaces #root contents on
+       mount, so this is shown only while the deferred scripts load. -->
+  <style>
+    #wb-boot {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 18px;
+      background: #0B1A2E; color: #E7EDF5;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    #wb-boot .wb-boot-mark { font-size: 13px; font-weight: 700; letter-spacing: 0.18em; color: #2EC4B6; }
+    #wb-boot .wb-boot-text { font-size: 13px; color: #9FB0C6; }
+    #wb-boot .wb-boot-spin {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.12); border-top-color: #2EC4B6;
+      animation: wb-boot-spin 0.8s linear infinite;
+    }
+    @keyframes wb-boot-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #wb-boot .wb-boot-spin { animation-duration: 2.4s; } }
+  </style>
+  <div id="wb-boot">
+    <div class="wb-boot-mark">PRAXIS</div>
+    <div class="wb-boot-spin" role="progressbar" aria-label="Loading the Evaluation Workbench"></div>
+    <div class="wb-boot-text">Loading the Evaluation Workbench</div>
+  </div>
+</div>
+
+<noscript>
+  <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:32px;background:#0B1A2E;color:#E7EDF5;font-family:system-ui,-apple-system,sans-serif;z-index:2000;">
+    <div style="max-width:440px;text-align:center;">
+      <div style="font-size:13px;font-weight:700;letter-spacing:0.18em;color:#2EC4B6;margin-bottom:14px;">PRAXIS</div>
+      <h1 style="font-size:18px;font-weight:700;margin:0 0 10px;">JavaScript is required</h1>
+      <p style="font-size:13px;line-height:1.6;color:#9FB0C6;margin:0;">The PRAXIS Evaluation Workbench is a self-contained application that runs entirely in your browser and stores your work only on this device. Nothing is sent to a server. Please enable JavaScript to continue.</p>
+    </div>
+  </div>
+</noscript>
 
 <!-- Data constants -->
-<script src="data/indicator_bank.js"></script>
-<script src="js/demo-data.js"></script>
-<script src="js/demo-data-zd.js"></script>
-<script src="js/demo-data-gf.js"></script>
+<script defer src="data/indicator_bank.js"></script>
+<script defer src="js/demo-data.js"></script>
+<script defer src="js/demo-data-zd.js"></script>
+<script defer src="js/demo-data-gf.js"></script>
 
 <!-- Foundation JS (dependency order) -->
-<script src="js/schema.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/export-utils.js"></script>
-<script src="js/staleness.js"></script>
-<script src="js/protection.js"></script>
-<script src="js/i18n.js"></script>
-<script src="js/router.js"></script>
+<script defer src="js/schema.js"></script>
+<script defer src="js/utils.js"></script>
+<script defer src="js/export-utils.js"></script>
+<script defer src="js/staleness.js"></script>
+<script defer src="js/protection.js"></script>
+<script defer src="lang/en.js"></script>
+<script defer src="lang/fr.js"></script>
+<script defer src="js/i18n.js"></script>
+<script defer src="js/router.js"></script>
 
 <!-- State management -->
-<script src="js/context.js"></script>
+<script defer src="js/context.js"></script>
 
 <!-- Accessibility helpers (focus trap / restore) -->
-<script src="js/a11y.js"></script>
+<script defer src="js/a11y.js"></script>
 
 <!-- Shell components (React.createElement, no JSX) -->
-<script src="js/components/Icons.js"></script>
-<script src="js/components/Modal.js"></script>
-<script src="js/components/FileDropZone.js"></script>
-<script src="js/components/ToastNotification.js"></script>
-<script src="js/components/ProgressRing.js"></script>
-<script src="js/components/StationHeader.js"></script>
-<script src="js/components/StalenessWarning.js"></script>
-<script src="js/components/SensitivityBanner.js"></script>
-<script src="js/components/ExperienceTierBadge.js"></script>
-<script src="js/components/HelpSidebar.js"></script>
-<script src="js/components/StationNav.js"></script>
-<script src="js/components/SummaryBar.js"></script>
-<script src="js/components/SectionCard.js"></script>
-<script src="js/shell/TopBar.js"></script>
-<script src="js/shell/StationRail.js"></script>
-<script src="js/shell/ContextDrawer.js"></script>
-<script src="js/shell/Shell.js"></script>
-<script src="js/shell/EntryLanding.js"></script>
+<script defer src="js/components/Icons.js"></script>
+<script defer src="js/components/Modal.js"></script>
+<script defer src="js/components/FileDropZone.js"></script>
+<script defer src="js/components/ToastNotification.js"></script>
+<script defer src="js/components/ProgressRing.js"></script>
+<script defer src="js/components/StationHeader.js"></script>
+<script defer src="js/components/StalenessWarning.js"></script>
+<script defer src="js/components/SensitivityBanner.js"></script>
+<script defer src="js/components/ExperienceTierBadge.js"></script>
+<script defer src="js/components/HelpSidebar.js"></script>
+<script defer src="js/components/StationNav.js"></script>
+<script defer src="js/components/SummaryBar.js"></script>
+<script defer src="js/components/SectionCard.js"></script>
+<script defer src="js/shell/TopBar.js"></script>
+<script defer src="js/shell/StationRail.js"></script>
+<script defer src="js/shell/ContextDrawer.js"></script>
+<script defer src="js/shell/Shell.js"></script>
+<script defer src="js/shell/EntryLanding.js"></script>
 
 <!-- Station 0: Evaluability & Scoping -->
-<script src="js/stations/station0/EvaluabilityScorer.js"></script>
-<script src="js/stations/station0/Phase1Programme.js"></script>
-<script src="js/stations/station0/Phase2ToR.js"></script>
-<script src="js/stations/station0/Phase3Assessment.js"></script>
-<script src="js/stations/station0/PhaseReview.js"></script>
-<script src="js/stations/station0/Station0.js"></script>
+<script defer src="js/stations/station0/EvaluabilityScorer.js"></script>
+<script defer src="js/stations/station0/Phase1Programme.js"></script>
+<script defer src="js/stations/station0/Phase2ToR.js"></script>
+<script defer src="js/stations/station0/Phase3Assessment.js"></script>
+<script defer src="js/stations/station0/PhaseReview.js"></script>
+<script defer src="js/stations/station0/Station0.js"></script>
 
 <!-- Station 2: Evaluation Matrix -->
-<script src="js/stations/station2/MatrixGenerator.js"></script>
-<script src="js/stations/station2/MatrixExport.js"></script>
-<script src="js/stations/station2/MatrixTable.js"></script>
-<script src="js/stations/station2/MatrixInlineEditor.js"></script>
-<script src="js/stations/station2/AddEQModal.js"></script>
-<script src="js/stations/station2/IndicatorSelector.js"></script>
-<script src="js/stations/station2/Station2.js"></script>
+<script defer src="js/stations/station2/MatrixGenerator.js"></script>
+<script defer src="js/stations/station2/MatrixExport.js"></script>
+<script defer src="js/stations/station2/MatrixTable.js"></script>
+<script defer src="js/stations/station2/MatrixInlineEditor.js"></script>
+<script defer src="js/stations/station2/AddEQModal.js"></script>
+<script defer src="js/stations/station2/IndicatorSelector.js"></script>
+<script defer src="js/stations/station2/Station2.js"></script>
 
 <!-- Station 1: Theory of Change -->
-<script src="js/stations/station1/TocBridge.js"></script>
-<script src="js/stations/station1/TocInline.js"></script>
-<script src="js/stations/station1/Station1.js"></script>
+<script defer src="js/stations/station1/TocBridge.js"></script>
+<script defer src="js/stations/station1/TocInline.js"></script>
+<script defer src="js/stations/station1/Station1.js"></script>
 
 <!-- Station 3: Design Advisor -->
-<script src="js/stations/station3/DesignBridge.js"></script>
-<script src="js/stations/station3/Station3.js"></script>
+<script defer src="js/stations/station3/DesignBridge.js"></script>
+<script defer src="js/stations/station3/Station3.js"></script>
 
 <!-- Station 4: Sample Size -->
-<script src="js/stations/station4/SampleBridge.js"></script>
-<script src="js/stations/station4/Station4.js"></script>
+<script defer src="js/stations/station4/SampleBridge.js"></script>
+<script defer src="js/stations/station4/Station4.js"></script>
 
 <!-- Station 5: Instrument Builder -->
-<script src="js/stations/station5/InstrumentScaffold.js"></script>
-<script src="js/stations/station5/InstrumentExport.js"></script>
-<script src="js/stations/station5/QuestionConfigurator.js"></script>
-<script src="js/stations/station5/InstrumentEditor.js"></script>
-<script src="js/stations/station5/Station5.js"></script>
+<script defer src="js/stations/station5/InstrumentScaffold.js"></script>
+<script defer src="js/stations/station5/InstrumentExport.js"></script>
+<script defer src="js/stations/station5/QuestionConfigurator.js"></script>
+<script defer src="js/stations/station5/InstrumentEditor.js"></script>
+<script defer src="js/stations/station5/Station5.js"></script>
 
-<!-- Station 6: Analysis Framework (stub) -->
-<script src="js/stations/station6/Station6.js"></script>
+<!-- Station 6: Analysis Framework -->
+<script defer src="js/stations/station6/Station6.js"></script>
 
-<!-- Station 7: Report Builder (stub) -->
-<script src="js/stations/station7/Station7.js"></script>
+<!-- Station 7: Report Builder -->
+<script defer src="js/stations/station7/Station7.js"></script>
 
-<!-- Station 8: Deck Generator (stub) -->
-<script src="js/stations/station8/Station8.js"></script>
+<!-- Station 8: Deck Generator -->
+<script defer src="js/stations/station8/Station8.js"></script>
 
 <!-- Station 9: Planning (optional) -->
-<script src="js/stations/station9/Station9.js"></script>
+<script defer src="js/stations/station9/Station9.js"></script>
 
 <!-- Root app (must be last) -->
-<script src="js/app.js"></script>
+<script defer src="js/app.js"></script>
 
 <!-- Service Worker: disabled during development. Unregister any stale SW. -->
 <script>

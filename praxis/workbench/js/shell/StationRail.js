@@ -32,7 +32,7 @@
       (function(id) {
         var field = context[CONTEXT_FIELDS[id]] || {};
         var isCompleted = field.completed_at != null;
-        var isStale = !!staleness[id]; // stale regardless of completion — upstream changed
+        var isStale = !!staleness[id]; // stale regardless of completion, upstream changed
         var isActive = activeStation === id;
 
         var cls = 'wb-rail-btn';
@@ -42,7 +42,7 @@
 
         var badge = null;
         if (isCompleted && isStale) {
-          // Completed but stale — show both indicators
+          // Completed but stale, show both indicators
           badge = h(React.Fragment, null, completedBadge(), staleDot());
         } else if (isCompleted) {
           badge = completedBadge();
@@ -50,21 +50,26 @@
           badge = staleDot();
         }
 
+        var railLabel = String(id) + '. ' + PraxisSchema.STATION_LABELS[id] +
+          (isCompleted ? ', completed' : '') + (isStale ? ', needs review' : '');
+
         buttons.push(
           h('button', {
             key: id,
             className: cls,
             onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: id }); },
-            title: PraxisSchema.STATION_LABELS[id]
+            title: PraxisSchema.STATION_LABELS[id],
+            'aria-label': railLabel,
+            'aria-current': isActive ? 'step' : null
           },
-            h('span', { className: 'wb-rail-btn-num' }, String(id)),
+            h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, String(id)),
             badge
           )
         );
       })(i);
     }
 
-    // Planning (optional station, index 9) — a separate rail button kept out of the
+    // Planning (optional station, index 9), a separate rail button kept out of the
     // numbered 0-8 flow. Shows a completion check once planning is marked complete.
     var planningActive = activeStation === 9;
     var planningDone = !!(context.planning && context.planning.completed_at != null);
@@ -75,8 +80,10 @@
       key: 'planning',
       className: pCls,
       onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 9 }); },
-      title: 'Planning (optional)'
-    }, h('span', { className: 'wb-rail-btn-num' }, 'P'), planningDone ? completedBadge() : null);
+      title: 'Planning (optional)',
+      'aria-label': 'Planning, optional' + (planningDone ? ', completed' : ''),
+      'aria-current': planningActive ? 'step' : null
+    }, h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, 'P'), planningDone ? completedBadge() : null);
 
     // Help button at bottom of rail
     var helpBtn = h('button', {
@@ -85,10 +92,11 @@
       onClick: function() {
         if (props.onHelpToggle) props.onHelpToggle();
       },
-      title: 'Help'
-    }, h('span', { className: 'wb-rail-btn-num' }, '?'));
+      title: 'Help',
+      'aria-label': 'Help'
+    }, h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, '?'));
 
-    return h('nav', { className: 'wb-rail' }, buttons.concat([planningBtn, helpBtn]));
+    return h('nav', { className: 'wb-rail', 'aria-label': 'Stations' }, buttons.concat([planningBtn, helpBtn]));
   }
 
   window.StationRail = StationRail;

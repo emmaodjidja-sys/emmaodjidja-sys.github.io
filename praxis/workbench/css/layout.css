@@ -123,6 +123,27 @@ input, textarea, select { font-family: inherit; }
     border-top: 1px solid rgba(255,255,255,0.04);
   }
   .wb-drawer { display: none; }
+
+  /* Landing: stack the two panels into a single scrolling column so the
+     first-run screen is usable on phones (below 768px it was crushed). */
+  .wb-landing {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .wb-landing-left {
+    width: 100%;
+    flex: 0 0 auto;
+    padding: 32px 24px 20px;
+    justify-content: flex-start;
+  }
+  .wb-landing-right {
+    width: 100%;
+    flex: 0 0 auto;
+    padding: 20px 24px 40px;
+    justify-content: flex-start;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
 }
 
 /* ── §7.3 Global styles ─────────────────────────────── */

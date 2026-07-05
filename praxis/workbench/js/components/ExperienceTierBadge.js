@@ -15,26 +15,41 @@
     var open = openState[0];
     var setOpen = openState[1];
     var ref = React.useRef(null);
+    var triggerRef = React.useRef(null);
 
-    // Close on outside click
+    // Close on outside click or Escape; Escape returns focus to the trigger.
     React.useEffect(function() {
       if (!open) return;
       function handleClick(e) {
         if (ref.current && !ref.current.contains(e.target)) setOpen(false);
       }
+      function handleKey(e) {
+        if (e.key === 'Escape') {
+          setOpen(false);
+          if (triggerRef.current) triggerRef.current.focus();
+        }
+      }
       document.addEventListener('mousedown', handleClick);
-      return function() { document.removeEventListener('mousedown', handleClick); };
+      document.addEventListener('keydown', handleKey);
+      return function() {
+        document.removeEventListener('mousedown', handleClick);
+        document.removeEventListener('keydown', handleKey);
+      };
     }, [open]);
 
     return h('div', { ref: ref, style: { position: 'relative' } },
       h('button', {
+        ref: triggerRef,
         className: 'wb-tier-pill',
         'data-tier': currentTier,
+        'aria-haspopup': 'true',
+        'aria-expanded': open ? 'true' : 'false',
         onClick: function() { setOpen(!open); },
         style: { cursor: 'pointer', border: 'none', outline: 'none' }
       }, currentTier.toUpperCase()),
 
       open ? h('div', {
+        role: 'menu',
         style: {
           position: 'absolute', top: '100%', right: 0, marginTop: '6px',
           width: '280px', background: 'var(--surface)', border: '1px solid var(--border)',
@@ -49,6 +64,9 @@
           var isActive = tier.id === currentTier;
           return h('button', {
             key: tier.id,
+            type: 'button',
+            role: 'menuitem',
+            'aria-current': isActive ? 'true' : null,
             onClick: function() {
               dispatch({ type: PraxisContext.ACTION_TYPES.SET_TIER, tier: tier.id });
               setOpen(false);

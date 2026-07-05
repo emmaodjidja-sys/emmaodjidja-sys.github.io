@@ -14,30 +14,43 @@
     );
   }
 
-  // Action card component
-  function ActionCard(props) {
-    var accentColor = props.accent || 'rgba(255,255,255,0.08)';
-    return h('div', {
-      onClick: props.onClick,
-      style: {
-        padding: '16px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
-        cursor: 'pointer', marginBottom: '10px', borderLeft: '3px solid ' + accentColor,
-        transition: 'background 0.15s'
-      },
-      onMouseEnter: function(e) { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; },
-      onMouseLeave: function(e) { e.currentTarget.style.background = 'transparent'; }
-    },
-      h('div', { style: { fontSize: '13px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: 4 } }, props.title),
-      props.desc ? h('div', { style: { fontSize: '11px', color: 'var(--chrome-text-dim)', lineHeight: '1.5' } }, props.desc) : null,
-      props.children
-    );
+  // Shared card visuals so buttons and radio items look identical.
+  function cardBtnStyle(accent) {
+    return {
+      padding: '16px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
+      marginBottom: '10px', borderLeft: '3px solid ' + (accent || 'rgba(255,255,255,0.08)'),
+      transition: 'background 0.15s'
+    };
   }
 
-  // Back button
-  function BackButton(props) {
-    return h('div', {
+  function cardInner(title, desc, children) {
+    return [
+      h('div', { key: 'title', style: { fontSize: '13px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: 4 } }, title),
+      desc ? h('div', { key: 'desc', style: { fontSize: '11px', color: 'var(--chrome-text-dim)', lineHeight: '1.5' } }, desc) : null,
+      children || null
+    ];
+  }
+
+  // Action card: a real button that keeps the card appearance.
+  function ActionCard(props) {
+    return h('button', {
+      type: 'button',
+      className: 'wb-card-btn',
       onClick: props.onClick,
-      style: { fontSize: '12px', color: 'var(--chrome-text-dim)', cursor: 'pointer', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '4px' }
+      style: cardBtnStyle(props.accent)
+    }, cardInner(props.title, props.desc, props.children));
+  }
+
+  // Back button: a real button.
+  function BackButton(props) {
+    return h('button', {
+      type: 'button',
+      className: 'wb-card-btn',
+      onClick: props.onClick,
+      style: {
+        width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '4px',
+        fontSize: '12px', color: 'var(--chrome-text-dim)', marginBottom: '14px', padding: '4px 6px'
+      }
     }, PraxisIcons.chevronLeft(), t('common.back'));
   }
 
@@ -50,6 +63,11 @@
     var pendingState = React.useState(null);
     var pending = pendingState[0];
     var setPending = pendingState[1];
+    // Highlighted tier in the tier radiogroup (does not create a project on
+    // its own; only activation via Enter/Space/click does).
+    var tierChoiceState = React.useState(null);
+    var tierChoice = tierChoiceState[0];
+    var setTierChoice = tierChoiceState[1];
 
     // Check for saved data without loading it into state
     var hasSaved = React.useMemo(function() {
@@ -144,25 +162,30 @@
     var rightContent;
 
     if (mode === 'tier') {
-      // Tier selection
+      // Tier selection: an accessible radiogroup. Highlighting a tier does
+      // not create a project; activating one (Enter/Space/click) does.
       var tiers = [
-        { key: 'foundation', label: 'Foundation', accent: 'var(--green)', textKey: 'landing.tier_foundation' },
-        { key: 'practitioner', label: 'Practitioner', accent: 'var(--blue)', textKey: 'landing.tier_practitioner' },
-        { key: 'advanced', label: 'Advanced', accent: 'var(--purple)', textKey: 'landing.tier_advanced' }
+        { value: 'foundation', label: 'Foundation', accent: 'var(--green)', textKey: 'landing.tier_foundation' },
+        { value: 'practitioner', label: 'Practitioner', accent: 'var(--blue)', textKey: 'landing.tier_practitioner' },
+        { value: 'advanced', label: 'Advanced', accent: 'var(--purple)', textKey: 'landing.tier_advanced' }
       ];
       rightContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
         h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, t('landing.tier_title')),
-        tiers.map(function(tier) {
-          return h(ActionCard, {
-            key: tier.key, title: tier.label, accent: tier.accent, desc: t(tier.textKey),
-            onClick: function() {
-              guardDestructive(function() {
-                try { localStorage.removeItem('praxis-workbench'); localStorage.removeItem('praxis-workbench-ui'); } catch (e) {}
-                dispatch({ type: AT.INIT, tier: tier.key });
-              });
-            }
-          });
+        h(PraxisRadioGroup, {
+          options: tiers,
+          value: tierChoice,
+          ariaLabel: t('landing.tier_title'),
+          onChange: setTierChoice,
+          onActivate: function(val) {
+            guardDestructive(function() {
+              try { localStorage.removeItem('praxis-workbench'); localStorage.removeItem('praxis-workbench-ui'); } catch (e) {}
+              dispatch({ type: AT.INIT, tier: val });
+            });
+          },
+          itemClassName: function(opt, sel) { return 'wb-card-btn' + (sel ? ' wb-card-btn--selected' : ''); },
+          itemStyle: function(opt) { return cardBtnStyle(opt.accent); },
+          renderItem: function(opt) { return cardInner(opt.label, t(opt.textKey)); }
         })
       );
 
@@ -172,7 +195,7 @@
         h(BackButton, { onClick: function() { setMode(null); } }),
         h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, t('landing.open')),
         h(FileDropZone, {
-          label: 'Drop .praxis file here or click to browse',
+          label: 'Drop .praxis file here or click Browse files',
           onFile: function(data) {
             // Keep a backup of the current save before an import can
             // replace or modify it on the next autosave.
@@ -201,19 +224,18 @@
         h(BackButton, { onClick: function() { setMode(null); } }),
         h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Go to a station'),
         LABELS.map(function(name, i) {
-          return h('div', {
-            key: i, onClick: function() {
+          return h('button', {
+            key: i, type: 'button', className: 'wb-card-btn',
+            onClick: function() {
               guardDestructive(function() {
                 dispatch({ type: AT.INIT, station: i });
               });
             },
             style: {
               display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
-              border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', cursor: 'pointer',
+              border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
               marginBottom: '6px', transition: 'background 0.15s'
-            },
-            onMouseEnter: function(e) { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; },
-            onMouseLeave: function(e) { e.currentTarget.style.background = 'transparent'; }
+            }
           },
             h('span', { style: { fontSize: '12px', fontWeight: 700, color: 'var(--teal)', minWidth: '16px' } }, i),
             h('span', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)' } }, name)
@@ -270,13 +292,13 @@
       if (hasSaved) {
         var meta = PraxisContext.getSavedProjectMeta();
         var metaLine = meta
-          ? meta.name + ' \u00B7 Station ' + meta.station + ' (' + meta.stationName + ')' + (meta.updatedAt ? ' \u00B7 ' + PraxisUtils.formatDate(meta.updatedAt) : '')
+          ? meta.name + ' · Station ' + meta.station + ' (' + meta.stationName + ')' + (meta.updatedAt ? ' · ' + PraxisUtils.formatDate(meta.updatedAt) : '')
           : 'Resume saved project';
         cards.push(h(ActionCard, {
           key: 'continue', title: t('landing.continue'), accent: 'var(--green)',
           onClick: openSavedProject
         },
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' } },
+          h('div', { key: 'meta', style: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' } },
             h('span', { style: { width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block' } }),
             h('span', { style: { fontSize: '11px', color: 'var(--chrome-text-dim)' } }, metaLine)
           )
@@ -343,7 +365,7 @@
       );
     }
 
-    return h('div', { className: 'wb-landing', style: {
+    return h('div', { className: 'wb-landing on-chrome', style: {
       fontFamily: "var(--font-sans)", zIndex: 100
     }}, leftPanel, rightPanel, confirmModal);
   }

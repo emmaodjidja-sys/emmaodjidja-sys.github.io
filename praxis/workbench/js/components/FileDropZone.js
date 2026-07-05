@@ -68,7 +68,15 @@
         style: { display: 'none' },
         onChange: handleInputChange
       }),
-      h('p', { style: { fontSize: '13px', color: 'var(--slate)', margin: 0 } }, label)
+      h('p', { style: { fontSize: '13px', color: 'var(--slate)', margin: '0 0 12px 0' } }, label),
+      // Keyboard-accessible trigger for the hidden file input. The card's own
+      // onClick remains a mouse convenience; stopPropagation avoids a double
+      // open when the button is clicked.
+      h('button', {
+        type: 'button',
+        className: 'wb-btn wb-btn-outline',
+        onClick: function(e) { e.stopPropagation(); handleClick(); }
+      }, 'Browse files')
     );
   }
 

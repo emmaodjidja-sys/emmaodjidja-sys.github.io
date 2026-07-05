@@ -5,16 +5,22 @@
   var SECTORS = ['Peacebuilding / PVE', 'Health', 'Education', 'Livelihoods', 'WASH', 'Nutrition', 'Governance', 'Protection'];
 
   function OptionCards(props) {
-    return h('div', { className: 'wb-select-grid' },
-      props.options.map(function(opt) {
-        var selected = props.value === opt.value;
-        var cls = 'wb-select-card' + (selected ? ' wb-select-card--active' : '') + (selected && opt.variant ? ' wb-select-card--' + opt.variant : '');
-        return h('div', { key: opt.value, className: cls, onClick: function() { props.onChange(opt.value); } },
-          h('div', { className: 'wb-select-card-label' }, opt.label),
-          opt.desc ? h('div', { className: 'wb-select-card-hint' }, opt.desc) : null
-        );
-      })
-    );
+    return h(PraxisRadioGroup, {
+      options: props.options,
+      value: props.value,
+      onChange: props.onChange,
+      ariaLabel: props.ariaLabel,
+      groupClassName: 'wb-select-grid',
+      itemClassName: function(opt, selected) {
+        return 'wb-select-card' + (selected ? ' wb-select-card--active' : '') + (selected && opt.variant ? ' wb-select-card--' + opt.variant : '');
+      },
+      renderItem: function(opt) {
+        return [
+          h('div', { key: 'label', className: 'wb-select-card-label' }, opt.label),
+          opt.desc ? h('div', { key: 'hint', className: 'wb-select-card-hint' }, opt.desc) : null
+        ];
+      }
+    });
   }
 
   function Phase1Programme(props) {
@@ -52,27 +58,27 @@
       // Form grid
       h('div', { className: 'wb-form-grid' },
         // Programme Name
-        h('div', null,
-          h('label', { className: 'wb-field-label' }, 'Programme Name'),
+        h(PraxisField, { fieldKey: 'programme_name', label: 'Programme Name' },
           h('input', { className: 'wb-input', type: 'text', value: data.programme_name || '', placeholder: 'e.g. Resilience Through Livelihoods', onChange: function(e) { onChange('programme_name', e.target.value); } })
         ),
 
         // Organisation
-        h('div', null,
-          h('label', { className: 'wb-field-label' }, 'Organisation'),
+        h(PraxisField, { fieldKey: 'organisation', label: 'Organisation' },
           h('input', { className: 'wb-input', type: 'text', value: data.organisation || '', placeholder: 'e.g. Mercy Corps', onChange: function(e) { onChange('organisation', e.target.value); } })
         ),
 
         // Sectors (full width)
         h('div', { style: { gridColumn: '1 / -1' } },
-          h('label', { className: 'wb-field-label' }, 'Sectors'),
+          h('label', { className: 'wb-field-label', id: 'wb-sectors-label' }, 'Sectors'),
           h('div', { className: 'wb-field-helper' }, 'Select all that apply'),
-          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+          h('div', { role: 'group', 'aria-labelledby': 'wb-sectors-label', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
             SECTORS.map(function(s) {
               var selected = sectors.indexOf(s) >= 0;
-              return h('span', {
+              return h('button', {
                 key: s,
+                type: 'button',
                 className: 'wb-chip' + (selected ? ' wb-chip--selected' : ''),
+                'aria-pressed': selected ? 'true' : 'false',
                 onClick: function() { toggleSector(s); }
               }, selected ? PraxisIcons.check(12) : null, selected ? ' ' + s : s);
             })
@@ -81,8 +87,7 @@
         ),
 
         // Country/Region
-        h('div', null,
-          h('label', { className: 'wb-field-label' }, 'Country / Region'),
+        h(PraxisField, { fieldKey: 'country', label: 'Country / Region' },
           h('input', { className: 'wb-input', type: 'text', value: data.country || '', placeholder: 'e.g. South Sudan, DRC', onChange: function(e) { onChange('country', e.target.value); } })
         ),
 
@@ -90,7 +95,7 @@
         h('div', null,
           h('label', { className: 'wb-field-label' }, 'Budget Range'),
           h('div', { className: 'wb-field-helper' }, 'Often not in the ToR, skip if unknown'),
-          OptionCards({ value: data.budget, onChange: function(v) { onChange('budget', v); }, options: [
+          OptionCards({ ariaLabel: 'Budget Range', value: data.budget, onChange: function(v) { onChange('budget', v); }, options: [
             { value: 'low', label: 'Low', desc: '<$200K' },
             { value: 'medium', label: 'Medium', desc: '$200K-$1M' },
             { value: 'high', label: 'High', desc: '>$1M' }
@@ -100,7 +105,7 @@
         // Operating Context
         h('div', null,
           h('label', { className: 'wb-field-label' }, 'Operating Context'),
-          OptionCards({ value: data.operating_context, onChange: function(v) { onChange('operating_context', v); }, options: [
+          OptionCards({ ariaLabel: 'Operating Context', value: data.operating_context, onChange: function(v) { onChange('operating_context', v); }, options: [
             { value: 'stable', label: 'Stable' },
             { value: 'fragile', label: 'Fragile', variant: 'amber' },
             { value: 'humanitarian', label: 'Humanitarian' }
@@ -110,7 +115,7 @@
         // Programme Maturity
         h('div', null,
           h('label', { className: 'wb-field-label' }, 'Programme Maturity'),
-          OptionCards({ value: data.programme_maturity, onChange: function(v) { onChange('programme_maturity', v); }, options: [
+          OptionCards({ ariaLabel: 'Programme Maturity', value: data.programme_maturity, onChange: function(v) { onChange('programme_maturity', v); }, options: [
             { value: 'pilot', label: 'Pilot' },
             { value: 'scaling', label: 'Scaling' },
             { value: 'mature', label: 'Mature' }
@@ -120,7 +125,7 @@
         // Timeline
         h('div', null,
           h('label', { className: 'wb-field-label' }, 'Timeline'),
-          OptionCards({ value: data.timeline, onChange: function(v) { onChange('timeline', v); }, options: [
+          OptionCards({ ariaLabel: 'Timeline', value: data.timeline, onChange: function(v) { onChange('timeline', v); }, options: [
             { value: 'short', label: 'Short', desc: '<6 months' },
             { value: 'medium', label: 'Medium', desc: '6-12 months' },
             { value: 'long', label: 'Long', desc: '>12 months' }
@@ -134,7 +139,7 @@
         h('span', { style: { fontSize: '11px', color: '#64748B' } }, 'Phase 1 of 3 \u00B7 Programme Details'),
         h('div', { style: { display: 'flex', gap: '8px' } },
           h('button', { className: 'wb-btn wb-btn-outline', onClick: function() {
-            // Draft is auto-saved by app.js — this is informational
+            // Draft is auto-saved by app.js, this is informational
             if (props.onShowToast) props.onShowToast('Draft saved automatically');
           } }, 'Save Draft'),
           h('button', { className: 'wb-btn wb-btn-primary', onClick: onContinue, style: { display: 'flex', alignItems: 'center', gap: 6 } }, 'Review and continue', PraxisIcons.chevronRight())

@@ -22,6 +22,9 @@
 
       function onKeydown(e) {
         if (e.key === 'Escape') {
+          // Only dismissable modals close on Escape. Modals that require an
+          // explicit choice still expose their close control in the header.
+          if (!dismissable) return;
           e.stopPropagation();
           if (typeof props.onClose === 'function') props.onClose();
         }

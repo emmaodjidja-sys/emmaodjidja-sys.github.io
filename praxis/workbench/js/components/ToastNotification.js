@@ -34,14 +34,15 @@
       return function() { timers.forEach(function(t) { if (t) clearTimeout(t); }); };
     }, [idKey]);
 
-    if (!toasts.length) return null;
-
     var visible = toasts.slice(-3);
     var hidden = toasts.length - visible.length;
 
     function pause() { pausedRef.current = true; }
     function resume() { pausedRef.current = false; }
 
+    // The container is always rendered (even with no toasts) so its polite
+    // live region is registered with assistive technology before the first
+    // toast arrives. Error toasts carry role="alert" for assertive delivery.
     return h('div', {
       className: 'wb-toast-container', role: 'status', 'aria-live': 'polite',
       onMouseEnter: pause, onMouseLeave: resume, onFocus: pause, onBlur: resume
@@ -49,7 +50,10 @@
       hidden > 0 ? h('div', { className: 'wb-toast-more' }, '+' + hidden + ' more') : null,
       visible.map(function(toast) {
         var meta = META[toast.type] || META.info;
-        return h('div', { key: toast.id, className: 'wb-toast ' + meta.cls },
+        return h('div', {
+          key: toast.id, className: 'wb-toast ' + meta.cls,
+          role: toast.type === 'error' ? 'alert' : null
+        },
           h('span', { className: 'wb-toast-icon', 'aria-hidden': 'true' }, meta.icon(16)),
           h('span', { className: 'wb-toast-msg' }, toast.message),
           h('button', {
