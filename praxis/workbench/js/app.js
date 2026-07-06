@@ -4,6 +4,14 @@
 
   var AT = PraxisContext.ACTION_TYPES;
 
+  // Composite route signature (role|station|cstation) written to / read from the
+  // URL hash. One signature avoids the partial-update loop that three separate
+  // echo-guards would risk when a hash change touches more than one field.
+  function routeSig(role, station, cstation) {
+    var r = role === 'commissioner' ? 'commissioner' : 'evaluator';
+    return r + '|' + station + '|' + (r === 'commissioner' ? cstation : 0);
+  }
+
   function App() {
     var stateAndDispatch = React.useReducer(PraxisContext.reducer, null, PraxisContext.getInitialState);
     var state = stateAndDispatch[0];
@@ -19,7 +27,7 @@
     // an echo of a change we made ourselves. Without this a station change
     // would write the hash, the hashchange event would fire, and the
     // listener would dispatch again, in a loop.
-    var routeStationRef = React.useRef(null);
+    var routeSigRef = React.useRef(null);
 
     // Tracks whether a project was loaded on the previous render, so the
     // hash-clearing effect below can tell "a project just closed" apart from
@@ -47,7 +55,9 @@
         // Persist UI state separately so refresh resumes where you left off
         localStorage.setItem('praxis-workbench-ui', JSON.stringify({
           activeStation: ui.activeStation,
-          experienceTier: ui.experienceTier
+          experienceTier: ui.experienceTier,
+          role: ui.role,
+          commissionerStation: ui.commissionerStation
         }));
         dispatch({ type: AT.SET_PERSIST_STATUS, status: conflictRef.current ? 'conflict' : 'saved', at: new Date().toISOString() });
         return true;
@@ -76,7 +86,7 @@
         }
         persistRef.current(state.context, state.ui);
       }
-    }, [state.context, state.ui.projectLoaded, state.ui.activeStation, state.ui.experienceTier]);
+    }, [state.context, state.ui.projectLoaded, state.ui.activeStation, state.ui.experienceTier, state.ui.role, state.ui.commissionerStation]);
 
     // Router: reflect the active station into the URL hash so the browser's
     // Back/Forward buttons move between visited stations instead of leaving
@@ -93,16 +103,20 @@
         // history entry and does not fire a hashchange event, so it cannot
         // trip the loop-guard below.
         if (projectWasLoadedRef.current) {
-          routeStationRef.current = null;
+          routeSigRef.current = null;
           history.replaceState(null, '', location.pathname + location.search);
         }
         projectWasLoadedRef.current = false;
         return;
       }
       projectWasLoadedRef.current = true;
-      routeStationRef.current = state.ui.activeStation;
-      PraxisRouter.navigate(state.ui.activeStation);
-    }, [state.ui.projectLoaded, state.ui.activeStation]);
+      routeSigRef.current = routeSig(state.ui.role, state.ui.activeStation, state.ui.commissionerStation);
+      if (state.ui.role === 'commissioner') {
+        PraxisRouter.navigate(state.ui.activeStation, null, { role: 'commissioner', cstation: state.ui.commissionerStation });
+      } else {
+        PraxisRouter.navigate(state.ui.activeStation);
+      }
+    }, [state.ui.projectLoaded, state.ui.activeStation, state.ui.role, state.ui.commissionerStation]);
 
     // One-time listeners: flush pending saves when the page hides, detect
     // writes from other tabs, surface uncaught errors as toasts, and reflect
@@ -110,13 +124,23 @@
     // the active station.
     React.useEffect(function() {
       function onHashChange() {
-        var s = PraxisRouter.getGuardedStation();
-        // null (no/unparsable station in the hash) or a value that just
-        // echoes our own navigate() call above: nothing to do.
-        if (s === null || s === routeStationRef.current) return;
-        routeStationRef.current = s;
-        if (stateRef.current.ui.projectLoaded) {
-          dispatch({ type: AT.SET_ACTIVE_STATION, station: s });
+        var route = PraxisRouter.getRoute();
+        var station = PraxisRouter.getGuardedStation();                 // 0-9 or null
+        var role = route.params.role === 'commissioner' ? 'commissioner' : 'evaluator';
+        var cstation = PraxisRouter.getGuardedCommissionerStation();    // 0-6 or null
+        var cur = stateRef.current.ui;
+        // Build the incoming signature the same way the write effect does, filling
+        // absent fields from current state, then compare against our own last write.
+        var effStation = station === null ? cur.activeStation : station;
+        var effC = role === 'commissioner' ? (cstation === null ? cur.commissionerStation : cstation) : 0;
+        var sig = routeSig(role, effStation, effC);
+        if (sig === routeSigRef.current) return; // echo of our own navigate()
+        routeSigRef.current = sig;
+        if (!cur.projectLoaded) return;
+        if (role !== cur.role) dispatch({ type: AT.SET_ROLE, role: role });
+        if (station !== null && station !== cur.activeStation) dispatch({ type: AT.SET_ACTIVE_STATION, station: station });
+        if (role === 'commissioner' && cstation !== null && cstation !== cur.commissionerStation) {
+          dispatch({ type: AT.SET_COMMISSIONER_STATION, station: cstation });
         }
       }
       function flush() {

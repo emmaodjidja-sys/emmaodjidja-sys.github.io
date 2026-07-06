@@ -37,9 +37,24 @@
     if (typeof s !== 'number' || isNaN(s)) return null;
     s = Math.round(s);
     if (s < 0) s = 0;
-    if (s > 10) s = 10;
+    var max = (window.PraxisSchema && PraxisSchema.MAX_STATION) || 9;
+    if (s > max) s = max;
     return s;
   }
 
-  window.PraxisRouter = { getRoute: getRoute, navigate: navigate, getGuardedStation: getGuardedStation };
+  // Guarded commissioner sub-station from the hash (cstation=N). Returns null when
+  // absent or unparseable (0 = Overview, 1..6 = C0..C5).
+  function getGuardedCommissionerStation() {
+    var raw = getRoute().params.cstation;
+    if (raw === undefined || raw === '') return null;
+    var s = parseInt(raw, 10);
+    if (isNaN(s)) return null;
+    s = Math.round(s);
+    if (s < 0) s = 0;
+    var max = (window.PraxisSchema && PraxisSchema.MAX_CSTATION) || 6;
+    if (s > max) s = max;
+    return s;
+  }
+
+  window.PraxisRouter = { getRoute: getRoute, navigate: navigate, getGuardedStation: getGuardedStation, getGuardedCommissionerStation: getGuardedCommissionerStation };
 })();
