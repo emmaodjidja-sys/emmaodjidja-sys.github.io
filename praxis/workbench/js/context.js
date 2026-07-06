@@ -9,6 +9,9 @@
     SET_SENSITIVITY: 'SET_SENSITIVITY',
     SET_TIER: 'SET_TIER',
     SET_ACTIVE_STATION: 'SET_ACTIVE_STATION',
+    SET_ROLE: 'SET_ROLE',
+    SET_COMMISSIONER_STATION: 'SET_COMMISSIONER_STATION',
+    PATCH_DELIVERABLE: 'PATCH_DELIVERABLE',
     TOGGLE_DRAWER: 'TOGGLE_DRAWER',
     UPDATE_PROJECT_META: 'UPDATE_PROJECT_META',
     SET_PROJECT_LOADED: 'SET_PROJECT_LOADED',
@@ -23,6 +26,11 @@
   var defaultUI = {
     projectLoaded: false,
     activeStation: 0,
+    // Which lens the project is viewed through. 'evaluator' shows stations 0-9;
+    // 'commissioner' shows the cockpit rail (Overview + C0-C5). View-state, not
+    // project data, so it is never written into the exported .praxis context.
+    role: 'evaluator',
+    commissionerStation: 0, // 0 = Overview, 1-6 = C0-C5
     experienceTier: 'foundation',
     drawerOpen: false,
     toasts: [],
@@ -70,6 +78,10 @@
           experienceTier: action.tier || 'foundation',
           activeStation: action.station != null ? action.station : 0
         });
+        if (action.role === 'commissioner' || action.role === 'evaluator') initUI.role = action.role;
+        if (typeof action.commissionerStation === 'number') initUI.commissionerStation = action.commissionerStation;
+        // Legacy: the commissioner used to be evaluator-station 10. Promote it to the role.
+        if (initUI.activeStation === 10) { initUI.role = 'commissioner'; initUI.activeStation = 0; }
         if (initFellBack) {
           initUI = pushToast(initUI, 'The provided project data could not be read. A blank project was created instead.', 'warning');
         }
@@ -131,9 +143,13 @@
 
         var loadedContext = PraxisSchema.migrate(check.context);
         var loadedUI = Object.assign({}, state.ui, { projectLoaded: true });
-        if (typeof action.station === 'number' && action.station >= 0 && action.station <= 10) {
+        if (typeof action.station === 'number' && action.station >= 0 && action.station <= 9) {
           loadedUI.activeStation = action.station;
+        } else if (action.station === 10) {
+          loadedUI.role = 'commissioner'; loadedUI.activeStation = 0;
         }
+        if (action.role === 'commissioner' || action.role === 'evaluator') loadedUI.role = action.role;
+        if (typeof action.commissionerStation === 'number') loadedUI.commissionerStation = action.commissionerStation;
         if (action.tier === 'foundation' || action.tier === 'practitioner' || action.tier === 'advanced') {
           loadedUI.experienceTier = action.tier;
         }
@@ -159,6 +175,31 @@
 
       case ACTION_TYPES.SET_ACTIVE_STATION:
         return { context: state.context, ui: Object.assign({}, state.ui, { activeStation: action.station }) };
+
+      case ACTION_TYPES.SET_ROLE:
+        var nextRole = (action.role === 'commissioner') ? 'commissioner' : 'evaluator';
+        return { context: state.context, ui: Object.assign({}, state.ui, { role: nextRole }) };
+
+      case ACTION_TYPES.SET_COMMISSIONER_STATION:
+        var cs = action.station;
+        if (typeof cs !== 'number' || cs < 0) cs = 0;
+        if (cs > PraxisSchema.MAX_CSTATION) cs = PraxisSchema.MAX_CSTATION;
+        return { context: state.context, ui: Object.assign({}, state.ui, { commissionerStation: cs }) };
+
+      // Id-keyed patch of a single planning.deliverables item, applied against live
+      // state at reduce time. Because C1 (payment facet) and C3 (schedule facet) both
+      // write the same array, a whole-array save from a stale render closure could drop
+      // the other facet's edit; a single-field delta commutes and cannot clobber.
+      case ACTION_TYPES.PATCH_DELIVERABLE:
+        var plP = state.context.planning || {};
+        var listP = Array.isArray(plP.deliverables) ? plP.deliverables : [];
+        var nlistP = listP.map(function(d) { return d.id === action.id ? Object.assign({}, d, action.patch) : d; });
+        var nctxP = Object.assign({}, state.context, {
+          planning: Object.assign({}, plP, { deliverables: nlistP }),
+          updated_at: new Date().toISOString()
+        });
+        nctxP.staleness = PraxisStaleness.computeStaleness(9, nctxP.staleness);
+        return { context: nctxP, ui: state.ui };
 
       case ACTION_TYPES.TOGGLE_DRAWER:
         return { context: state.context, ui: Object.assign({}, state.ui, { drawerOpen: !state.ui.drawerOpen }) };
@@ -276,11 +317,18 @@
       var parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return null;
       var out = {};
-      if (typeof parsed.activeStation === 'number' && parsed.activeStation >= 0 && parsed.activeStation <= 10) {
+      if (typeof parsed.activeStation === 'number' && parsed.activeStation >= 0 && parsed.activeStation <= 9) {
         out.activeStation = parsed.activeStation;
+      } else if (parsed.activeStation === 10) {
+        // Legacy commissioner-as-station-10: promote to the commissioner role.
+        out.role = 'commissioner'; out.activeStation = 0;
       }
       if (parsed.experienceTier === 'foundation' || parsed.experienceTier === 'practitioner' || parsed.experienceTier === 'advanced') {
         out.experienceTier = parsed.experienceTier;
+      }
+      if (parsed.role === 'evaluator' || parsed.role === 'commissioner') out.role = parsed.role;
+      if (typeof parsed.commissionerStation === 'number' && parsed.commissionerStation >= 0 && parsed.commissionerStation <= 9) {
+        out.commissionerStation = Math.min(parsed.commissionerStation, 6);
       }
       return out;
     } catch (e) {}
