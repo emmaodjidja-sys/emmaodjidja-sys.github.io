@@ -122,6 +122,7 @@
           onBlur: handleBlur
         })
       ),
+      (typeof RoleSwitch !== 'undefined') ? h(RoleSwitch, { state: state, dispatch: dispatch }) : null,
       h('div', { className: 'wb-topbar-actions' },
         indicator,
         langSwitch,

@@ -85,20 +85,18 @@
       'aria-current': planningActive ? 'step' : null
     }, h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, 'P'), planningDone ? completedBadge() : null);
 
-    // Commissioner (optional surface, index 10), a separate rail button kept out of
-    // the numbered 0-8 flow. Shows a completion check once commissioner review is recorded.
-    var commActive = activeStation === 10;
+    // Commissioner lens entry. This switches the whole surface to the commissioner
+    // role (a top-level lens), which then renders its own Overview + C0-C5 rail. It is
+    // never the "active" rail item here, because selecting it swaps the rail entirely.
     var commDone = !!(context.commissioner && context.commissioner.completed_at != null);
-    var cCls = 'wb-rail-btn wb-rail-btn--planning';
-    if (commActive) cCls += ' wb-rail-btn--active';
+    var cCls = 'wb-rail-btn wb-rail-btn--planning wb-rail-btn--commissioner-entry';
     if (commDone) cCls += ' wb-rail-btn--completed';
     var commBtn = h('button', {
       key: 'commissioner',
       className: cCls,
-      onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 10 }); },
-      title: 'Commissioner (optional)',
-      'aria-label': 'Commissioner, optional' + (commDone ? ', completed' : ''),
-      'aria-current': commActive ? 'step' : null
+      onClick: function() { dispatch({ type: PraxisContext.ACTION_TYPES.SET_ROLE, role: 'commissioner' }); },
+      title: 'Commissioner lens',
+      'aria-label': 'Switch to the Commissioner lens' + (commDone ? ', review recorded' : '')
     }, h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, 'C'), commDone ? completedBadge() : null);
 
     // Help button at bottom of rail

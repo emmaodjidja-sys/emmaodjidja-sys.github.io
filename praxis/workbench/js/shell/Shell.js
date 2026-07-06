@@ -7,6 +7,7 @@
     var dispatch = props.dispatch;
     var activeStation = state.ui.activeStation;
     var context = state.context;
+    var isCommissioner = state.ui.role === 'commissioner';
     var helpState = React.useState(false);
     var helpOpen = helpState[0];
     var setHelpOpen = helpState[1];
@@ -20,7 +21,7 @@
     React.useEffect(function() {
       if (!mountedRef.current) { mountedRef.current = true; return; }
       if (mainRef.current) mainRef.current.focus();
-    }, [activeStation]);
+    }, [activeStation, state.ui.role, state.ui.commissionerStation]);
 
     function handleStaleDismiss(action) {
       if (action === 'dismiss') {
@@ -63,8 +64,6 @@
       stationContent = h(Station8, { state: state, dispatch: dispatch });
     } else if (activeStation === 9 && typeof Station9 !== 'undefined') {
       stationContent = h(Station9, { state: state, dispatch: dispatch });
-    } else if (activeStation === 10 && typeof Commissioner !== 'undefined') {
-      stationContent = h(Commissioner, { state: state, dispatch: dispatch });
     } else {
       stationContent = h('div', { className: 'wb-station-empty' },
         h('h3', { className: 'wb-station-empty-title' },
@@ -80,19 +79,27 @@
       h('a', { className: 'wb-skip-link', href: '#wb-station-main' }, 'Skip to station content'),
       h(SensitivityBanner, { context: context }),
       h(TopBar, { state: state, dispatch: dispatch }),
-      h('div', { className: 'wb-shell' },
-        h(StationRail, { state: state, dispatch: dispatch, onHelpToggle: function() { setHelpOpen(!helpOpen); } }),
+      h('div', { className: 'wb-shell' + (isCommissioner ? ' wb-shell--commissioner' : '') },
+        isCommissioner
+          ? h(CockpitRail, { state: state, dispatch: dispatch })
+          : h(StationRail, { state: state, dispatch: dispatch, onHelpToggle: function() { setHelpOpen(!helpOpen); } }),
         h('div', { className: 'wb-main' },
           h('div', { className: 'wb-panel' },
-            // Planning (index 9) and Commissioner (index 10) are optional surfaces that
-            // render their own header; they opt out of the shared header/summary/staleness.
-            (activeStation !== 9 && activeStation !== 10) ? h(StationHeader, { stationId: activeStation, context: context }) : null,
-            (activeStation !== 9 && activeStation !== 10) ? h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }) : null,
-            (activeStation !== 9 && activeStation !== 10 && typeof SummaryBar !== 'undefined')
-              ? h('div', { className: 'wb-summary-bar-wrap' },
-                  h(SummaryBar, { stationId: activeStation, context: context }))
-              : null,
-            h('div', { className: 'wb-panel-content', id: 'wb-station-main', tabIndex: -1, ref: mainRef }, stationContent)
+            isCommissioner
+              // Commissioner cockpit renders its own header/rail; it opts out of the
+              // shared StationHeader/Staleness/Summary entirely.
+              ? h('div', { className: 'wb-panel-content', id: 'wb-station-main', tabIndex: -1, ref: mainRef },
+                  h(CockpitShell, { state: state, dispatch: dispatch }))
+              : h(React.Fragment, null,
+                  // Planning (index 9) renders its own header; it opts out of the shared ones.
+                  (activeStation !== 9) ? h(StationHeader, { stationId: activeStation, context: context }) : null,
+                  (activeStation !== 9) ? h(StalenessWarning, { stationId: activeStation, staleness: context.staleness, onDismiss: handleStaleDismiss }) : null,
+                  (activeStation !== 9 && typeof SummaryBar !== 'undefined')
+                    ? h('div', { className: 'wb-summary-bar-wrap' },
+                        h(SummaryBar, { stationId: activeStation, context: context }))
+                    : null,
+                  h('div', { className: 'wb-panel-content', id: 'wb-station-main', tabIndex: -1, ref: mainRef }, stationContent)
+                )
           )
         ),
         h(ContextDrawer, { state: state, dispatch: dispatch })
