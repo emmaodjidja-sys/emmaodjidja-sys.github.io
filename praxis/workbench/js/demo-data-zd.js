@@ -1,12 +1,11 @@
 /**
- * demo-data-zd.js - Pre-populated workbench demo.
- * Based on: Evaluation of Gavi's contribution to reaching zero-dose and missed
- * communities (Year 1 Annual Report, Ipsos for Gavi, 2024).
+ * demo-data-zd.js - Gavi Zero-Dose evaluation.
+ * Regenerated at schema 1.4.0 (unified deliverables, commissioner cockpit).
  */
 (function() {
   'use strict';
   window.PRAXIS_DEMO_ZD = {
-  "version": "1.0",
+  "version": "1.4.0",
   "schema": "praxis-workbench",
   "created_at": "2024-01-15T09:00:00.000Z",
   "updated_at": "2024-03-28T14:30:00.000Z",
@@ -15,7 +14,6 @@
     "programme_name": "Gavi's contribution to reaching zero-dose and missed communities (5.0/5.1 ZD Agenda)",
     "organisation": "Gavi, the Vaccine Alliance (independent evaluator: Ipsos)",
     "country": "Multi-country (8 case studies: Afghanistan, Cambodia, Cote d'Ivoire, Djibouti, Ethiopia, India, Pakistan, South Sudan)",
-    "sector": "health",
     "sector_template": "health",
     "sectors": [
       "Health"
@@ -32,7 +30,8 @@
     "programme_maturity": "scaling",
     "languages": [
       "en"
-    ]
+    ],
+    "sector": "health"
   },
   "protection": {
     "sensitivity": "standard",
@@ -962,6 +961,9 @@
     "completed_at": "2024-03-10T10:00:00.000Z"
   },
   "analysis_plan": {
+    "quantitative": [],
+    "qualitative": [],
+    "completed_at": "2024-03-10T10:00:00.000Z",
     "cards": [
       {
         "id": "af_1",
@@ -1555,8 +1557,7 @@
         ],
         "notes": ""
       }
-    ],
-    "completed_at": "2024-03-10T10:00:00.000Z"
+    ]
   },
   "report_structure": {
     "sections": [
@@ -1931,6 +1932,13 @@
           },
           "comment": "Detailed assumptions register and country-specific theories of change. Strong basis for the longitudinal design.",
           "rated_at": "2024-04-10T10:00:00.000Z"
+        },
+        "type": "Design gate",
+        "reviewers": "EAC",
+        "reviewer_email": "",
+        "alert": {
+          "lead_days": 14,
+          "emails": []
         }
       },
       {
@@ -1947,7 +1955,14 @@
         "submitted_at": "2022-12-10T10:00:00.000Z",
         "accepted_at": "2022-12-18T10:00:00.000Z",
         "notes": "",
-        "rating": null
+        "rating": null,
+        "type": "Milestone",
+        "reviewers": "Central Evaluation Team",
+        "reviewer_email": "",
+        "alert": {
+          "lead_days": 14,
+          "emails": []
+        }
       },
       {
         "id": "del_3",
@@ -1978,6 +1993,13 @@
           },
           "comment": "Clear baseline and utilisation focus. Note the data-availability constraints for Objectives 2 and 3 in Year 2.",
           "rated_at": "2024-04-10T10:00:00.000Z"
+        },
+        "type": "Draft",
+        "reviewers": "EAC",
+        "reviewer_email": "",
+        "alert": {
+          "lead_days": 14,
+          "emails": []
         }
       },
       {
@@ -1990,34 +2012,50 @@
           7
         ],
         "payment_percent": 25,
-        "status": "submitted",
+        "status": "accepted",
         "submitted_at": "2024-10-29T10:00:00.000Z",
         "accepted_at": null,
         "notes": "",
-        "rating": null
+        "rating": null,
+        "type": "Draft",
+        "reviewers": "EAC",
+        "reviewer_email": "",
+        "alert": {
+          "lead_days": 14,
+          "emails": []
+        }
       },
       {
         "id": "del_5",
         "code": "D5",
         "title": "Year 3 Final Report",
         "description": "Summative final report with conclusions and recommendations for Gavi 6.0.",
-        "due_date": "2025-10-31",
+        "due_date": "2026-06-15",
         "station_ids": [
           7
         ],
         "payment_percent": 30,
-        "status": "not_started",
+        "status": "in_progress",
         "submitted_at": null,
         "accepted_at": null,
         "notes": "",
-        "rating": null
+        "rating": null,
+        "type": "Final report",
+        "reviewers": "EAC, Secretariat",
+        "reviewer_email": "r.alemu@gavi.org",
+        "alert": {
+          "lead_days": 14,
+          "emails": [
+            "r.alemu@gavi.org"
+          ]
+        }
       },
       {
         "id": "del_6",
         "code": "D6",
         "title": "Learning Products and Deck",
         "description": "Summative slide deck, evaluation brief and learning products.",
-        "due_date": "2025-11-30",
+        "due_date": "2026-09-30",
         "station_ids": [
           8
         ],
@@ -2026,7 +2064,14 @@
         "submitted_at": null,
         "accepted_at": null,
         "notes": "",
-        "rating": null
+        "rating": null,
+        "type": "Governance",
+        "reviewers": "Central Evaluation Team",
+        "reviewer_email": "",
+        "alert": {
+          "lead_days": 14,
+          "emails": []
+        }
       }
     ],
     "invoices": [
@@ -2074,12 +2119,94 @@
       "primary_use": "Course-correct Gavi 5.0/5.1 delivery and shape the Gavi 6.0 design so the Alliance reaches and sustains zero-dose and under-immunised children."
     },
     "users": [
-      { "id": "usr_board", "name": "Gavi Board", "role": "Strategic governance", "tier": "primary", "intended_use": "Decide Gavi 6.0 strategic direction and hold the Secretariat to account for the zero-dose agenda.", "decision_window": "Gavi 6.0 design decisions", "influence": "high", "interest": "medium", "eq_refs": ["eq_1", "eq_5", "eq_8"] },
-      { "id": "usr_prog", "name": "Secretariat Programme Team", "role": "Programme delivery", "tier": "primary", "intended_use": "Course-correct country support and grant operationalisation for zero-dose during 5.0/5.1.", "decision_window": "Ongoing 5.0/5.1 delivery", "influence": "high", "interest": "high", "eq_refs": ["eq_4", "eq_5", "eq_7"] },
-      { "id": "usr_strat", "name": "Secretariat Strategy Team", "role": "Strategy and monitoring", "tier": "primary", "intended_use": "Embed zero-dose indicators and a value-for-money lens into the Gavi 6.0 monitoring framework.", "decision_window": "Gavi 6.0 measurement design", "influence": "high", "interest": "high", "eq_refs": ["eq_3", "eq_6", "eq_8"] },
-      { "id": "usr_country", "name": "National immunisation programmes", "role": "Implementers", "tier": "secondary", "intended_use": "Operationalise grants and prioritise zero-dose communities in national plans.", "decision_window": "Country grant cycles", "influence": "medium", "interest": "high", "eq_refs": ["eq_2", "eq_4", "eq_7"] },
-      { "id": "usr_partners", "name": "Alliance partners (WHO, UNICEF)", "role": "Technical and delivery partners", "tier": "secondary", "intended_use": "Align technical support and equity programming with the zero-dose agenda.", "decision_window": "Partner planning", "influence": "medium", "interest": "medium", "eq_refs": ["eq_2", "eq_3"] },
-      { "id": "usr_eac", "name": "Evaluation Advisory Committee (EAC)", "role": "Independent oversight", "tier": "secondary", "intended_use": "Assure evaluation quality and the strength of evidence behind conclusions.", "decision_window": "EAC review points", "influence": "high", "interest": "high", "eq_refs": ["eq_5", "eq_6"] }
+      {
+        "id": "usr_board",
+        "name": "Gavi Board",
+        "role": "Strategic governance",
+        "tier": "primary",
+        "intended_use": "Decide Gavi 6.0 strategic direction and hold the Secretariat to account for the zero-dose agenda.",
+        "decision_window": "Gavi 6.0 design decisions",
+        "influence": "high",
+        "interest": "medium",
+        "eq_refs": [
+          "eq_1",
+          "eq_5",
+          "eq_8"
+        ]
+      },
+      {
+        "id": "usr_prog",
+        "name": "Secretariat Programme Team",
+        "role": "Programme delivery",
+        "tier": "primary",
+        "intended_use": "Course-correct country support and grant operationalisation for zero-dose during 5.0/5.1.",
+        "decision_window": "Ongoing 5.0/5.1 delivery",
+        "influence": "high",
+        "interest": "high",
+        "eq_refs": [
+          "eq_4",
+          "eq_5",
+          "eq_7"
+        ]
+      },
+      {
+        "id": "usr_strat",
+        "name": "Secretariat Strategy Team",
+        "role": "Strategy and monitoring",
+        "tier": "primary",
+        "intended_use": "Embed zero-dose indicators and a value-for-money lens into the Gavi 6.0 monitoring framework.",
+        "decision_window": "Gavi 6.0 measurement design",
+        "influence": "high",
+        "interest": "high",
+        "eq_refs": [
+          "eq_3",
+          "eq_6",
+          "eq_8"
+        ]
+      },
+      {
+        "id": "usr_country",
+        "name": "National immunisation programmes",
+        "role": "Implementers",
+        "tier": "secondary",
+        "intended_use": "Operationalise grants and prioritise zero-dose communities in national plans.",
+        "decision_window": "Country grant cycles",
+        "influence": "medium",
+        "interest": "high",
+        "eq_refs": [
+          "eq_2",
+          "eq_4",
+          "eq_7"
+        ]
+      },
+      {
+        "id": "usr_partners",
+        "name": "Alliance partners (WHO, UNICEF)",
+        "role": "Technical and delivery partners",
+        "tier": "secondary",
+        "intended_use": "Align technical support and equity programming with the zero-dose agenda.",
+        "decision_window": "Partner planning",
+        "influence": "medium",
+        "interest": "medium",
+        "eq_refs": [
+          "eq_2",
+          "eq_3"
+        ]
+      },
+      {
+        "id": "usr_eac",
+        "name": "Evaluation Advisory Committee (EAC)",
+        "role": "Independent oversight",
+        "tier": "secondary",
+        "intended_use": "Assure evaluation quality and the strength of evidence behind conclusions.",
+        "decision_window": "EAC review points",
+        "influence": "high",
+        "interest": "high",
+        "eq_refs": [
+          "eq_5",
+          "eq_6"
+        ]
+      }
     ],
     "gate": {
       "decision": "conditions",
@@ -2087,49 +2214,385 @@
       "decided_at": "2023-02-20T10:00:00.000Z",
       "note": "Inception framework, ToC assumptions and an evaluability assessment per question reviewed with the Central Evaluation Team, the expert steering committee and the EAC. Approved to proceed, subject to the conditions below.",
       "conditions": [
-        { "id": "cond_zd_1", "text": "Confirm grant-implementation data are adequate for the O3 plausible-contribution analysis before fieldwork. (Data limitations later made formal contribution analysis unfeasible.)", "resolved": false },
-        { "id": "cond_zd_2", "text": "Strengthen the gender dimension of the equity analysis; the EAC noted equity focuses mainly on socio-economic factors.", "resolved": true }
-      ]
+        {
+          "id": "cond_zd_1",
+          "text": "Confirm grant-implementation data are adequate for the O3 plausible-contribution analysis before fieldwork. (Data limitations later made formal contribution analysis unfeasible.)",
+          "resolved": false
+        },
+        {
+          "id": "cond_zd_2",
+          "text": "Strengthen the gender dimension of the equity analysis; the EAC noted equity focuses mainly on socio-economic factors.",
+          "resolved": true
+        }
+      ],
+      "independence": {
+        "attested": true,
+        "statement": "The Evaluation Advisory Committee confirms the evaluation was conducted independently of Gavi Secretariat management, and that the independent evaluator (Ipsos) and EAC members declared no conflicts of interest bearing on the zero-dose investments assessed.",
+        "conflicts": [
+          "One EAC member holds an advisory role with a core Alliance partner and recused from conclusions concerning that partner's contribution."
+        ],
+        "attested_by": "EAC Chair",
+        "attested_at": "2023-03-10"
+      },
+      "ethics": {
+        "status": "cleared",
+        "body": "Ipsos independent research ethics review",
+        "note": "Informed consent and confidential informant lists applied, with data protection under GDPR and safeguarding measures ensuring zero-dose children as a vulnerable group are represented only through adult key informants and secondary coverage data, never interviewed directly.",
+        "cleared_at": "2023-03-10"
+      }
     },
     "appraisal": {
       "profile": "gavi",
       "evidence": [
-        { "eq_id": "eq_1", "rating": 2, "justification": "IRMMA relevance triangulated across the eight case studies and the SCM survey." },
-        { "eq_id": "eq_2", "rating": 2, "justification": "Lever relevance evidenced; countries confuse HSS/EAF in places." },
-        { "eq_id": "eq_3", "rating": 2, "justification": "Coherence with IA2030, GPW13 and national strategies documented." },
-        { "eq_id": "eq_4", "rating": 3, "justification": "Operationalisation evidence partial and uneven across countries." },
-        { "eq_id": "eq_5", "rating": 4, "justification": "Contribution unproven. Formal contribution analysis was abandoned: grant-implementation data absent." },
-        { "eq_id": "eq_6", "rating": 4, "justification": "Plausible contribution not established; pooled Alliance funding masks attribution." },
-        { "eq_id": "eq_7", "rating": 3, "justification": "ToC/ToA fitness assessed from Year 2; interim evidence limited." },
-        { "eq_id": "eq_8", "rating": 3, "justification": "Sustainability prioritised in later phases; evidence thin so far." }
+        {
+          "eq_id": "eq_1",
+          "rating": 4,
+          "justification": "IRMMA relevance triangulated across the eight case studies and the SCM survey."
+        },
+        {
+          "eq_id": "eq_2",
+          "rating": 4,
+          "justification": "Lever relevance evidenced; countries confuse HSS/EAF in places."
+        },
+        {
+          "eq_id": "eq_3",
+          "rating": 4,
+          "justification": "Coherence with IA2030, GPW13 and national strategies documented."
+        },
+        {
+          "eq_id": "eq_4",
+          "rating": 4,
+          "justification": "Operationalisation evidence partial and uneven across countries."
+        },
+        {
+          "eq_id": "eq_5",
+          "rating": 4,
+          "justification": "Contribution unproven. Formal contribution analysis was abandoned: grant-implementation data absent."
+        },
+        {
+          "eq_id": "eq_6",
+          "rating": 4,
+          "justification": "Plausible contribution not established; pooled Alliance funding masks attribution."
+        },
+        {
+          "eq_id": "eq_7",
+          "rating": 4,
+          "justification": "ToC/ToA fitness assessed from Year 2; interim evidence limited."
+        },
+        {
+          "eq_id": "eq_8",
+          "rating": 4,
+          "justification": "Sustainability prioritised in later phases; evidence thin so far."
+        }
       ]
     },
-    "timeline": [
-      { "id": "del_inc", "name": "Inception report and framework", "type": "Design gate", "due_date": "2023-02-20", "reviewers": "Central Evaluation Team, steering committee, EAC", "status": "accepted", "note": "Approved with conditions." },
-      { "id": "del_y1", "name": "Year 1 real-time report", "type": "Annual", "due_date": "2023-11-30", "reviewers": "Central Evaluation Team, EAC", "status": "accepted", "note": "" },
-      { "id": "del_mid", "name": "Mid-point synthesis and course-correction note", "type": "Milestone", "due_date": "2024-03-31", "reviewers": "EAC", "status": "accepted", "note": "" },
-      { "id": "del_y2", "name": "Year 2 evaluation report", "type": "Annual", "due_date": "2024-05-10", "reviewers": "Central Evaluation Team, EAC", "status": "accepted", "note": "" },
-      { "id": "del_emr", "name": "Evaluation management response", "type": "Governance", "due_date": "2024-07-31", "reviewers": "Secretariat, EAC", "status": "accepted", "note": "" }
-    ],
+    "report_review": {
+      "accepted": true,
+      "accepted_by": "Evaluation Advisory Committee (EAC)",
+      "accepted_at": "2025-02-15",
+      "evidence": [
+        {
+          "eq_id": "eq_1",
+          "strength": 3,
+          "note": "IRMMA relevance triangulated across the eight case studies and the SCM survey."
+        },
+        {
+          "eq_id": "eq_2",
+          "strength": 3,
+          "note": "Lever relevance evidenced; countries confuse HSS/EAF in places."
+        },
+        {
+          "eq_id": "eq_3",
+          "strength": 3,
+          "note": "Coherence with IA2030, GPW13 and national strategies documented."
+        },
+        {
+          "eq_id": "eq_4",
+          "strength": 2,
+          "note": "Operationalisation evidence partial and uneven across countries."
+        },
+        {
+          "eq_id": "eq_5",
+          "strength": 1,
+          "note": "Contribution unproven. Formal contribution analysis was abandoned: grant-implementation data absent."
+        },
+        {
+          "eq_id": "eq_6",
+          "strength": 1,
+          "note": "Plausible contribution not established; pooled Alliance funding masks attribution."
+        },
+        {
+          "eq_id": "eq_7",
+          "strength": 2,
+          "note": "ToC/ToA fitness assessed from Year 2; interim evidence limited."
+        },
+        {
+          "eq_id": "eq_8",
+          "strength": 2,
+          "note": "Sustainability prioritised in later phases; evidence thin so far."
+        }
+      ]
+    },
     "management_response": [
-      { "id": "rec_zd_1", "code": "I1", "recommendation": "Improve the granularity of grant financial and implementation data so contribution can be assessed.", "disposition": "agree", "owner": "Programme Team", "secondary_owner": "national immunisation programmes", "due_date": "2024-12-31", "status": "in_progress", "actions": "Cross-Secretariat data and analytics initiative scoped.", "evidence_note": "", "next_review": "2025-03-31" },
-      { "id": "rec_zd_2", "code": "I2", "recommendation": "Strengthen Alliance support to countries for prioritising immunisation programming.", "disposition": "agree", "owner": "Programme Team", "secondary_owner": "national immunisation programmes", "due_date": "2024-09-30", "status": "overdue", "actions": "", "evidence_note": "", "next_review": "2025-02-28" },
-      { "id": "rec_zd_3", "code": "I3", "recommendation": "Reinforce communication so in-country stakeholders understand the zero-dose agenda.", "disposition": "agree", "owner": "Strategy Team", "secondary_owner": "national immunisation programmes", "due_date": "2025-03-31", "status": "planned", "actions": "", "evidence_note": "", "next_review": "2025-01-31" },
-      { "id": "rec_zd_4", "code": "I4", "recommendation": "Adopt a value-for-money framework to guide difficult resource-allocation choices.", "disposition": "partial", "owner": "Strategy Team", "secondary_owner": "", "due_date": "2025-03-31", "status": "planned", "actions": "Equitable programming is by nature expensive; a pure VfM lens risks de-prioritising the hardest-to-reach. Equity remains the organising principle of Gavi 5.0.", "evidence_note": "", "next_review": "2025-01-31" },
-      { "id": "rec_zd_5", "code": "I5", "recommendation": "Support country teams to operationalise their grants more effectively.", "disposition": "agree", "owner": "Programme Team", "secondary_owner": "national immunisation programmes", "due_date": "2024-12-31", "status": "in_progress", "actions": "", "evidence_note": "", "next_review": "2025-03-31" },
-      { "id": "rec_zd_6", "code": "I6", "recommendation": "Invest in zero-dose-specific indicators and embed them in the Gavi 6.0 monitoring frameworks.", "disposition": "agree", "owner": "Programme Team", "secondary_owner": "", "due_date": "2025-06-30", "status": "planned", "actions": "", "evidence_note": "", "next_review": "2025-04-30" },
-      { "id": "rec_zd_7", "code": "I7", "recommendation": "Roll out a cross-Secretariat initiative to enhance the use of data and analytics for management.", "disposition": "agree", "owner": "Strategy Team", "secondary_owner": "", "due_date": "2024-12-31", "status": "in_progress", "actions": "Weak grant-implementation data flagged relative to peers such as the Global Fund.", "evidence_note": "", "next_review": "2025-03-31" }
+      {
+        "id": "rec_zd_1",
+        "code": "I1",
+        "recommendation": "Improve the granularity of grant financial and implementation data so contribution can be assessed.",
+        "disposition": "agree",
+        "owner": "Programme Team",
+        "secondary_owner": "national immunisation programmes",
+        "due_date": "2024-12-31",
+        "status": "in_progress",
+        "actions": "Cross-Secretariat data and analytics initiative scoped.",
+        "evidence_note": "",
+        "next_review": "2026-06-20",
+        "implementation_status": "in_progress",
+        "progress": 45,
+        "review_interval_months": 3,
+        "review_history": [
+          {
+            "id": "rev_mr8wd245lxt3tbi366s",
+            "review_date": "2026-03-20",
+            "status": "in_progress",
+            "note": "Cross-Secretariat data and analytics initiative moved from scoping to build, but grant financial-data granularity remains below the level needed for contribution assessment.",
+            "evidence_label": "Data initiative status update (Q1 2026)",
+            "evidence_url": ""
+          }
+        ],
+        "owner_email": "r.alemu@gavi.org"
+      },
+      {
+        "id": "rec_zd_2",
+        "code": "I2",
+        "recommendation": "Strengthen Alliance support to countries for prioritising immunisation programming.",
+        "disposition": "agree",
+        "owner": "Programme Team",
+        "secondary_owner": "national immunisation programmes",
+        "due_date": "2024-09-30",
+        "status": "overdue",
+        "actions": "",
+        "evidence_note": "",
+        "next_review": "2026-06-05",
+        "implementation_status": "blocked",
+        "progress": 25,
+        "review_interval_months": 3,
+        "review_history": [
+          {
+            "id": "rev_mr8wd245e26mlu3vnk7",
+            "review_date": "2026-03-05",
+            "status": "blocked",
+            "note": "Country-prioritisation support stalled amid competing Secretariat priorities and partner-coordination gaps; no substantive progress since the previous checkpoint.",
+            "evidence_label": "Management response tracker (Q1 2026)",
+            "evidence_url": ""
+          }
+        ],
+        "owner_email": "t.bello@gavi.org"
+      },
+      {
+        "id": "rec_zd_3",
+        "code": "I3",
+        "recommendation": "Reinforce communication so in-country stakeholders understand the zero-dose agenda.",
+        "disposition": "agree",
+        "owner": "Strategy Team",
+        "secondary_owner": "national immunisation programmes",
+        "due_date": "2025-03-31",
+        "status": "planned",
+        "actions": "",
+        "evidence_note": "",
+        "next_review": null,
+        "implementation_status": "implemented",
+        "progress": 100,
+        "review_interval_months": 6,
+        "review_history": [
+          {
+            "id": "rev_mr8wd245s3yh1u329pm",
+            "review_date": "2026-01-31",
+            "status": "in_progress",
+            "note": "Zero-dose communications products drafted and country roll-out begun; assessed as on track to complete, and since verified as implemented.",
+            "evidence_label": "Comms roll-out plan (Q4 2025)",
+            "evidence_url": ""
+          }
+        ],
+        "owner_email": "l.moreau@gavi.org"
+      },
+      {
+        "id": "rec_zd_4",
+        "code": "I4",
+        "recommendation": "Adopt a value-for-money framework to guide difficult resource-allocation choices.",
+        "disposition": "partial",
+        "owner": "Strategy Team",
+        "secondary_owner": "",
+        "due_date": "2025-03-31",
+        "status": "planned",
+        "actions": "Equitable programming is by nature expensive; a pure VfM lens risks de-prioritising the hardest-to-reach. Equity remains the organising principle of Gavi 5.0.",
+        "evidence_note": "",
+        "next_review": null,
+        "implementation_status": "superseded",
+        "progress": 30,
+        "review_interval_months": 12,
+        "review_history": [
+          {
+            "id": "rev_mr8wd245pd393p8wire",
+            "review_date": "2026-01-31",
+            "status": "superseded",
+            "note": "Standalone value-for-money framework folded into the equity-anchored Gavi 6.0 investment approach; management held equity as the organising principle, superseding a separate VfM instrument.",
+            "evidence_label": "Gavi 6.0 investment approach note",
+            "evidence_url": ""
+          }
+        ],
+        "owner_email": "s.haddad@gavi.org"
+      },
+      {
+        "id": "rec_zd_5",
+        "code": "I5",
+        "recommendation": "Support country teams to operationalise their grants more effectively.",
+        "disposition": "agree",
+        "owner": "Programme Team",
+        "secondary_owner": "national immunisation programmes",
+        "due_date": "2024-12-31",
+        "status": "in_progress",
+        "actions": "",
+        "evidence_note": "",
+        "next_review": "2026-07-20",
+        "implementation_status": "in_progress",
+        "progress": 60,
+        "review_interval_months": 6,
+        "review_history": [
+          {
+            "id": "rev_mr8wd245udef6l7xx3",
+            "review_date": "2026-01-20",
+            "status": "in_progress",
+            "note": "Country operational-support package deployed in a first tranche of countries; uptake uneven in fragile and conflict-affected settings.",
+            "evidence_label": "Country support tracker (Q4 2025)",
+            "evidence_url": ""
+          }
+        ],
+        "owner_email": "r.alemu@gavi.org"
+      },
+      {
+        "id": "rec_zd_6",
+        "code": "I6",
+        "recommendation": "Invest in zero-dose-specific indicators and embed them in the Gavi 6.0 monitoring frameworks.",
+        "disposition": "agree",
+        "owner": "Programme Team",
+        "secondary_owner": "",
+        "due_date": "2025-06-30",
+        "status": "planned",
+        "actions": "",
+        "evidence_note": "",
+        "next_review": "2026-10-31",
+        "implementation_status": "in_progress",
+        "progress": 45,
+        "review_interval_months": 6,
+        "review_history": [
+          {
+            "id": "rev_mr8wd246p1qh20nirt",
+            "review_date": "2026-04-30",
+            "status": "in_progress",
+            "note": "Zero-dose indicator set defined and under integration into the Gavi 6.0 monitoring framework; formal endorsement still pending.",
+            "evidence_label": "Gavi 6.0 monitoring framework draft",
+            "evidence_url": ""
+          }
+        ],
+        "owner_email": "r.alemu@gavi.org"
+      },
+      {
+        "id": "rec_zd_7",
+        "code": "I7",
+        "recommendation": "Roll out a cross-Secretariat initiative to enhance the use of data and analytics for management.",
+        "disposition": "agree",
+        "owner": "Strategy Team",
+        "secondary_owner": "",
+        "due_date": "2024-12-31",
+        "status": "in_progress",
+        "actions": "Weak grant-implementation data flagged relative to peers such as the Global Fund.",
+        "evidence_note": "",
+        "next_review": "2026-07-28",
+        "implementation_status": "in_progress",
+        "progress": 55,
+        "review_interval_months": 6,
+        "review_history": [
+          {
+            "id": "rev_mr8wd246wn86knpmuco",
+            "review_date": "2026-01-28",
+            "status": "in_progress",
+            "note": "Data-and-analytics initiative rolled out to a first set of Secretariat teams; grant-implementation data still weak relative to peers such as the Global Fund.",
+            "evidence_label": "Analytics initiative review (Q1 2026)",
+            "evidence_url": ""
+          }
+        ],
+        "owner_email": "s.haddad@gavi.org"
+      }
     ],
     "dissemination": [
-      { "id": "dis_deck", "product": "Year 2 findings slide deck", "format": "Slide deck", "audience": "Board and EAC", "due_date": "2024-05-31", "status": "delivered", "note": "" },
-      { "id": "dis_brief", "product": "Evaluation brief with management response", "format": "Brief", "audience": "Board and Secretariat", "due_date": "2024-06-30", "status": "delivered", "note": "" },
-      { "id": "dis_country", "product": "Country feedback sessions on real-time findings", "format": "Workshop", "audience": "National immunisation programmes", "due_date": "2024-08-31", "status": "in_progress", "note": "" },
-      { "id": "dis_learn", "product": "Zero-dose learning brief for Gavi 6.0 design", "format": "Learning brief", "audience": "Strategy Team and Alliance partners", "due_date": "2024-10-31", "status": "planned", "note": "" }
+      {
+        "id": "dis_deck",
+        "product": "Year 2 findings slide deck",
+        "format": "Slide deck",
+        "audience": "Board and EAC",
+        "due_date": "2024-05-31",
+        "status": "delivered",
+        "note": ""
+      },
+      {
+        "id": "dis_brief",
+        "product": "Evaluation brief with management response",
+        "format": "Brief",
+        "audience": "Board and Secretariat",
+        "due_date": "2024-06-30",
+        "status": "delivered",
+        "note": ""
+      },
+      {
+        "id": "dis_country",
+        "product": "Country feedback sessions on real-time findings",
+        "format": "Workshop",
+        "audience": "National immunisation programmes",
+        "due_date": "2024-08-31",
+        "status": "in_progress",
+        "note": ""
+      },
+      {
+        "id": "dis_learn",
+        "product": "Zero-dose learning brief for Gavi 6.0 design",
+        "format": "Learning brief",
+        "audience": "Strategy Team and Alliance partners",
+        "due_date": "2024-10-31",
+        "status": "planned",
+        "note": ""
+      }
     ],
     "risks": [
-      { "id": "rsk_data", "risk": "Grant-implementation data too coarse for a formal contribution analysis.", "category": "Data", "likelihood": "high", "impact": "high", "mitigation": "Shift O3 to a plausible-contribution narrative; report the data gap to the EAC. (Materialised: formal contribution analysis was abandoned.)", "owner": "Central Evaluation Team", "status": "open" },
-      { "id": "rsk_attr", "risk": "Pooled Alliance funding masks attribution to Gavi specifically.", "category": "Method", "likelihood": "high", "impact": "medium", "mitigation": "Frame contribution at Alliance level; avoid single-actor attribution claims.", "owner": "Team Leader", "status": "mitigating" },
-      { "id": "rsk_equity", "risk": "Equity analysis skews to socio-economic factors, under-weighting gender.", "category": "Scope", "likelihood": "medium", "impact": "medium", "mitigation": "Strengthen the gender dimension at EAC request (inception condition, now cleared).", "owner": "Supplier", "status": "closed" }
+      {
+        "id": "rsk_data",
+        "risk": "Grant-implementation data too coarse for a formal contribution analysis.",
+        "category": "Data",
+        "likelihood": "high",
+        "impact": "high",
+        "mitigation": "Shift O3 to a plausible-contribution narrative; report the data gap to the EAC. (Materialised: formal contribution analysis was abandoned.)",
+        "owner": "Central Evaluation Team",
+        "status": "open"
+      },
+      {
+        "id": "rsk_attr",
+        "risk": "Pooled Alliance funding masks attribution to Gavi specifically.",
+        "category": "Method",
+        "likelihood": "high",
+        "impact": "medium",
+        "mitigation": "Frame contribution at Alliance level; avoid single-actor attribution claims.",
+        "owner": "Team Leader",
+        "status": "mitigating"
+      },
+      {
+        "id": "rsk_equity",
+        "risk": "Equity analysis skews to socio-economic factors, under-weighting gender.",
+        "category": "Scope",
+        "likelihood": "medium",
+        "impact": "medium",
+        "mitigation": "Strengthen the gender dimension at EAC request (inception condition, now cleared).",
+        "owner": "Supplier",
+        "status": "closed"
+      }
     ],
     "completed_at": "2024-05-10T10:00:00.000Z"
   },
@@ -2142,7 +2605,9 @@
     "5": false,
     "6": false,
     "7": false,
-    "8": false
+    "8": false,
+    "9": false,
+    "10": false
   },
   "reviews": []
 };
