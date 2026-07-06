@@ -11,7 +11,20 @@
   //          cockpit: intended-user register (users), governance purpose/primary_use,
   //          delivery-schedule tracking (timeline), dissemination/use products
   //          (dissemination) and a delivery-risk register (risks). Fully additive.
-  var PRAXIS_VERSION = '1.3.0';
+  //   1.4.0  turns the Commissioner surface into a station-based cockpit (role switch).
+  //          Unifies deliverables: planning.deliverables becomes the single source of
+  //          truth and commissioner.timeline is retired (migrated into it). Adds the
+  //          inception-gate independence + ethics checkpoints, a relocated strength-of-
+  //          evidence rating at report acceptance (report_review), and six-monthly
+  //          management-action follow-up fields (implementation_status, progress,
+  //          review_interval_months, review_history) on management_response. Additive.
+  var PRAXIS_VERSION = '1.4.0';
+
+  // Navigation bounds (single source; consumed by router.js and context.js clamps).
+  // MAX_STATION: highest evaluator-rail station index (0..9, includes Planning).
+  // MAX_CSTATION: highest commissioner sub-station index (0 Overview, 1..6 = C0..C5).
+  var MAX_STATION = 9;
+  var MAX_CSTATION = 6;
 
   var STATION_LABELS = [
     'Evaluability & Scoping',
@@ -137,12 +150,19 @@
       presentation: { slides: [], completed_at: null },
 
       // Optional Planning station (index 9): contract, budget, deliverables, invoices, ratings.
+      // As of 1.4.0 planning.deliverables is the SINGLE source of truth for deliverables
+      // (commissioner.timeline retired). Item shape:
+      //   { id, code, title, description, due_date, station_ids:[Int], payment_percent,
+      //     status: not_started|in_progress|submitted|accepted|revise, submitted_at, accepted_at,
+      //     type, reviewers, reviewer_email, alert:{ lead_days, emails:[] },
+      //     rating:{ scores, comment, rated_at }|null, notes, ported_from }
+      // The C3 schedule status (planned|in_review|late|accepted) is DERIVED, never stored.
       planning: { contract: {}, budget_lines: [], deliverables: [], invoices: [], completed_at: null },
 
       // Optional Commissioner surface (index 10): a utilization-focused commissioning
-      // cockpit over the shared evaluation context. Four movements mirror the
-      // commissioner's arc: Commission (design for use) -> Assure (gate before spend)
-      // -> Deliver (track the schedule) -> Use (uptake and dissemination).
+      // cockpit over the shared evaluation context, reached through the role switch.
+      // Rail: Overview + C0 Commission -> C1 Contract -> C2 Assure -> C3 Deliver ->
+      // C4 Use -> C5 Follow-up. Lifecycle states: Originate/Procure/Gate/Endorse/Track.
       commissioner: {
         governance: {
           funder_profile: '', oversight_body: '', evaluation_manager: '',
@@ -153,13 +173,27 @@
         // Intended-user register (utilization-focused evaluation): the named primary
         // and secondary users, the use each will make of the evaluation, when they
         // need it, and their influence/interest for engagement planning.
-        users: [],          // [{ id, name, role, tier, intended_use, decision_window, influence, interest, engagement }]
-        gate: { decision: '', decided_by: '', decided_at: null, note: '', conditions: [] },
-        appraisal: { profile: '', evidence: [] },
-        // Delivery / assurance schedule: the ToR deliverables with their review bodies,
-        // due dates and acceptance status, tracked to on-time delivery.
-        timeline: [],       // [{ id, name, type, due_date, reviewers, status, note }]
-        management_response: [],
+        users: [],          // [{ id, name, role, tier, intended_use, decision_window, influence, interest, engagement, eq_refs:[] }]
+        // Inception design-assurance gate. C2 rates ANSWERABILITY / design-confidence per
+        // question (not strength of evidence, which does not exist yet). Independence and
+        // ethics are formal inception checkpoints for IEP/EAC-grade work.
+        gate: {
+          decision: '', decided_by: '', decided_at: null, note: '', conditions: [],
+          independence: { attested: false, statement: '', conflicts: [], attested_by: '', attested_at: null },
+          ethics: { status: 'none', body: '', note: '', cleared_at: null } // none|pending|cleared|na
+        },
+        appraisal: { profile: '', evidence: [] }, // C2 answerability: [{ eq_id, rating 1..4, justification }]
+        // Report acceptance (the Endorse act, C3). The TRUE strength-of-evidence rating
+        // lives here, where evidence exists; higher = stronger.
+        report_review: { accepted: false, accepted_by: '', accepted_at: null,
+          evidence: [] }, // [{ eq_id, strength 1..4 (higher=stronger), note }]
+        // Management response + six-monthly implementation follow-up (C4 authors, C5 tracks).
+        management_response: [], // [{ id, code, recommendation, disposition agree|partial|reject,
+                                 //    owner, secondary_owner, owner_email, due_date,
+                                 //    implementation_status not_started|in_progress|implemented|blocked|superseded,
+                                 //    progress 0..100, review_interval_months, next_review,
+                                 //    review_history:[{ id, review_date, status, note, evidence_url, evidence_label }],
+                                 //    actions, evidence_note }]
         // Use and dissemination products keyed to the audiences that must act on them.
         dissemination: [],  // [{ id, product, format, audience, due_date, status, note }]
         // Delivery-risk register: risks reported to the evaluation manager with mitigation.
@@ -305,6 +339,53 @@
       var next = deepDefault(createEmptyContext(), ctx);
       next.version = '1.3.0';
       return next;
+    },
+    // 1.3.0 -> 1.4.0: unify deliverables. deep-default adds the new gate/report_review/
+    // follow-up fields, then port commissioner.timeline into planning.deliverables (the
+    // single source of truth) and retire timeline. Integrity-first: enrich an existing
+    // deliverable only on an EXACT id match; otherwise append with a fresh uid and
+    // ported_from provenance (never fuzzy-merge by name/date). Backfill management_response
+    // with implementation_status / progress / review_interval_months / review_history.
+    '1.3.0': function(ctx) {
+      var next = deepDefault(createEmptyContext(), ctx);
+      var cm = next.commissioner || (next.commissioner = {});
+      var pl = next.planning || (next.planning = { deliverables: [] });
+      var dels = Array.isArray(pl.deliverables) ? pl.deliverables.slice() : [];
+      var byId = {};
+      dels.forEach(function(d) { if (d && d.id) byId[d.id] = d; });
+      var tlStatus = { accepted: 'accepted', in_review: 'submitted', late: 'in_progress', planned: 'not_started' };
+      (Array.isArray(cm.timeline) ? cm.timeline : []).forEach(function(t) {
+        var m = t.id && byId[t.id];
+        if (m) {
+          if (!m.type && t.type) m.type = t.type;
+          if (!m.reviewers && t.reviewers) m.reviewers = t.reviewers;
+          if (!m.due_date && t.due_date) m.due_date = t.due_date;
+          if (!m.notes && t.note) m.notes = t.note;
+          if (!m.alert) m.alert = { lead_days: 14, emails: [] };
+        } else {
+          dels.push({
+            id: PraxisUtils.uid('del_'), ported_from: t.id || null,
+            code: '', title: t.name || '(ported deliverable)', description: '',
+            due_date: t.due_date || '', station_ids: [], payment_percent: null,
+            status: tlStatus[t.status] || 'not_started', submitted_at: null,
+            accepted_at: (t.status === 'accepted' ? (t.accepted_at || null) : null),
+            type: t.type || '', reviewers: t.reviewers || '', reviewer_email: '',
+            alert: { lead_days: 14, emails: [] }, rating: null, notes: t.note || ''
+          });
+        }
+      });
+      pl.deliverables = dels;
+      if (cm.timeline !== undefined) delete cm.timeline;
+      var mrStatus = { done: 'implemented', in_progress: 'in_progress', planned: 'not_started', overdue: 'in_progress' };
+      (Array.isArray(cm.management_response) ? cm.management_response : []).forEach(function(r) {
+        if (r.implementation_status == null) r.implementation_status = mrStatus[r.status] || 'not_started';
+        if (r.progress == null) r.progress = r.implementation_status === 'implemented' ? 100 : (r.implementation_status === 'in_progress' ? 50 : 0);
+        if (r.review_interval_months == null) r.review_interval_months = 6;
+        if (!Array.isArray(r.review_history)) r.review_history = [];
+        if (r.owner_email == null) r.owner_email = '';
+      });
+      next.version = '1.4.0';
+      return next;
     }
   };
 
@@ -333,6 +414,8 @@
 
   window.PraxisSchema = {
     PRAXIS_VERSION: PRAXIS_VERSION,
+    MAX_STATION: MAX_STATION,
+    MAX_CSTATION: MAX_CSTATION,
     STATION_LABELS: STATION_LABELS,
     STATION_FIELDS: STATION_FIELDS,
     createEmptyContext: createEmptyContext,
