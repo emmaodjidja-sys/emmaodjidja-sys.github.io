@@ -239,10 +239,11 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 .wb-cm-soe-btn { width: 30px; height: 26px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-tertiary); cursor: pointer; transition: all var(--dur-fast) ease; }
 .wb-cm-soe-btn:hover { border-color: var(--slate); }
 .wb-cm-soe-btn--on { color: #fff; border-color: transparent; }
-.wb-cm-soe-btn--1.wb-cm-soe-btn--on { background: var(--green); }
-.wb-cm-soe-btn--2.wb-cm-soe-btn--on { background: var(--teal-dark); }
-.wb-cm-soe-btn--3.wb-cm-soe-btn--on { background: var(--amber); }
-.wb-cm-soe-btn--4.wb-cm-soe-btn--on { background: var(--red); }
+/* Higher = better for both C2 answerability and C3 strength-of-evidence (4 strongest). */
+.wb-cm-soe-btn--4.wb-cm-soe-btn--on { background: var(--green); }
+.wb-cm-soe-btn--3.wb-cm-soe-btn--on { background: var(--teal-dark); }
+.wb-cm-soe-btn--2.wb-cm-soe-btn--on { background: var(--amber); }
+.wb-cm-soe-btn--1.wb-cm-soe-btn--on { background: var(--red); }
 
 /* ---- decision block ------------------------------------------------------*/
 .wb-cm-decision { margin-top: 16px; padding: 16px; background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius-md); }
@@ -319,4 +320,146 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
   .wb-cm-focus { grid-template-columns: 1fr; }
   .wb-cm-move-head { gap: 10px; }
   .wb-cm-move-idx { font-size: 20px; }
+}
+
+/* ==========================================================================
+   Cockpit v2: role switch, condensed persistent header, overview flight deck,
+   alerts, and the station-specific devices (funnel, cadence, rings).
+   ========================================================================== */
+
+/* ---- role switch (TopBar) hover ------------------------------------------*/
+.wb-roleswitch-btn:hover { background: rgba(255, 255, 255, 0.09) !important; }
+
+/* ---- commissioner rail ---------------------------------------------------*/
+.wb-rail--commissioner .wb-rail-btn-num { font-size: 12px; letter-spacing: 0.02em; }
+.wb-rail-btn--back { margin-bottom: 6px; }
+.wb-rail-btn--commissioner-entry .wb-rail-btn-num { font-weight: 700; }
+
+/* ---- station body + move idx uses 2-char codes ---------------------------*/
+.wb-cm-body { display: flex; flex-direction: column; gap: var(--space-6); }
+.wb-cm-move-idx { min-width: 1.6em; }
+
+/* ---- condensed persistent header ----------------------------------------*/
+.wb-cm-header2 {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 14px 16px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); position: sticky; top: 4px; z-index: 5;
+}
+.wb-cm-header2-top { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; }
+.wb-cm-header2-id { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
+.wb-cm-chip--muted { color: var(--text-tertiary); border-color: var(--border-strong); }
+.wb-cm-header2-clock { display: inline-flex; align-items: baseline; gap: 7px; font-size: var(--text-sm); font-weight: 700; color: var(--text); min-width: 0; }
+.wb-cm-header2-clock-ey { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-ink); font-weight: 600; }
+.wb-cm-header2-over { font-size: var(--text-xs); color: var(--text-tertiary); }
+
+/* alerts badge */
+.wb-cm-alertbadge {
+  display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto; cursor: pointer;
+  font-size: var(--text-xs); font-weight: 700; color: var(--text-secondary);
+  background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius-full);
+  padding: 5px 12px;
+}
+.wb-cm-alertbadge:hover { border-color: var(--border-strong); }
+.wb-cm-alertbadge-ico { display: inline-flex; color: var(--text-tertiary); }
+.wb-cm-alertbadge--alert { color: var(--red-strong); background: var(--red-light); border-color: transparent; }
+.wb-cm-alertbadge--alert .wb-cm-alertbadge-ico { color: var(--red); }
+
+/* thin spine variant */
+.wb-cm-spine--thin { border: none; background: transparent; padding: 0; border-radius: 0; }
+.wb-cm-spine--thin .wb-cm-stage { padding: 3px 9px; font-size: 11px; }
+.wb-cm-spine--thin .wb-cm-stage-dot { width: 13px; height: 13px; }
+
+/* condensed KPI strip (clickable chips) */
+.wb-cm-kpistrip { display: flex; gap: 8px; flex-wrap: wrap; }
+.wb-cm-kpichip {
+  display: flex; flex-direction: column; gap: 1px; text-align: left; cursor: pointer;
+  padding: 6px 12px; background: var(--surface-muted); border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong); border-radius: var(--radius-sm); min-width: 0;
+}
+.wb-cm-kpichip:hover { background: var(--surface); border-color: var(--border-strong); }
+.wb-cm-kpichip--warn { border-left-color: var(--amber); }
+.wb-cm-kpichip--good { border-left-color: var(--green); }
+.wb-cm-kpichip-v { font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 700; color: var(--text); line-height: 1.2; }
+.wb-cm-kpichip-l { font-size: 10px; color: var(--text-tertiary); line-height: 1.25; }
+
+/* ---- alerts drawer + rows ------------------------------------------------*/
+.wb-cm-drawer { margin-top: 4px; border-top: 1px solid var(--border); padding-top: 12px; }
+.wb-cm-drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.wb-cm-drawer-title { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary); }
+.wb-cm-alerts { display: flex; flex-direction: column; gap: 8px; }
+.wb-cm-alert {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 12px; background: var(--surface); border: 1px solid var(--border);
+  border-left: 4px solid var(--border-strong); border-radius: var(--radius-sm);
+}
+.wb-cm-alert--overdue { border-left-color: var(--red); background: var(--red-light); }
+.wb-cm-alert--soon { border-left-color: var(--amber); }
+.wb-cm-alert--info { border-left-color: var(--slate); }
+.wb-cm-alert-main { flex: 1 1 320px; min-width: 0; }
+.wb-cm-alert-title { display: flex; align-items: center; gap: 7px; font-size: var(--text-sm); font-weight: 700; color: var(--text); }
+.wb-cm-alert-ico { display: inline-flex; color: var(--red); flex: 0 0 auto; }
+.wb-cm-alert--soon .wb-cm-alert-ico { color: var(--amber-text); }
+.wb-cm-alert-detail { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; margin-top: 3px; }
+.wb-cm-alert-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 0 0 auto; }
+
+/* ---- overview flight deck ------------------------------------------------*/
+.wb-cm-overview { display: flex; flex-direction: column; gap: var(--space-5); }
+.wb-cm-otiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.wb-cm-otile {
+  display: flex; flex-direction: column; gap: 4px; text-align: left; cursor: pointer; min-height: 104px;
+  padding: 14px 15px; background: var(--surface); border: 1px solid var(--border);
+  border-top: 3px solid var(--border-strong); border-radius: var(--radius-md);
+}
+.wb-cm-otile:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+.wb-cm-otile--warn { border-top-color: var(--amber); }
+.wb-cm-otile--good { border-top-color: var(--green); }
+.wb-cm-otile-ring { margin-bottom: 2px; }
+.wb-cm-otile-v { font-size: var(--text-lg); font-weight: 700; color: var(--text); line-height: 1.15; }
+.wb-cm-otile-l { font-size: 11px; font-weight: 600; color: var(--text-secondary); line-height: 1.3; }
+.wb-cm-otile-s { font-size: 11px; color: var(--text-tertiary); margin-top: auto; }
+.wb-cm-otile--warn .wb-cm-otile-s { color: var(--amber-text); }
+.wb-cm-otile--good .wb-cm-otile-s { color: var(--green-strong); }
+
+/* donut ring */
+.wb-cm-ring { display: block; }
+.wb-cm-ring-t { font-family: var(--font-mono); font-size: 11px; font-weight: 700; fill: var(--text); }
+
+/* overview station nav cards */
+.wb-cm-navcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.wb-cm-navcard {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; gap: 1px 10px;
+  text-align: left; cursor: pointer; padding: 12px 14px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+}
+.wb-cm-navcard:hover { border-color: var(--teal); box-shadow: var(--shadow-sm); }
+.wb-cm-navcard-code { grid-row: 1 / 3; align-self: center; font-family: var(--font-mono); font-size: var(--text-md); font-weight: 700; color: var(--teal); }
+.wb-cm-navcard-label { font-size: var(--text-sm); font-weight: 700; color: var(--text); }
+.wb-cm-navcard-desc { font-size: 11px; color: var(--text-tertiary); line-height: 1.4; }
+
+/* ---- C4 uptake funnel ----------------------------------------------------*/
+.wb-cm-funnel-bar { display: flex; gap: 3px; align-items: stretch; height: 56px; }
+.wb-cm-funnel-seg {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); color: #fff; min-width: 0; padding: 4px; overflow: hidden;
+}
+.wb-cm-funnel-seg:nth-child(1) { background: var(--slate); }
+.wb-cm-funnel-seg:nth-child(2) { background: var(--teal-dark); }
+.wb-cm-funnel-seg:nth-child(3) { background: var(--blue); }
+.wb-cm-funnel-seg:nth-child(4) { background: var(--green); }
+.wb-cm-funnel-count { font-family: var(--font-mono); font-size: var(--text-md); font-weight: 700; line-height: 1; }
+.wb-cm-funnel-label, .wb-cm-funnel-stage { font-size: 10px; font-weight: 600; line-height: 1.2; text-align: center; opacity: 0.95; }
+.wb-cm-mr-track { margin-top: 6px; }
+
+/* ---- C2 ethics status ----------------------------------------------------*/
+.wb-cm-eth-status { display: inline-flex; align-items: center; gap: 8px; }
+
+/* ---- responsive additions ------------------------------------------------*/
+@media (max-width: 1040px) {
+  .wb-cm-otiles { grid-template-columns: repeat(3, 1fr); }
+  .wb-cm-header2 { position: static; }
+}
+@media (max-width: 640px) {
+  .wb-cm-otiles { grid-template-columns: 1fr 1fr; }
+  .wb-cm-kpistrip { gap: 6px; }
+  .wb-cm-alert-actions { width: 100%; }
 }
