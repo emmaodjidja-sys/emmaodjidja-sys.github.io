@@ -1,0 +1,254 @@
+/**
+ * CockpitDeliver: C3 Deliver (rail index 4). "Hold delivery to schedule, endorse the report."
+ * Tracks every planned deliverable against its due date and review body so slippage is
+ * visible while it can still be managed, surfaces the derived overdue / due-soon alerts with
+ * one-click email and calendar actions, keeps a delivery-risk register, and closes with the
+ * formal report acceptance where the TRUE strength-of-evidence rating is set per evaluation
+ * question (higher is stronger).
+ *
+ * Reads the unified planning.deliverables (single source of truth; the schedule status is
+ * DERIVED via CockpitData.deliverableStatus, never stored here, editing the canonical
+ * workflow status is C1 Contract's job) plus commissioner.risks and commissioner.report_review.
+ * Returns ONLY the station body; CockpitShell renders the persistent cockpit header above.
+ * Ported markup/classes come from the old Commissioner.deliverMovement.
+ * window.CockpitDeliver. No-JSX React.createElement house style.
+ */
+(function() {
+  'use strict';
+  var h = React.createElement;
+  var I = window.PraxisIcons;
+  var U = window.PraxisUtils;
+  var A = window.CockpitAtoms;
+  var D = window.CockpitData;
+  var CA = window.CockpitAlerts;
+  var SectionCard = window.SectionCard;
+
+  var moveHead = A.moveHead, statusBadge = A.statusBadge, agingChip = A.agingChip;
+
+  // Local-date milliseconds (never new Date('YYYY-MM-DD'), which is UTC midnight and shifts a
+  // calendar day west of UTC). Mirrors PraxisUtils.daysUntilLocal so the today marker lines up
+  // with the aging chips.
+  function ms(iso) { var a = U.ymd(iso); return a ? new Date(a[0], a[1] - 1, a[2]).getTime() : null; }
+  function todayMs() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime(); }
+  function byDue(a, b) { var x = ms(a.due_date), y = ms(b.due_date); if (x == null) return 1; if (y == null) return -1; return x - y; }
+
+  // Horizontal milestone track with a today marker. Read-only at-a-glance; the table below
+  // manages the detail. Dot colour is the DERIVED schedule status of each deliverable.
+  function milestoneTrack(dels) {
+    var dated = dels.filter(function(d) { return ms(d.due_date) != null; });
+    if (dated.length < 2) return null;
+    var times = dated.map(function(d) { return ms(d.due_date); });
+    var min = Math.min.apply(null, times), max = Math.max.apply(null, times);
+    var span = Math.max(1, max - min);
+    var now = todayMs();
+    var showToday = now >= min && now <= max;
+    var sorted = dated.slice().sort(byDue);
+    return h('div', { className: 'wb-cm-track', role: 'img', 'aria-label': 'Delivery timeline with ' + dated.length + ' milestones' },
+      h('div', { className: 'wb-cm-track-line' }),
+      showToday ? h('div', { className: 'wb-cm-track-today', style: { left: ((now - min) / span * 100) + '%' } }, h('span', { className: 'wb-cm-track-today-lbl' }, 'today')) : null,
+      sorted.map(function(d, i) {
+        var xp = (ms(d.due_date) - min) / span * 100;
+        var sched = D.DELIV_SCHED[D.deliverableStatus(d)] || D.DELIV_SCHED.planned;
+        var below = i % 2 === 1;
+        return h('div', { key: d.id, className: 'wb-cm-mile' + (below ? ' wb-cm-mile--below' : ''), style: { left: xp + '%' } },
+          h('span', { className: 'wb-cm-mile-dot', style: { background: sched.dot } }),
+          h('span', { className: 'wb-cm-mile-lbl' },
+            h('span', { className: 'wb-cm-mile-name' }, d.title || 'deliverable'),
+            h('span', { className: 'wb-cm-mile-date' }, D.fdate(d.due_date))));
+      }));
+  }
+
+  function CockpitDeliver(props) {
+    var context = props.state.context;
+    var dispatch = props.dispatch;
+    var alerts = props.alerts || [];
+    var api = window.CockpitSave.make(context, dispatch);
+
+    var deliverables = (context.planning && context.planning.deliverables) || [];
+    var cm = context.commissioner || {};
+    var risks = cm.risks || [];
+    var rows = (context.evaluation_matrix && context.evaluation_matrix.rows) || [];
+    var report = cm.report_review || { evidence: [] };
+
+    var riskApi = api.listSetter('risks');
+
+    function addDeliverable() {
+      api.addDeliverable({
+        id: U.uid('del_'), code: '', title: '', description: '', due_date: '',
+        station_ids: [], payment_percent: null, status: 'not_started', type: '',
+        reviewers: '', reviewer_email: '', alert: { lead_days: 14, emails: [] },
+        rating: null, notes: ''
+      }, 'Deliverable added');
+    }
+    function addRisk() {
+      riskApi.add({ id: U.uid('rsk_'), risk: '', category: '', likelihood: 'medium', impact: 'medium', mitigation: '', owner: '', status: 'open' }, 'Risk added');
+    }
+
+    // The derived deliverable alert (overdue / due-soon) for a deliverable id, matched on the
+    // alert's stableId so the row can offer one-click email and calendar actions.
+    function deliverableAlert(id) {
+      for (var i = 0; i < alerts.length; i++) {
+        var a = alerts[i];
+        if (a.stableId === id && (a.kind === 'deliverable_overdue' || a.kind === 'deliverable_due')) return a;
+      }
+      return null;
+    }
+    function alertCell(a) {
+      if (!a) return h('span', { className: 'wb-cm-muted' }, '-');
+      return h('div', { className: 'wb-cm-alert-actions', style: { display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' } },
+        h('a', { className: 'wb-btn wb-btn-sm wb-btn-outline', href: CA.mailtoForAlert(a), 'aria-label': 'Email the review body about ' + a.title }, 'Email owner'),
+        h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { CA.downloadIcsForAlert(a); } }, 'Add to calendar'));
+    }
+
+    // ---- delivery schedule (planning.deliverables; schedule status DERIVED) -----------------
+    var scheduleBody = deliverables.length ? h(React.Fragment, null,
+      milestoneTrack(deliverables),
+      h('div', { className: 'wb-table-container' },
+        h('table', { className: 'wb-table wb-cm-table' },
+          h('thead', null, h('tr', null,
+            h('th', null, 'Deliverable'),
+            h('th', null, 'Reviewers'),
+            h('th', { className: 'wb-th--center', style: { minWidth: 132 } }, 'Due'),
+            h('th', { style: { minWidth: 110 } }, 'Status'),
+            h('th', { style: { minWidth: 132 } }, 'Alerts'),
+            h('th', { style: { width: 34 } }, ''))),
+          h('tbody', null, deliverables.slice().sort(byDue).map(function(d) {
+            var schedKey = D.deliverableStatus(d);
+            var isOpen = schedKey !== 'accepted';
+            var lead = (d.alert && typeof d.alert.lead_days === 'number') ? d.alert.lead_days : 14;
+            return h('tr', { key: d.id },
+              h('td', null,
+                h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--strong', type: 'text', placeholder: 'deliverable', defaultValue: d.title || '', 'aria-label': 'Deliverable title', onBlur: function(e) { api.patchDeliverable(d.id, { title: e.target.value }); } }),
+                d.type ? h('span', { className: 'wb-cm-inp--sub wb-cm-muted' }, d.type) : null),
+              h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'review body', defaultValue: d.reviewers || '', 'aria-label': 'Reviewers', onBlur: function(e) { api.patchDeliverable(d.id, { reviewers: e.target.value }); } })),
+              h('td', { className: 'wb-th--center' },
+                h('input', { className: 'wb-input wb-cm-inp wb-cm-date', type: 'date', defaultValue: d.due_date || '', 'aria-label': 'Due date', onBlur: function(e) { api.patchDeliverable(d.id, { due_date: e.target.value }); } }),
+                agingChip(d.due_date, isOpen, lead)),
+              h('td', null, statusBadge(D.DELIV_SCHED, schedKey)),
+              h('td', null, alertCell(deliverableAlert(d.id))),
+              h('td', null, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove deliverable', onClick: function() { api.removeDeliverable(d.id, 'Deliverable removed'); } }, I.close(14))));
+          }))))
+    ) : h('div', { className: 'wb-station-empty' },
+        h('div', { className: 'wb-station-empty-desc' }, 'No delivery schedule yet. Add the ToR deliverables with their due dates and review bodies to track them to on-time delivery.'));
+
+    // ---- delivery risks --------------------------------------------------------------------
+    var openRisks = risks.filter(function(r) { return r.status !== 'closed'; }).length;
+    function riskTable() {
+      if (!risks.length) return h('p', { className: 'wb-cm-hint' }, 'No risks logged.');
+      return h('div', { className: 'wb-table-container' },
+        h('table', { className: 'wb-table wb-cm-table' },
+          h('thead', null, h('tr', null,
+            h('th', null, 'Risk'),
+            h('th', null, 'Mitigation'),
+            h('th', null, 'Owner'),
+            h('th', { className: 'wb-th--center', style: { width: 76 } }, 'L / I'),
+            h('th', { style: { minWidth: 110 } }, 'Status'),
+            h('th', { style: { width: 34 } }, ''))),
+          h('tbody', null, risks.map(function(r) {
+            return h('tr', { key: r.id },
+              h('td', null, h('textarea', { className: 'wb-input wb-cm-inp', rows: 2, placeholder: 'risk', defaultValue: r.risk || '', 'aria-label': 'Risk', onBlur: function(e) { riskApi.set(r.id, { risk: e.target.value }); } })),
+              h('td', null, h('textarea', { className: 'wb-input wb-cm-inp', rows: 2, placeholder: 'mitigation', defaultValue: r.mitigation || '', 'aria-label': 'Mitigation', onBlur: function(e) { riskApi.set(r.id, { mitigation: e.target.value }); } })),
+              h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'owner', defaultValue: r.owner || '', 'aria-label': 'Owner', onBlur: function(e) { riskApi.set(r.id, { owner: e.target.value }); } })),
+              h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-li' },
+                h('span', { className: 'wb-cm-li-b wb-cm-li-b--' + (r.likelihood || 'medium'), title: 'Likelihood: ' + (r.likelihood || 'medium') }, (r.likelihood || 'm').charAt(0).toUpperCase()),
+                h('span', { className: 'wb-cm-li-b wb-cm-li-b--' + (r.impact || 'medium'), title: 'Impact: ' + (r.impact || 'medium') }, (r.impact || 'm').charAt(0).toUpperCase()))),
+              h('td', null, h('select', { className: 'wb-input wb-cm-select', value: r.status || 'open', 'aria-label': 'Risk status', onChange: function(e) { riskApi.set(r.id, { status: e.target.value }); } },
+                Object.keys(D.RISK_STATUS).map(function(k) { return h('option', { key: k, value: k }, D.RISK_STATUS[k].label); }))),
+              h('td', null, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove risk', onClick: function() { riskApi.remove(r.id, 'Risk removed'); } }, I.close(14))));
+          }))));
+    }
+
+    // ---- report acceptance (the Endorse act; TRUE strength of evidence, higher = stronger) --
+    var evMap = D.evidenceMap(report.evidence);
+    var ratedCount = (report.evidence || []).filter(function(e) { return typeof e.strength === 'number'; }).length;
+
+    // One canonical save shape for every report_review edit; setReportReview merges it in.
+    function saveReport(over, msg) {
+      var next = {
+        accepted: !!report.accepted,
+        accepted_by: report.accepted_by || '',
+        accepted_at: report.accepted_at || null,
+        evidence: (report.evidence || []).slice()
+      };
+      Object.assign(next, over);
+      api.setReportReview(next, msg);
+    }
+    function upsertEvidence(eqId, over) {
+      var found = false;
+      var next = (report.evidence || []).map(function(e) { if (e.eq_id === eqId) { found = true; return Object.assign({}, e, over); } return e; });
+      if (!found) next = next.concat([Object.assign({ eq_id: eqId, strength: null, note: '' }, over)]);
+      return next;
+    }
+    function toggleAccepted() {
+      var next = !report.accepted;
+      saveReport({ accepted: next, accepted_at: next ? new Date().toISOString() : null }, next ? 'Final report accepted' : 'Acceptance cleared');
+    }
+
+    var acceptBlock = h('div', { className: 'wb-cm-decision' },
+      h('div', { className: 'wb-cm-decision-head' },
+        h('button', { type: 'button', className: 'wb-cm-cond-check' + (report.accepted ? ' wb-cm-cond-check--on' : ''), role: 'checkbox', 'aria-checked': report.accepted ? 'true' : 'false', 'aria-label': 'Final report accepted', onClick: toggleAccepted }, report.accepted ? I.check(12) : ''),
+        h('span', { className: 'wb-cm-decision-title' }, 'Final report accepted'),
+        report.accepted ? h('span', { className: 'wb-badge wb-badge-green' }, 'Accepted') : null,
+        report.accepted && report.accepted_at ? h('span', { className: 'wb-cm-decision-when' }, D.fdate(report.accepted_at)) : null),
+      h('div', { className: 'wb-cm-focus-field', style: { marginTop: 10 } },
+        h('label', { className: 'wb-cm-focus-label', htmlFor: 'cm-accepted-by' }, 'Accepted by'),
+        h('input', { id: 'cm-accepted-by', className: 'wb-input wb-cm-focus-input', type: 'text', placeholder: 'name and role of the accepting officer', defaultValue: report.accepted_by || '', 'aria-label': 'Accepted by', onBlur: function(e) { saveReport({ accepted_by: e.target.value }); } })));
+
+    var soeTable = rows.length ? h('div', { className: 'wb-table-container' },
+      h('table', { className: 'wb-table wb-cm-table' },
+        h('thead', null, h('tr', null,
+          h('th', { style: { width: 34 } }, '#'),
+          h('th', null, 'Evaluation question'),
+          h('th', { className: 'wb-th--center', style: { minWidth: 150 } }, 'Strength of evidence'),
+          h('th', null, 'Note'))),
+        h('tbody', null, rows.map(function(r) {
+          var ev = evMap[r.id] || {};
+          return h('tr', { key: r.id },
+            h('td', { className: 'wb-td--meta' }, r.number != null ? r.number : ''),
+            h('td', null, h('div', { className: 'wb-cm-eq' }, r.question || '(untitled question)')),
+            h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe' },
+              D.SOE.map(function(s) {
+                var on = ev.strength === s.v;
+                // CockpitData.SOE is higher = stronger; colour the on-state directly from the
+                // band so the mark never depends on the legacy inverted CSS index.
+                return h('button', { key: s.v, type: 'button',
+                  className: 'wb-cm-soe-btn' + (on ? ' wb-cm-soe-btn--on' : ''),
+                  style: on ? { background: s.color, borderColor: 'transparent', color: '#fff' } : null,
+                  title: s.v + ' - ' + s.label + ': ' + s.desc,
+                  'aria-label': 'Strength of evidence ' + s.v + ', ' + s.label,
+                  'aria-pressed': on ? 'true' : 'false',
+                  onClick: function() { saveReport({ evidence: upsertEvidence(r.id, { strength: s.v }) }, 'Strength of evidence rated'); } }, String(s.v));
+              }))),
+            h('td', null, h('input', { className: 'wb-input wb-cm-note', type: 'text', placeholder: 'why this rating', defaultValue: ev.note || '', 'aria-label': 'Evidence note for question ' + (r.number != null ? r.number : ''), onBlur: function(e) { saveReport({ evidence: upsertEvidence(r.id, { note: e.target.value }) }); } })));
+        })))) : h('p', { className: 'wb-cm-hint' }, 'No evaluation questions yet. Build the matrix in Station 2, and each question appears here to rate at report acceptance.');
+
+    // ---- empty state: nothing scheduled and nothing accepted yet ---------------------------
+    var hasReport = !!(report.accepted || (report.evidence && report.evidence.length) || (report.accepted_by && String(report.accepted_by).trim()));
+    if (!deliverables.length && !hasReport) {
+      return h('section', { className: 'wb-cm-move', 'aria-label': 'Deliver' },
+        moveHead('C3', 'Deliver', 'Hold delivery to schedule', 'Track every deliverable against its due date and review body, so slippage is visible while it can still be managed, then accept the final report.'),
+        h('div', { className: 'wb-station-empty' },
+          h('div', { className: 'wb-station-empty-title' }, 'Set up the delivery schedule'),
+          h('div', { className: 'wb-station-empty-desc' }, 'Add the ToR deliverables with their due dates and review bodies to track them to on-time delivery. The final report is then accepted here, where the strength of evidence is rated per question.'),
+          h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: addDeliverable }, I.plus(14), ' Add the first deliverable'))));
+    }
+
+    var acceptBadge = report.accepted ? 'Accepted' : (rows.length ? (ratedCount + ' / ' + rows.length + ' rated') : 'Pending');
+
+    return h('section', { className: 'wb-cm-move', 'aria-label': 'Deliver' },
+      moveHead('C3', 'Deliver', 'Hold delivery to schedule', 'Track every deliverable against its due date and review body, so slippage is visible while it can still be managed, then accept the final report.'),
+      h(SectionCard, { title: 'Delivery schedule', badge: deliverables.length ? deliverables.length + ' deliverables' : 'Empty' },
+        scheduleBody,
+        h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addDeliverable }, I.plus(14), ' Add deliverable'))),
+      h(SectionCard, { title: 'Delivery risks', badge: risks.length ? (openRisks + ' open') : 'Empty', variant: openRisks ? 'warning' : null },
+        h('p', { className: 'wb-cm-panel-intro' }, 'Risks to timely, credible delivery, reported to the evaluation manager with a mitigation and an owner.'),
+        riskTable(),
+        h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addRisk }, I.plus(14), ' Add risk'))),
+      h(SectionCard, { title: 'Report acceptance', badge: acceptBadge },
+        h('p', { className: 'wb-cm-panel-intro' }, 'This is where evidence exists. Rate the strength of evidence for each question at report acceptance (higher is stronger).'),
+        acceptBlock,
+        soeTable));
+  }
+
+  window.CockpitDeliver = CockpitDeliver;
+})();

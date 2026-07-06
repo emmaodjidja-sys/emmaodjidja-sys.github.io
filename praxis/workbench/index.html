@@ -180,7 +180,8 @@ window.loadSheetJS = (function() {
 <!-- Station 8: Deck Generator -->
 <script defer src="js/stations/station8/Station8.js"></script>
 
-<!-- Station 9: Planning (optional) -->
+<!-- Station 9: Planning (optional). Shared contract helpers load first (also used by C1). -->
+<script defer src="js/stations/station9/PlanningShared.js"></script>
 <script defer src="js/stations/station9/Station9.js"></script>
 
 <!-- Commissioner cockpit (optional lens). Core first (Data, Atoms, Alerts), then the
@@ -188,10 +189,18 @@ window.loadSheetJS = (function() {
 <script defer src="js/commissioner/CockpitData.js"></script>
 <script defer src="js/commissioner/CockpitAtoms.js"></script>
 <script defer src="js/commissioner/CockpitAlerts.js"></script>
+<script defer src="js/commissioner/CockpitSave.js"></script>
 <script defer src="js/commissioner/CockpitHeader.js"></script>
 <script defer src="js/commissioner/CockpitRail.js"></script>
 <script defer src="js/commissioner/CockpitOverview.js"></script>
 <script defer src="js/commissioner/CockpitShell.js"></script>
+<!-- Commissioner stations C0-C5 -->
+<script defer src="js/commissioner/CockpitCommission.js"></script>
+<script defer src="js/commissioner/CockpitContract.js"></script>
+<script defer src="js/commissioner/CockpitAssure.js"></script>
+<script defer src="js/commissioner/CockpitDeliver.js"></script>
+<script defer src="js/commissioner/CockpitUse.js"></script>
+<script defer src="js/commissioner/CockpitFollowup.js"></script>
 
 <!-- Root app (must be last) -->
 <script defer src="js/app.js"></script>
