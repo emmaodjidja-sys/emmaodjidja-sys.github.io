@@ -14,9 +14,44 @@
     };
   }
 
+  // Parse a date-only or leading-date ISO string into [year, month, day] integers.
+  // Never uses new Date(string): 'YYYY-MM-DD' parses as UTC midnight, which shifts a
+  // calendar day for users west of UTC. Returns null when there is no leading date.
+  function ymd(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+    return m ? [+m[1], +m[2], +m[3]] : null;
+  }
+
+  // Whole-day difference from today for a date-only value, in the user's LOCAL calendar:
+  // positive = future, 0 = today, negative = overdue. Both endpoints are local midnight,
+  // so DST cannot introduce an off-by-one. Returns null for an unparseable value.
+  function daysUntilLocal(iso) {
+    var a = ymd(iso);
+    if (!a) return null;
+    var due = new Date(a[0], a[1] - 1, a[2]);
+    var n = new Date();
+    var today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    return Math.round((due - today) / 86400000);
+  }
+
+  // Add n calendar months to a date-only ISO string, clamping the day to the target
+  // month's last day (Aug 31 + 6 -> Feb 28/29). To get the k-th occurrence from an
+  // anchor, call addMonths(anchor, interval*k) so the day re-clamps from the true
+  // anchor each time and does not creep earlier. Returns 'YYYY-MM-DD' or null.
+  function addMonths(iso, n) {
+    var a = ymd(iso);
+    if (!a) return null;
+    var idx = (a[1] - 1) + n, ny = a[0] + Math.floor(idx / 12), nm = ((idx % 12) + 12) % 12;
+    var last = new Date(ny, nm + 1, 0).getDate();
+    var nd = Math.min(a[2], last);
+    return ny + '-' + String(nm + 1).padStart(2, '0') + '-' + String(nd).padStart(2, '0');
+  }
+
   function formatDate(iso) {
     if (!iso) return '';
-    var d = new Date(iso);
+    var a = ymd(iso);
+    var d = (a && String(iso).indexOf('T') === -1) ? new Date(a[0], a[1] - 1, a[2]) : new Date(iso);
+    if (isNaN(d.getTime())) return '';
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
@@ -105,6 +140,7 @@
 
   window.PraxisUtils = {
     uid: uid, debounce: debounce, formatDate: formatDate, formatTime: formatTime,
+    ymd: ymd, daysUntilLocal: daysUntilLocal, addMonths: addMonths,
     deepMerge: deepMerge, clamp: clamp, sanitizeFilename: sanitizeFilename,
     downloadJSON: downloadJSON, downloadBlob: downloadBlob,
     readFileAsJSON: readFileAsJSON, estimateJSONSize: estimateJSONSize,
