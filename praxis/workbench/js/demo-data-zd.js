@@ -2247,42 +2247,42 @@
         {
           "eq_id": "eq_1",
           "rating": 4,
-          "justification": "IRMMA relevance triangulated across the eight case studies and the SCM survey."
+          "justification": "Answerable from the eight country case studies and the SCM survey; a direct method with clear relevance criteria."
         },
         {
           "eq_id": "eq_2",
-          "rating": 4,
-          "justification": "Lever relevance evidenced; countries confuse HSS/EAF in places."
+          "rating": 3,
+          "justification": "Answerable via case studies and document review; the HSS and EAF lever definitions need tightening so respondents apply them consistently."
         },
         {
           "eq_id": "eq_3",
           "rating": 4,
-          "justification": "Coherence with IA2030, GPW13 and national strategies documented."
+          "justification": "Answerable from a document review against IA2030, GPW13 and national strategies; sources are available and criteria clear."
         },
         {
           "eq_id": "eq_4",
-          "rating": 4,
-          "justification": "Operationalisation evidence partial and uneven across countries."
+          "rating": 3,
+          "justification": "Answerable through case studies and interviews; operationalisation coverage is uneven across countries, so the country sample and interview coverage must be confirmed at inception."
         },
         {
           "eq_id": "eq_5",
-          "rating": 4,
-          "justification": "Contribution unproven. Formal contribution analysis was abandoned: grant-implementation data absent."
+          "rating": 2,
+          "justification": "Contribution analysis is the proposed method, but it depends on grant-implementation data whose availability is uncertain; secure the source or specify a fallback design before fieldwork."
         },
         {
           "eq_id": "eq_6",
-          "rating": 4,
-          "justification": "Plausible contribution not established; pooled Alliance funding masks attribution."
+          "rating": 2,
+          "justification": "Attribution is confounded by pooled Alliance funding; the design needs an explicit approach to isolate the Gavi contribution before this can be answered."
         },
         {
           "eq_id": "eq_7",
-          "rating": 4,
-          "justification": "ToC/ToA fitness assessed from Year 2; interim evidence limited."
+          "rating": 3,
+          "justification": "Answerable via a theory-based assessment; interim evidence is limited at Year 2, so the judgement criteria for an early-stage assessment must be set."
         },
         {
           "eq_id": "eq_8",
-          "rating": 4,
-          "justification": "Sustainability prioritised in later phases; evidence thin so far."
+          "rating": 3,
+          "justification": "Answerable through document review and interviews; sustainability is prioritised in later phases, so the inception design should define which early indicators are in scope."
         }
       ]
     },

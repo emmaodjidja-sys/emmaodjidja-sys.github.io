@@ -37,8 +37,11 @@
       body = Comp ? h(Comp, childProps) : (cs >= 1 && cs <= 6 ? placeholder(cs) : h(window.CockpitOverview, childProps));
     }
 
+    // On the Overview (cs === 0) the flight-deck tiles already carry the five KPIs (with
+    // rings and concrete counts), so suppress the header's condensed KPI strip there to
+    // avoid showing the same five metrics twice. The strip returns on every C-station.
     return h('div', { className: 'wb-cm' },
-      h(window.CockpitHeader, { context: context, dispatch: dispatch, alerts: alerts }),
+      h(window.CockpitHeader, { context: context, dispatch: dispatch, alerts: alerts, hideKpis: cs === 0 }),
       h('div', { className: 'wb-cm-body', id: 'wb-cm-body' }, body));
   }
 

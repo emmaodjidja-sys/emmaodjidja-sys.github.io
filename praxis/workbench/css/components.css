@@ -5,7 +5,11 @@
   font-size: var(--text-sm); font-weight: 600; border: 1px solid transparent;
   transition: background var(--dur-fast), box-shadow var(--dur-fast), color var(--dur-fast);
   white-space: nowrap; width: auto; cursor: pointer; line-height: 1;
+  text-decoration: none;
 }
+/* Anchor-buttons (e.g. "Email owner" mailto links styled as buttons) must not carry
+   the UA underline; buttons never do, so this only affects <a class="wb-btn">. */
+.wb-btn:hover, .wb-btn:focus { text-decoration: none; }
 .wb-btn:disabled, .wb-btn[disabled] {
   opacity: 0.45; pointer-events: none; cursor: not-allowed;
 }

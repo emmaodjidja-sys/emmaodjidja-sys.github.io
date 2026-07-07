@@ -2751,132 +2751,132 @@
         {
           "eq_id": "eq_1",
           "rating": 4,
-          "justification": "Sub-national systems adequacy evidenced across the HBHI portfolio analysis and country insights."
+          "justification": "Answerable from the HBHI portfolio review and country document set; sub-national systems are well documented and the judgement criteria are clear."
         },
         {
           "eq_id": "eq_2",
           "rating": 4,
-          "justification": ""
+          "justification": "Country insight studies and routine HMIS give a direct method and source; adequacy criteria are defined in the matrix."
         },
         {
           "eq_id": "eq_3",
-          "rating": 4,
-          "justification": ""
+          "rating": 3,
+          "justification": "Answerable via document review and key-informant interviews; a few countries lack a recent sub-national assessment, a coverage gap to close at inception."
         },
         {
           "eq_id": "eq_4",
-          "rating": 4,
-          "justification": "Data quality at sub-national level is uneven; verification varies by country."
+          "rating": 2,
+          "justification": "Method is sound but sub-national data quality is uneven across countries; a documented completeness and verification check is needed before this can be answered reliably."
         },
         {
           "eq_id": "eq_5",
           "rating": 4,
-          "justification": ""
+          "justification": "Contribution analysis with a specified causal claim and triangulated sources; judgement criteria are set."
         },
         {
           "eq_id": "eq_6",
-          "rating": 4,
-          "justification": ""
+          "rating": 3,
+          "justification": "Answerable through contribution analysis; the rival-explanation protocol should be made explicit before fieldwork."
         },
         {
           "eq_id": "eq_7",
           "rating": 4,
-          "justification": ""
+          "justification": "Direct documentary and interview method with identified sources and clear criteria."
         },
         {
           "eq_id": "eq_8",
-          "rating": 4,
-          "justification": "Decision-making challenges documented but attribution to Global Fund investment is limited."
+          "rating": 2,
+          "justification": "Attribution of decision changes to Global Fund investment is not cleanly separable under the current design; add a process-tracing step and named informants before fieldwork."
         },
         {
           "eq_id": "eq_9",
           "rating": 4,
-          "justification": ""
+          "justification": "Answerable from grant documentation and PUDRs; method and criteria are defined."
         },
         {
           "eq_id": "eq_10",
           "rating": 4,
-          "justification": ""
+          "justification": "Interviews with named stakeholder groups plus document review; criteria are specified."
         },
         {
           "eq_id": "eq_11",
-          "rating": 4,
-          "justification": ""
+          "rating": 3,
+          "justification": "Method is adequate; the sampling frame for sub-national informants needs finalising to ensure coverage."
         },
         {
           "eq_id": "eq_12",
           "rating": 4,
-          "justification": ""
+          "justification": "Answerable from the SNT guidance and the funding-request review against clear criteria."
         },
         {
           "eq_id": "eq_13",
           "rating": 4,
-          "justification": "Extent to which funding requests are based on SNT well evidenced from GC6/GC7 analysis."
+          "justification": "Funding-request review against SNT criteria is a direct method with a complete source (GC6 and GC7 requests) and explicit criteria."
         },
         {
           "eq_id": "eq_14",
-          "rating": 4,
-          "justification": ""
+          "rating": 3,
+          "justification": "Answerable via document review and interviews; some process detail depends on access to Secretariat records, to confirm at inception."
         },
         {
           "eq_id": "eq_15",
           "rating": 4,
-          "justification": ""
+          "justification": "Method and source are defined and the criteria are clear."
         },
         {
           "eq_id": "eq_16",
-          "rating": 4,
-          "justification": "How GF processes can better incentivise SNT-based requests: promising but not yet triangulated."
+          "rating": 3,
+          "justification": "A how and why process question; answerable through interviews and process mapping, but the informant set spanning Secretariat and country teams must be secured to avoid a one-sided view."
         },
         {
           "eq_id": "eq_17",
           "rating": 4,
-          "justification": ""
+          "justification": "Answerable from documented processes and interviews; criteria are set."
         },
         {
           "eq_id": "eq_18",
-          "rating": 4,
-          "justification": ""
+          "rating": 3,
+          "justification": "Method is sound; the judgement standard for better incentivised requests needs sharpening at inception."
         },
         {
           "eq_id": "eq_19",
           "rating": 4,
-          "justification": ""
+          "justification": "Direct document and data method with an available source and clear criteria."
         },
         {
           "eq_id": "eq_20",
           "rating": 4,
-          "justification": "PUDR and DHIS dashboard evidence is solid from the portfolio analysis."
+          "justification": "PUDR and DHIS dashboards provide a strong, available source with a defined analytic method and clear criteria."
         },
         {
           "eq_id": "eq_21",
           "rating": 4,
-          "justification": ""
+          "justification": "Answerable from routine data and country insights against defined criteria."
         },
         {
           "eq_id": "eq_22",
-          "rating": 4,
-          "justification": ""
+          "rating": 3,
+          "justification": "Method is adequate; disaggregation to sub-national units depends on data availability, to confirm at inception."
         },
         {
           "eq_id": "eq_23",
           "rating": 4,
-          "justification": ""
+          "justification": "Document and interview method with an identified source and clear criteria."
         },
         {
           "eq_id": "eq_24",
           "rating": 4,
-          "justification": ""
+          "justification": "Answerable from the portfolio review against set criteria."
         },
         {
           "eq_id": "eq_25",
-          "rating": 4,
-          "justification": ""
+          "rating": 3,
+          "justification": "Answerable through interviews and document review; the equity dimension needs a defined judgement standard."
         },
         {
           "eq_id": "eq_26",
-          "rating": 4,
-          "justification": "TA focus on SNT is partial; scope for GC8 expansion identified."
+          "rating": 3,
+          "justification": "TA-focus question answerable via document review and interviews; the source on delivered technical assistance is partial and should be completed before analysis."
         }
       ]
     },

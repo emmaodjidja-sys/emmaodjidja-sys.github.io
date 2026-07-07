@@ -29,10 +29,10 @@
     var gateLabel = gate.decision && D.GATE_DECISION[gate.decision] ? D.GATE_DECISION[gate.decision].label : 'Not decided';
     return [
       { key: 'users', label: 'Primary intended users', value: String(primary), sub: primary ? 'named' : 'name them first', tone: primary ? 'good' : 'warn', cstation: 1 },
-      { key: 'coverage', label: 'Use-to-question coverage', value: usesDef.length ? (usesCov.length + ' / ' + usesDef.length) : '-', sub: usesDef.length ? Math.round(covPct) + '% of uses served' : 'no uses yet', tone: usesDef.length && usesCov.length < usesDef.length ? 'warn' : (usesDef.length ? 'good' : null), cstation: 1, frac: usesDef.length ? usesCov.length / usesDef.length : null },
+      { key: 'coverage', label: 'Use-to-question coverage', value: usesDef.length ? (usesCov.length + ' / ' + usesDef.length) : '-', sub: usesDef.length ? (usesCov.length + ' of ' + usesDef.length + ' uses served') : 'no uses yet', tone: usesDef.length && usesCov.length < usesDef.length ? 'warn' : (usesDef.length ? 'good' : null), cstation: 1, frac: usesDef.length ? usesCov.length / usesDef.length : null },
       { key: 'gate', label: 'Inception gate', value: gateLabel, sub: gate.decided_at ? D.fdate(gate.decided_at) : 'awaiting decision', tone: gate.decision === 'approve' ? 'good' : (gate.decision ? 'warn' : null), cstation: 3 },
       { key: 'deliverables', label: 'Deliverables on track', value: dels.length ? (accepted + ' / ' + dels.length) : '-', sub: late ? late + ' late' : (dels.length ? 'accepted' : 'no schedule'), tone: late ? 'warn' : (dels.length ? 'good' : null), cstation: 4 },
-      { key: 'uptake', label: 'Recommendations used', value: reg.length ? (implemented + ' / ' + reg.length) : '-', sub: reg.length ? 'implemented' : 'none yet', tone: reg.length && implemented < reg.length ? null : (reg.length ? 'good' : null), cstation: 6, frac: reg.length ? implemented / reg.length : null }
+      { key: 'uptake', label: 'Recommendations implemented', value: reg.length ? (implemented + ' / ' + reg.length) : '-', sub: reg.length ? (implemented + ' of ' + reg.length + ' implemented') : 'none yet', tone: reg.length && implemented < reg.length ? null : (reg.length ? 'good' : null), cstation: 6, frac: reg.length ? implemented / reg.length : null }
     ];
   }
 
@@ -64,6 +64,7 @@
           h('button', { type: 'button',
             className: 'wb-cm-stage' + (active ? ' wb-cm-stage--active' : '') + (done ? ' wb-cm-stage--done' : ''),
             'aria-current': active ? 'step' : null,
+            'aria-label': done ? s.label + ', completed' : null,
             title: s.label, onClick: function() { go(dispatch, STAGE_STATION[s.key]); } },
             h('span', { className: 'wb-cm-stage-dot' }, done ? I.check(10) : null), s.label));
       }));
@@ -76,9 +77,11 @@
         h('div', { className: 'wb-cm-alert-title' }, a.severity !== 2 ? h('span', { className: 'wb-cm-alert-ico', 'aria-hidden': 'true' }, I.warning(13)) : null, a.title),
         a.detail ? h('div', { className: 'wb-cm-alert-detail' }, a.detail) : null),
       h('div', { className: 'wb-cm-alert-actions' },
-        h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { go(dispatch, a.cstation); } }, 'Open'),
-        h('a', { className: 'wb-btn wb-btn-sm wb-btn-outline', href: CA.mailtoForAlert(a), 'aria-label': 'Email about ' + a.title }, 'Email owner'),
-        a.due_date ? h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { CA.downloadIcsForAlert(a); } }, 'Add to calendar') : null));
+        // Open (go handle the item at its station) is the primary action, so it carries the
+        // outline weight; email and calendar are secondary and read as quieter ghost buttons.
+        h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { go(dispatch, a.cstation); } }, 'Open'),
+        h('a', { className: 'wb-btn wb-btn-sm wb-btn-ghost', href: CA.mailtoForAlert(a), 'aria-label': 'Email about ' + a.title }, 'Email owner'),
+        a.due_date ? h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { CA.downloadIcsForAlert(a); } }, 'Add to calendar') : null));
   }
 
   function alertList(alerts, dispatch) {
@@ -94,7 +97,7 @@
     var sum = CA.summarize(alerts);
     var drawer = React.useState(false); var open = drawer[0], setOpen = drawer[1];
 
-    var badge = h('button', { type: 'button', className: 'wb-cm-alertbadge' + (sum.overdue ? ' wb-cm-alertbadge--alert' : ''), 'aria-expanded': open ? 'true' : 'false', 'aria-label': (sum.total ? sum.overdue + ' overdue, ' + sum.total + ' alerts' : 'No alerts'), onClick: function() { setOpen(!open); } },
+    var badge = h('button', { type: 'button', className: 'wb-cm-alertbadge' + (sum.overdue ? ' wb-cm-alertbadge--alert' : ''), 'aria-expanded': open ? 'true' : 'false', 'aria-controls': 'wb-cm-alert-drawer', 'aria-label': (sum.total ? sum.overdue + ' overdue, ' + sum.total + ' alerts' : 'No alerts'), onClick: function() { setOpen(!open); } },
       h('span', { className: 'wb-cm-alertbadge-ico', 'aria-hidden': 'true' }, I.warning(15)),
       h('span', { className: 'wb-cm-alertbadge-txt' }, sum.total ? (sum.overdue ? sum.overdue + ' overdue' : sum.total + ' due') : 'No alerts'));
 
@@ -106,12 +109,12 @@
           gov.oversight_body ? h('span', { className: 'wb-cm-header2-over' }, gov.oversight_body) : null),
         badge),
       spine(context, dispatch),
-      h('div', { className: 'wb-cm-kpistrip' }, kpis.map(function(k) {
+      props.hideKpis ? null : h('div', { className: 'wb-cm-kpistrip' }, kpis.map(function(k) {
         return h('button', { key: k.key, type: 'button', className: 'wb-cm-kpichip' + (k.tone ? ' wb-cm-kpichip--' + k.tone : ''), onClick: function() { go(dispatch, k.cstation); }, title: k.label + ': ' + k.sub },
           h('span', { className: 'wb-cm-kpichip-v' }, k.value),
           h('span', { className: 'wb-cm-kpichip-l' }, k.label));
       })),
-      open ? h('div', { className: 'wb-cm-drawer', role: 'region', 'aria-label': 'Alerts' },
+      open ? h('div', { className: 'wb-cm-drawer', id: 'wb-cm-alert-drawer', role: 'region', 'aria-label': 'Alerts' },
         h('div', { className: 'wb-cm-drawer-head' },
           h('span', { className: 'wb-cm-drawer-title' }, 'Alerts'),
           h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Close alerts', onClick: function() { setOpen(false); } }, I.close(14))),

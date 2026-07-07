@@ -31,11 +31,15 @@
       if (r.implementation_status === 'in_progress' || r.implementation_status === 'implemented') inprog++;
       if (r.implementation_status === 'implemented') impl++;
     });
+    // Cumulative funnel: each stage counts everything that reached it OR beyond (an
+    // implemented recommendation is also "underway or later"). Per-segment text colour so
+    // the pale first stage uses dark text (white on #CBD5E1 is illegible) and the darker
+    // stages keep white; the on-white variants clear WCAG AA.
     var stages = [
-      { key: 'recommended', label: 'Recommended', n: total, color: 'var(--border-strong)' },
-      { key: 'accepted', label: 'Accepted', n: accepted, color: 'var(--blue)' },
-      { key: 'in_progress', label: 'In progress', n: inprog, color: 'var(--teal-ink)' },
-      { key: 'implemented', label: 'Implemented', n: impl, color: 'var(--green)' }
+      { key: 'recommended', label: 'Recommended', n: total, color: 'var(--border-strong)', text: 'var(--text)' },
+      { key: 'accepted', label: 'Accepted', n: accepted, color: 'var(--blue)', text: '#fff' },
+      { key: 'in_progress', label: 'Underway or later', n: inprog, color: 'var(--teal-ink)', text: '#fff' },
+      { key: 'implemented', label: 'Implemented', n: impl, color: 'var(--green-strong)', text: '#fff' }
     ];
     return h('div', { className: 'wb-cm-uptake wb-cm-funnel' },
       h('div', { className: 'wb-cm-uptake-head' },
@@ -43,7 +47,7 @@
         h('span', { className: 'wb-cm-uptake-num' }, impl + ' of ' + total + ' implemented')),
       h('div', { className: 'wb-cm-uptake-bar wb-cm-funnel-bar' }, stages.map(function(s, i) {
         return h('div', { key: s.key, className: 'wb-cm-uptake-seg wb-cm-funnel-seg',
-          style: { flexGrow: Math.max(s.n, 0.4), background: s.color },
+          style: { flexGrow: Math.max(s.n, 0.4), background: s.color, color: s.text },
           title: s.label + ': ' + s.n + ' of ' + total },
           h('span', { className: 'wb-cm-funnel-stage' }, 'Stage ' + (i + 1)),
           h('span', { className: 'wb-cm-funnel-count' }, s.n),

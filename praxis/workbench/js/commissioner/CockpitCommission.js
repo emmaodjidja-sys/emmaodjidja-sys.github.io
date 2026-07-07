@@ -46,7 +46,7 @@
     });
     return h('div', { className: 'wb-cm-grid-wrap' },
       h('div', { className: 'wb-cm-grid-title' }, 'Engage the right users'),
-      h('div', { className: 'wb-cm-grid' },
+      h('div', { className: 'wb-cm-grid', 'aria-hidden': 'true' },
         quad.map(function(q, i) { return h('div', { key: i, className: 'wb-cm-quad wb-cm-quad--' + q.x + q.y },
           h('span', { className: 'wb-cm-quad-t' }, q.t), h('span', { className: 'wb-cm-quad-s' }, q.s)); }),
         h('div', { className: 'wb-cm-grid-plot' }, dots),
@@ -159,7 +159,7 @@
         h('div', { className: 'wb-cm-cov-head' },
           h('span', { className: 'wb-cm-cov-title' }, 'Use-to-question coverage'),
           h('span', { className: 'wb-cm-cov-num' }, usesDefined.length ? (usesCovered.length + '/' + usesDefined.length) : '-')),
-        A.meterBar(coveragePct, tone === 'good' ? 'green' : (tone === 'warn' ? 'amber' : 'teal')),
+        A.meterBar(coveragePct, tone === 'good' ? 'green' : (tone === 'warn' ? 'amber' : 'teal'), 'Use-to-question coverage'),
         h('p', { className: 'wb-cm-cov-note' }, usesDefined.length
           ? (gap > 0
               ? gap + ' intended use' + (gap > 1 ? 's are' : ' is') + ' not yet served by any evaluation question. Fix the design before the gate.'
@@ -177,15 +177,15 @@
             h('div', { className: 'wb-cm-sub wb-cm-sub--mt' }, 'Secondary users', h('span', { className: 'wb-cm-sub-count' }, secondary.length)),
             userTable(secondary, 'secondary'),
             h('div', { className: 'wb-cm-add' },
-              h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('primary'); } }, '+ Primary user'),
-              h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('secondary'); } }, '+ Secondary user'))),
+              h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('primary'); } }, I.plus(14), ' Primary user'),
+              h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('secondary'); } }, I.plus(14), ' Secondary user'))),
           h('div', { className: 'wb-cm-two-side' },
             stakeholderGrid(users),
             coveragePanel()))
       : h('div', { className: 'wb-station-empty' },
           h('div', { className: 'wb-station-empty-title' }, 'Name the primary intended users'),
           h('div', { className: 'wb-station-empty-desc' }, 'No intended users yet. Name who will use this evaluation, and their decisions become the test the design has to pass.'),
-          h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('primary'); } }, '+ Add a primary user')));
+          h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('primary'); } }, I.plus(14), ' Add a primary user')));
 
     var register = h(SectionCard, { title: 'Intended-user register', badge: users.length ? String(users.length) : null }, registerBody);
 

@@ -154,7 +154,7 @@
     var progressField = field('Progress (%)',
       h('input', { className: 'wb-input wb-cm-inp', type: 'number', min: 0, max: 100, step: 5, defaultValue: progress, 'aria-label': 'Implementation progress percent for ' + label,
         onBlur: function(e) { var n = parseInt(e.target.value, 10); if (isNaN(n)) n = 0; n = Math.max(0, Math.min(100, n)); setField({ progress: n }); } }),
-      A.meterBar(progress, 'teal'));
+      A.meterBar(progress, 'teal', 'Implementation progress for ' + label));
 
     var cadenceSel = h('select', { className: 'wb-input wb-cm-select', value: String(interval), 'aria-label': 'Review cadence for ' + label,
         onChange: function(e) { setField({ review_interval_months: parseInt(e.target.value, 10) }); } },

@@ -106,7 +106,7 @@
             h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe' },
               D.ANSW.map(function(s) {
                 var on = ev.rating === s.v;
-                return h('button', { key: s.v, type: 'button', className: 'wb-cm-soe-btn wb-cm-soe-btn--' + s.v + (on ? ' wb-cm-soe-btn--on' : ''), title: 'Answerability ' + s.v + ': ' + s.label + '. ' + s.desc, 'aria-label': 'Answerability ' + s.v + ', ' + s.label, onClick: function() { saveEvidence(r.id, { rating: s.v }, 'Answerability recorded'); } }, String(s.v));
+                return h('button', { key: s.v, type: 'button', className: 'wb-cm-soe-btn wb-cm-soe-btn--' + s.v + (on ? ' wb-cm-soe-btn--on' : ''), title: 'Answerability ' + s.v + ': ' + s.label + '. ' + s.desc, 'aria-label': 'Answerability ' + s.v + ', ' + s.label, 'aria-pressed': on ? 'true' : 'false', onClick: function() { saveEvidence(r.id, { rating: s.v }, 'Answerability recorded'); } }, String(s.v));
               }))),
             h('td', null, h('input', { className: 'wb-input wb-cm-note', type: 'text', placeholder: 'why this rating', defaultValue: ev.justification || '', 'aria-label': 'Commissioner note for question ' + (r.number || ''), onBlur: function(e) { saveEvidence(r.id, { justification: e.target.value }); } })));
         })))) : h('div', { className: 'wb-station-empty' },
@@ -131,7 +131,7 @@
             'aria-label': attested ? 'Withdraw independence attestation' : 'Attest independence',
             onClick: function() { saveInd(attested ? { attested: false } : { attested: true, attested_at: new Date().toISOString() }, attested ? null : 'Independence attested'); } }, attested ? I.check(12) : ''),
           h('div', null,
-            h('div', { className: 'wb-field-label' }, 'The evaluation team is independent of the program under review and its management.'),
+            h('div', { className: 'wb-cm-cond-text' }, 'The evaluation team is independent of the program under review and its management.'),
             attested && ind.attested_at ? h('div', { className: 'wb-cm-muted' }, 'Attested ' + D.fdate(ind.attested_at) + (ind.attested_by ? ' by ' + ind.attested_by : '')) : null)),
         h('textarea', { className: 'wb-input', rows: 2, placeholder: 'Independence statement (how independence is assured)', defaultValue: ind.statement || '', 'aria-label': 'Independence statement', onBlur: function(e) { saveInd({ statement: e.target.value }); } }),
         h('input', { className: 'wb-input', type: 'text', placeholder: 'Attested by (name, role)', defaultValue: ind.attested_by || '', 'aria-label': 'Attested by', onBlur: function(e) { saveInd({ attested_by: e.target.value }); } }),
@@ -142,14 +142,14 @@
               h('input', { className: 'wb-input wb-cm-cond-text', type: 'text', placeholder: 'declared conflict', defaultValue: c.text || '', 'aria-label': 'Declared conflict', onBlur: function(e) { saveInd({ conflicts: conflicts.map(function(x) { return x.id === c.id ? Object.assign({}, x, { text: e.target.value }) : x; }) }); } }),
               h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove conflict', onClick: function() { saveInd({ conflicts: conflicts.filter(function(x) { return x.id !== c.id; }) }); } }, I.close(14)));
           }),
-          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { saveInd({ conflicts: conflicts.concat([{ id: U.uid('cfl_'), text: '' }]) }); } }, '+ Add conflict'))));
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { saveInd({ conflicts: conflicts.concat([{ id: U.uid('cfl_'), text: '' }]) }); } }, I.plus(14), ' Add conflict'))));
 
     // ================= ethics / safeguarding sign-off ======================
     var ethStatus = eth.status || 'none';
     var ethicsCard = h(SectionCard, { title: 'Ethics and safeguarding', badge: (D.ETHICS_STATUS[ethStatus] || {}).label || 'Not started', variant: ethStatus === 'cleared' ? 'complete' : (ethStatus === 'pending' ? 'warning' : null) },
       h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
-          h('label', { className: 'wb-field-label', htmlFor: 'wb-cm-eth-status', style: { margin: 0 } }, 'Clearance status'),
+          h('label', { className: 'wb-cm-focus-label', htmlFor: 'wb-cm-eth-status', style: { margin: 0 } }, 'Clearance status'),
           h('select', { id: 'wb-cm-eth-status', className: 'wb-input wb-cm-select', value: ethStatus, 'aria-label': 'Ethics clearance status',
             onChange: function(e) { var v = e.target.value; var p = { status: v }; if (v === 'cleared' && !eth.cleared_at) p.cleared_at = new Date().toISOString(); saveEth(p, 'Ethics status updated'); } },
             Object.keys(D.ETHICS_STATUS).map(function(k) { return h('option', { key: k, value: k }, D.ETHICS_STATUS[k].label); })),
@@ -163,10 +163,10 @@
       conds.map(function(c) {
         return h('div', { key: c.id, className: 'wb-cm-condition' },
           h('button', { type: 'button', className: 'wb-cm-cond-check' + (c.resolved ? ' wb-cm-cond-check--on' : ''), 'aria-label': c.resolved ? 'Mark condition unresolved' : 'Mark condition resolved', onClick: function() { setCondition(c.id, { resolved: !c.resolved }); } }, c.resolved ? I.check(12) : ''),
-          h('input', { className: 'wb-input wb-cm-cond-text', type: 'text', placeholder: 'condition', defaultValue: c.text || '', onBlur: function(e) { setCondition(c.id, { text: e.target.value }); } }),
+          h('input', { className: 'wb-input wb-cm-cond-text', type: 'text', placeholder: 'condition', defaultValue: c.text || '', 'aria-label': 'Condition to clear before final acceptance', onBlur: function(e) { setCondition(c.id, { text: e.target.value }); } }),
           h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove condition', onClick: function() { removeCondition(c.id); } }, I.close(14)));
       }),
-      h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addCondition }, '+ Add condition'));
+      h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addCondition }, I.plus(14), ' Add condition'));
 
     var decided = gate.decision && D.GATE_DECISION[gate.decision];
     var decisionRow = h('div', { className: 'wb-cm-decision' },

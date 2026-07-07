@@ -54,19 +54,19 @@
   // C2 inception rating: ANSWERABILITY / design-confidence (not strength of evidence,
   // which cannot exist before fieldwork). Higher = more answerable.
   var ANSW = [
-    { v: 4, label: 'High confidence', desc: 'Method and source clearly answer the question', color: 'var(--green)' },
-    { v: 3, label: 'Adequate', desc: 'Answerable with minor design gaps', color: 'var(--teal-dark)' },
-    { v: 2, label: 'At risk', desc: 'Method or source is thin', color: 'var(--amber)' },
-    { v: 1, label: 'Not answerable', desc: 'No credible method or source yet', color: 'var(--red)' }
+    { v: 4, label: 'High confidence', desc: 'Method and source clearly answer the question', color: 'var(--green-strong)' },
+    { v: 3, label: 'Adequate', desc: 'Answerable with minor design gaps', color: 'var(--teal-ink)' },
+    { v: 2, label: 'At risk', desc: 'Method or source is thin', color: 'var(--amber-dark)' },
+    { v: 1, label: 'Not answerable', desc: 'No credible method or source yet', color: 'var(--red-strong)' }
   ];
 
   // C3 report-acceptance rating: STRENGTH OF EVIDENCE, assessed where evidence exists.
   // Higher = stronger (corrects the previously inverted 1=strongest scale).
   var SOE = [
-    { v: 4, label: 'Well triangulated', desc: 'Multiple independent sources agree', color: 'var(--green)' },
-    { v: 3, label: 'Reasonably strong', desc: 'Some triangulation; minor gaps', color: 'var(--teal-dark)' },
-    { v: 2, label: 'Limited', desc: 'Single source or thin evidence', color: 'var(--amber)' },
-    { v: 1, label: 'Weak / unproven', desc: 'Unreliable or absent evidence', color: 'var(--red)' }
+    { v: 4, label: 'Well triangulated', desc: 'Multiple independent sources agree', color: 'var(--green-strong)' },
+    { v: 3, label: 'Reasonably strong', desc: 'Some triangulation; minor gaps', color: 'var(--teal-ink)' },
+    { v: 2, label: 'Limited', desc: 'Single source or thin evidence', color: 'var(--amber-dark)' },
+    { v: 1, label: 'Weak / unproven', desc: 'Unreliable or absent evidence', color: 'var(--red-strong)' }
   ];
 
   var INCEPTION = [

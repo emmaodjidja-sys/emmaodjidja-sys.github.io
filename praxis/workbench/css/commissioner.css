@@ -139,6 +139,10 @@
 .wb-cm-inp--strong { font-size: var(--text-sm); font-weight: 600; }
 .wb-cm-inp--sub { display: block; margin-top: 3px; color: var(--text-tertiary); }
 textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
+/* Cockpit textareas must grow to their rows. The shared .wb-input pins height:36px, which
+   otherwise clips multi-line governance prose (C0 purpose/use, C4 recommendations, risks)
+   to ~1.5 lines. Scoped to cockpit textareas only, so single-line inputs stay 36px. */
+.wb-cm textarea.wb-input { height: auto; min-height: 60px; resize: vertical; }
 .wb-cm-eqinp { font-family: var(--font-mono); text-align: center; }
 .wb-cm-eqinp--empty { border-color: var(--amber); background: var(--amber-light); }
 .wb-cm-note { font-size: var(--text-xs); padding: 5px 8px; width: 100%; min-width: 140px; }
@@ -231,7 +235,7 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 /* ---- marks (present / warn / dash) --------------------------------------*/
 .wb-cm-mark { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-weight: 700; font-size: 12px; }
 .wb-cm-mark--ok { color: var(--green-strong); }
-.wb-cm-mark--warn { color: #fff; background: var(--amber); }
+.wb-cm-mark--warn { color: #fff; background: var(--amber-dark); }
 .wb-cm-mark--dash { width: 14px; height: 2px; border-radius: 2px; background: var(--border-strong); }
 
 /* ---- strength-of-evidence rating buttons --------------------------------*/
@@ -239,11 +243,13 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 .wb-cm-soe-btn { width: 30px; height: 26px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-tertiary); cursor: pointer; transition: all var(--dur-fast) ease; }
 .wb-cm-soe-btn:hover { border-color: var(--slate); }
 .wb-cm-soe-btn--on { color: #fff; border-color: transparent; }
-/* Higher = better for both C2 answerability and C3 strength-of-evidence (4 strongest). */
-.wb-cm-soe-btn--4.wb-cm-soe-btn--on { background: var(--green); }
-.wb-cm-soe-btn--3.wb-cm-soe-btn--on { background: var(--teal-dark); }
-.wb-cm-soe-btn--2.wb-cm-soe-btn--on { background: var(--amber); }
-.wb-cm-soe-btn--1.wb-cm-soe-btn--on { background: var(--red); }
+/* Higher = better for both C2 answerability and C3 strength-of-evidence (4 strongest).
+   Strong/ink variants so the white rating digit clears WCAG AA on the on-state fill
+   (matches CockpitData.ANSW/SOE colours, which C3 applies inline). */
+.wb-cm-soe-btn--4.wb-cm-soe-btn--on { background: var(--green-strong); }
+.wb-cm-soe-btn--3.wb-cm-soe-btn--on { background: var(--teal-ink); }
+.wb-cm-soe-btn--2.wb-cm-soe-btn--on { background: var(--amber-dark); }
+.wb-cm-soe-btn--1.wb-cm-soe-btn--on { background: var(--red-strong); }
 
 /* ---- decision block ------------------------------------------------------*/
 .wb-cm-decision { margin-top: 16px; padding: 16px; background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius-md); }
@@ -264,13 +270,13 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 .wb-cm-track { position: relative; height: 132px; margin: 8px 8px 18px; }
 .wb-cm-track-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--border-strong); border-radius: 2px; }
 .wb-cm-track-today { position: absolute; top: 14px; bottom: 14px; width: 2px; background: var(--teal); transform: translateX(-1px); }
-.wb-cm-track-today-lbl { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-ink); white-space: nowrap; }
+.wb-cm-track-today-lbl { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-ink); white-space: nowrap; }
 .wb-cm-mile { position: absolute; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; }
 .wb-cm-mile-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 3px var(--surface); z-index: 1; }
 .wb-cm-mile-lbl { position: absolute; bottom: 16px; display: flex; flex-direction: column; align-items: center; width: 96px; text-align: center; }
 .wb-cm-mile--below .wb-cm-mile-lbl { bottom: auto; top: 16px; }
 .wb-cm-mile-name { font-size: 10px; font-weight: 700; color: var(--text-secondary); line-height: 1.2; }
-.wb-cm-mile-date { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); margin-top: 1px; }
+.wb-cm-mile-date { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-top: 1px; }
 
 /* aging chips */
 .wb-cm-age { display: inline-block; margin-left: 6px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: var(--radius-sm); color: var(--text-tertiary); background: var(--surface-muted); border: 1px solid var(--border); }
@@ -280,9 +286,11 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 /* risk likelihood / impact badges */
 .wb-cm-li { display: inline-flex; gap: 3px; }
 .wb-cm-li-b { width: 20px; height: 20px; border-radius: var(--radius-sm); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: #fff; }
-.wb-cm-li-b--low { background: var(--green); }
-.wb-cm-li-b--medium { background: var(--amber); }
-.wb-cm-li-b--high { background: var(--red); }
+/* White text on these badges: use the strong variants so the letter clears WCAG AA
+   (amber #D97706 / green #059669 fail at ~3.2-3.8:1; the -dark/-strong variants pass). */
+.wb-cm-li-b--low { background: var(--green-strong); }
+.wb-cm-li-b--medium { background: var(--amber-dark); }
+.wb-cm-li-b--high { background: var(--red-strong); }
 
 /* ---- Movement 4: uptake bar ---------------------------------------------*/
 .wb-cm-uptake { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
@@ -331,7 +339,7 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 .wb-roleswitch-btn:hover { background: rgba(255, 255, 255, 0.09) !important; }
 
 /* ---- commissioner rail ---------------------------------------------------*/
-.wb-rail--commissioner .wb-rail-btn-num { font-size: 12px; letter-spacing: 0.02em; }
+.wb-rail--commissioner .wb-rail-btn-num { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.02em; }
 .wb-rail-btn--back { margin-bottom: 6px; }
 .wb-rail-btn--commissioner-entry .wb-rail-btn-num { font-weight: 700; }
 
@@ -442,10 +450,8 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   border-radius: var(--radius-sm); color: #fff; min-width: 0; padding: 4px; overflow: hidden;
 }
-.wb-cm-funnel-seg:nth-child(1) { background: var(--slate); }
-.wb-cm-funnel-seg:nth-child(2) { background: var(--teal-dark); }
-.wb-cm-funnel-seg:nth-child(3) { background: var(--blue); }
-.wb-cm-funnel-seg:nth-child(4) { background: var(--green); }
+/* Segment background and text colour are set inline per-stage in CockpitUse.js (funnel()),
+   so the first pale stage can carry dark text. No :nth-child colours here. */
 .wb-cm-funnel-count { font-family: var(--font-mono); font-size: var(--text-md); font-weight: 700; line-height: 1; }
 .wb-cm-funnel-label, .wb-cm-funnel-stage { font-size: 10px; font-weight: 600; line-height: 1.2; text-align: center; opacity: 0.95; }
 .wb-cm-mr-track { margin-top: 6px; }

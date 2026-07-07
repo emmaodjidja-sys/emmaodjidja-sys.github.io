@@ -47,8 +47,8 @@
         desc ? h('p', { className: 'wb-cm-move-desc' }, desc) : null));
   }
 
-  function meterBar(pct, tone) {
-    return h('div', { className: 'wb-cm-meter', role: 'progressbar', 'aria-valuenow': Math.round(pct || 0), 'aria-valuemin': 0, 'aria-valuemax': 100 },
+  function meterBar(pct, tone, label) {
+    return h('div', { className: 'wb-cm-meter', role: 'progressbar', 'aria-label': label || 'Progress', 'aria-valuenow': Math.round(pct || 0), 'aria-valuemin': 0, 'aria-valuemax': 100 },
       h('div', { className: 'wb-cm-meter-fill wb-cm-meter-fill--' + (tone || 'teal'), style: { width: Math.max(0, Math.min(100, pct || 0)) + '%' } }));
   }
 

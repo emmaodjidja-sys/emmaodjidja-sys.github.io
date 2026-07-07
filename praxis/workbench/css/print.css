@@ -70,6 +70,25 @@
     page-break-inside: avoid;
   }
 
+  /* Commissioner cockpit: preserve RAG status fills on paper so a board PDF of the
+     flight deck keeps its overdue/warn/status semantics (browsers strip backgrounds
+     unless print-color-adjust is exact). Scoped to the cockpit's own devices. */
+  body:not(.s8-print) .wb-badge,
+  body:not(.s8-print) .wb-cm-alert,
+  body:not(.s8-print) .wb-cm-otile,
+  body:not(.s8-print) .wb-cm-kpichip,
+  body:not(.s8-print) .wb-cm-meter-fill,
+  body:not(.s8-print) .wb-cm-funnel-seg,
+  body:not(.s8-print) .wb-cm-uptake-seg,
+  body:not(.s8-print) .wb-cm-dist-fill,
+  body:not(.s8-print) .wb-cm-inception-chip,
+  body:not(.s8-print) .wb-cm-li-b,
+  body:not(.s8-print) .wb-cm-mile-dot,
+  body:not(.s8-print) .wb-cm-stage-dot {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   /* Station 7 report outline: keep each section together on the page. */
   body:not(.s8-print) .wb-section-card-main,
   body:not(.s8-print) .wb-report-header-row,
