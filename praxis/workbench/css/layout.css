@@ -40,18 +40,31 @@ input, textarea, select { font-family: inherit; }
 }
 
 .wb-topbar {
-  height: var(--wb-topbar-height);
+  min-height: var(--wb-topbar-height);
   background: var(--wb-topbar-bg);
   display: flex;
   align-items: center;
-  padding: 0 14px;
+  flex-wrap: wrap;
+  padding: 6px 14px;
   gap: 8px;
   flex-shrink: 0;
   z-index: 100;
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
+/* Wrap the top bar to extra rows whenever its controls (title, role switch,
+   autosave, language, tier, start/save/about) exceed the viewport, at ANY
+   width, rather than overflowing the page (WCAG 1.4.10 reflow). On wide
+   screens nothing wraps, so this is a no-op there. The .wb-app flex column plus
+   .wb-shell:flex-1 absorb the taller bar. Wrapping (not overflow-x:auto) keeps
+   the tier badge's dropdown from being clipped. */
+.wb-topbar-actions { flex-wrap: wrap; }
 
-.wb-shell { display: flex; height: calc(100vh - var(--wb-topbar-height)); }
+/* Fill the remaining column height under the top bar (and the sensitivity
+   banner, when shown). The .wb-app parent is a fixed-height flex column, so
+   flex:1 resolves to a definite height for the rail/panel overflow scrolling.
+   This replaces a hardcoded calc(100vh - topbar) that ignored the banner and
+   assumed a single-row top bar (which broke reflow on narrow viewports). */
+.wb-shell { display: flex; flex: 1; min-height: 0; }
 
 .wb-rail {
   width: var(--wb-rail-width);
