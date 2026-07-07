@@ -23,39 +23,92 @@
   // distinct because both words start with I.
   function levelSelect(value, label, onChange) {
     var abbr = label.slice(0, 4);
-    return h('select', { className: 'wb-cm-lvl-sel wb-cm-lvl-sel--' + (value || 'medium'), value: value || 'medium', 'aria-label': label, title: label, onChange: function(e) { onChange(e.target.value); } },
+    var set = D.LEVELS.indexOf(value) >= 0;
+    var opts = [h('option', { key: '_unset', value: '' }, abbr + ': set')].concat(
       D.LEVELS.slice().reverse().map(function(l) { return h('option', { key: l, value: l }, abbr + ': ' + l.charAt(0).toUpperCase() + l.slice(1)); }));
+    return h('select', { className: 'wb-cm-lvl-sel wb-cm-lvl-sel--' + (set ? value : 'unset'), value: set ? value : '', 'aria-label': label, title: label, onChange: function(e) { onChange(e.target.value); } }, opts);
   }
 
-  // Influence (y) x interest (x) engagement grid (ported). Purposeful: it tells the
-  // commissioner who to manage closely versus keep informed.
+  // Influence x interest engagement map, derived from the intended-user register. Ranks
+  // and plots each partner into manage closely / keep satisfied / keep informed / monitor,
+  // then lists them so the commissioner can see, at any point, who to manage or inform.
+  // The 2x2 plot is aria-hidden (decorative); the ranked roster is the accessible source.
   function stakeholderGrid(users) {
-    var quad = [
-      { t: 'Keep satisfied', s: 'high influence, low interest', x: 'l', y: 't' },
-      { t: 'Manage closely', s: 'engage as partners', x: 'r', y: 't' },
-      { t: 'Monitor', s: 'low effort', x: 'l', y: 'b' },
-      { t: 'Keep informed', s: 'show the findings', x: 'r', y: 'b' }
-    ];
-    var dots = users.map(function(u, i) {
-      var xi = D.levelIdx(u.interest), yi = D.levelIdx(u.influence);
-      var jit = ((i % 3) - 1) * 5;
-      var xp = [18, 50, 82][xi] + jit, yp = [18, 50, 82][yi] - jit;
-      var primary = u.tier === 'primary';
-      return h('span', { key: u.id, className: 'wb-cm-dot' + (primary ? ' wb-cm-dot--primary' : ' wb-cm-dot--secondary'),
-        style: { left: xp + '%', bottom: yp + '%' }, title: (u.name || 'user') + ' - ' + D.TIER[u.tier] });
-    });
+    var ranked = D.rankUsers(users);
     return h('div', { className: 'wb-cm-grid-wrap' },
       h('div', { className: 'wb-cm-grid-title' }, 'Engage the right users'),
+      stakeholderPlot(ranked),
+      engagementRoster(ranked));
+  }
+
+  function stakeholderPlot(ranked) {
+    var byKey = {};
+    D.STRATEGIES.forEach(function(s) { byKey[s.key] = []; });
+    ranked.forEach(function(r) { if (!r.unrated) byKey[r.strategy].push(r); });
+    return h(React.Fragment, null,
       h('div', { className: 'wb-cm-grid', 'aria-hidden': 'true' },
-        quad.map(function(q, i) { return h('div', { key: i, className: 'wb-cm-quad wb-cm-quad--' + q.x + q.y },
-          h('span', { className: 'wb-cm-quad-t' }, q.t), h('span', { className: 'wb-cm-quad-s' }, q.s)); }),
-        h('div', { className: 'wb-cm-grid-plot' }, dots),
+        D.STRATEGIES.map(function(s) {
+          return h('div', { key: s.key, className: 'wb-cm-quad wb-cm-quad--' + s.quad + ' wb-cm-quad--' + s.color },
+            h('span', { className: 'wb-cm-quad-t' }, s.label),
+            h('span', { className: 'wb-cm-quad-s' }, s.gloss),
+            h('div', { className: 'wb-cm-quad-marks' }, byKey[s.key].map(function(r) {
+              var primary = r.user.tier === 'primary';
+              return h('span', { key: r.user.id || r.rank,
+                className: 'wb-cm-pin' + (primary ? ' wb-cm-pin--primary' : ' wb-cm-pin--secondary') }, String(r.rank));
+            })));
+        }),
         h('span', { className: 'wb-cm-axis wb-cm-axis--y' }, 'Influence'),
         h('span', { className: 'wb-cm-axis wb-cm-axis--x' }, 'Interest')),
-      h('div', { className: 'wb-cm-grid-legend' },
-        h('span', null, h('i', { className: 'wb-cm-dot wb-cm-dot--primary wb-cm-dot--static' }), 'Primary'),
-        h('span', null, h('i', { className: 'wb-cm-dot wb-cm-dot--secondary wb-cm-dot--static' }), 'Secondary')));
+      h('div', { className: 'wb-cm-grid-legend', 'aria-hidden': 'true' },
+        h('span', null, h('i', { className: 'wb-cm-pin wb-cm-pin--primary wb-cm-pin--static' }), 'Primary'),
+        h('span', null, h('i', { className: 'wb-cm-pin wb-cm-pin--secondary wb-cm-pin--static' }), 'Secondary')));
   }
+
+  function engagementRoster(ranked) {
+    var groups = D.STRATEGIES.map(function(s) {
+      return { s: s, items: ranked.filter(function(r) { return r.strategy === s.key; }) };
+    }).filter(function(g) { return g.items.length; });
+    var unplaced = ranked.filter(function(r) { return r.unrated; });
+    return h('div', { className: 'wb-cm-roster', role: 'list', 'aria-label': 'Stakeholder engagement roster' },
+      groups.map(function(g) {
+        return h('div', { key: g.s.key, className: 'wb-cm-rgroup' },
+          h('div', { className: 'wb-cm-rgroup-head wb-cm-rgroup-head--' + g.s.color },
+            h('span', { className: 'wb-cm-rgroup-dot', 'aria-hidden': 'true' }),
+            h('span', { className: 'wb-cm-rgroup-name' }, g.s.label),
+            h('span', { className: 'wb-cm-rgroup-gloss' }, g.s.gloss),
+            h('span', { className: 'wb-cm-rgroup-count' }, String(g.items.length))),
+          h('ul', { className: 'wb-cm-rlist' }, g.items.map(rosterRow)));
+      }),
+      unplaced.length ? h('div', { className: 'wb-cm-rgroup wb-cm-rgroup--unplaced' },
+        h('div', { className: 'wb-cm-rgroup-head wb-cm-rgroup-head--slate' },
+          h('span', { className: 'wb-cm-rgroup-dot wb-cm-rgroup-dot--hollow', 'aria-hidden': 'true' }),
+          h('span', { className: 'wb-cm-rgroup-name' }, 'To place'),
+          h('span', { className: 'wb-cm-rgroup-gloss' }, 'set influence and interest'),
+          h('span', { className: 'wb-cm-rgroup-count' }, String(unplaced.length))),
+        h('ul', { className: 'wb-cm-rlist' }, unplaced.map(rosterRow))) : null);
+  }
+
+  function rosterRow(r) {
+    var u = r.user;
+    var primary = u.tier === 'primary';
+    var titleText = (u.name || 'Unnamed partner') + (u.role ? ' (' + u.role + ')' : '') +
+      ' - influence ' + fullLevel(u.influence) + ', interest ' + fullLevel(u.interest);
+    return h('li', { key: u.id || (u.name + '_' + (r.rank || 'x')), className: 'wb-cm-rrow', role: 'listitem', title: titleText },
+      h('span', { className: 'wb-cm-rrank', 'aria-hidden': 'true' }, r.unrated ? '-' : String(r.rank)),
+      h('span', { className: 'wb-cm-rmain' },
+        h('span', { className: 'wb-cm-rtop' },
+          u.name ? h('span', { className: 'wb-cm-rname' }, u.name) : h('span', { className: 'wb-cm-rname wb-cm-muted' }, 'Unnamed partner'),
+          h('span', { className: 'wb-cm-rtier wb-cm-rtier--' + (primary ? 'p' : 's') }, primary ? 'primary' : 'secondary')),
+        h('span', { className: 'wb-cm-rmeta' },
+          h('span', { className: 'wb-cm-rlvls' }, levelReadout(u)),
+          u.role ? h('span', { className: 'wb-cm-rrole' }, u.role) : null)));
+  }
+
+  function levelReadout(u) {
+    function ab(v) { return (D.WEIGHT[v] === undefined) ? '-' : v.charAt(0).toUpperCase(); }
+    return 'Infl ' + ab(u.influence) + ' / Int ' + ab(u.interest);
+  }
+  function fullLevel(v) { return (D.WEIGHT[v] === undefined) ? 'unset' : v; }
 
   function Commission(props) {
     var context = props.state.context;
@@ -69,7 +122,7 @@
     var usersApi = api.listSetter('users');
 
     function addUser(tier) {
-      usersApi.add({ id: U.uid('usr_'), name: '', role: '', tier: tier, intended_use: '', decision_window: '', influence: 'medium', interest: 'medium', eq_refs: [] }, 'Intended user added');
+      usersApi.add({ id: U.uid('usr_'), name: '', role: '', tier: tier, intended_use: '', decision_window: '', influence: '', interest: '', eq_refs: [] }, 'Intended user added');
     }
 
     // ---- governance -------------------------------------------------------
