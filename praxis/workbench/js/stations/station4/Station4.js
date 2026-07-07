@@ -24,9 +24,22 @@
     return null;
   }
 
-  function formatDesignName(id) {
+  // Resolve a design id to a human display name. Prefer the {id, name} pair in
+  // ranked_designs (as Stations 7 and 8 do); otherwise humanize the id by
+  // splitting camelCase and separators into title-cased words. Always returns a
+  // string so callers can safely call .toUpperCase() on / regex-test the result.
+  function resolveDesignName(designRec, id) {
     if (!id) return 'Unknown';
-    return id.replace(/[_-]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    var ranked = (designRec && (designRec.ranked_designs || designRec.ranked)) || [];
+    for (var i = 0; i < ranked.length; i++) {
+      if (ranked[i] && ranked[i].id === id && ranked[i].name) return ranked[i].name;
+    }
+    return String(id)
+      .replace(/[_-]+/g, ' ')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
   // ── Station 4 Component ──
@@ -178,7 +191,7 @@
             h('div', null,
               h('div', { className: 'wb-design-card-header' },
                 h('h3', { className: 'wb-design-card-title' },
-                  topDesign.name || formatDesignName(designId)),
+                  topDesign.name || resolveDesignName(designRec, designId)),
                 h('a', {
                   href: '#',
                   className: 'wb-design-card-link',
@@ -217,41 +230,57 @@
       ),
 
       // Sample parameters summary (if saved)
-      hasSample ? h(SectionCard, { title: 'Sample Parameters Summary' },
-        h('div', { className: 'wb-param-grid' },
-          // Design
-          h('div', { className: 'wb-param-card' },
-            h('div', { className: 'wb-param-label' }, 'Design'),
-            h('div', { className: 'wb-param-value' },
-              sampleParams.design || sampleParams.designType || formatDesignName(designId))
-          ),
-          // Sample size
-          sampleParams.sampleSize != null || sampleParams.total_sample != null
-            ? h('div', { className: 'wb-param-card' },
-                h('div', { className: 'wb-param-label' }, 'Total Sample Size'),
-                h('div', { className: 'wb-param-value wb-param-value--highlight' },
-                  sampleParams.sampleSize || sampleParams.total_sample || 'N/A')
-              )
-            : null,
-          // Power
-          sampleParams.power != null
-            ? h('div', { className: 'wb-param-card' },
-                h('div', { className: 'wb-param-label' }, 'Statistical Power'),
-                h('div', { className: 'wb-param-value' }, (sampleParams.power * 100).toFixed(0) + '%')
-              )
-            : null,
-          // Qualitative
-          sampleParams.qualitative
-            ? h('div', { className: 'wb-param-card' },
-                h('div', { className: 'wb-param-label' }, 'Qualitative Plan'),
-                h('div', { className: 'wb-param-value' },
-                  typeof sampleParams.qualitative === 'string'
-                    ? sampleParams.qualitative
-                    : JSON.stringify(sampleParams.qualitative))
-              )
-            : null
-        )
-      ) : null,
+      hasSample ? (function () {
+        // The worked examples store the sizing under result.primary/result.label
+        // and the KII breakdown under qualitative_plan (matching SummaryBar and
+        // Station 7). Older calculator saves used sampleSize/total_sample/power.
+        var result = sampleParams.result || {};
+        var qualPlan = sampleParams.qualitative_plan || {};
+        var breakdown = qualPlan.breakdown || [];
+        var primarySize = result.primary != null
+          ? String(result.primary)
+          : (sampleParams.sampleSize != null
+              ? String(sampleParams.sampleSize)
+              : (sampleParams.total_sample != null ? String(sampleParams.total_sample) : null));
+
+        return h(SectionCard, { title: 'Sample Parameters Summary' },
+          h('div', { className: 'wb-param-grid' },
+            // Design
+            h('div', { className: 'wb-param-card' },
+              h('div', { className: 'wb-param-label' }, 'Design'),
+              h('div', { className: 'wb-param-value' },
+                topDesign.name || resolveDesignName(designRec, designId))
+            ),
+            // Primary sample size + label
+            primarySize != null
+              ? h('div', { className: 'wb-param-card' },
+                  h('div', { className: 'wb-param-label' }, 'Primary Sample Size'),
+                  h('div', { className: 'wb-param-value wb-param-value--highlight' }, primarySize),
+                  result.label ? h('div', { className: 'wb-helper' }, result.label) : null
+                )
+              : null,
+            // Power (legacy calculator saves only)
+            sampleParams.power != null
+              ? h('div', { className: 'wb-param-card' },
+                  h('div', { className: 'wb-param-label' }, 'Statistical Power'),
+                  h('div', { className: 'wb-param-value' }, (sampleParams.power * 100).toFixed(0) + '%')
+                )
+              : null,
+            // Qualitative plan breakdown
+            breakdown.length > 0
+              ? h('div', { className: 'wb-param-card', style: { gridColumn: '1 / -1' } },
+                  h('div', { className: 'wb-param-label' }, 'Qualitative Plan'),
+                  qualPlan.purpose ? h('div', { className: 'wb-helper', style: { marginBottom: '8px' } }, qualPlan.purpose) : null,
+                  h('div', { className: 'wb-context-badges' },
+                    breakdown.map(function (b, j) {
+                      return h('span', { key: j, className: 'wb-context-badge' }, b.method + ' (' + b.count + ')');
+                    })
+                  )
+                )
+              : null
+          )
+        );
+      })() : null,
 
       // Calculator overlay (full-screen, stays outside SectionCard)
       calculatorOverlay,

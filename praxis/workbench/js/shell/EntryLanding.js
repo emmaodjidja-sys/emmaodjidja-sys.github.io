@@ -147,9 +147,11 @@
       dispatch({ type: AT.LOAD_FILE, context: restored });
     }
 
-    // Station preview for left panel: uniform color, opacity fade for depth-of-field
+    // Station preview for left panel: uniform color, subtle opacity fade for
+    // depth-of-field. Floor is 0.85 so every station name still clears WCAG AA
+    // (>= 4.5:1) on --navy; the dimmest item lands at ~6.05:1.
     var stationPreview = LABELS.map(function(name, i) {
-      var opacity = Math.max(0.25, 1 - i * 0.09);
+      var opacity = Math.max(0.85, 1 - i * 0.09);
       return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', opacity: opacity } },
         h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--teal)', minWidth: '16px' } }, i),
         h('span', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)' } }, name)

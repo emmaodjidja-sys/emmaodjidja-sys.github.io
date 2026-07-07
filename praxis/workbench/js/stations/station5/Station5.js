@@ -2,6 +2,23 @@
   'use strict';
   var h = React.createElement;
 
+  // Resolve a design id to a human display name. Prefer the {id, name} pair in
+  // ranked_designs (as Stations 7 and 8 do); otherwise humanize the id by
+  // splitting camelCase and separators into title-cased words.
+  function resolveDesignName(designRec, id) {
+    if (!id) return '';
+    var ranked = (designRec && (designRec.ranked_designs || designRec.ranked)) || [];
+    for (var i = 0; i < ranked.length; i++) {
+      if (ranked[i] && ranked[i].id === id && ranked[i].name) return ranked[i].name;
+    }
+    return String(id)
+      .replace(/[_-]+/g, ' ')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
   function Station5(props) {
     var state = props.state, dispatch = props.dispatch;
     var context = state.context, tier = state.ui.experienceTier || 'foundation';
@@ -83,13 +100,14 @@
     // (selected_design or top ranked design); the sample from Station 4's
     // sample_parameters. Neither context.design nor context.sampling exist.
     var designRec = context.design_recommendation || {};
-    var topDesign = designRec.selected_design ||
-      ((designRec.ranked_designs && designRec.ranked_designs.length) ? designRec.ranked_designs[0] : null);
+    var selectedId = designRec.selected_design;
+    if (selectedId && typeof selectedId === 'object') selectedId = selectedId.id || '';
     var designLabel = '';
-    if (topDesign) {
-      designLabel = (typeof topDesign === 'string')
-        ? topDesign
-        : (topDesign.name || topDesign.short || topDesign.id || '');
+    if (selectedId) {
+      designLabel = resolveDesignName(designRec, selectedId);
+    } else if (designRec.ranked_designs && designRec.ranked_designs.length) {
+      var top0 = designRec.ranked_designs[0];
+      designLabel = top0.name || resolveDesignName(designRec, top0.id) || '';
     }
     var sp = context.sample_parameters || {};
     var totalSample = (sp.result && (sp.result.totalSample || sp.result.primary)) || sp.sampleSize || null;
@@ -183,9 +201,11 @@
             localInst.map(function(inst) { return h('th', { key: inst.id, className: 'wb-th--center' }, (inst.type || 'survey').toUpperCase()); }))),
           h('tbody', null, eqCoverage.map(function(ec) {
             var noCoverage = Object.keys(ec.covered).length === 0;
+            var eqText = ec.row.question || ec.row.text || ec.row.id || '';
+            var eqTextShort = eqText.length > 60 ? eqText.slice(0, 60) + '...' : eqText;
             return h('tr', { key: ec.row.id, className: noCoverage ? 'wb-coverage-gap' : '' },
               h('td', { className: noCoverage ? 'wb-coverage-cell--gap' : '' },
-                (ec.row.question || ec.row.text || ec.row.id || '').slice(0, 60)),
+                eqTextShort),
               localInst.map(function(inst) {
                 return h('td', { key: inst.id, className: 'wb-td--center' },
                   ec.covered[inst.id] ? h('span', { className: 'wb-coverage-mark' }, PraxisIcons.check(12)) : '-');

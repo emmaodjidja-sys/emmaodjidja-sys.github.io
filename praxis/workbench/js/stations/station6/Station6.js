@@ -22,6 +22,25 @@
     { id: 'urban_rural', label: 'Urban/Rural' }
   ];
 
+  // Resolve a design id to a human display name for DISPLAY ONLY. Prefer the
+  // {id, name} pair in ranked_designs (as Stations 7 and 8 do); otherwise
+  // humanize the id by splitting camelCase and separators into title-cased
+  // words. Always returns a string. Note: the raw id (not this name) must still
+  // be fed to the analysis engine, which regex-tests it against design tokens.
+  function resolveDesignName(designRec, id) {
+    if (!id) return '';
+    var ranked = (designRec && (designRec.ranked_designs || designRec.ranked)) || [];
+    for (var i = 0; i < ranked.length; i++) {
+      if (ranked[i] && ranked[i].id === id && ranked[i].name) return ranked[i].name;
+    }
+    return String(id)
+      .replace(/[_-]+/g, ' ')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
   // ═══════════════════════════════════════════════════════════
   // Analysis Method Suggestion Engine
   // Produces specific, contextual recommendations based on:
@@ -564,7 +583,10 @@
     var matrix = context.evaluation_matrix || null;
     var savedPlan = context.analysis_plan || null;
     var designRec = context.design_recommendation || {};
+    // Keep selectedDesign as the raw id: the analysis engine regex-tests it.
     var selectedDesign = designRec.selected_design || null;
+    // Separate human-readable name for the design context banner only.
+    var selectedDesignName = selectedDesign ? resolveDesignName(designRec, selectedDesign) : '';
     var programmeName = (context.project_meta && context.project_meta.programme_name) ||
       (matrix && matrix.context && matrix.context.programmeName) || '';
 
@@ -681,7 +703,7 @@
       selectedDesign ? h('div', { className: 'wb-guidance wb-guidance--neutral' },
         h('span', { className: 'wb-guidance-text' },
           h('strong', null, 'Evaluation design: '),
-          selectedDesign.toUpperCase(),
+          selectedDesignName.toUpperCase(),
           '. Analysis method suggestions are tailored to this design.'
         )
       ) : null,

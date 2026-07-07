@@ -262,17 +262,31 @@
 
   function ProgressBar(props) {
     var sections = props.sections;
-    var withContent = sections.filter(function (s) { return s.draftContent && s.draftContent.trim().length > 0; }).length;
+    // A section is "auto-drafted" once it carries content pulled from upstream
+    // stations (autoContent) or hand-written notes (draftContent); it is
+    // "finalized" only once an evaluator has written draft content. Counting
+    // auto-drafted sections toward the meter keeps it honest: with the worked
+    // examples every section arrives auto-populated, so the report is fully
+    // drafted even though none has been finalized yet.
+    function hasAuto(s) {
+      if (!s.autoContent) return false;
+      return Array.isArray(s.autoContent)
+        ? s.autoContent.length > 0
+        : String(s.autoContent).trim().length > 0;
+    }
+    function hasDraft(s) { return s.draftContent && s.draftContent.trim().length > 0; }
+    var drafted = sections.filter(function (s) { return hasAuto(s) || hasDraft(s); }).length;
+    var finalized = sections.filter(hasDraft).length;
     var total = sections.length;
-    var pct = total > 0 ? Math.round((withContent / total) * 100) : 0;
-    var complete = withContent === total && total > 0;
+    var pct = total > 0 ? Math.round((drafted / total) * 100) : 0;
+    var complete = finalized === total && total > 0;
 
     return h('div', { className: 'wb-report-progress' },
       h('div', { className: 'wb-report-progress-header' },
         h('span', { className: 'wb-report-progress-label' }, 'Report completeness'),
         h('span', {
           className: 'wb-report-progress-count' + (complete ? ' wb-report-progress-count--complete' : '')
-        }, withContent + ' of ' + total + ' sections have draft content')
+        }, drafted + ' of ' + total + ' sections auto-drafted, ' + finalized + ' finalized')
       ),
       h('div', {
         className: 'wb-progress-bar',

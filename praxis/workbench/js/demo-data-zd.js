@@ -1745,7 +1745,7 @@
       "evaluator": "Independent evaluation consortium",
       "currency": "USD",
       "start_date": "2022-09-01",
-      "end_date": "2025-10-31",
+      "end_date": "2026-10-31",
       "total_budget": 646218
     },
     "budget_lines": [
@@ -2042,11 +2042,11 @@
         "rating": null,
         "type": "Final report",
         "reviewers": "EAC, Secretariat",
-        "reviewer_email": "r.alemu@gavi.org",
+        "reviewer_email": "r.alemu@example.org",
         "alert": {
           "lead_days": 14,
           "emails": [
-            "r.alemu@gavi.org"
+            "r.alemu@example.org"
           ]
         }
       },
@@ -2359,7 +2359,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "r.alemu@gavi.org"
+        "owner_email": "r.alemu@example.org"
       },
       {
         "id": "rec_zd_2",
@@ -2386,7 +2386,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "t.bello@gavi.org"
+        "owner_email": "t.bello@example.org"
       },
       {
         "id": "rec_zd_3",
@@ -2413,7 +2413,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "l.moreau@gavi.org"
+        "owner_email": "l.moreau@example.org"
       },
       {
         "id": "rec_zd_4",
@@ -2440,7 +2440,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "s.haddad@gavi.org"
+        "owner_email": "s.haddad@example.org"
       },
       {
         "id": "rec_zd_5",
@@ -2467,7 +2467,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "r.alemu@gavi.org"
+        "owner_email": "r.alemu@example.org"
       },
       {
         "id": "rec_zd_6",
@@ -2494,7 +2494,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "r.alemu@gavi.org"
+        "owner_email": "r.alemu@example.org"
       },
       {
         "id": "rec_zd_7",
@@ -2521,7 +2521,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "s.haddad@gavi.org"
+        "owner_email": "s.haddad@example.org"
       }
     ],
     "dissemination": [

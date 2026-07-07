@@ -13,7 +13,7 @@
     "title": "GF SNT Malaria Evaluation",
     "programme_name": "Global Fund Evaluation: Sub-national Tailoring of Malaria Interventions",
     "organisation": "The Global Fund / Evaluation and Learning Office (ELO)",
-    "country": "Multi-country (12 HBHI countries)",
+    "country": "Multi-country (11 HBHI countries)",
     "sector_template": "",
     "sectors": [
       "Health"
@@ -54,7 +54,7 @@
     "data_available": "routine_monitoring",
     "unit_of_intervention": "system",
     "programme_complexity": "complex",
-    "geographic_scope": "Multi-country: 12 HBHI countries (Burkina Faso, Cameroon, DRC, Ghana, Mali, Mozambique, Niger, Nigeria, Uganda, Tanzania, India, Sudan); 5-7 selected for country insights; survey of 28 highest-burden countries.",
+    "geographic_scope": "Multi-country: 11 HBHI countries (Burkina Faso, Cameroon, DRC, Ghana, Mali, Mozambique, Niger, Nigeria, Uganda, Tanzania, India); 5-7 selected for country insights; survey of 28 highest-burden countries.",
     "target_population": "National Malaria Control Programmes, Principal Recipients, sub-national malaria managers, Global Fund Secretariat and Country Teams, TRP members, technical partners and community representatives.",
     "evaluation_questions_raw": [
       "How adequate are country sub-national systems for capturing and analysing malaria programming data to support SNT?",
@@ -95,7 +95,7 @@
         "max": 15,
         "system_score": 9,
         "adjusted_score": null,
-        "justification": "HBHI countries span stable and fragile or conflict-affected settings (for example DRC, Mali, Niger, Sudan), with access, security and language considerations affecting country insights."
+        "justification": "HBHI countries span stable and fragile or conflict-affected settings (for example DRC, Mali and Niger), with access, security and language considerations affecting country insights."
       },
       {
         "id": "comparison",
@@ -125,7 +125,7 @@
     "title": "SNT of Malaria Interventions - Theory of Change",
     "narrative": {
       "description": "Sub-national tailoring uses local data and contextual information to determine the appropriate mix of malaria interventions and delivery strategies for optimum impact on transmission and burden.",
-      "context": "Malaria transmission is increasingly localised in hard-to-reach sub-national areas. The 12 HBHI countries pursue High Burden to High Impact strategies; the Global Fund is aiming for 28 countries to submit evidence-based Funding Requests in GC8.",
+      "context": "Malaria transmission is increasingly localised in hard-to-reach sub-national areas. The 11 HBHI countries pursue High Burden to High Impact strategies; the Global Fund is aiming for 28 countries to submit evidence-based Funding Requests in GC8.",
       "theory": "By compiling and analysing sub-national data, stratifying burden and risk, and modelling intervention mixes and financial scenarios, countries can make data-driven sub-national decisions that optimise the intervention mix and financial allocation, contributing to reduced malaria incidence and mortality.",
       "systemAssumptions": []
     },
@@ -981,7 +981,7 @@
         {
           "method": "Document and portfolio review",
           "count": 150,
-          "notes": "Funding Requests (GC6, GC7), TRP and OIG reports, Malaria Information Notes, portfolio data for 12 HBHI countries."
+          "notes": "Funding Requests (GC6, GC7), TRP and OIG reports, Malaria Information Notes, portfolio data for 11 HBHI countries."
         },
         {
           "method": "Country insights",
@@ -1614,7 +1614,7 @@
         "name": "Document & Portfolio Review Protocol",
         "type": "document_review",
         "method": "Structured document and portfolio review",
-        "targetSample": "150+ documents, 12 HBHI portfolios",
+        "targetSample": "150+ documents, 11 HBHI portfolios",
         "sections": [
           {
             "id": "sec_15",
@@ -1861,7 +1861,7 @@
           "TA records",
           "NMCP KIIs"
         ],
-        "method": "Portfolio analysis of TA requests and provision across the 12 HBHI countries.",
+        "method": "Portfolio analysis of TA requests and provision across the 11 HBHI countries.",
         "steps": "1. Extract TA requests from portfolio. 2. Match to provision records. 3. Compute fulfilment rates. 4. Triangulate with KIIs.",
         "analysisType": "quantitative",
         "software": "Excel",
@@ -1977,7 +1977,7 @@
         "title": "Background and context",
         "autoContent": [
           "Malaria transmission is increasingly localised in hard-to-reach sub-national areas; the GTS 2016-2030 targets a 90% reduction in incidence and mortality by 2030.",
-          "The High Burden to High Impact (HBHI) approach covers 12 countries (Burkina Faso, Cameroon, DRC, Ghana, Mali, Mozambique, Niger, Nigeria, Uganda, Tanzania, India, Sudan).",
+          "The High Burden to High Impact (HBHI) approach covers 11 countries (Burkina Faso, Cameroon, DRC, Ghana, Mali, Mozambique, Niger, Nigeria, Uganda, Tanzania, India).",
           "SNT uses local data and contextual information to determine the appropriate mix of interventions and delivery strategies for optimum impact."
         ],
         "draftContent": ""
@@ -1989,7 +1989,7 @@
         "title": "Methodology, scope and timeline",
         "autoContent": [
           "Systems approach and mixed-methods design with triangulation across document review, quantitative and qualitative analysis, KIIs, process mapping and country insights.",
-          "Country insights in 5-7 selected countries; stakeholder survey of the 28 highest-burden countries; portfolio analysis across the 12 HBHI countries and Funding Requests for GC6 and GC7.",
+          "Country insights in 5-7 selected countries; stakeholder survey of the 28 highest-burden countries; portfolio analysis across the 11 HBHI countries and Funding Requests for GC6 and GC7.",
           "Strength of evidence assessed and documented per evaluation question; evaluation guided by ethical principles and gender sensitivity."
         ],
         "draftContent": ""
@@ -2099,7 +2099,7 @@
       {
         "title": "Programme Overview",
         "included": true,
-        "talkingPoints": "Sub-national tailoring (SNT) uses local data and contextual information to determine the appropriate mix of malaria interventions and delivery strategies. Focus on the 12 HBHI countries and the GC8 Funding Request cycle.",
+        "talkingPoints": "Sub-national tailoring (SNT) uses local data and contextual information to determine the appropriate mix of malaria interventions and delivery strategies. Focus on the 11 HBHI countries and the GC8 Funding Request cycle.",
         "order": 1
       },
       {
@@ -2123,7 +2123,7 @@
       {
         "title": "Methodology",
         "included": true,
-        "talkingPoints": "Systems approach, mixed-methods and triangulation: document review, quantitative and qualitative analysis, KIIs, process mapping, portfolio analysis of 12 HBHI countries and Funding Requests for GC6 and GC7.",
+        "talkingPoints": "Systems approach, mixed-methods and triangulation: document review, quantitative and qualitative analysis, KIIs, process mapping, portfolio analysis of 11 HBHI countries and Funding Requests for GC6 and GC7.",
         "order": 5
       },
       {
@@ -2160,7 +2160,7 @@
       "evaluator": "Independent evaluation consortium",
       "currency": "USD",
       "start_date": "2024-04-01",
-      "end_date": "2025-01-31",
+      "end_date": "2026-08-31",
       "total_budget": 387405
     },
     "budget_lines": [
@@ -2545,11 +2545,11 @@
         "rating": null,
         "type": "Governance",
         "reviewers": "ELO",
-        "reviewer_email": "k.asante@theglobalfund.org",
+        "reviewer_email": "k.asante@example.org",
         "alert": {
           "lead_days": 14,
           "emails": [
-            "k.asante@theglobalfund.org"
+            "k.asante@example.org"
           ]
         }
       }
@@ -2716,7 +2716,7 @@
       "decision": "conditions",
       "decided_by": "ELO, Secretariat Teams, External Reference Group and IEP",
       "decided_at": "2024-06-28T10:00:00.000Z",
-      "note": "Inception report (max 20 pages) reviewed by the ELO, Secretariat Teams, the External Reference Group and the IEP before country-insight fieldwork. Evaluation framework, data-collection tools and country selection (5-7 of the 12 HBHI countries) confirmed.",
+      "note": "Inception report (max 20 pages) reviewed by the ELO, Secretariat Teams, the External Reference Group and the IEP before country-insight fieldwork. Evaluation framework, data-collection tools and country selection (5-7 of the 11 HBHI countries) confirmed.",
       "conditions": [
         {
           "id": "cond_gf_1",
@@ -2741,7 +2741,7 @@
       "ethics": {
         "status": "cleared",
         "body": "Evaluation supplier institutional review board (IRB)",
-        "note": "Adult key informants only; informed consent, anonymisation of informants and confidential handling of KII data applied, consistent with Belmont principles and Global Fund data-protection requirements.",
+        "note": "Adult key informants only; informed consent, anonymisation of informants and confidential handling of KII data applied, consistent with the UNEG Ethical Guidelines for Evaluation (2020), national IRB approval and Global Fund data-protection requirements.",
         "cleared_at": "2024-06-25"
       }
     },
@@ -2948,7 +2948,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "k.asante@theglobalfund.org"
+        "owner_email": "k.asante@example.org"
       },
       {
         "id": "rec_gf_2",
@@ -2975,7 +2975,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "p.dubois@theglobalfund.org"
+        "owner_email": "p.dubois@example.org"
       },
       {
         "id": "rec_gf_3",
@@ -3002,7 +3002,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "s.okonkwo@theglobalfund.org"
+        "owner_email": "s.okonkwo@example.org"
       },
       {
         "id": "rec_gf_4",
@@ -3029,7 +3029,7 @@
             "evidence_url": ""
           }
         ],
-        "owner_email": "m.diallo@theglobalfund.org"
+        "owner_email": "m.diallo@example.org"
       }
     ],
     "dissemination": [
@@ -3116,7 +3116,7 @@
         "category": "Access",
         "likelihood": "medium",
         "impact": "medium",
-        "mitigation": "Anonymity assurances and confidentiality of KIIs, consistent with the Belmont principles.",
+        "mitigation": "Anonymity assurances and confidentiality of KIIs, consistent with the UNEG Ethical Guidelines for Evaluation (2020).",
         "owner": "Supplier",
         "status": "closed"
       }

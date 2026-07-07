@@ -60,13 +60,17 @@
 }
 
 /* ── Tier pill ── */
+/* Light fill + strong (dark) text, mirroring the .wb-badge-* system, so the
+   pill stays legible on the dark top bar (WCAG AA, >= 4.5:1). green has a
+   -strong token; blue and purple have none in tokens.css, so their 700 shades
+   are used to clear 4.5:1 on the light fill. */
 .wb-tier-pill {
   padding: 3px 8px; border-radius: 8px;
   font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
 }
-.wb-tier-pill[data-tier="foundation"] { background: var(--tier-foundation-bg); color: var(--tier-foundation); }
-.wb-tier-pill[data-tier="practitioner"] { background: var(--tier-practitioner-bg); color: var(--tier-practitioner); }
-.wb-tier-pill[data-tier="advanced"] { background: var(--tier-advanced-bg); color: var(--tier-advanced); }
+.wb-tier-pill[data-tier="foundation"] { background: var(--green-light); color: var(--green-strong); }
+.wb-tier-pill[data-tier="practitioner"] { background: var(--blue-light); color: #1D4ED8; }
+.wb-tier-pill[data-tier="advanced"] { background: var(--purple-light); color: #6D28D9; }
 
 /* ── Form elements (§7.7) ── */
 .wb-label {
@@ -324,7 +328,7 @@
 .wb-phase:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
 .wb-phase:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
 .wb-phase--current { background: var(--navy); color: white; font-weight: 600; }
-.wb-phase--completed { background: var(--green-light); color: #059669; font-weight: 600; cursor: pointer; }
+.wb-phase--completed { background: var(--green-light); color: var(--green-strong); font-weight: 600; cursor: pointer; }
 .wb-phase--upcoming {
   background: var(--bg); color: #CBD5E1;
   border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
