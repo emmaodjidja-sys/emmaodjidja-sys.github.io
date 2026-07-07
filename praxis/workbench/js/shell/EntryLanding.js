@@ -245,38 +245,43 @@
       );
 
     } else if (mode === 'quick') {
-      // Station selector
+      // Station selector: the nine linear stations plus the optional Planning
+      // and contract station (index 9, reached in-app by the rail "P" button),
+      // folded in here so it is no longer a separate landing card.
+      var stationRowStyle = {
+        display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
+        border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
+        marginBottom: '6px', transition: 'background 0.15s'
+      };
+      function stationRow(key, badge, name, station) {
+        return h('button', {
+          key: key, type: 'button', className: 'wb-card-btn',
+          onClick: function() {
+            guardDestructive(function() {
+              dispatch({ type: AT.INIT, station: station });
+            });
+          },
+          style: stationRowStyle
+        },
+          h('span', { style: { fontSize: '12px', fontWeight: 700, color: 'var(--teal)', minWidth: '16px' } }, badge),
+          h('span', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)' } }, name)
+        );
+      }
       rightContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
         h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Go to a station'),
-        LABELS.map(function(name, i) {
-          return h('button', {
-            key: i, type: 'button', className: 'wb-card-btn',
-            onClick: function() {
-              guardDestructive(function() {
-                dispatch({ type: AT.INIT, station: i });
-              });
-            },
-            style: {
-              display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
-              border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
-              marginBottom: '6px', transition: 'background 0.15s'
-            }
-          },
-            h('span', { style: { fontSize: '12px', fontWeight: 700, color: 'var(--teal)', minWidth: '16px' } }, i),
-            h('span', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)' } }, name)
-          );
-        })
+        LABELS.map(function(name, i) { return stationRow(i, i, name, i); }),
+        stationRow('planning', 'P', 'Planning and contract', 9)
       );
 
     } else if (mode === 'demo') {
       // Demo picker: one card per pre-populated example evaluation
       var demos = [
         { key: 'gf', title: 'Global Fund Malaria SNT', accent: 'var(--blue)',
-          desc: 'Independent evaluation of sub-national tailoring of malaria interventions across 12 HBHI countries. 26 evaluation questions, contribution analysis, and a mixed-methods country-insights sample.',
+          desc: 'Independent evaluation of sub-national tailoring of malaria interventions across 12 HBHI countries. 26 evaluation questions, contribution analysis, and a mixed-methods country-insights sample. Both the evaluation team and the commissioner cockpit are fully populated.',
           ctx: window.PRAXIS_DEMO_GF },
         { key: 'zd', title: 'Gavi Zero-Dose', accent: 'var(--teal)',
-          desc: 'Multi-country immunisation equity evaluation (8 countries). 8 evaluation questions, contribution analysis, and 126 key informant interviews.',
+          desc: 'Multi-country immunisation equity evaluation (8 countries). 8 evaluation questions, contribution analysis, and 126 key informant interviews. Both the evaluation team and the commissioner cockpit are fully populated.',
           ctx: window.PRAXIS_DEMO_ZD }
       ];
       rightContent = h('div', null,
@@ -304,22 +309,13 @@
         h(ActionCard, { key: 'new', title: '+ ' + t('landing.new'), desc: t('landing.new_desc'), accent: 'var(--teal)', onClick: function() { setMode('tier'); } }),
         h(ActionCard, { key: 'open', title: t('landing.open'), desc: t('landing.open_desc'), accent: 'var(--blue)', onClick: function() { setMode('open'); } }),
         h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: 'var(--purple)', onClick: function() { setMode('quick'); } }),
-        h(ActionCard, { key: 'demo', title: 'Worked examples', desc: 'A complete worked evaluation across all nine stations. Global Fund Malaria SNT or Gavi Zero-Dose.', accent: 'var(--amber)',
+        h(ActionCard, { key: 'demo', title: 'Worked examples', desc: 'Two complete evaluations, filled from scoping through the commissioner cockpit. Global Fund Malaria SNT or Gavi Zero-Dose.', accent: 'var(--amber)',
           onClick: function() { setMode('demo'); }
         }),
-        h(ActionCard, { key: 'planning', title: 'Planning and contract management', desc: 'Budget, deliverables, invoices and quality review across an evaluation contract. Opens a worked example at the optional Planning station.', accent: 'var(--green)',
+        h(ActionCard, { key: 'commissioner', title: 'Commissioner cockpit', desc: 'Commission for use: name the intended users and the decisions they must make, quality-assure the design before spend, hold delivery to schedule, and drive findings to implementation. Starts an empty cockpit for your own commission.', accent: 'var(--blue)',
           onClick: function() {
-            if (!window.PRAXIS_DEMO_GF) return;
             guardDestructive(function() {
-              dispatch({ type: AT.INIT, context: window.PRAXIS_DEMO_GF, tier: 'practitioner', station: 9 });
-            });
-          }
-        }),
-        h(ActionCard, { key: 'commissioner', title: 'Commissioner cockpit', desc: 'Commission for use: name the intended users and the decisions they must make, quality-assure the design before spend, hold delivery to schedule, and drive findings to implementation. Opens the Global Fund Malaria SNT worked example at the optional Commissioner surface.', accent: 'var(--blue)',
-          onClick: function() {
-            if (!window.PRAXIS_DEMO_GF) return;
-            guardDestructive(function() {
-              dispatch({ type: AT.INIT, context: window.PRAXIS_DEMO_GF, tier: 'practitioner', station: 10 });
+              dispatch({ type: AT.INIT, role: 'commissioner', tier: 'practitioner' });
             });
           }
         })
