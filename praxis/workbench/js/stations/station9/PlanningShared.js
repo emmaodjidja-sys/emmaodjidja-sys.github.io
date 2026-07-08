@@ -154,6 +154,9 @@
     { v: 3, label: 'Satisfactory', desc: 'Meets the standard; minor gaps only' },
     { v: 4, label: 'Highly satisfactory', desc: 'Fully meets the standard; no or trivial gaps' }
   ];
+  // Per-value colour for the score buttons, so the rubric editor uses the same band-coloured
+  // control as the C2 answerability and C3 strength-of-evidence tables (one scoring vocabulary).
+  var SCALE_COLOR = { 1: 'var(--red-strong)', 2: 'var(--amber-dark)', 3: 'var(--teal-ink)', 4: 'var(--green-strong)' };
 
   // Canonical deliverable workflow status (stored). Reconciled to the five states shared
   // with CockpitData: not_started | in_progress | submitted | accepted | revise.
@@ -370,21 +373,25 @@
       : h('div', { className: 'wb-plan-rubric-blurb', style: { marginBottom: 8 } }, 'Rubric: ' + rubric.label);
     return h('div', { className: 'wb-plan-rubric' },
       selector,
-      h('table', { className: 'wb-table wb-plan-rubric-table' },
+      h('table', { className: 'wb-table wb-cm-table wb-plan-rubric-table' },
         h('thead', null, h('tr', null,
           h('th', null, 'Criterion'),
-          SCALE.map(function(s) { return h('th', { key: s.v, className: 'wb-th--center', title: s.label }, String(s.v)); }))),
+          h('th', { className: 'wb-th--center', style: { minWidth: 172 } }, 'Score'))),
         h('tbody', null, rubric.criteria.map(function(c) {
           var must = rubric.mustPass.indexOf(c.key) >= 0;
           return h('tr', { key: c.key },
             h('td', null, c.label, must ? h('span', { className: 'wb-plan-rubric-must', title: 'Must-pass criterion' }, 'must-pass') : null),
-            SCALE.map(function(s) {
-              var on = scores[c.key] === s.v;
-              return h('td', { key: s.v, className: 'wb-th--center' },
-                h('button', { className: 'wb-plan-score' + (on ? ' wb-plan-score--on' : ''), title: s.label,
-                  'aria-label': c.label + ': ' + s.label, onClick: function() { api.setRating(d.id, c.key, s.v); } },
-                  on ? PraxisIcons.check(14) : ''));
-            }));
+            h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe' },
+              SCALE.map(function(s) {
+                var on = scores[c.key] === s.v;
+                return h('button', { key: s.v, type: 'button',
+                  className: 'wb-cm-soe-btn' + (on ? ' wb-cm-soe-btn--on' : ''),
+                  style: on ? { background: SCALE_COLOR[s.v], borderColor: 'transparent', color: '#fff' } : null,
+                  title: s.v + ' - ' + s.label + ': ' + s.desc,
+                  'aria-label': c.label + ': ' + s.label,
+                  'aria-pressed': on ? 'true' : 'false',
+                  onClick: function() { api.setRating(d.id, c.key, s.v); } }, String(s.v));
+              }))));
         }))),
       h('div', { className: 'wb-plan-rubric-scale' }, SCALE.map(function(s) { return h('span', { key: s.v, className: 'wb-plan-rubric-scale-item' }, s.v + ' ' + s.label); })),
       h('textarea', { className: 'wb-input wb-plan-rubric-comment', rows: 2, placeholder: 'Overall comment on quality (optional)',

@@ -77,14 +77,10 @@
 
     var riskApi = api.listSetter('risks');
 
-    function addDeliverable() {
-      api.addDeliverable({
-        id: U.uid('del_'), code: '', title: '', description: '', due_date: '',
-        station_ids: [], payment_percent: null, status: 'not_started', type: '',
-        reviewers: '', reviewer_email: '', alert: { lead_days: 14, emails: [] },
-        rating: null, notes: ''
-      }, 'Deliverable added');
-    }
+    // Deliverables are authored and edited in C1 Contract (the single owner of their identity,
+    // due dates, quality and acceptance); C3 is a read-only delivery tracker over the same list.
+    var AT = PraxisContext.ACTION_TYPES;
+    function goContract() { dispatch({ type: AT.SET_COMMISSIONER_STATION, station: 2 }); }
     function addRisk() {
       riskApi.add({ id: U.uid('rsk_'), risk: '', category: '', likelihood: 'medium', impact: 'medium', mitigation: '', owner: '', status: 'open' }, 'Risk added');
     }
@@ -115,26 +111,28 @@
             h('th', null, 'Reviewers'),
             h('th', { className: 'wb-th--center', style: { minWidth: 132 } }, 'Due'),
             h('th', { style: { minWidth: 110 } }, 'Status'),
-            h('th', { style: { minWidth: 132 } }, 'Alerts'),
-            h('th', { style: { width: 34 } }, ''))),
+            h('th', { style: { minWidth: 132 } }, 'Alerts'))),
           h('tbody', null, deliverables.slice().sort(byDue).map(function(d) {
             var schedKey = D.deliverableStatus(d);
             var isOpen = schedKey !== 'accepted';
             var lead = (d.alert && typeof d.alert.lead_days === 'number') ? d.alert.lead_days : 14;
+            // Title and due date are read-only here (owned by C1 Contract); reviewers, the review
+            // body, remain editable on this delivery surface.
             return h('tr', { key: d.id },
               h('td', null,
-                h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--strong', type: 'text', placeholder: 'deliverable', defaultValue: d.title || '', 'aria-label': 'Deliverable title', onBlur: function(e) { api.patchDeliverable(d.id, { title: e.target.value }); } }),
+                h('div', { className: 'wb-cm-inp--strong', style: { color: 'var(--text)' } }, (d.code ? d.code + '  ' : '') + (d.title || '(untitled deliverable)')),
                 d.type ? h('span', { className: 'wb-cm-inp--sub wb-cm-muted' }, d.type) : null),
-              h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'review body', defaultValue: d.reviewers || '', 'aria-label': 'Reviewers', onBlur: function(e) { api.patchDeliverable(d.id, { reviewers: e.target.value }); } })),
+              h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'review body', defaultValue: d.reviewers || '', 'aria-label': 'Reviewers for ' + (d.title || 'deliverable'), onBlur: function(e) { api.patchDeliverable(d.id, { reviewers: e.target.value }); } })),
               h('td', { className: 'wb-th--center' },
-                h('input', { className: 'wb-input wb-cm-inp wb-cm-date', type: 'date', defaultValue: d.due_date || '', 'aria-label': 'Due date', onBlur: function(e) { api.patchDeliverable(d.id, { due_date: e.target.value }); } }),
+                h('span', { className: 'wb-cm-date', style: { display: 'inline-block' } }, D.fdate(d.due_date)),
                 agingChip(d.due_date, isOpen, lead)),
               h('td', null, statusBadge(D.DELIV_SCHED, schedKey)),
-              h('td', null, alertCell(deliverableAlert(d.id))),
-              h('td', null, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove deliverable', onClick: function() { api.removeDeliverable(d.id, 'Deliverable removed'); } }, I.close(14))));
+              h('td', null, alertCell(deliverableAlert(d.id))));
           }))))
     ) : h('div', { className: 'wb-station-empty' },
-        h('div', { className: 'wb-station-empty-desc' }, 'No delivery schedule yet. Add the ToR deliverables with their due dates and review bodies to track them to on-time delivery.'));
+        h('div', { className: 'wb-station-empty-title' }, 'No delivery schedule yet'),
+        h('div', { className: 'wb-station-empty-desc' }, 'Deliverables and their due dates are managed in C1 Contract. Add them there and they appear here to track to on-time delivery.'),
+        h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: goContract }, 'Open C1 Contract')));
 
     // ---- delivery risks --------------------------------------------------------------------
     var openRisks = risks.filter(function(r) { return r.status !== 'closed'; }).length;
@@ -260,8 +258,8 @@
         moveHead('C3', 'Deliver', 'Hold delivery to schedule', 'Track every deliverable against its due date and review body, so slippage is visible while it can still be managed, then accept the final report.'),
         h('div', { className: 'wb-station-empty' },
           h('div', { className: 'wb-station-empty-title' }, 'Set up the delivery schedule'),
-          h('div', { className: 'wb-station-empty-desc' }, 'Add the ToR deliverables with their due dates and review bodies to track them to on-time delivery. The final report is then accepted here, where the strength of evidence is rated per question.'),
-          h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: addDeliverable }, I.plus(14), ' Add the first deliverable'))));
+          h('div', { className: 'wb-station-empty-desc' }, 'Deliverables and their due dates are managed in C1 Contract. Add them there to track to on-time delivery. The final report is then accepted here, where the strength of evidence is rated per question.'),
+          h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: goContract }, 'Open C1 Contract'))));
     }
 
     var acceptBadge = report.accepted ? 'Accepted' : (rows.length ? (ratedCount + ' / ' + rows.length + ' rated') : 'Pending');
@@ -269,8 +267,9 @@
     return h('section', { className: 'wb-cm-move', 'aria-label': 'Deliver' },
       moveHead('C3', 'Deliver', 'Hold delivery to schedule', 'Track every deliverable against its due date and review body, so slippage is visible while it can still be managed, then accept the final report.'),
       h(SectionCard, { title: 'Delivery schedule', badge: deliverables.length ? deliverables.length + ' deliverables' : 'Empty' },
+        deliverables.length ? h('p', { className: 'wb-cm-panel-intro' }, 'A read-only view of the deliverables managed in C1 Contract. Track each against its due date and review body; edit titles, dates and acceptance in C1.') : null,
         scheduleBody,
-        h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addDeliverable }, I.plus(14), ' Add deliverable'))),
+        deliverables.length ? h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: goContract }, 'Manage deliverables in C1 Contract')) : null),
       h(SectionCard, { title: 'Delivery risks', badge: risks.length ? (openRisks + ' open') : 'Empty', variant: openRisks ? 'warning' : null },
         h('p', { className: 'wb-cm-panel-intro' }, 'Risks to timely, credible delivery, reported to the evaluation manager with a mitigation and an owner.'),
         riskTable(),

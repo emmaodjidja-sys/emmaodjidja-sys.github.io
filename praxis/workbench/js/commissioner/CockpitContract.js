@@ -51,6 +51,9 @@
     // is overriding, plus the recorded reason (only one prompt is open at a time).
     var ov = React.useState(null), overrideId = ov[0], setOverrideId = ov[1];
     var orr = React.useState(''), overrideReason = orr[0], setOverrideReason = orr[1];
+    // Pending remove confirmation (this is the contract system of record; a stray click must not
+    // irreversibly destroy a rated deliverable, an amendment or an invoice). Holds a "kind:id" key.
+    var cf = React.useState(null), confirmId = cf[0], setConfirmId = cf[1];
 
     // Inception gate state (C2 Assure). A design returned for redesign blocks acceptance and
     // invoice approval here, so C2's decision is a real control rather than a note.
@@ -58,6 +61,16 @@
     var gateReturned = gate.decision === 'return';
 
     function toast(msg, t) { if (msg) dispatch({ type: AT.SHOW_TOAST, message: msg, toastType: t || 'success' }); }
+
+    // A remove control that requires a confirm click before it destroys the row.
+    function removeCell(key, aria, doRemove) {
+      if (confirmId === key) {
+        return h('div', { className: 'wb-cm-confirm' },
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-danger', 'aria-label': 'Confirm ' + aria, onClick: function() { setConfirmId(null); doRemove(); } }, 'Remove'),
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Cancel', onClick: function() { setConfirmId(null); } }, 'Cancel'));
+      }
+      return h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': aria, title: aria, onClick: function() { setConfirmId(key); } }, I.close(14));
+    }
 
     // What, if anything, blocks a clean acceptance of this deliverable. null = clean to accept.
     function acceptBlock(d) {
@@ -213,7 +226,7 @@
           key: 'aend:' + a.id + ':' + (a.new_end_date || ''), defaultValue: a.new_end_date || '', onBlur: function(e) { editAmendment(a.id, 'new_end_date', e.target.value); } })),
         h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'reason / authority', 'aria-label': 'Reason',
           key: 'ar:' + a.id + ':' + (a.reason || ''), defaultValue: a.reason || '', onBlur: function(e) { editAmendment(a.id, 'reason', e.target.value); } })),
-        h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove amendment', title: 'Remove amendment', onClick: function() { removeAmendment(a.id); } }, I.close(14))));
+        h('td', { className: 'wb-th--center' }, removeCell('amd:' + a.id, 'Remove amendment', function() { removeAmendment(a.id); })));
     });
 
     var headerCard = h(SectionCard, { title: 'Contract', badge: contract.reference ? contract.reference : 'Set up' },
@@ -277,7 +290,7 @@
           key: 'amt:' + l.id + ':' + (l.amount == null ? '' : l.amount), defaultValue: l.amount == null ? '' : l.amount,
           onBlur: function(e) { editBudget(l.id, 'amount', numOrNull(e.target.value)); } })),
         h('td', { className: 'wb-td--num wb-th--center' }, budgetTotal ? Math.round(100 * (l.amount || 0) / budgetTotal) + '%' : '-'),
-        h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove budget line', title: 'Remove budget line', onClick: function() { removeBudget(l.id); } }, I.close(14))));
+        h('td', { className: 'wb-th--center' }, removeCell('bl:' + l.id, 'Remove budget line', function() { removeBudget(l.id); })));
     });
 
     var budgetSection = h(SectionCard, { title: 'Budget', badge: PS.money(budgetLineSum, cur), variant: overCommitted ? 'warning' : null },
@@ -389,7 +402,7 @@
           h('span', { className: 'wb-cm-acc-when', style: { marginLeft: 4 } }, '%')),
         h('td', null, PS.qualityMark(d)),
         reviewCell,
-        h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove ' + (PS.delTitle(d) || 'deliverable'), title: 'Remove deliverable', onClick: function() { removeDeliverable(d); } }, I.close(14))));
+        h('td', { className: 'wb-th--center' }, removeCell('del:' + d.id, 'Remove ' + (PS.delTitle(d) || 'deliverable'), function() { removeDeliverable(d); })));
       if (!expanded) return main;
       var detail = h('tr', { key: d.id + '_rate', className: 'wb-plan-review-detail' },
         h('td', { colSpan: 7, id: 'rate-' + d.id },
@@ -477,7 +490,7 @@
           overMilestone ? h('span', { className: 'wb-cm-recon' }, 'exceeds milestone value ' + PS.money(milestoneValue, cur)) : null),
         h('td', null, PS.statusPill(PS.INVOICE_STATUS, iv.status)),
         h('td', null, actionCell),
-        h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove invoice', title: 'Remove invoice', onClick: function() { removeInvoice(iv); } }, I.close(14))));
+        h('td', { className: 'wb-th--center' }, removeCell('inv:' + iv.id, 'Remove invoice', function() { removeInvoice(iv); })));
     });
 
     var invSection = h(SectionCard, { title: 'Invoices', badge: PS.money(paid, cur) + ' paid' },

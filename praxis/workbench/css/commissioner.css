@@ -541,6 +541,13 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 .wb-cm-funnel-count { font-family: var(--font-mono); font-size: var(--text-md); font-weight: 700; line-height: 1; }
 .wb-cm-funnel-label, .wb-cm-funnel-stage { font-size: 10px; font-weight: 600; line-height: 1.2; text-align: center; opacity: 0.95; }
 .wb-cm-mr-track { margin-top: 6px; }
+/* Recommendation evidence basis: link to evaluation questions + weakest strength of evidence. */
+.wb-cm-mr-evidence { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.wb-cm-soe-basis { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+.wb-cm-soe-basis--warn { color: var(--amber-text); }
+.wb-cm-soe-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+/* Inline two-step remove confirmation (contract system of record). */
+.wb-cm-confirm { display: inline-flex; gap: 4px; flex-wrap: nowrap; justify-content: center; }
 
 /* ---- C2 ethics status ----------------------------------------------------*/
 .wb-cm-eth-status { display: inline-flex; align-items: center; gap: 8px; }

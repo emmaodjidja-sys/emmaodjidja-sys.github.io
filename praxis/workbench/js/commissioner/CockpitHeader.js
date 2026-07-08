@@ -44,7 +44,9 @@
       originate: !!(gov.purpose) || users.length > 0,
       procure: dels.length > 0,
       gate: !!gate.decision,
-      endorse: !!rr.accepted || reg.length > 0,
+      // Endorse is reached only when the final report is formally accepted, not merely when a
+      // recommendation exists; the spine must not overstate that the evaluation was endorsed.
+      endorse: !!rr.accepted,
       track: reg.some(function(r) { return (r.review_history || []).length || r.implementation_status === 'implemented'; })
     };
     var current = reached.track ? 'track' : (reached.endorse ? 'endorse' : (reached.gate ? 'gate' : (reached.procure ? 'procure' : 'originate')));

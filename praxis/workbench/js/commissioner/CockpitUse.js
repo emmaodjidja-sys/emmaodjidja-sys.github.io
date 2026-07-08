@@ -64,18 +64,41 @@
     var dissem = cm.dissemination || [];
     var profile = D.profileOf(cm.governance || {});
     var dual = profile.dualOwners;
+    // Evaluation questions and their report-acceptance strength of evidence (C3), so each
+    // recommendation can be tied to the evidence it rests on and weak grounding is visible.
+    var rows = (context.evaluation_matrix && context.evaluation_matrix.rows) || [];
+    var soeMap = D.evidenceMap((cm.report_review || {}).evidence);
 
     var mr = api.listSetter('management_response');
     var dis = api.listSetter('dissemination');
 
+    function today() { return new Date().toISOString().slice(0, 10); }
     function addRecommendation() {
       mr.add({
         id: U.uid('rec_'), code: 'R' + (register.length + 1), recommendation: '',
         disposition: 'agree', owner: '', secondary_owner: '', owner_email: '',
         due_date: '', implementation_status: 'not_started', progress: 0,
-        review_interval_months: 6, next_review: '', review_history: [],
-        actions: '', evidence_note: ''
+        // Default disposition is agree, so schedule the first six-monthly review now; an accepted
+        // recommendation with no review date is exactly how uptake silently stalls.
+        review_interval_months: 6, next_review: U.addMonths(today(), 6), review_history: [],
+        actions: '', evidence_note: '', eq_refs: []
       }, 'Recommendation added');
+    }
+    // The weakest strength of evidence across a recommendation's linked questions, and whether
+    // any linked question is not yet rated (both signal how well-grounded the recommendation is).
+    function evidenceReadout(refs) {
+      if (!rows.length) return null;
+      if (!refs || !refs.length) return h('span', { className: 'wb-cm-muted', style: { fontSize: 11 } }, 'link a question');
+      var strengths = refs.map(function(id) { var e = soeMap[id]; return e && typeof e.strength === 'number' ? e.strength : null; });
+      var rated = strengths.filter(function(s) { return s != null; });
+      var unrated = refs.length - rated.length;
+      if (!rated.length) return h('span', { className: 'wb-cm-recon', style: { marginTop: 0 } }, 'linked questions not yet rated');
+      var weakest = Math.min.apply(null, rated);
+      var band = D.SOE.filter(function(s) { return s.v === weakest; })[0] || {};
+      var warn = weakest <= 2 || unrated > 0;
+      return h('span', { className: 'wb-cm-soe-basis' + (warn ? ' wb-cm-soe-basis--warn' : ''), title: 'Weakest strength of evidence across the linked questions' + (unrated ? '; ' + unrated + ' not yet rated' : '') },
+        h('span', { className: 'wb-cm-soe-dot', style: { background: band.color || 'var(--border-strong)' } }),
+        (band.label || 'rated') + (unrated ? ' (' + unrated + ' unrated)' : ''));
     }
     function addProduct() {
       dis.add({ id: U.uid('dis_'), product: '', format: '', audience: '', due_date: '', status: 'planned', note: '' }, 'Product added');
@@ -93,14 +116,25 @@
           h('th', null, 'Note'))),
         h('tbody', null, register.map(function(r) {
           var code = r.code || '';
+          var nums = D.refsToNumbers(r.eq_refs, rows);
           return h('tr', { key: r.id },
             h('td', { className: 'wb-td--meta' }, code),
             h('td', null,
               h('textarea', { className: 'wb-input wb-cm-inp', rows: 2, placeholder: 'recommendation', defaultValue: r.recommendation || '', 'aria-label': 'Recommendation ' + code, onBlur: function(e) { mr.set(r.id, { recommendation: e.target.value }); } }),
               h('div', { className: 'wb-cm-mr-track' },
                 statusBadge(IMPL_STATUS, r.implementation_status || 'not_started'),
-                h('span', { className: 'wb-cm-muted' }, 'Tracked in C5 Follow-up'))),
-            h('td', null, h('select', { className: 'wb-input wb-cm-select', value: r.disposition || 'agree', 'aria-label': 'Management response for ' + code, onChange: function(e) { mr.set(r.id, { disposition: e.target.value }); } },
+                h('span', { className: 'wb-cm-muted' }, 'Tracked in C5 Follow-up')),
+              rows.length ? h('div', { className: 'wb-cm-mr-evidence' },
+                h('span', { className: 'wb-cm-muted', style: { fontSize: 11 } }, 'Evidence'),
+                h('input', { className: 'wb-input wb-cm-inp wb-cm-eqinp' + (nums.length ? '' : ' wb-cm-eqinp--empty'), type: 'text', style: { width: 74 }, placeholder: 'Q#', defaultValue: nums.join(', '), title: 'Evaluation questions this recommendation rests on', 'aria-label': 'Evidence questions for ' + code, onBlur: function(e) { mr.set(r.id, { eq_refs: D.numbersToRefs(e.target.value, rows) }); } }),
+                evidenceReadout(r.eq_refs)) : null),
+            h('td', null, h('select', { className: 'wb-input wb-cm-select', value: r.disposition || 'agree', 'aria-label': 'Management response for ' + code, onChange: function(e) {
+                var v = e.target.value; var patch = { disposition: v };
+                // Accepting a recommendation schedules its first six-monthly review if none is set,
+                // so it cannot sit accepted-but-untracked with no alert.
+                if ((v === 'agree' || v === 'partial') && !r.next_review) patch.next_review = U.addMonths(today(), r.review_interval_months || 6);
+                mr.set(r.id, patch);
+              } },
               Object.keys(DISPOSITION).map(function(k) { return h('option', { key: k, value: k }, DISPOSITION[k].label); }))),
             h('td', null,
               h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: dual ? 'Alliance owner' : 'owner', defaultValue: r.owner || '', 'aria-label': 'Owner for ' + code, onBlur: function(e) { mr.set(r.id, { owner: e.target.value }); } }),
