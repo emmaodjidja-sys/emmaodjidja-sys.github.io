@@ -17,18 +17,135 @@
     'sample_parameters', 'instruments', 'analysis_plan', 'report_structure', 'presentation'];
   var STATION_SHORT = ['Scoping', 'ToC', 'Matrix', 'Design', 'Sample', 'Instruments', 'Analysis', 'Report', 'Deck'];
 
-  // Deliverable quality rubric: 8 criteria harmonized across the Global Fund QAF,
-  // UNEG Quality Checklist and OECD-DAC Quality Standards. Weights sum to 1.
-  var RUBRIC = [
-    { key: 'purpose', label: 'Clarity of purpose and scope', weight: 0.10 },
-    { key: 'methodology', label: 'Robustness of methodology', weight: 0.20 },
-    { key: 'evidence', label: 'Strength of evidence', weight: 0.20 },
-    { key: 'findings', label: 'Validity of findings', weight: 0.15 },
-    { key: 'conclusions', label: 'Quality of conclusions', weight: 0.10 },
-    { key: 'recommendations', label: 'Usefulness of recommendations', weight: 0.15 },
-    { key: 'communication', label: 'Structure and writing', weight: 0.05 },
-    { key: 'principles', label: 'Gender, equity and human rights', weight: 0.05 }
+  // Deliverable quality rubrics, TAILORED to the kind of deliverable being reviewed. A data
+  // collection instrument is judged on validity, coverage and ethics, not on "validity of
+  // findings"; an inception report on design and the evaluation matrix, not on conclusions.
+  // Each rubric's criteria are harmonized from the Global Fund QAF, UNEG Quality Checklist and
+  // OECD-DAC Quality Standards; weights sum to 1; mustPass names the criteria whose failure a
+  // compensatory mean cannot excuse (flagged as a "critical gap" and used for the provisional
+  // guard). All rubrics share the 1-4 SCALE below.
+  var RUBRICS = {
+    report: {
+      key: 'report', label: 'Evaluation report',
+      blurb: 'Draft or final evaluation report.',
+      mustPass: ['methodology', 'evidence'],
+      criteria: [
+        { key: 'purpose', label: 'Clarity of purpose and scope', weight: 0.10 },
+        { key: 'methodology', label: 'Robustness of methodology', weight: 0.20 },
+        { key: 'evidence', label: 'Evidentiary basis and rigour', weight: 0.20 },
+        { key: 'findings', label: 'Validity of findings', weight: 0.15 },
+        { key: 'conclusions', label: 'Quality of conclusions', weight: 0.10 },
+        { key: 'recommendations', label: 'Usefulness of recommendations', weight: 0.15 },
+        { key: 'communication', label: 'Structure and writing', weight: 0.05 },
+        { key: 'principles', label: 'Gender, equity and human rights', weight: 0.05 }
+      ]
+    },
+    inception: {
+      key: 'inception', label: 'Inception report / design',
+      blurb: 'Inception report, evaluation design or workplan (no findings yet).',
+      mustPass: ['design', 'matrix'],
+      criteria: [
+        { key: 'purpose_scope', label: 'Clarity of purpose, scope and evaluation questions', weight: 0.12 },
+        { key: 'design', label: 'Soundness of the evaluation design and approach', weight: 0.22 },
+        { key: 'matrix', label: 'Quality of the evaluation matrix (questions, indicators, methods, sources)', weight: 0.18 },
+        { key: 'methods_plan', label: 'Sampling and data-collection strategy', weight: 0.15 },
+        { key: 'stakeholder', label: 'Stakeholder mapping and engagement plan', weight: 0.08 },
+        { key: 'workplan', label: 'Workplan, timeline and feasibility', weight: 0.10 },
+        { key: 'ethics', label: 'Ethics, safeguarding and risk management', weight: 0.10 },
+        { key: 'gesi', label: 'Gender, equity and human-rights integration', weight: 0.05 }
+      ]
+    },
+    instruments: {
+      key: 'instruments', label: 'Data collection tools',
+      blurb: 'Questionnaires, interview and FGD guides, observation checklists, protocols.',
+      mustPass: ['validity', 'coverage'],
+      criteria: [
+        { key: 'coverage', label: 'Alignment to the evaluation questions and indicators', weight: 0.20 },
+        { key: 'validity', label: 'Construct validity (measures what it intends to)', weight: 0.20 },
+        { key: 'clarity', label: 'Question clarity and non-leading wording', weight: 0.15 },
+        { key: 'scales', label: 'Response options and measurement scales', weight: 0.10 },
+        { key: 'translation', label: 'Translation and cultural / linguistic appropriateness', weight: 0.10 },
+        { key: 'ethics', label: 'Consent, sensitivity, do-no-harm and data protection', weight: 0.12 },
+        { key: 'piloting', label: 'Evidence of pilot-testing and refinement', weight: 0.08 },
+        { key: 'usability', label: 'Field practicality (length, flow, skip logic)', weight: 0.05 }
+      ]
+    },
+    fieldwork: {
+      key: 'fieldwork', label: 'Data collection / fieldwork',
+      blurb: 'Datasets, transcripts, field reports and fieldwork outputs.',
+      mustPass: ['completeness', 'data_quality'],
+      criteria: [
+        { key: 'completeness', label: 'Completeness against the sampling plan (coverage, response)', weight: 0.22 },
+        { key: 'data_quality', label: 'Data quality and cleaning (consistency, missingness)', weight: 0.22 },
+        { key: 'documentation', label: 'Documentation and metadata (codebooks, provenance)', weight: 0.16 },
+        { key: 'protocol', label: 'Adherence to protocol and field ethics', weight: 0.15 },
+        { key: 'security', label: 'Data security and confidentiality', weight: 0.15 },
+        { key: 'qa', label: 'Fieldwork QA (back-checks, supervision)', weight: 0.10 }
+      ]
+    },
+    analysis: {
+      key: 'analysis', label: 'Analysis / preliminary findings',
+      blurb: 'Analysis outputs, emerging or preliminary findings.',
+      mustPass: ['methods_fit', 'rigour'],
+      criteria: [
+        { key: 'methods_fit', label: 'Appropriateness of the analytical methods to the questions', weight: 0.22 },
+        { key: 'rigour', label: 'Analytical rigour and transparency (triangulation)', weight: 0.20 },
+        { key: 'evidence', label: 'Strength of evidence for emerging findings', weight: 0.18 },
+        { key: 'interpretation', label: 'Validity of interpretation', weight: 0.15 },
+        { key: 'disaggregation', label: 'Equity and gender-disaggregated analysis', weight: 0.10 },
+        { key: 'limitations', label: 'Limitations acknowledged', weight: 0.15 }
+      ]
+    },
+    dissemination: {
+      key: 'dissemination', label: 'Dissemination product',
+      blurb: 'Decks, policy briefs, summaries and learning products.',
+      mustPass: ['accuracy', 'audience_fit'],
+      criteria: [
+        { key: 'audience_fit', label: 'Fitness for the target audience and intended use', weight: 0.22 },
+        { key: 'accuracy', label: 'Accuracy and faithfulness to the report evidence', weight: 0.20 },
+        { key: 'clarity', label: 'Clarity and accessibility of key messages', weight: 0.18 },
+        { key: 'actionability', label: 'Actionability for that audience', weight: 0.15 },
+        { key: 'design', label: 'Design, structure and communication quality', weight: 0.15 },
+        { key: 'framing', label: 'Appropriate framing (no overclaiming)', weight: 0.10 }
+      ]
+    },
+    generic: {
+      key: 'generic', label: 'General deliverable',
+      blurb: 'Any other contract deliverable.',
+      mustPass: ['quality'],
+      criteria: [
+        { key: 'purpose', label: 'Clarity of purpose and scope', weight: 0.20 },
+        { key: 'quality', label: 'Technical quality and completeness of content', weight: 0.30 },
+        { key: 'usefulness', label: 'Usefulness for its intended purpose', weight: 0.25 },
+        { key: 'communication', label: 'Structure and communication', weight: 0.15 },
+        { key: 'compliance', label: 'Compliance with the ToR and timeliness', weight: 0.10 }
+      ]
+    }
+  };
+  // Ordered list for the rubric selector (label + one-line blurb).
+  var DELIV_RUBRICS = ['report', 'inception', 'instruments', 'fieldwork', 'analysis', 'dissemination', 'generic']
+    .map(function(k) { return { key: k, label: RUBRICS[k].label, blurb: RUBRICS[k].blurb }; });
+  // Keyword auto-detection from a deliverable's title/type when no explicit rubric is set.
+  // First match wins; order matters (instruments before report so "data collection tools"
+  // does not fall through to the report rubric).
+  var RUBRIC_HINTS = [
+    { key: 'instruments', re: /instrument|data collection tool|questionnaire|survey tool|interview guide|kii guide|fgd guide|focus group guide|protocol|checklist/i },
+    { key: 'inception', re: /inception|scoping|evaluation design|design report|work ?plan|methodology report|evaluation plan|design gate/i },
+    { key: 'dissemination', re: /dissemination|deck|slide|presentation|policy brief|\bbrief\b|policy note|learning product|summary note|infographic|webinar/i },
+    { key: 'fieldwork', re: /field ?work|dataset|data set|transcript|data quality|raw data|coding/i },
+    { key: 'analysis', re: /prelim|emerging finding|analysis|analytic|synthesis/i },
+    { key: 'report', re: /report/i }
   ];
+  // The rubric that applies to a deliverable: an explicit d.rubric wins; else keyword-match the
+  // title then the type; else the general evaluation-report rubric as a safe default.
+  function rubricFor(d) {
+    if (d && d.rubric && RUBRICS[d.rubric]) return RUBRICS[d.rubric];
+    var hay = ((d && d.title) || '') + ' ' + ((d && d.type) || '');
+    for (var i = 0; i < RUBRIC_HINTS.length; i++) if (RUBRIC_HINTS[i].re.test(hay)) return RUBRICS[RUBRIC_HINTS[i].key];
+    return RUBRICS.report;
+  }
+  // Backward-compatible alias: the default report rubric's criteria array.
+  var RUBRIC = RUBRICS.report.criteria;
   var SCALE = [
     { v: 1, label: 'Unsatisfactory', desc: 'Does not meet the standard; major rework needed' },
     { v: 2, label: 'Partially satisfactory', desc: 'Important gaps; revisions required before acceptance' },
@@ -49,8 +166,23 @@
     draft:     { label: 'Draft', badge: '' },
     submitted: { label: 'Submitted', badge: 'wb-badge-teal' },
     approved:  { label: 'Approved', badge: 'wb-badge-navy' },
-    paid:      { label: 'Paid', badge: 'wb-badge-green' }
+    paid:      { label: 'Paid', badge: 'wb-badge-green' },
+    returned:  { label: 'Returned', badge: 'wb-badge-red' }
   };
+  // Invoice types. A milestone invoice is gated on its linked deliverable being accepted;
+  // advance/mobilization/retainer invoices are paid outside the acceptance gate under a
+  // separate authorization, so they are not locked behind a deliverable.
+  var INVOICE_TYPES = [
+    { key: 'milestone', label: 'Milestone', gated: true },
+    { key: 'advance', label: 'Advance / mobilization', gated: false },
+    { key: 'retainer', label: 'Retainer / period fee', gated: false },
+    { key: 'final', label: 'Final / balance', gated: true }
+  ];
+  function invoiceType(iv) {
+    var t = (iv && iv.type) || 'milestone';
+    for (var i = 0; i < INVOICE_TYPES.length; i++) if (INVOICE_TYPES[i].key === t) return INVOICE_TYPES[i];
+    return INVOICE_TYPES[0];
+  }
 
   // ---- value helpers ------------------------------------------------------
   function money(n, cur) {
@@ -78,23 +210,45 @@
   }
 
   // ---- rubric math --------------------------------------------------------
-  // Weighted mean of scored criteria, re-normalized to exclude unscored ones.
-  function ratingMean(rating) {
+  // Resolve the criteria/mustPass to use: a passed rubric object, else the default report rubric.
+  function rubricOf(rubric) {
+    if (rubric && rubric.criteria) return rubric;
+    return RUBRICS.report;
+  }
+  // Weighted mean of scored criteria within the applicable rubric, re-normalized to exclude
+  // unscored ones. Scores keyed for a different rubric simply do not match and are ignored.
+  function ratingMean(rating, rubric) {
     if (!rating || !rating.scores) return null;
     var wsum = 0, tot = 0;
-    RUBRIC.forEach(function(c) {
+    rubricOf(rubric).criteria.forEach(function(c) {
       var v = rating.scores[c.key];
       if (typeof v === 'number') { wsum += v * c.weight; tot += c.weight; }
     });
     if (!tot) return null;
     return wsum / tot;
   }
+  // Band cut points aligned to the scale anchors: 3 = "Meets the standard", so "Satisfactory"
+  // starts at the 3.0 anchor (not the old 2.75, which labelled a sub-anchor mean as meeting
+  // the standard).
   function ratingBand(mean) {
     if (mean == null) return null;
     if (mean >= 3.5) return 'Highly satisfactory';
-    if (mean >= 2.75) return 'Satisfactory';
+    if (mean >= 3.0) return 'Satisfactory';
     if (mean >= 2.0) return 'Partially satisfactory';
     return 'Unsatisfactory';
+  }
+  // True when a must-pass criterion of the applicable rubric is scored below the "meets the
+  // standard" anchor. A compensatory mean can otherwise hide a fatal weakness.
+  function mustPassFail(rating, rubric) {
+    if (!rating || !rating.scores) return false;
+    return rubricOf(rubric).mustPass.some(function(k) { var v = rating.scores[k]; return typeof v === 'number' && v < 3; });
+  }
+  // A rating is provisional until every must-pass (high-weight) criterion of the applicable
+  // rubric is scored; before that the headline band is not trustworthy and is shown as
+  // "Provisional".
+  function ratingProvisional(rating, rubric) {
+    if (!rating || !rating.scores) return true;
+    return rubricOf(rubric).mustPass.some(function(k) { return typeof rating.scores[k] !== 'number'; });
   }
   function bandBadge(band) {
     if (band === 'Highly satisfactory') return 'wb-badge-green';
@@ -112,10 +266,11 @@
     if (band === 'Unsatisfactory') return 'unsat';
     return '';
   }
-  // How many of the RUBRIC criteria were actually scored (mean is renormalized over these).
-  function ratingScored(rating) {
+  // How many of the applicable rubric's criteria were actually scored (mean is renormalized
+  // over these).
+  function ratingScored(rating, rubric) {
     if (!rating || !rating.scores) return 0;
-    return RUBRIC.filter(function(c) { return typeof rating.scores[c.key] === 'number'; }).length;
+    return rubricOf(rubric).criteria.filter(function(c) { return typeof rating.scores[c.key] === 'number'; }).length;
   }
 
   // ---- view atoms ---------------------------------------------------------
@@ -147,42 +302,69 @@
   // empty ('Not rated') state keeps the column slot identical across un-rated rows.
   function qualityMark(d) {
     var rating = d && d.rating;
-    var mean = ratingMean(rating);
+    var rubric = rubricFor(d);
+    var tag = h('span', { className: 'wb-qual-rubric', title: 'Assessment rubric: ' + rubric.label }, rubric.label);
+    var mean = ratingMean(rating, rubric);
     if (mean == null) {
-      return h('span', { className: 'wb-qual-empty', 'aria-label': 'Quality: not rated yet' },
-        h('span', { className: 'wb-qmeter wb-qmeter--empty' }, h('span', { className: 'wb-qmeter-ticks' })),
-        'Not rated');
+      return h('div', { className: 'wb-qual-wrap' },
+        h('span', { className: 'wb-qual-empty', 'aria-label': 'Quality: not rated yet on the ' + rubric.label + ' rubric' },
+          h('span', { className: 'wb-qmeter wb-qmeter--empty' }, h('span', { className: 'wb-qmeter-ticks' })),
+          'Not rated'),
+        tag);
     }
     var band = ratingBand(mean);
     var key = bandKey(band);
-    var total = RUBRIC.length;
-    var scored = ratingScored(rating);
+    var total = rubric.criteria.length;
+    var scored = ratingScored(rating, rubric);
     var partial = scored < total;
+    var provisional = ratingProvisional(rating, rubric);
+    var critFail = mustPassFail(rating, rubric);
+    // Suppress a confident band word until the two high-weight criteria are scored; a mean
+    // built from low-weight criteria alone is not a defensible quality verdict.
+    var bandLabel = provisional ? 'Provisional' : band;
     var subText = scored + ' of ' + total + ' criteria'
-      + (rating && rating.rated_at ? ' · rated ' + fdate(rating.rated_at) : '');
+      + (provisional ? ' · provisional' : '')
+      + (rating && rating.rated_at ? ' · rated ' + fdate(rating.rated_at) : '')
+      + (rating && rating.rated_by ? ' by ' + rating.rated_by : '');
     return h('div', { className: 'wb-qual-wrap' },
       h('span', { className: 'wb-qual', role: 'img',
-        'aria-label': 'Quality: ' + band + ', ' + mean.toFixed(1) + ' out of 4, weighted mean of ' + scored + ' of ' + total + ' criteria' },
+        'aria-label': 'Quality: ' + bandLabel + ', ' + mean.toFixed(1) + ' out of 4, weighted mean of ' + scored + ' of ' + total + ' criteria'
+          + (critFail ? ', a critical criterion is below the standard' : '') },
         h('span', { className: 'wb-qmeter' },
-          h('span', { className: 'wb-qmeter-fill wb-qmeter-fill--' + key, style: { width: (mean / 4 * 100) + '%' } }),
+          h('span', { className: 'wb-qmeter-fill wb-qmeter-fill--' + (provisional ? 'prov' : key), style: { width: (mean / 4 * 100) + '%' } }),
           h('span', { className: 'wb-qmeter-ticks' })),
         h('span', { className: 'wb-qual-num' }, mean.toFixed(1), h('span', { className: 'wb-qual-of' }, '/4')),
-        h('span', { className: 'wb-qual-band wb-qual-band--' + key }, band)),
-      h('span', { className: 'wb-qual-sub' + (partial ? ' wb-qual-sub--warn' : '') }, subText));
+        h('span', { className: 'wb-qual-band wb-qual-band--' + (provisional ? 'prov' : key) }, bandLabel),
+        critFail ? h('span', { className: 'wb-qual-flag', title: 'A must-pass criterion for this rubric is below the standard' }, 'critical gap') : null),
+      h('span', { className: 'wb-qual-sub' + (partial || critFail ? ' wb-qual-sub--warn' : '') }, subText),
+      tag);
   }
 
-  // Quality rubric editor for one deliverable. api must expose setRating(id, key, value)
-  // and setRatingComment(id, comment); the caller owns how those persist.
+  // Quality rubric editor for one deliverable, using the rubric TAILORED to its kind. api must
+  // expose setRating(id, key, value) and setRatingComment(id, comment); optionally setRubric(id,
+  // rubricKey) to render a rubric override selector. The caller owns how those persist.
   function ratingPanel(d, api) {
     var scores = (d.rating && d.rating.scores) || {};
+    var rubric = rubricFor(d);
+    var selector = (api && api.setRubric)
+      ? h('div', { className: 'wb-plan-rubric-pick' },
+          h('label', { className: 'wb-cm-cfield-label', htmlFor: 'rubric-' + d.id }, 'Assessment rubric'),
+          h('select', { id: 'rubric-' + d.id, className: 'wb-input wb-cm-select', value: rubric.key,
+            'aria-label': 'Assessment rubric for this deliverable',
+            onChange: function(e) { api.setRubric(d.id, e.target.value); } },
+            DELIV_RUBRICS.map(function(r) { return h('option', { key: r.key, value: r.key }, r.label); })),
+          h('span', { className: 'wb-plan-rubric-blurb' }, rubric.blurb))
+      : h('div', { className: 'wb-plan-rubric-blurb', style: { marginBottom: 8 } }, 'Rubric: ' + rubric.label);
     return h('div', { className: 'wb-plan-rubric' },
+      selector,
       h('table', { className: 'wb-table wb-plan-rubric-table' },
         h('thead', null, h('tr', null,
           h('th', null, 'Criterion'),
           SCALE.map(function(s) { return h('th', { key: s.v, className: 'wb-th--center', title: s.label }, String(s.v)); }))),
-        h('tbody', null, RUBRIC.map(function(c) {
+        h('tbody', null, rubric.criteria.map(function(c) {
+          var must = rubric.mustPass.indexOf(c.key) >= 0;
           return h('tr', { key: c.key },
-            h('td', null, c.label),
+            h('td', null, c.label, must ? h('span', { className: 'wb-plan-rubric-must', title: 'Must-pass criterion' }, 'must-pass') : null),
             SCALE.map(function(s) {
               var on = scores[c.key] === s.v;
               return h('td', { key: s.v, className: 'wb-th--center' },
@@ -199,10 +381,13 @@
 
   window.PlanningShared = {
     STATION_FIELDS: STATION_FIELDS, STATION_SHORT: STATION_SHORT,
-    RUBRIC: RUBRIC, SCALE: SCALE, DELIV_STATUS: DELIV_STATUS, INVOICE_STATUS: INVOICE_STATUS,
+    RUBRIC: RUBRIC, RUBRICS: RUBRICS, DELIV_RUBRICS: DELIV_RUBRICS, rubricFor: rubricFor,
+    SCALE: SCALE, DELIV_STATUS: DELIV_STATUS, INVOICE_STATUS: INVOICE_STATUS,
+    INVOICE_TYPES: INVOICE_TYPES, invoiceType: invoiceType,
     money: money, fdate: fdate, sum: sum, delTitle: delTitle,
     stationDone: stationDone, deliverableProgress: deliverableProgress,
     ratingMean: ratingMean, ratingBand: ratingBand, bandBadge: bandBadge,
+    mustPassFail: mustPassFail, ratingProvisional: ratingProvisional,
     bandKey: bandKey, ratingScored: ratingScored, qualityMark: qualityMark,
     statusPill: statusPill, progressBar: progressBar, statTile: statTile,
     contractField: contractField, ratingPanel: ratingPanel

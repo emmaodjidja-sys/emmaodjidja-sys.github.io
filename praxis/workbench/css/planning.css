@@ -130,6 +130,7 @@
 .wb-qmeter-fill--sat   { background: var(--teal); }
 .wb-qmeter-fill--part  { background: var(--amber); }
 .wb-qmeter-fill--unsat { background: var(--red); }
+.wb-qmeter-fill--prov  { background: var(--border-strong); }
 .wb-qual-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 700;
   font-size: 13px; color: var(--text); }
 .wb-qual-of { color: var(--text-tertiary); font-weight: 500; font-size: var(--text-xs); }
@@ -138,8 +139,23 @@
 .wb-qual-band--sat   { color: var(--teal-ink); }
 .wb-qual-band--part  { color: var(--amber-text); }
 .wb-qual-band--unsat { color: var(--red-strong); }
+.wb-qual-band--prov  { color: var(--text-tertiary); font-style: italic; }
+.wb-qual-flag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--red-strong); background: var(--red-light); border: 1px solid var(--red);
+  padding: 1px 5px; border-radius: var(--radius-sm); margin-left: 6px; white-space: nowrap; }
 .wb-qual-sub { font-size: 11px; color: var(--text-tertiary); }
 .wb-qual-sub--warn { color: var(--amber-text); }
+/* Tailored-rubric tag under the quality mark: names which rubric the score is measured on. */
+.wb-qual-rubric { display: inline-block; margin-top: 3px; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.01em; color: var(--teal-ink); background: var(--surface-muted);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1px 6px; }
+/* Rubric selector + blurb inside the rating panel. */
+.wb-plan-rubric-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+.wb-plan-rubric-pick .wb-cm-select { max-width: 260px; }
+.wb-plan-rubric-blurb { font-size: 11px; color: var(--text-tertiary); }
+.wb-plan-rubric-must { display: inline-block; margin-left: 8px; font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--amber-text);
+  background: var(--amber-light); border-radius: var(--radius-sm); padding: 1px 5px; vertical-align: middle; }
 .wb-qual-empty { display: inline-flex; align-items: center; gap: var(--space-2);
   color: var(--text-tertiary); font-size: var(--text-xs); }
 

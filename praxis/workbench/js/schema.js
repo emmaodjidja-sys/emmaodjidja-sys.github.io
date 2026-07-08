@@ -154,12 +154,22 @@
 
       // Optional Planning station (index 9): contract, budget, deliverables, invoices, ratings.
       // As of 1.4.0 planning.deliverables is the SINGLE source of truth for deliverables
-      // (commissioner.timeline retired). Item shape:
+      // (commissioner.timeline retired). Deliverable item shape:
       //   { id, code, title, description, due_date, station_ids:[Int], payment_percent,
       //     status: not_started|in_progress|submitted|accepted|revise, submitted_at, accepted_at,
-      //     type, reviewers, reviewer_email, alert:{ lead_days, emails:[] },
-      //     rating:{ scores, comment, rated_at }|null, notes, ported_from }
+      //     accepted_by, acceptance_note, revision_reason, type, reviewers, reviewer_email,
+      //     alert:{ lead_days, emails:[] }, rating:{ scores, comment, rated_at, rated_by }|null,
+      //     notes, ported_from }
       // The C3 schedule status (planned|in_review|late|accepted) is DERIVED, never stored.
+      // contract holds the editable header + amendments (C1 Contract):
+      //   { reference, commissioner, evaluator, start_date, end_date, currency, total_budget,
+      //     amendments:[{ id, date, description, ceiling_delta, new_end_date, reason }] }
+      // Invoice item shape (C1 Contract ledger):
+      //   { id, number, deliverable_id, issued_date, amount,
+      //     type: milestone|advance|retainer|final, status: draft|submitted|approved|paid|returned,
+      //     approved_by, approved_at, paid_by, paid_date, note }
+      // These extra deliverable/contract/invoice fields are additive; deep-default preserves
+      // them on load and defaults them to empty when absent, so no version bump is required.
       planning: { contract: {}, budget_lines: [], deliverables: [], invoices: [], completed_at: null },
 
       // Optional Commissioner surface (index 10): a utilization-focused commissioning

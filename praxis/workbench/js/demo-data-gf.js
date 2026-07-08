@@ -2352,14 +2352,14 @@
         "notes": "",
         "rating": {
           "scores": {
-            "purpose": 4,
-            "methodology": 3,
-            "evidence": 3,
-            "findings": 3,
-            "conclusions": 3,
-            "recommendations": 3,
-            "communication": 4,
-            "principles": 3
+            "purpose_scope": 4,
+            "design": 3,
+            "matrix": 3,
+            "methods_plan": 3,
+            "stakeholder": 3,
+            "workplan": 4,
+            "ethics": 3,
+            "gesi": 3
           },
           "comment": "Clear and well structured. Timeline is realistic against the country-insight schedule.",
           "rated_at": "2024-07-05T10:00:00.000Z"
@@ -2392,16 +2392,16 @@
         "notes": "",
         "rating": {
           "scores": {
-            "purpose": 4,
-            "methodology": 4,
-            "evidence": 3,
-            "findings": 3,
-            "conclusions": 4,
-            "recommendations": 3,
-            "communication": 4,
-            "principles": 3
+            "purpose_scope": 4,
+            "design": 4,
+            "matrix": 4,
+            "methods_plan": 3,
+            "stakeholder": 3,
+            "workplan": 4,
+            "ethics": 3,
+            "gesi": 3
           },
-          "comment": "Strong evaluation matrix and country-insight criteria. Strengthen the strength-of-evidence approach before fieldwork.",
+          "comment": "Strong evaluation matrix and country-insight criteria. Strengthen the sampling and data-collection strategy before fieldwork.",
           "rated_at": "2024-07-05T10:00:00.000Z"
         },
         "type": "Design gate",
@@ -2426,7 +2426,21 @@
         "submitted_at": "2024-06-25T10:00:00.000Z",
         "accepted_at": "2024-07-02T10:00:00.000Z",
         "notes": "",
-        "rating": null,
+        "rating": {
+          "scores": {
+            "coverage": 4,
+            "validity": 3,
+            "clarity": 4,
+            "scales": 3,
+            "translation": 3,
+            "ethics": 4,
+            "piloting": 3,
+            "usability": 3
+          },
+          "comment": "Instruments cover the evaluation questions well and consent language is sound. Pilot the stakeholder survey and tighten a few double-barrelled items before fieldwork.",
+          "rated_at": "2024-07-02T10:00:00.000Z",
+          "rated_by": "ELO Evaluation Manager"
+        },
         "type": "Milestone",
         "reviewers": "ELO",
         "reviewer_email": "",

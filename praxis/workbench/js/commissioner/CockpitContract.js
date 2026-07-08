@@ -1,24 +1,32 @@
 /**
  * CockpitContract: the C1 Contract station of the commissioner cockpit. Procure and manage
- * the contract: the budget burn (committed / paid / remaining), the deliverable schedule with
- * commissioner acceptance and the harmonized quality rubric, and invoices whose payment is
- * gated on deliverable acceptance. Ported from the original Station9 commissioner view.
+ * the contract as a self-sufficient system of record: the contract header (parties, period,
+ * ceiling, currency) and its amendments; the budget burn (committed / paid / remaining) with
+ * over-commitment guardrails; the deliverable schedule with in-place authoring, a canonical
+ * workflow-status control, governed acceptance and the harmonized quality rubric; and an
+ * invoice ledger with create / edit / return / approve / pay, whose milestone payments are
+ * gated on deliverable acceptance while advances are not.
  *
- * Consumes window.PlanningShared for all money/status/rubric logic and window.CockpitSave for
- * the id-keyed save contract: deliverable FIELD edits (status, payment, rating) go through the
- * id-keyed PATCH_DELIVERABLE path; structural edits (budget lines, invoices, add/remove
- * deliverable) save the full planning object. Renders only the station body (no cockpit
- * header). No-JSX React.createElement. window.CockpitContract. Rendered by CockpitShell (C1).
+ * Consumes window.PlanningShared for money/status/rubric logic and window.CockpitSave for the
+ * save contract: deliverable FIELD edits (identity, status, payment, rating) go through the
+ * id-keyed PATCH_DELIVERABLE path so this station and C3 Deliver can never clobber each other;
+ * structural edits (contract header, amendments, budget lines, invoices, add/remove deliverable)
+ * save the full planning object. C1 owns the canonical deliverable workflow status; C3 derives
+ * a read-only schedule status from it. Renders only the station body (no cockpit header).
+ * No-JSX React.createElement. window.CockpitContract. Rendered by CockpitShell (C1).
  */
 (function() {
   'use strict';
   var h = React.createElement;
+  var SectionCard = window.SectionCard;
 
   var BUDGET_CATEGORIES = ['Personnel', 'Travel and DSA', 'Data collection', 'Translation',
     'Dissemination', 'Management and overhead', 'Contingency'];
+  var CURRENCIES = ['USD', 'EUR', 'GBP', 'XOF', 'XAF', 'GHS', 'KES', 'NGN', 'ZAR', 'CHF'];
 
   function kv(k, v) { var o = {}; o[k] = v; return o; }
   function numOrNull(v) { if (v === '' || v == null) return null; var n = parseFloat(v); return isNaN(n) ? null : n; }
+  function clampPct(v) { var n = numOrNull(v); if (n == null) return 0; return Math.max(0, Math.min(100, n)); }
 
   function CockpitContract(props) {
     var state = props.state, dispatch = props.dispatch;
@@ -35,28 +43,59 @@
     var invoices = planning.invoices || [];
     var budget = planning.budget_lines || [];
     var contract = planning.contract || {};
+    var amendments = contract.amendments || [];
     var cur = contract.currency || 'USD';
 
     var rr = React.useState(null), ratingId = rr[0], setRatingId = rr[1];
 
     function toast(msg, t) { if (msg) dispatch({ type: AT.SHOW_TOAST, message: msg, toastType: t || 'success' }); }
 
-    // ---- mutations --------------------------------------------------------
-    // Deliverable field edits use the id-keyed reducer path so C1 (payment/quality facet)
-    // and C3 (schedule facet) can never clobber each other.
-    function acceptDeliverable(d) { api.patchDeliverable(d.id, { status: 'accepted', accepted_at: new Date().toISOString() }); toast('Accepted ' + PS.delTitle(d)); }
-    function reviseDeliverable(d) { api.patchDeliverable(d.id, { status: 'revise' }); toast('Requested revision of ' + PS.delTitle(d)); }
-    function setPayment(id, v) { var n = numOrNull(v); api.patchDeliverable(id, { payment_percent: n == null ? 0 : n }); }
+    // ---- contract header + amendments (structural: full planning save) ------
+    function saveContract(patch, msg) {
+      api.savePlanning(Object.assign({}, planning, { contract: Object.assign({}, contract, patch) }), msg);
+    }
+    function editContract(field, value) { saveContract(kv(field, value)); } // quiet on field blur
+    function addAmendment() {
+      saveContract({ amendments: amendments.concat([{ id: U.uid('amd_'), date: '', description: '',
+        ceiling_delta: null, new_end_date: '', reason: '' }]) }, 'Amendment added');
+    }
+    function editAmendment(id, field, value) {
+      saveContract({ amendments: amendments.map(function(a) { return a.id === id ? Object.assign({}, a, kv(field, value)) : a; }) });
+    }
+    function removeAmendment(id) { saveContract({ amendments: amendments.filter(function(a) { return a.id !== id; }) }, 'Amendment removed'); }
+
+    // ---- deliverable mutations (id-keyed, cannot clobber C3) -----------------
+    function editDel(id, field, value) { api.patchDeliverable(id, kv(field, value)); } // quiet
+    function setDelStatus(d, status) {
+      var p = { status: status };
+      if (status === 'submitted' && !d.submitted_at) p.submitted_at = new Date().toISOString();
+      if (status === 'accepted' && !d.accepted_at) p.accepted_at = new Date().toISOString();
+      if (status !== 'accepted') p.accepted_at = (status === 'submitted' || status === 'revise') ? null : d.accepted_at;
+      api.patchDeliverable(d.id, p);
+      toast('Status set to ' + (PS.DELIV_STATUS[status] ? PS.DELIV_STATUS[status].label : status));
+    }
+    function acceptDeliverable(d) {
+      var warn = d.rating && PS.mustPassFail(d.rating, PS.rubricFor(d)) ? ' (note: a must-pass quality criterion is below the standard)' : '';
+      api.patchDeliverable(d.id, { status: 'accepted', accepted_at: new Date().toISOString() });
+      toast('Accepted ' + PS.delTitle(d) + warn, warn ? 'warning' : 'success');
+    }
+    function reviseDeliverable(d) { api.patchDeliverable(d.id, { status: 'revise', accepted_at: null }); toast('Requested revision of ' + PS.delTitle(d)); }
+    function undoAcceptance(d) { api.patchDeliverable(d.id, { status: 'submitted', accepted_at: null }); toast('Acceptance withdrawn for ' + PS.delTitle(d), 'warning'); }
+    function setPayment(id, v) { api.patchDeliverable(id, { payment_percent: clampPct(v) }); }
     function addDeliverable() {
       api.addDeliverable({
-        id: U.uid('del_'), code: '', title: 'New deliverable', description: '', due_date: '',
+        id: U.uid('del_'), code: '', title: '', description: '', due_date: '',
         station_ids: [], payment_percent: 0, status: 'not_started', submitted_at: null, accepted_at: null,
-        type: '', reviewers: [], reviewer_email: '', alert: { lead_days: 14, emails: [] }, rating: null, notes: ''
+        type: '', reviewers: '', reviewer_email: '', alert: { lead_days: 14, emails: [] }, rating: null,
+        accepted_by: '', acceptance_note: '', revision_reason: '', notes: ''
       }, 'Deliverable added');
     }
-    function removeDeliverable(d) { api.removeDeliverable(d.id, 'Removed ' + PS.delTitle(d)); }
+    function removeDeliverable(d) {
+      var linked = invoices.filter(function(iv) { return iv.deliverable_id === d.id; }).length;
+      api.removeDeliverable(d.id, 'Removed ' + PS.delTitle(d) + (linked ? ' (' + linked + ' invoice(s) now unlinked)' : ''));
+    }
 
-    // Rating writes go through the id-keyed deliverable patch (quiet, like the team view).
+    // Rating writes go through the id-keyed deliverable patch, carrying the rater identity.
     var ratingApi = {
       setRating: function(id, key, value) {
         var del = deliverables.filter(function(d) { return d.id === id; })[0];
@@ -67,187 +106,346 @@
       setRatingComment: function(id, comment) {
         var del = deliverables.filter(function(d) { return d.id === id; })[0];
         api.patchDeliverable(id, { rating: Object.assign({}, del && del.rating, { comment: comment, rated_at: new Date().toISOString() }) });
-      }
+      },
+      setRatedBy: function(id, by) {
+        var del = deliverables.filter(function(d) { return d.id === id; })[0];
+        api.patchDeliverable(id, { rating: Object.assign({}, del && del.rating, { rated_by: by }) });
+      },
+      setRubric: function(id, key) { api.patchDeliverable(id, { rubric: key }); }
     };
 
-    // Structural edits save the full planning object.
+    // ---- budget mutations (structural) --------------------------------------
     function saveBudget(next, msg) { api.savePlanning(Object.assign({}, planning, { budget_lines: next }), msg); }
-    function editBudget(id, field, value) { saveBudget(budget.map(function(l) { return l.id === id ? Object.assign({}, l, kv(field, value)) : l; }), 'Budget updated'); }
+    function editBudget(id, field, value) { saveBudget(budget.map(function(l) { return l.id === id ? Object.assign({}, l, kv(field, value)) : l; })); }
     function addBudget() { saveBudget(budget.concat([{ id: U.uid('bl_'), category: BUDGET_CATEGORIES[0], role: '', description: '', unit: '', quantity: null, rate: null, amount: 0 }]), 'Budget line added'); }
     function removeBudget(id) { saveBudget(budget.filter(function(l) { return l.id !== id; }), 'Budget line removed'); }
 
+    // ---- invoice mutations (structural) -------------------------------------
     function saveInvoices(next, msg) { api.savePlanning(Object.assign({}, planning, { invoices: next }), msg); }
     function patchInvoice(id, patch, msg) { saveInvoices(invoices.map(function(iv) { return iv.id === id ? Object.assign({}, iv, patch) : iv; }), msg); }
-    function approveInvoice(iv) { patchInvoice(iv.id, { status: 'approved' }, 'Approved ' + iv.number); }
-    function payInvoice(iv) { patchInvoice(iv.id, { status: 'paid', paid_date: new Date().toISOString() }, 'Marked ' + iv.number + ' paid'); }
+    function editInvoice(id, field, value) { patchInvoice(id, kv(field, value)); } // quiet
+    function addInvoice() {
+      saveInvoices(invoices.concat([{ id: U.uid('inv_'), number: '', deliverable_id: '', issued_date: '',
+        amount: null, type: 'milestone', status: 'submitted', approved_by: '', approved_at: null,
+        paid_by: '', paid_date: null, note: '' }]), 'Invoice added');
+    }
+    function removeInvoice(iv) { saveInvoices(invoices.filter(function(x) { return x.id !== iv.id; }), 'Invoice removed'); }
+    function submitInvoice(iv) { patchInvoice(iv.id, { status: 'submitted' }, 'Submitted ' + (iv.number || 'invoice')); }
+    function approveInvoice(iv) { patchInvoice(iv.id, { status: 'approved', approved_at: new Date().toISOString() }, 'Approved ' + (iv.number || 'invoice')); }
+    function returnInvoice(iv) { patchInvoice(iv.id, { status: 'returned', approved_at: null }, 'Returned ' + (iv.number || 'invoice')); }
+    function payInvoice(iv) { patchInvoice(iv.id, { status: 'paid', paid_date: new Date().toISOString() }, 'Marked ' + (iv.number || 'invoice') + ' paid'); }
 
     var head = A.moveHead('C1', 'Contract', 'Procure and manage the contract',
-      'Budget, deliverables, invoices and quality review. The commissioner accepts deliverables and gates payment on acceptance.');
+      'The contract of record: parties and ceiling, budget burn, the deliverable schedule with quality review and acceptance, and the invoice ledger. Milestone payment is released on acceptance; advances are not.');
 
-    // ---- empty state ------------------------------------------------------
-    if (!deliverables.length && !budget.length) {
-      return h('div', { className: 'wb-cm-contract' }, head,
-        h('div', { className: 'wb-station-empty' },
-          h('div', { className: 'wb-station-empty-title' }, 'No contract set up yet'),
-          h('div', { className: 'wb-station-empty-desc' }, 'Open a worked example to see a complete budget, deliverable schedule, invoices and quality ratings, or add the first deliverable to build the schedule.'),
-          h('div', { className: 'wb-cm-add' },
-            h('button', { type: 'button', className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: addDeliverable }, 'Add deliverable'))));
-    }
-
-    // ---- derived figures --------------------------------------------------
-    var budgetTotal = contract.total_budget || PS.sum(budget, function(l) { return l.amount; });
+    // ---- derived figures ----------------------------------------------------
+    var ceilingDelta = PS.sum(amendments, function(a) { return a.ceiling_delta; });
+    var baseBudget = contract.total_budget || PS.sum(budget, function(l) { return l.amount; });
+    var budgetTotal = baseBudget + ceilingDelta;
+    var budgetLineSum = PS.sum(budget, function(l) { return l.amount; });
     var committed = PS.sum(invoices.filter(function(i) { return i.status === 'approved' || i.status === 'paid'; }), function(i) { return i.amount; });
     var paid = PS.sum(invoices.filter(function(i) { return i.status === 'paid'; }), function(i) { return i.amount; });
     var remaining = budgetTotal - committed;
+    var overCommitted = remaining < 0;
     var toReview = deliverables.filter(function(d) { return d.status === 'submitted'; }).length;
+    // Latest amendment end date overrides the contract period end.
+    var effEnd = amendments.reduce(function(acc, a) { return a.new_end_date || acc; }, contract.end_date);
 
-    // ---- burn strip + contract summary ------------------------------------
-    var stats = h('div', { className: 'wb-plan-stats' },
-      PS.statTile('Contract value', PS.money(budgetTotal, cur), null),
-      PS.statTile('Committed', PS.money(committed, cur), Math.round(budgetTotal ? 100 * committed / budgetTotal : 0) + '% of value'),
-      PS.statTile('Paid', PS.money(paid, cur), Math.round(budgetTotal ? 100 * paid / budgetTotal : 0) + '% of value'),
-      PS.statTile('Remaining', PS.money(remaining, cur), null));
+    // ---- contract header (editable) + amendments ----------------------------
+    function cfield(label, field, opts) {
+      opts = opts || {};
+      var input = opts.type === 'select'
+        ? h('select', { className: 'wb-input wb-cm-select', 'aria-label': label,
+            key: field + ':' + (contract[field] || ''), defaultValue: contract[field] || opts.def || '',
+            onChange: function(e) { editContract(field, e.target.value); } },
+            opts.options.map(function(o) { return h('option', { key: o, value: o }, o); }))
+        : h('input', { className: 'wb-input wb-cm-inp' + (opts.type === 'number' ? ' wb-cm-inp--num' : '') + (opts.type === 'date' ? ' wb-cm-date' : ''),
+            type: opts.type || 'text', placeholder: opts.placeholder || '', 'aria-label': label,
+            key: field + ':' + (contract[field] == null ? '' : contract[field]),
+            defaultValue: contract[field] == null ? '' : contract[field],
+            onBlur: function(e) { editContract(field, opts.type === 'number' ? numOrNull(e.target.value) : e.target.value); } });
+      return h('div', { className: 'wb-cm-cfield' + (opts.wide ? ' wb-cm-cfield--wide' : '') },
+        h('label', { className: 'wb-cm-cfield-label' }, label), input);
+    }
 
-    var contractStrip = h('div', { className: 'wb-plan-contract' },
-      PS.contractField('Commissioner', contract.commissioner),
-      PS.contractField('Evaluation team', contract.evaluator),
-      PS.contractField('Reference', contract.reference),
-      PS.contractField('Period', PS.fdate(contract.start_date) + ' to ' + PS.fdate(contract.end_date)));
+    var amendmentRows = amendments.map(function(a) {
+      return h('tr', { key: a.id },
+        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input wb-cm-inp wb-cm-date', type: 'date', 'aria-label': 'Amendment date',
+          key: 'ad:' + a.id + ':' + (a.date || ''), defaultValue: a.date || '', onBlur: function(e) { editAmendment(a.id, 'date', e.target.value); } })),
+        h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'what changed', 'aria-label': 'Amendment description',
+          key: 'adesc:' + a.id + ':' + (a.description || ''), defaultValue: a.description || '', onBlur: function(e) { editAmendment(a.id, 'description', e.target.value); } })),
+        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--num', type: 'number', placeholder: '0', 'aria-label': 'Ceiling change',
+          key: 'acd:' + a.id + ':' + (a.ceiling_delta == null ? '' : a.ceiling_delta), defaultValue: a.ceiling_delta == null ? '' : a.ceiling_delta, style: { width: 110 },
+          onBlur: function(e) { editAmendment(a.id, 'ceiling_delta', numOrNull(e.target.value)); } })),
+        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input wb-cm-inp wb-cm-date', type: 'date', 'aria-label': 'New end date',
+          key: 'aend:' + a.id + ':' + (a.new_end_date || ''), defaultValue: a.new_end_date || '', onBlur: function(e) { editAmendment(a.id, 'new_end_date', e.target.value); } })),
+        h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'reason / authority', 'aria-label': 'Reason',
+          key: 'ar:' + a.id + ':' + (a.reason || ''), defaultValue: a.reason || '', onBlur: function(e) { editAmendment(a.id, 'reason', e.target.value); } })),
+        h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove amendment', title: 'Remove amendment', onClick: function() { removeAmendment(a.id); } }, I.close(14))));
+    });
 
-    // ---- budget lines (editable) ------------------------------------------
+    var headerCard = h(SectionCard, { title: 'Contract', badge: contract.reference ? contract.reference : 'Set up' },
+      h('div', { className: 'wb-cm-cgrid' },
+        cfield('Contract reference', 'reference', { placeholder: 'e.g. EVAL-2026-014' }),
+        cfield('Commissioner', 'commissioner', { placeholder: 'commissioning body' }),
+        cfield('Evaluation team', 'evaluator', { placeholder: 'contracted evaluator' }),
+        cfield('Start date', 'start_date', { type: 'date' }),
+        cfield('End date', 'end_date', { type: 'date' }),
+        cfield('Currency', 'currency', { type: 'select', options: CURRENCIES, def: 'USD' }),
+        cfield('Contract ceiling (base)', 'total_budget', { type: 'number', placeholder: '0' })),
+      ceilingDelta ? h('div', { className: 'wb-cm-recon' }, 'Ceiling after amendments: ' + PS.money(budgetTotal, cur)
+        + (effEnd !== contract.end_date ? ' · period extended to ' + PS.fdate(effEnd) : '')) : null,
+      h('div', { style: { marginTop: 16 } },
+        h('div', { className: 'wb-cm-cfield-label', style: { marginBottom: 6 } }, 'Amendments and variations'),
+        amendments.length
+          ? h('div', { className: 'wb-table-container' },
+              h('table', { className: 'wb-table wb-cm-table' },
+                h('thead', null, h('tr', null,
+                  h('th', { className: 'wb-th--center', style: { minWidth: 128 } }, 'Date'),
+                  h('th', null, 'Description'),
+                  h('th', { className: 'wb-th--center' }, 'Ceiling change'),
+                  h('th', { className: 'wb-th--center', style: { minWidth: 128 } }, 'New end date'),
+                  h('th', null, 'Reason'),
+                  h('th', { className: 'wb-th--center' }, ''))),
+                h('tbody', null, amendmentRows)))
+          : h('p', { className: 'wb-cm-hint' }, 'No amendments recorded. Log any variation to the ceiling, period or scope here so the contract file stays defensible.'),
+        h('div', { className: 'wb-cm-add' },
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addAmendment }, I.plus(14), h('span', { style: { marginLeft: 6 } }, 'Add amendment')))));
+
+    // ---- burn strip (cockpit KPI family) ------------------------------------
+    var stats = h('div', { className: 'wb-cm-kpis' },
+      A.kpi('Contract value', PS.money(budgetTotal, cur), ceilingDelta ? 'incl. ' + amendments.length + ' amendment(s)' : null),
+      A.kpi('Committed', PS.money(committed, cur), (budgetTotal ? Math.round(100 * committed / budgetTotal) : 0) + '% of value', overCommitted ? 'warn' : null),
+      A.kpi('Paid', PS.money(paid, cur), (budgetTotal ? Math.round(100 * paid / budgetTotal) : 0) + '% of value'),
+      A.kpi('Remaining', PS.money(remaining, cur), overCommitted ? 'over-committed' : 'uncommitted', overCommitted ? 'warn' : 'good'));
+
+    // ---- budget lines (editable) --------------------------------------------
     var budgetRows = budget.map(function(l) {
       var cats = BUDGET_CATEGORIES.slice();
       if (l.category && cats.indexOf(l.category) < 0) cats = [l.category].concat(cats);
       return h('tr', { key: l.id },
-        h('td', null, h('select', { className: 'wb-input', style: { minWidth: 150 }, 'aria-label': 'Category',
+        h('td', null, h('select', { className: 'wb-input wb-cm-select', style: { minWidth: 140 }, 'aria-label': 'Category',
           key: 'cat:' + l.id + ':' + (l.category || ''), defaultValue: l.category || '',
           onChange: function(e) { editBudget(l.id, 'category', e.target.value); } },
           cats.map(function(c) { return h('option', { key: c, value: c }, c); }))),
         h('td', null,
-          h('input', { className: 'wb-input', type: 'text', placeholder: 'Role or line item', 'aria-label': 'Role or line',
+          h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--strong', type: 'text', placeholder: 'Role or line item', 'aria-label': 'Role or line',
             key: 'role:' + l.id + ':' + (l.role || ''), defaultValue: l.role || '',
             onBlur: function(e) { editBudget(l.id, 'role', e.target.value); } }),
-          h('input', { className: 'wb-input', type: 'text', placeholder: 'Description (optional)', 'aria-label': 'Description',
-            key: 'desc:' + l.id + ':' + (l.description || ''), defaultValue: l.description || '', style: { marginTop: 4 },
+          h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--sub', type: 'text', placeholder: 'Description (optional)', 'aria-label': 'Description',
+            key: 'desc:' + l.id + ':' + (l.description || ''), defaultValue: l.description || '',
             onBlur: function(e) { editBudget(l.id, 'description', e.target.value); } })),
-        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input', type: 'number', 'aria-label': 'Quantity', style: { width: 80, textAlign: 'right' },
+        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--num', type: 'number', 'aria-label': 'Quantity', style: { width: 76 },
           key: 'qty:' + l.id + ':' + (l.quantity == null ? '' : l.quantity), defaultValue: l.quantity == null ? '' : l.quantity,
           onBlur: function(e) { editBudget(l.id, 'quantity', numOrNull(e.target.value)); } })),
-        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input', type: 'number', 'aria-label': 'Rate', style: { width: 96, textAlign: 'right' },
+        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--num', type: 'number', 'aria-label': 'Rate', style: { width: 92 },
           key: 'rate:' + l.id + ':' + (l.rate == null ? '' : l.rate), defaultValue: l.rate == null ? '' : l.rate,
           onBlur: function(e) { editBudget(l.id, 'rate', numOrNull(e.target.value)); } })),
-        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input', type: 'number', 'aria-label': 'Amount', style: { width: 110, textAlign: 'right' },
+        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--num', type: 'number', 'aria-label': 'Amount', style: { width: 108 },
           key: 'amt:' + l.id + ':' + (l.amount == null ? '' : l.amount), defaultValue: l.amount == null ? '' : l.amount,
           onBlur: function(e) { editBudget(l.id, 'amount', numOrNull(e.target.value)); } })),
         h('td', { className: 'wb-td--num wb-th--center' }, budgetTotal ? Math.round(100 * (l.amount || 0) / budgetTotal) + '%' : '-'),
         h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove budget line', title: 'Remove budget line', onClick: function() { removeBudget(l.id); } }, I.close(14))));
     });
 
-    var budgetSection = h(SectionCard, { title: 'Budget', badge: PS.money(budgetTotal, cur) },
-      h('div', { className: 'wb-table-container' },
-        h('table', { className: 'wb-table wb-plan-table' },
-          h('thead', null, h('tr', null,
-            h('th', null, 'Category'), h('th', null, 'Role / line'),
-            h('th', { className: 'wb-th--center' }, 'Quantity'),
-            h('th', { className: 'wb-th--center' }, 'Rate'),
-            h('th', { className: 'wb-th--center' }, 'Amount'),
-            h('th', { className: 'wb-th--center' }, 'Share'),
-            h('th', { className: 'wb-th--center' }, ''))),
-          h('tbody', null, budgetRows),
-          h('tfoot', null, h('tr', { className: 'wb-plan-total-row' },
-            h('td', { colSpan: 4 }, 'Total contract value'),
-            h('td', { className: 'wb-td--num wb-th--center' }, PS.money(budgetTotal, cur)),
-            h('td', { className: 'wb-td--num wb-th--center' }, '100%'),
-            h('td', null, ''))))),
+    var budgetSection = h(SectionCard, { title: 'Budget', badge: PS.money(budgetLineSum, cur), variant: overCommitted ? 'warning' : null },
+      budget.length
+        ? h('div', { className: 'wb-table-container' },
+            h('table', { className: 'wb-table wb-cm-table' },
+              h('thead', null, h('tr', null,
+                h('th', null, 'Category'), h('th', null, 'Role / line'),
+                h('th', { className: 'wb-th--center' }, 'Quantity'),
+                h('th', { className: 'wb-th--center' }, 'Rate'),
+                h('th', { className: 'wb-th--center' }, 'Amount'),
+                h('th', { className: 'wb-th--center' }, 'Share'),
+                h('th', { className: 'wb-th--center' }, ''))),
+              h('tbody', null, budgetRows),
+              h('tfoot', null, h('tr', { className: 'wb-plan-total-row' },
+                h('td', { colSpan: 4 }, 'Total of budget lines'),
+                h('td', { className: 'wb-td--num wb-th--center' }, PS.money(budgetLineSum, cur)),
+                h('td', { className: 'wb-td--num wb-th--center' }, budgetTotal ? Math.round(100 * budgetLineSum / budgetTotal) + '%' : '-'),
+                h('td', null, '')))))
+        : h('p', { className: 'wb-cm-hint' }, 'No budget lines yet. Add the cost lines that make up the contract ceiling.'),
+      (budgetTotal && Math.abs(budgetLineSum - budgetTotal) > 1)
+        ? h('div', { className: 'wb-cm-recon' }, 'Budget lines sum to ' + PS.money(budgetLineSum, cur) + ', which differs from the contract ceiling of ' + PS.money(budgetTotal, cur) + '.') : null,
+      overCommitted ? h('div', { className: 'wb-cm-over' }, 'Committed ' + PS.money(committed, cur) + ' exceeds the contract ceiling of ' + PS.money(budgetTotal, cur) + ' by ' + PS.money(-remaining, cur) + '.') : null,
       h('div', { className: 'wb-cm-add' },
-        h('button', { type: 'button', className: 'wb-btn wb-btn-sm', onClick: addBudget }, I.plus(14), h('span', { style: { marginLeft: 6 } }, 'Add budget line'))),
-      h('div', { className: 'wb-plan-budgetbar' },
+        h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addBudget }, I.plus(14), h('span', { style: { marginLeft: 6 } }, 'Add budget line'))),
+      h('div', { className: 'wb-plan-budgetbar', style: { marginTop: 14 } },
         h('div', { className: 'wb-plan-budgetbar-row' }, h('span', null, 'Committed'), h('span', null, PS.money(committed, cur) + ' of ' + PS.money(budgetTotal, cur))),
-        PS.progressBar(budgetTotal ? 100 * committed / budgetTotal : 0, 'high')),
+        A.meterBar(budgetTotal ? 100 * committed / budgetTotal : 0, overCommitted ? 'red' : 'teal', 'Committed')),
       h('div', { className: 'wb-plan-budgetbar' },
         h('div', { className: 'wb-plan-budgetbar-row' }, h('span', null, 'Paid to date'), h('span', null, PS.money(paid, cur) + ' of ' + PS.money(budgetTotal, cur))),
-        PS.progressBar(budgetTotal ? 100 * paid / budgetTotal : 0, 'high')));
+        A.meterBar(budgetTotal ? 100 * paid / budgetTotal : 0, 'green', 'Paid')));
 
-    // ---- deliverables (commissioner review) -------------------------------
+    // ---- deliverables (self-sufficient: author, status, rate, accept) -------
     var delRows = deliverables.map(function(d) {
-      var mean = PS.ratingMean(d.rating);
+      var mean = PS.ratingMean(d.rating, PS.rubricFor(d));
       var expanded = ratingId === d.id;
-      var canRate = d.status === 'accepted' || !!d.rating;
-      // Review cell now holds only the acceptance record and the rate/edit action; the score
-      // itself lives in its own Quality column (PS.qualityMark) so it has a fixed, scannable slot.
-      var reviewCell = h('td', null,
-        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
-          d.status === 'submitted' ? h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { acceptDeliverable(d); } }, 'Accept') : null,
-          d.status === 'submitted' ? h('button', { className: 'wb-btn wb-btn-sm', onClick: function() { reviseDeliverable(d); } }, 'Request revision') : null,
-          (d.status === 'accepted' && d.accepted_at) ? h('span', { className: 'wb-plan-del-desc' }, 'Accepted ' + PS.fdate(d.accepted_at)) : null,
-          (d.status === 'accepted' && !d.accepted_at) ? h('span', { className: 'wb-plan-del-desc', style: { color: 'var(--amber-text)' } }, 'Accepted, date not recorded') : null,
-          d.status === 'revise' ? h('span', { className: 'wb-plan-del-desc' }, 'Awaiting resubmission') : null,
-          (d.status === 'not_started' || d.status === 'in_progress') ? h('span', { className: 'wb-plan-del-desc' }, 'Awaiting submission') : null,
-          canRate ? h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', style: { display: 'inline-flex', alignItems: 'center', gap: 6 }, onClick: function() { setRatingId(expanded ? null : d.id); } },
-            (mean != null ? 'Edit rating' : 'Rate quality'), expanded ? I.chevronUp(12) : I.chevronDown(12)) : null));
+      var canRate = d.status !== 'not_started' || !!d.rating;
+      var statusKeys = Object.keys(PS.DELIV_STATUS);
+
+      // The review cell adapts to workflow status: quick accept/revise from submitted, an
+      // editable acceptance record once accepted (reversible), a revision reason once returned.
+      var reviewBits = [];
+      if (d.status === 'submitted') {
+        reviewBits.push(h('div', { key: 'act', className: 'wb-cm-acc-row' },
+          h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { acceptDeliverable(d); } }, 'Accept'),
+          h('button', { className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { reviseDeliverable(d); } }, 'Request revision')));
+      }
+      if (d.status === 'accepted') {
+        reviewBits.push(h('div', { key: 'accrec', className: 'wb-cm-acc' },
+          h('div', { className: 'wb-cm-acc-row' },
+            h('span', { className: 'wb-cm-acc-when' }, d.accepted_at ? 'Accepted ' + PS.fdate(d.accepted_at) : 'Accepted, date not recorded'),
+            h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { undoAcceptance(d); } }, 'Withdraw')),
+          h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'accepting officer (name and role)', 'aria-label': 'Accepted by',
+            key: 'accby:' + d.id + ':' + (d.accepted_by || ''), defaultValue: d.accepted_by || '',
+            onBlur: function(e) { editDel(d.id, 'accepted_by', e.target.value); } }),
+          h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'conditions of acceptance (optional)', 'aria-label': 'Acceptance conditions',
+            key: 'accnote:' + d.id + ':' + (d.acceptance_note || ''), defaultValue: d.acceptance_note || '',
+            onBlur: function(e) { editDel(d.id, 'acceptance_note', e.target.value); } })));
+      }
+      if (d.status === 'revise') {
+        reviewBits.push(h('input', { key: 'rev:' + d.id + ':' + (d.revision_reason || ''), className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'reason revision was requested', 'aria-label': 'Revision reason',
+          defaultValue: d.revision_reason || '',
+          onBlur: function(e) { editDel(d.id, 'revision_reason', e.target.value); } }));
+      }
+      if (d.status === 'not_started' || d.status === 'in_progress') {
+        reviewBits.push(h('span', { key: 'await', className: 'wb-cm-acc-when' }, 'Awaiting submission'));
+      }
+      if (canRate) {
+        reviewBits.push(h('button', { key: 'rate', className: 'wb-btn wb-btn-sm wb-btn-ghost', style: { display: 'inline-flex', alignItems: 'center', gap: 6 },
+          'aria-expanded': expanded ? 'true' : 'false', 'aria-controls': 'rate-' + d.id,
+          onClick: function() { setRatingId(expanded ? null : d.id); } },
+          (mean != null ? 'Edit quality rating' : 'Rate quality'), expanded ? I.chevronUp(12) : I.chevronDown(12)));
+      }
+      var reviewCell = h('td', null, h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' } }, reviewBits));
+
       var main = h('tr', { key: d.id },
         h('td', null,
-          h('div', { className: 'wb-plan-del-title' }, d.code ? (d.code + '  ') : '', PS.delTitle(d)),
-          d.description ? h('div', { className: 'wb-plan-del-desc' }, d.description) : null),
-        h('td', { className: 'wb-td--meta' }, PS.fdate(d.due_date)),
-        h('td', null, PS.statusPill(PS.DELIV_STATUS, d.status)),
+          h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--strong', type: 'text', placeholder: 'deliverable title', 'aria-label': 'Deliverable title',
+            key: 'title:' + d.id, defaultValue: PS.delTitle(d), onBlur: function(e) { editDel(d.id, 'title', e.target.value); } }),
+          h('div', { style: { display: 'flex', gap: 6, marginTop: 4 } },
+            h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'code', 'aria-label': 'Deliverable code', style: { width: 90 },
+              key: 'code:' + d.id, defaultValue: d.code || '', onBlur: function(e) { editDel(d.id, 'code', e.target.value); } }),
+            h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--sub', type: 'text', placeholder: 'description (optional)', 'aria-label': 'Deliverable description', style: { flex: 1, marginTop: 0 },
+              key: 'ddesc:' + d.id, defaultValue: d.description || '', onBlur: function(e) { editDel(d.id, 'description', e.target.value); } }))),
+        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input wb-cm-inp wb-cm-date', type: 'date', 'aria-label': 'Due date',
+          key: 'due:' + d.id + ':' + (d.due_date || ''), defaultValue: d.due_date || '', onBlur: function(e) { editDel(d.id, 'due_date', e.target.value); } })),
+        h('td', null, h('select', { className: 'wb-input wb-cm-select', 'aria-label': 'Workflow status for ' + (PS.delTitle(d) || 'deliverable'),
+          value: d.status || 'not_started', onChange: function(e) { setDelStatus(d, e.target.value); } },
+          statusKeys.map(function(k) { return h('option', { key: k, value: k }, PS.DELIV_STATUS[k].label); }))),
         h('td', { className: 'wb-th--center' },
-          h('input', { className: 'wb-input', type: 'number', min: 0, max: 100, step: 5, 'aria-label': 'Payment percent for ' + PS.delTitle(d),
+          h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--num', type: 'number', min: 0, max: 100, step: 5, 'aria-label': 'Payment percent for ' + (PS.delTitle(d) || 'deliverable'),
             key: 'pay:' + d.id + ':' + (d.payment_percent == null ? '' : d.payment_percent), defaultValue: d.payment_percent == null ? '' : d.payment_percent,
-            style: { width: 64, textAlign: 'right', display: 'inline-block' }, onBlur: function(e) { setPayment(d.id, e.target.value); } }),
-          h('span', { className: 'wb-plan-del-desc', style: { display: 'inline', marginLeft: 4 } }, '%')),
+            style: { width: 60, display: 'inline-block' }, onBlur: function(e) { setPayment(d.id, e.target.value); } }),
+          h('span', { className: 'wb-cm-acc-when', style: { marginLeft: 4 } }, '%')),
         h('td', null, PS.qualityMark(d)),
         reviewCell,
-        h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove ' + PS.delTitle(d), title: 'Remove deliverable', onClick: function() { removeDeliverable(d); } }, I.close(14))));
+        h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove ' + (PS.delTitle(d) || 'deliverable'), title: 'Remove deliverable', onClick: function() { removeDeliverable(d); } }, I.close(14))));
       if (!expanded) return main;
       var detail = h('tr', { key: d.id + '_rate', className: 'wb-plan-review-detail' },
-        h('td', { colSpan: 7 }, PS.ratingPanel(d, ratingApi)));
+        h('td', { colSpan: 7, id: 'rate-' + d.id },
+          PS.ratingPanel(d, ratingApi),
+          h('div', { className: 'wb-cm-cfield', style: { marginTop: 10, maxWidth: 340 } },
+            h('label', { className: 'wb-cm-cfield-label' }, 'Rated by'),
+            h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'reviewer name and role', 'aria-label': 'Rated by',
+              key: 'ratedby:' + d.id + ':' + ((d.rating && d.rating.rated_by) || ''), defaultValue: (d.rating && d.rating.rated_by) || '',
+              onBlur: function(e) { ratingApi.setRatedBy(d.id, e.target.value); } }))));
       return [main, detail];
     });
 
     var delSection = h(SectionCard, { title: 'Deliverables and quality review', badge: toReview ? toReview + ' to review' : deliverables.length + ' items', variant: toReview ? 'warning' : null },
-      h('div', { className: 'wb-table-container' },
-        h('table', { className: 'wb-table wb-plan-table' },
-          h('thead', null, h('tr', null,
-            h('th', null, 'Deliverable'), h('th', null, 'Due'), h('th', null, 'Status'),
-            h('th', { className: 'wb-th--center' }, 'Payment'), h('th', null, 'Quality'), h('th', null, 'Review'),
-            h('th', { className: 'wb-th--center' }, ''))),
-          h('tbody', null, delRows))),
+      h('p', { className: 'wb-cm-panel-intro' }, 'Author and track each deliverable, set its status, rate its quality against the harmonized rubric to inform the decision, then accept it. Acceptance releases the linked milestone payment.'),
+      deliverables.length
+        ? h('div', { className: 'wb-table-container' },
+            h('table', { className: 'wb-table wb-cm-table' },
+              h('thead', null, h('tr', null,
+                h('th', null, 'Deliverable'),
+                h('th', { className: 'wb-th--center', style: { minWidth: 132 } }, 'Due'),
+                h('th', { style: { minWidth: 130 } }, 'Status'),
+                h('th', { className: 'wb-th--center' }, 'Payment'),
+                h('th', { style: { minWidth: 150 } }, 'Quality'),
+                h('th', { style: { minWidth: 180 } }, 'Review and acceptance'),
+                h('th', { className: 'wb-th--center' }, ''))),
+              h('tbody', null, delRows)))
+        : h('p', { className: 'wb-cm-hint' }, 'No deliverables yet. Add the ToR deliverables with their due dates and payment shares to build the schedule.'),
       h('div', { className: 'wb-cm-add' },
-        h('button', { type: 'button', className: 'wb-btn wb-btn-sm', onClick: addDeliverable }, I.plus(14), h('span', { style: { marginLeft: 6 } }, 'Add deliverable'))));
+        h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addDeliverable }, I.plus(14), h('span', { style: { marginLeft: 6 } }, 'Add deliverable'))));
 
-    // ---- invoices (payment gated on acceptance) ---------------------------
+    // ---- invoices (create, edit, return, approve, pay) ----------------------
     var invRows = invoices.map(function(iv) {
       var del = deliverables.filter(function(d) { return d.id === iv.deliverable_id; })[0];
+      var typ = PS.invoiceType(iv);
       var linkedAccepted = !!del && del.status === 'accepted';
+      var canApprove = !typ.gated || linkedAccepted;
+      var milestoneValue = (del && del.payment_percent != null && budgetTotal) ? budgetTotal * del.payment_percent / 100 : null;
+      var overMilestone = milestoneValue != null && iv.amount != null && iv.amount > milestoneValue + 1;
+
+      var actionCell;
+      if (iv.status === 'submitted') {
+        actionCell = h('div', { className: 'wb-cm-acc-row' },
+          canApprove
+            ? h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { approveInvoice(iv); } }, 'Approve')
+            : h('span', { className: 'wb-plan-lock', title: 'A milestone payment is released only after the linked deliverable is accepted' }, 'Locked until accepted'),
+          h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { returnInvoice(iv); } }, 'Return'));
+      } else if (iv.status === 'approved') {
+        actionCell = h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' } },
+          h('div', { className: 'wb-cm-acc-row' },
+            h('button', { className: 'wb-btn wb-btn-sm', onClick: function() { payInvoice(iv); } }, 'Mark paid'),
+            iv.approved_at ? h('span', { className: 'wb-cm-acc-when' }, 'Approved ' + PS.fdate(iv.approved_at)) : null),
+          h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'approved by', 'aria-label': 'Approved by',
+            key: 'apby:' + iv.id + ':' + (iv.approved_by || ''), defaultValue: iv.approved_by || '', style: { minWidth: 150 },
+            onBlur: function(e) { editInvoice(iv.id, 'approved_by', e.target.value); } }));
+      } else if (iv.status === 'paid') {
+        actionCell = h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' } },
+          h('span', { className: 'wb-cm-acc-when' }, iv.paid_date ? 'Paid ' + PS.fdate(iv.paid_date) : 'Paid'),
+          h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'paid by', 'aria-label': 'Paid by',
+            key: 'pby:' + iv.id + ':' + (iv.paid_by || ''), defaultValue: iv.paid_by || '', style: { minWidth: 150 },
+            onBlur: function(e) { editInvoice(iv.id, 'paid_by', e.target.value); } }));
+      } else { // draft or returned
+        actionCell = h('button', { className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { submitInvoice(iv); } }, 'Submit');
+      }
+
       return h('tr', { key: iv.id },
-        h('td', { className: 'wb-td--meta' }, iv.number),
-        h('td', null, del ? (del.code || PS.delTitle(del)) : '-'),
-        h('td', { className: 'wb-td--meta' }, PS.fdate(iv.issued_date)),
-        h('td', { className: 'wb-td--num wb-th--center' }, PS.money(iv.amount, cur)),
-        h('td', null, PS.statusPill(PS.INVOICE_STATUS, iv.status)),
+        h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'number', 'aria-label': 'Invoice number', style: { minWidth: 100 },
+          key: 'num:' + iv.id + ':' + (iv.number || ''), defaultValue: iv.number || '', onBlur: function(e) { editInvoice(iv.id, 'number', e.target.value); } })),
+        h('td', null, h('select', { className: 'wb-input wb-cm-select', 'aria-label': 'Linked deliverable',
+          value: iv.deliverable_id || '', onChange: function(e) { editInvoice(iv.id, 'deliverable_id', e.target.value); } },
+          [h('option', { key: '_none', value: '' }, 'None (advance / period)')].concat(
+            deliverables.map(function(d) { return h('option', { key: d.id, value: d.id }, (d.code ? d.code + ' ' : '') + (PS.delTitle(d) || 'deliverable')); })))),
+        h('td', null, h('select', { className: 'wb-input wb-cm-select', 'aria-label': 'Invoice type',
+          value: iv.type || 'milestone', onChange: function(e) { editInvoice(iv.id, 'type', e.target.value); } },
+          PS.INVOICE_TYPES.map(function(t) { return h('option', { key: t.key, value: t.key }, t.label); }))),
+        h('td', { className: 'wb-th--center' }, h('input', { className: 'wb-input wb-cm-inp wb-cm-date', type: 'date', 'aria-label': 'Issued date',
+          key: 'iss:' + iv.id + ':' + (iv.issued_date || ''), defaultValue: iv.issued_date || '', onBlur: function(e) { editInvoice(iv.id, 'issued_date', e.target.value); } })),
         h('td', { className: 'wb-th--center' },
-          iv.status === 'submitted'
-            ? (linkedAccepted
-                ? h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { approveInvoice(iv); } }, 'Approve')
-                : h('span', { className: 'wb-plan-lock', title: 'Payment is released only after the linked deliverable is accepted' }, 'Locked until accepted'))
-            : iv.status === 'approved'
-                ? h('button', { className: 'wb-btn wb-btn-sm', onClick: function() { payInvoice(iv); } }, 'Mark paid')
-                : h('span', { className: 'wb-plan-del-desc' }, iv.paid_date ? PS.fdate(iv.paid_date) : '')));
+          h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--num', type: 'number', 'aria-label': 'Amount', style: { width: 110 },
+            key: 'amt:' + iv.id + ':' + (iv.amount == null ? '' : iv.amount), defaultValue: iv.amount == null ? '' : iv.amount,
+            onBlur: function(e) { editInvoice(iv.id, 'amount', numOrNull(e.target.value)); } }),
+          overMilestone ? h('span', { className: 'wb-cm-recon' }, 'exceeds milestone value ' + PS.money(milestoneValue, cur)) : null),
+        h('td', null, PS.statusPill(PS.INVOICE_STATUS, iv.status)),
+        h('td', null, actionCell),
+        h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove invoice', title: 'Remove invoice', onClick: function() { removeInvoice(iv); } }, I.close(14))));
     });
 
     var invSection = h(SectionCard, { title: 'Invoices', badge: PS.money(paid, cur) + ' paid' },
+      h('p', { className: 'wb-cm-panel-intro' }, 'Record each invoice against the contract. Milestone invoices unlock for approval once the linked deliverable is accepted; advance and retainer invoices are approved under a separate authorization.'),
       invoices.length
         ? h('div', { className: 'wb-table-container' },
-            h('table', { className: 'wb-table wb-plan-table' },
+            h('table', { className: 'wb-table wb-cm-table' },
               h('thead', null, h('tr', null,
-                h('th', null, 'Invoice'), h('th', null, 'Deliverable'), h('th', null, 'Issued'),
+                h('th', null, 'Invoice'), h('th', null, 'Deliverable'), h('th', null, 'Type'),
+                h('th', { className: 'wb-th--center', style: { minWidth: 128 } }, 'Issued'),
                 h('th', { className: 'wb-th--center' }, 'Amount'), h('th', null, 'Status'),
-                h('th', { className: 'wb-th--center' }, 'Action'))),
+                h('th', { style: { minWidth: 170 } }, 'Action'),
+                h('th', { className: 'wb-th--center' }, ''))),
               h('tbody', null, invRows)))
-        : h('div', { className: 'wb-station-empty' }, h('div', { className: 'wb-station-empty-desc' }, 'No invoices submitted.')));
+        : h('p', { className: 'wb-cm-hint' }, 'No invoices recorded. Add an invoice to bill against the contract.'),
+      h('div', { className: 'wb-cm-add' },
+        h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addInvoice }, I.plus(14), h('span', { style: { marginLeft: 6 } }, 'Add invoice'))));
 
-    return h('div', { className: 'wb-cm-contract' }, head, stats, contractStrip, budgetSection, delSection, invSection);
+    return h('div', { className: 'wb-cm-contract' }, head, headerCard, stats, budgetSection, delSection, invSection);
   }
 
   window.CockpitContract = CockpitContract;

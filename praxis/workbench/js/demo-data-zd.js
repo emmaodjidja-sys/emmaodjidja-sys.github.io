@@ -1921,14 +1921,14 @@
         "notes": "",
         "rating": {
           "scores": {
-            "purpose": 4,
-            "methodology": 4,
-            "evidence": 3,
-            "findings": 3,
-            "conclusions": 3,
-            "recommendations": 3,
-            "communication": 4,
-            "principles": 4
+            "purpose_scope": 4,
+            "design": 4,
+            "matrix": 4,
+            "methods_plan": 4,
+            "stakeholder": 3,
+            "workplan": 3,
+            "ethics": 4,
+            "gesi": 4
           },
           "comment": "Detailed assumptions register and country-specific theories of change. Strong basis for the longitudinal design.",
           "rated_at": "2024-04-10T10:00:00.000Z"
@@ -1955,7 +1955,21 @@
         "submitted_at": "2022-12-10T10:00:00.000Z",
         "accepted_at": "2022-12-18T10:00:00.000Z",
         "notes": "",
-        "rating": null,
+        "rating": {
+          "scores": {
+            "coverage": 4,
+            "validity": 4,
+            "clarity": 3,
+            "scales": 3,
+            "translation": 4,
+            "ethics": 4,
+            "piloting": 3,
+            "usability": 3
+          },
+          "comment": "Guides map cleanly to the evaluation questions and translation into local languages is handled. Add explicit assent procedures for community respondents and pilot the SCM online survey.",
+          "rated_at": "2022-12-18T10:00:00.000Z",
+          "rated_by": "Central Evaluation Team"
+        },
         "type": "Milestone",
         "reviewers": "Central Evaluation Team",
         "reviewer_email": "",
