@@ -381,7 +381,7 @@
           var must = rubric.mustPass.indexOf(c.key) >= 0;
           return h('tr', { key: c.key },
             h('td', null, c.label, must ? h('span', { className: 'wb-plan-rubric-must', title: 'Must-pass criterion' }, 'must-pass') : null),
-            h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe' },
+            h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe', role: 'group', 'aria-label': 'Score for ' + c.label + (must ? ' (must-pass criterion)' : '') },
               SCALE.map(function(s) {
                 var on = scores[c.key] === s.v;
                 return h('button', { key: s.v, type: 'button',

@@ -235,7 +235,7 @@
           return h('tr', { key: r.id },
             h('td', { className: 'wb-td--meta' }, r.number != null ? r.number : ''),
             h('td', null, h('div', { className: 'wb-cm-eq' }, r.question || '(untitled question)')),
-            h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe' },
+            h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe', role: 'group', 'aria-label': 'Strength of evidence for question ' + (r.number != null ? r.number : '') + ': ' + (r.question || 'untitled') },
               D.SOE.map(function(s) {
                 var on = ev.strength === s.v;
                 // CockpitData.SOE is higher = stronger; colour the on-state directly from the

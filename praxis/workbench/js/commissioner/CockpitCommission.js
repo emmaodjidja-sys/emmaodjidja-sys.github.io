@@ -169,12 +169,12 @@
           h('span', { className: 'wb-cm-cov-title' }, 'Use-to-question coverage'),
           h('span', { className: 'wb-cm-cov-num' }, usesDefined.length ? (usesCovered.length + '/' + usesDefined.length) : '-')),
         A.meterBar(coveragePct, tone === 'good' ? 'green' : (tone === 'warn' ? 'amber' : 'teal'), 'Use-to-question coverage'),
-        h('p', { className: 'wb-cm-cov-note' }, usesDefined.length
+        h('p', { className: 'wb-cm-cov-note', role: 'status' }, usesDefined.length
           ? (gap > 0
               ? gap + ' intended use' + (gap > 1 ? 's are' : ' is') + ' not yet served by any evaluation question. Fix the design before the gate.'
               : 'Every named use is served by at least one evaluation question.')
           : 'Add intended uses, then link the questions that serve each. Uncovered uses are design gaps to close before spend.'),
-        orphans.length ? h('p', { className: 'wb-cm-cov-note', style: { color: 'var(--red)', fontWeight: 700 } },
+        orphans.length ? h('p', { className: 'wb-cm-cov-note', role: 'status', style: { color: 'var(--red)', fontWeight: 700 } },
           orphans.length + ' primary user' + (orphans.length > 1 ? 's have' : ' has') + ' a use that no evaluation question serves: ' + names + '. Close this before the gate.') : null);
     }
 

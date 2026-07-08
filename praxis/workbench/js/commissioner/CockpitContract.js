@@ -313,7 +313,7 @@
         : h('p', { className: 'wb-cm-hint' }, 'No budget lines yet. Add the cost lines that make up the contract ceiling.'),
       (budgetTotal && Math.abs(budgetLineSum - budgetTotal) > 1)
         ? h('div', { className: 'wb-cm-recon' }, 'Budget lines sum to ' + PS.money(budgetLineSum, cur) + ', which differs from the contract ceiling of ' + PS.money(budgetTotal, cur) + '.') : null,
-      overCommitted ? h('div', { className: 'wb-cm-over' }, 'Committed ' + PS.money(committed, cur) + ' exceeds the contract ceiling of ' + PS.money(budgetTotal, cur) + ' by ' + PS.money(-remaining, cur) + '.') : null,
+      overCommitted ? h('div', { className: 'wb-cm-over', role: 'status' }, 'Committed ' + PS.money(committed, cur) + ' exceeds the contract ceiling of ' + PS.money(budgetTotal, cur) + ' by ' + PS.money(-remaining, cur) + '.') : null,
       h('div', { className: 'wb-cm-add' },
         h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addBudget }, I.plus(14), h('span', { style: { marginLeft: 6 } }, 'Add budget line'))),
       h('div', { className: 'wb-plan-budgetbar', style: { marginTop: 14 } },

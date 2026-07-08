@@ -98,8 +98,12 @@
     var kpis = deriveKpis(context);
     var sum = CA.summarize(alerts);
     var drawer = React.useState(false); var open = drawer[0], setOpen = drawer[1];
+    var badgeRef = React.useRef(null); var drawerRef = React.useRef(null);
+    // Move focus into the drawer when it opens so keyboard and screen-reader users land on it.
+    React.useEffect(function() { if (open && drawerRef.current) drawerRef.current.focus(); }, [open]);
+    function closeDrawer() { setOpen(false); if (badgeRef.current) badgeRef.current.focus(); }
 
-    var badge = h('button', { type: 'button', className: 'wb-cm-alertbadge' + (sum.overdue ? ' wb-cm-alertbadge--alert' : ''), 'aria-expanded': open ? 'true' : 'false', 'aria-controls': 'wb-cm-alert-drawer', 'aria-label': (sum.total ? sum.overdue + ' overdue, ' + sum.total + ' alerts' : 'No alerts'), onClick: function() { setOpen(!open); } },
+    var badge = h('button', { type: 'button', ref: badgeRef, className: 'wb-cm-alertbadge' + (sum.overdue ? ' wb-cm-alertbadge--alert' : ''), 'aria-expanded': open ? 'true' : 'false', 'aria-controls': 'wb-cm-alert-drawer', 'aria-label': (sum.total ? sum.overdue + ' overdue, ' + sum.total + ' alerts' : 'No alerts'), onClick: function() { setOpen(!open); } },
       h('span', { className: 'wb-cm-alertbadge-ico', 'aria-hidden': 'true' }, I.warning(15)),
       h('span', { className: 'wb-cm-alertbadge-txt' }, sum.total ? (sum.overdue ? sum.overdue + ' overdue' : sum.total + ' due') : 'No alerts'));
 
@@ -116,10 +120,11 @@
           h('span', { className: 'wb-cm-kpichip-v' }, k.value),
           h('span', { className: 'wb-cm-kpichip-l' }, k.label));
       })),
-      open ? h('div', { className: 'wb-cm-drawer', id: 'wb-cm-alert-drawer', role: 'region', 'aria-label': 'Alerts' },
+      open ? h('div', { className: 'wb-cm-drawer', id: 'wb-cm-alert-drawer', role: 'region', 'aria-label': 'Alerts', tabIndex: -1, ref: drawerRef,
+          onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); closeDrawer(); } } },
         h('div', { className: 'wb-cm-drawer-head' },
           h('span', { className: 'wb-cm-drawer-title' }, 'Alerts'),
-          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Close alerts', onClick: function() { setOpen(false); } }, I.close(14))),
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Close alerts', onClick: closeDrawer }, I.close(14))),
         alertList(alerts, dispatch)) : null);
   }
 

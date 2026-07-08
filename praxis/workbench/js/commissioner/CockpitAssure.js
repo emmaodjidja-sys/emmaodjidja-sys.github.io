@@ -115,7 +115,7 @@
             h('td', { className: 'wb-th--center' }, D.hasMethod(r) ? A.okMark() : A.warnMark('No indicator/method')),
             h('td', { className: 'wb-th--center' }, D.hasSource(r) ? A.okMark() : A.warnMark('No named data source')),
             h('td', { className: 'wb-th--center' }, servedIds[r.id] ? A.okMark() : A.dashMark('Not linked to an intended use')),
-            h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe' },
+            h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe', role: 'group', 'aria-label': 'Answerability for question ' + (r.number != null ? r.number : '') + ': ' + (r.question || 'untitled') },
               D.ANSW.map(function(s) {
                 var on = ev.rating === s.v;
                 return h('button', { key: s.v, type: 'button', className: 'wb-cm-soe-btn wb-cm-soe-btn--' + s.v + (on ? ' wb-cm-soe-btn--on' : ''), title: 'Answerability ' + s.v + ': ' + s.label + '. ' + s.desc, 'aria-label': 'Answerability ' + s.v + ', ' + s.label, 'aria-pressed': on ? 'true' : 'false', onClick: function() { saveEvidence(r.id, { rating: s.v }, 'Answerability recorded'); } }, String(s.v));

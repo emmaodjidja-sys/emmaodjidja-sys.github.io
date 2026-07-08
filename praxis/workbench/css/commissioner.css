@@ -171,7 +171,7 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 /* influence / interest selects, colour-keyed */
 .wb-cm-lvls { display: inline-flex; flex-direction: column; gap: 4px; }
 .wb-cm-lvl-sel {
-  font-size: 11px; padding: 3px 6px; border-radius: var(--radius-sm);
+  font-size: 11px; padding: 3px 6px; min-height: 24px; border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-secondary);
   font-family: var(--font-mono);
 }
@@ -348,7 +348,7 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 .wb-cm-conditions { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .wb-cm-conditions-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber-text); }
 .wb-cm-condition { display: flex; align-items: center; gap: 8px; }
-.wb-cm-cond-check { flex: 0 0 auto; width: 22px; height: 22px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: #fff; }
+.wb-cm-cond-check { flex: 0 0 auto; width: 24px; height: 24px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: #fff; }
 .wb-cm-cond-check--on { background: var(--green); border-color: transparent; }
 .wb-cm-cond-text { flex: 1; font-size: var(--text-sm); }
 
