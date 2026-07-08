@@ -18,7 +18,10 @@
   //          evidence rating at report acceptance (report_review), and six-monthly
   //          management-action follow-up fields (implementation_status, progress,
   //          review_interval_months, review_history) on management_response. Additive.
-  var PRAXIS_VERSION = '1.4.0';
+  //   1.5.0  adds the per-quadrant stakeholder engagement checklist state
+  //          (commissioner.engagement_actions) driving the C0 influence/interest grid.
+  //          Fully additive.
+  var PRAXIS_VERSION = '1.5.0';
 
   // Navigation bounds (single source; consumed by router.js and context.js clamps).
   // MAX_STATION: highest evaluator-rail station index (0..9, includes Planning).
@@ -174,6 +177,9 @@
         // and secondary users, the use each will make of the evaluation, when they
         // need it, and their influence/interest for engagement planning.
         users: [],          // [{ id, name, role, tier, intended_use, decision_window, influence, interest, engagement, eq_refs:[] }]
+        // Per-quadrant engagement checklist state: for each Mendelow strategy, the indices
+        // of the completed engagement actions (action lists live in CockpitData.ENGAGEMENT).
+        engagement_actions: { manage: [], satisfy: [], inform: [], monitor: [] },
         // Inception design-assurance gate. C2 rates ANSWERABILITY / design-confidence per
         // question (not strength of evidence, which does not exist yet). Independence and
         // ethics are formal inception checkpoints for IEP/EAC-grade work.
@@ -385,6 +391,13 @@
         if (r.owner_email == null) r.owner_email = '';
       });
       next.version = '1.4.0';
+      return next;
+    },
+    // 1.4.0 -> 1.5.0: deep-default adds commissioner.engagement_actions (per-quadrant
+    // engagement checklist state). Purely additive.
+    '1.4.0': function(ctx) {
+      var next = deepDefault(createEmptyContext(), ctx);
+      next.version = '1.5.0';
       return next;
     }
   };

@@ -23,92 +23,46 @@
   // distinct because both words start with I.
   function levelSelect(value, label, onChange) {
     var abbr = label.slice(0, 4);
-    var set = D.LEVELS.indexOf(value) >= 0;
-    var opts = [h('option', { key: '_unset', value: '' }, abbr + ': set')].concat(
+    return h('select', { className: 'wb-cm-lvl-sel wb-cm-lvl-sel--' + (value || 'medium'), value: value || 'medium', 'aria-label': label, title: label, onChange: function(e) { onChange(e.target.value); } },
       D.LEVELS.slice().reverse().map(function(l) { return h('option', { key: l, value: l }, abbr + ': ' + l.charAt(0).toUpperCase() + l.slice(1)); }));
-    return h('select', { className: 'wb-cm-lvl-sel wb-cm-lvl-sel--' + (set ? value : 'unset'), value: set ? value : '', 'aria-label': label, title: label, onChange: function(e) { onChange(e.target.value); } }, opts);
   }
 
-  // Influence x interest engagement map, derived from the intended-user register. Ranks
-  // and plots each partner into manage closely / keep satisfied / keep informed / monitor,
-  // then lists them so the commissioner can see, at any point, who to manage or inform.
-  // The 2x2 plot is aria-hidden (decorative); the ranked roster is the accessible source.
-  function stakeholderGrid(users) {
-    var ranked = D.rankUsers(users);
+  // Influence (y) x interest (x) engagement grid (ported, now interactive). Each quadrant
+  // is a button that opens its engagement checklist below; the grid keeps the ported dot
+  // plot. Quadrants and their action lists share one source of truth: D.ENGAGEMENT.
+  function stakeholderGrid(users, selected, onSelect) {
+    var counts = { manage: 0, satisfy: 0, inform: 0, monitor: 0 };
+    users.forEach(function(u) { counts[D.engagementQuad(u)]++; });
+    var dots = users.map(function(u, i) {
+      var xi = D.levelIdx(u.interest), yi = D.levelIdx(u.influence);
+      var jit = ((i % 3) - 1) * 5;
+      var xp = [18, 50, 82][xi] + jit, yp = [18, 50, 82][yi] - jit;
+      var primary = u.tier === 'primary';
+      return h('span', { key: u.id, className: 'wb-cm-dot' + (primary ? ' wb-cm-dot--primary' : ' wb-cm-dot--secondary'),
+        style: { left: xp + '%', bottom: yp + '%' }, title: (u.name || 'user') + ' - ' + D.TIER[u.tier] });
+    });
     return h('div', { className: 'wb-cm-grid-wrap' },
       h('div', { className: 'wb-cm-grid-title' }, 'Engage the right users'),
-      stakeholderPlot(ranked),
-      engagementRoster(ranked));
-  }
-
-  function stakeholderPlot(ranked) {
-    var byKey = {};
-    D.STRATEGIES.forEach(function(s) { byKey[s.key] = []; });
-    ranked.forEach(function(r) { if (!r.unrated) byKey[r.strategy].push(r); });
-    return h(React.Fragment, null,
-      h('div', { className: 'wb-cm-grid', 'aria-hidden': 'true' },
-        D.STRATEGIES.map(function(s) {
-          return h('div', { key: s.key, className: 'wb-cm-quad wb-cm-quad--' + s.quad + ' wb-cm-quad--' + s.color },
-            h('span', { className: 'wb-cm-quad-t' }, s.label),
-            h('span', { className: 'wb-cm-quad-s' }, s.gloss),
-            h('div', { className: 'wb-cm-quad-marks' }, byKey[s.key].map(function(r) {
-              var primary = r.user.tier === 'primary';
-              return h('span', { key: r.user.id || r.rank,
-                className: 'wb-cm-pin' + (primary ? ' wb-cm-pin--primary' : ' wb-cm-pin--secondary') }, String(r.rank));
-            })));
+      h('div', { className: 'wb-cm-grid' },
+        D.ENGAGEMENT.map(function(q) {
+          var on = selected === q.key, n = counts[q.key];
+          return h('button', { key: q.key, type: 'button',
+            className: 'wb-cm-quad wb-cm-quad--' + q.x + q.y + (on ? ' wb-cm-quad--on' : ''),
+            'aria-expanded': on ? 'true' : 'false', 'aria-controls': 'wb-cm-eng-panel',
+            'aria-label': q.label + ', ' + q.pos + ', ' + n + ' ' + (n === 1 ? 'user' : 'users') + '. Show engagement actions.',
+            onClick: function() { onSelect(on ? null : q.key); } },
+            h('span', { className: 'wb-cm-quad-t' }, q.label),
+            h('span', { className: 'wb-cm-quad-s' }, q.sub),
+            n ? h('span', { className: 'wb-cm-quad-n', 'aria-hidden': 'true' }, String(n)) : null);
         }),
-        h('span', { className: 'wb-cm-axis wb-cm-axis--y' }, 'Influence'),
-        h('span', { className: 'wb-cm-axis wb-cm-axis--x' }, 'Interest')),
+        h('div', { className: 'wb-cm-grid-plot', 'aria-hidden': 'true' }, dots),
+        h('span', { className: 'wb-cm-axis wb-cm-axis--y', 'aria-hidden': 'true' }, 'Influence'),
+        h('span', { className: 'wb-cm-axis wb-cm-axis--x', 'aria-hidden': 'true' }, 'Interest')),
+      h('div', { className: 'wb-cm-grid-hint' }, selected ? 'Showing engagement actions below.' : 'Select a quadrant to plan its engagement.'),
       h('div', { className: 'wb-cm-grid-legend', 'aria-hidden': 'true' },
-        h('span', null, h('i', { className: 'wb-cm-pin wb-cm-pin--primary wb-cm-pin--static' }), 'Primary'),
-        h('span', null, h('i', { className: 'wb-cm-pin wb-cm-pin--secondary wb-cm-pin--static' }), 'Secondary')));
+        h('span', null, h('i', { className: 'wb-cm-dot wb-cm-dot--primary wb-cm-dot--static' }), 'Primary'),
+        h('span', null, h('i', { className: 'wb-cm-dot wb-cm-dot--secondary wb-cm-dot--static' }), 'Secondary')));
   }
-
-  function engagementRoster(ranked) {
-    var groups = D.STRATEGIES.map(function(s) {
-      return { s: s, items: ranked.filter(function(r) { return r.strategy === s.key; }) };
-    }).filter(function(g) { return g.items.length; });
-    var unplaced = ranked.filter(function(r) { return r.unrated; });
-    return h('div', { className: 'wb-cm-roster', role: 'list', 'aria-label': 'Stakeholder engagement roster' },
-      groups.map(function(g) {
-        return h('div', { key: g.s.key, className: 'wb-cm-rgroup' },
-          h('div', { className: 'wb-cm-rgroup-head wb-cm-rgroup-head--' + g.s.color },
-            h('span', { className: 'wb-cm-rgroup-dot', 'aria-hidden': 'true' }),
-            h('span', { className: 'wb-cm-rgroup-name' }, g.s.label),
-            h('span', { className: 'wb-cm-rgroup-gloss' }, g.s.gloss),
-            h('span', { className: 'wb-cm-rgroup-count' }, String(g.items.length))),
-          h('ul', { className: 'wb-cm-rlist' }, g.items.map(rosterRow)));
-      }),
-      unplaced.length ? h('div', { className: 'wb-cm-rgroup wb-cm-rgroup--unplaced' },
-        h('div', { className: 'wb-cm-rgroup-head wb-cm-rgroup-head--slate' },
-          h('span', { className: 'wb-cm-rgroup-dot wb-cm-rgroup-dot--hollow', 'aria-hidden': 'true' }),
-          h('span', { className: 'wb-cm-rgroup-name' }, 'To place'),
-          h('span', { className: 'wb-cm-rgroup-gloss' }, 'set influence and interest'),
-          h('span', { className: 'wb-cm-rgroup-count' }, String(unplaced.length))),
-        h('ul', { className: 'wb-cm-rlist' }, unplaced.map(rosterRow))) : null);
-  }
-
-  function rosterRow(r) {
-    var u = r.user;
-    var primary = u.tier === 'primary';
-    var titleText = (u.name || 'Unnamed partner') + (u.role ? ' (' + u.role + ')' : '') +
-      ' - influence ' + fullLevel(u.influence) + ', interest ' + fullLevel(u.interest);
-    return h('li', { key: u.id || (u.name + '_' + (r.rank || 'x')), className: 'wb-cm-rrow', role: 'listitem', title: titleText },
-      h('span', { className: 'wb-cm-rrank', 'aria-hidden': 'true' }, r.unrated ? '-' : String(r.rank)),
-      h('span', { className: 'wb-cm-rmain' },
-        h('span', { className: 'wb-cm-rtop' },
-          u.name ? h('span', { className: 'wb-cm-rname' }, u.name) : h('span', { className: 'wb-cm-rname wb-cm-muted' }, 'Unnamed partner'),
-          h('span', { className: 'wb-cm-rtier wb-cm-rtier--' + (primary ? 'p' : 's') }, primary ? 'primary' : 'secondary')),
-        h('span', { className: 'wb-cm-rmeta' },
-          h('span', { className: 'wb-cm-rlvls' }, levelReadout(u)),
-          u.role ? h('span', { className: 'wb-cm-rrole' }, u.role) : null)));
-  }
-
-  function levelReadout(u) {
-    function ab(v) { return (D.WEIGHT[v] === undefined) ? '-' : v.charAt(0).toUpperCase(); }
-    return 'Infl ' + ab(u.influence) + ' / Int ' + ab(u.interest);
-  }
-  function fullLevel(v) { return (D.WEIGHT[v] === undefined) ? 'unset' : v; }
 
   function Commission(props) {
     var context = props.state.context;
@@ -116,13 +70,15 @@
     var api = window.CockpitSave.make(context, dispatch);
     var cm = context.commissioner || D.defaultCommissioner();
     var users = cm.users || [];
+    var engState = React.useState(null);
+    var selectedQuad = engState[0], setSelectedQuad = engState[1];
     var rows = (context.evaluation_matrix && context.evaluation_matrix.rows) || [];
     var gov = cm.governance || {};
     var profile = D.profileOf(gov);
     var usersApi = api.listSetter('users');
 
     function addUser(tier) {
-      usersApi.add({ id: U.uid('usr_'), name: '', role: '', tier: tier, intended_use: '', decision_window: '', influence: '', interest: '', eq_refs: [] }, 'Intended user added');
+      usersApi.add({ id: U.uid('usr_'), name: '', role: '', tier: tier, intended_use: '', decision_window: '', influence: 'medium', interest: 'medium', eq_refs: [] }, 'Intended user added');
     }
 
     // ---- governance -------------------------------------------------------
@@ -222,19 +178,62 @@
           orphans.length + ' primary user' + (orphans.length > 1 ? 's have' : ' has') + ' a use that no evaluation question serves: ' + names + '. Close this before the gate.') : null);
     }
 
+    function toggleAction(key, idx) {
+      var all = Object.assign({ manage: [], satisfy: [], inform: [], monitor: [] }, cm.engagement_actions || {});
+      var cur = Array.isArray(all[key]) ? all[key] : [];
+      all[key] = cur.indexOf(idx) >= 0 ? cur.filter(function(x) { return x !== idx; }) : cur.concat([idx]);
+      api.setField('engagement_actions', all);
+    }
+
+    // The engagement checklist for the selected quadrant: who falls here (strict Mendelow
+    // split) and the trackable actions for the strategy. Rendered full-width under the grid.
+    function engagementPanel(s) {
+      var checked = (cm.engagement_actions && cm.engagement_actions[s.key]) || [];
+      var here = users.filter(function(u) { return D.engagementQuad(u) === s.key; });
+      return h('div', { className: 'wb-cm-eng wb-cm-eng--' + s.key, id: 'wb-cm-eng-panel', role: 'region', 'aria-label': s.label + ' engagement' },
+        h('div', { className: 'wb-cm-eng-head' },
+          h('span', { className: 'wb-cm-eng-name' }, s.label),
+          h('span', { className: 'wb-cm-eng-gloss' }, s.gloss + ' · ' + s.pos),
+          h('span', { className: 'wb-cm-eng-prog' }, checked.length + ' of ' + s.actions.length + ' done'),
+          h('button', { type: 'button', className: 'wb-cm-eng-close', 'aria-label': 'Close ' + s.label + ' actions', onClick: function() { setSelectedQuad(null); } }, I.close(14))),
+        h('div', { className: 'wb-cm-eng-body' },
+          h('div', { className: 'wb-cm-eng-people' },
+            h('div', { className: 'wb-cm-eng-sub' }, 'In this quadrant', h('span', { className: 'wb-cm-eng-cnt' }, String(here.length))),
+            here.length
+              ? h('ul', { className: 'wb-cm-eng-plist' }, here.map(function(u) {
+                  var primary = u.tier === 'primary';
+                  return h('li', { key: u.id, className: 'wb-cm-eng-person' },
+                    h('span', { className: 'wb-cm-eng-pname' }, (u.name || '').trim() || 'Unnamed user'),
+                    h('span', { className: 'wb-cm-eng-ptier wb-cm-eng-ptier--' + (primary ? 'p' : 's') }, primary ? 'primary' : 'secondary'));
+                }))
+              : h('p', { className: 'wb-cm-eng-empty' }, 'No intended users fall here yet.')),
+          h('div', { className: 'wb-cm-eng-actions' },
+            h('div', { className: 'wb-cm-eng-sub' }, 'Engagement actions'),
+            h('ul', { className: 'wb-cm-eng-alist' }, s.actions.map(function(a, i) {
+              var on = checked.indexOf(i) >= 0;
+              return h('li', { key: i, className: 'wb-cm-eng-item' + (on ? ' is-on' : '') },
+                h('label', { className: 'wb-cm-eng-lbl' },
+                  h('input', { type: 'checkbox', className: 'wb-cm-eng-cb', checked: on, onChange: function() { toggleAction(s.key, i); } }),
+                  h('span', { className: 'wb-cm-eng-atext' }, a)));
+            })))));
+    }
+
+    var selEntry = selectedQuad ? D.ENGAGEMENT.filter(function(e) { return e.key === selectedQuad; })[0] : null;
     var registerBody = users.length
-      ? h('div', { className: 'wb-cm-two' },
-          h('div', { className: 'wb-cm-two-main' },
-            h('div', { className: 'wb-cm-sub' }, 'Primary intended users', h('span', { className: 'wb-cm-sub-count' }, primary.length)),
-            primary.length ? userTable(primary, 'primary') : h('p', { className: 'wb-cm-hint' }, 'Name the users who will act on this evaluation. Their decisions shape the questions.'),
-            h('div', { className: 'wb-cm-sub wb-cm-sub--mt' }, 'Secondary users', h('span', { className: 'wb-cm-sub-count' }, secondary.length)),
-            userTable(secondary, 'secondary'),
-            h('div', { className: 'wb-cm-add' },
-              h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('primary'); } }, I.plus(14), ' Primary user'),
-              h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('secondary'); } }, I.plus(14), ' Secondary user'))),
-          h('div', { className: 'wb-cm-two-side' },
-            stakeholderGrid(users),
-            coveragePanel()))
+      ? h(React.Fragment, null,
+          h('div', { className: 'wb-cm-two' },
+            h('div', { className: 'wb-cm-two-main' },
+              h('div', { className: 'wb-cm-sub' }, 'Primary intended users', h('span', { className: 'wb-cm-sub-count' }, primary.length)),
+              primary.length ? userTable(primary, 'primary') : h('p', { className: 'wb-cm-hint' }, 'Name the users who will act on this evaluation. Their decisions shape the questions.'),
+              h('div', { className: 'wb-cm-sub wb-cm-sub--mt' }, 'Secondary users', h('span', { className: 'wb-cm-sub-count' }, secondary.length)),
+              userTable(secondary, 'secondary'),
+              h('div', { className: 'wb-cm-add' },
+                h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('primary'); } }, I.plus(14), ' Primary user'),
+                h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('secondary'); } }, I.plus(14), ' Secondary user'))),
+            h('div', { className: 'wb-cm-two-side' },
+              stakeholderGrid(users, selectedQuad, setSelectedQuad),
+              coveragePanel())),
+          selEntry ? engagementPanel(selEntry) : null)
       : h('div', { className: 'wb-station-empty' },
           h('div', { className: 'wb-station-empty-title' }, 'Name the primary intended users'),
           h('div', { className: 'wb-station-empty-desc' }, 'No intended users yet. Name who will use this evaluation, and their decisions become the test the design has to pass.'),

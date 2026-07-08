@@ -130,62 +130,56 @@
   var CADENCE = [{ v: 3, label: 'Quarterly' }, { v: 6, label: 'Semi-annual' }, { v: 12, label: 'Annual' }];
   var TIER = { primary: 'Primary', secondary: 'Secondary' };
   var LEVELS = ['low', 'medium', 'high'];
-  var WEIGHT = { high: 2, medium: 1, low: 0 };
 
-  // Stakeholder-engagement strategies, in priority order (index 0 = most demanding).
-  // Strict Mendelow reading: the high side of an axis is only 'high'; medium and low
-  // are the low side. `quad` names the cell in the 2x2 plot (l/r + t/b).
-  var STRATEGIES = [
-    { key: 'manage',  quad: 'rt', label: 'Manage closely', gloss: 'engage as partners',               color: 'teal'  },
-    { key: 'satisfy', quad: 'lt', label: 'Keep satisfied', gloss: 'powerful but detached, keep warm', color: 'amber' },
-    { key: 'inform',  quad: 'rb', label: 'Keep informed',  gloss: 'interested, limited power',         color: 'blue'  },
-    { key: 'monitor', quad: 'lb', label: 'Monitor',        gloss: 'minimal effort',                    color: 'slate' }
+  // Stakeholder engagement (Mendelow influence x interest). One source of truth for the
+  // 2x2 quadrants AND the per-quadrant engagement checklist. `x`/`y` place the cell
+  // (l/r + t/b) so the grid and the influence/interest axes agree; `sub` is the terse
+  // cell caption (kept from the ported grid); `gloss`/`pos` describe the strategy in the
+  // action panel. `actions` are institutional, utilization-focused engagement moves.
+  var ENGAGEMENT = [
+    { key: 'satisfy', x: 'l', y: 't', label: 'Keep satisfied', sub: 'high influence, low interest',
+      gloss: 'powerful but detached, keep warm', pos: 'high influence, low interest', actions: [
+      'Brief at milestones, headline level not operational detail',
+      'Confirm their decision windows and reporting needs',
+      'Surface only material changes in scope, budget or risk',
+      'Keep warm with short, periodic updates',
+      'Hold a clear path to escalate a high-stakes issue' ] },
+    { key: 'manage', x: 'r', y: 't', label: 'Manage closely', sub: 'engage as partners',
+      gloss: 'engage as partners', pos: 'high influence, high interest', actions: [
+      'Co-design the evaluation questions and success measures',
+      'Tie each question to a decision they own',
+      'Give standing review points at design, midline and draft',
+      'Escalate scope, budget and risk changes early, in writing',
+      'Secure sign-off on the evaluation matrix before fieldwork' ] },
+    { key: 'monitor', x: 'l', y: 'b', label: 'Monitor', sub: 'low effort',
+      gloss: 'minimal effort', pos: 'low influence, low interest', actions: [
+      'Keep to minimal, low-cost proactive effort',
+      'Re-assess periodically in case influence or interest rises',
+      'Point them to public outputs rather than bespoke updates',
+      'Watch for any who should move to a more active quadrant' ] },
+    { key: 'inform', x: 'r', y: 'b', label: 'Keep informed', sub: 'show the findings',
+      gloss: 'show the findings', pos: 'low influence, high interest', actions: [
+      'Share plans, timelines and findings in accessible formats',
+      'Consult on feasibility and data-collection realities',
+      'Open feedback channels and close the loop on what you hear',
+      'Manage expectations on what the evaluation can answer',
+      'Recognise their contribution in dissemination' ] }
   ];
-  var STRATEGY_PRIORITY = { manage: 0, satisfy: 1, inform: 2, monitor: 3 };
 
   // ---- pure helpers -------------------------------------------------------
   function fdate(iso) { if (!iso) return '-'; try { return U.formatDate(iso); } catch (e) { return iso; } }
   function levelIdx(level) { var i = LEVELS.indexOf(level); return i < 0 ? 1 : i; }
   function daysUntil(iso) { return U.daysUntilLocal(iso); }
 
-  // Classify one intended user into an engagement strategy from their influence and
-  // interest (strict rule). Returns { strategy, score, unrated }: strategy is null when
-  // either axis is not yet rated (unset), so a freshly added user is "to place" rather
-  // than silently parked in Monitor.
-  function engagementOf(user) {
-    var inf = user && user.influence, int = user && user.interest;
-    if (LEVELS.indexOf(inf) < 0 || LEVELS.indexOf(int) < 0) {
-      return { strategy: null, score: 0, unrated: true };
-    }
-    var hiInf = inf === 'high', hiInt = int === 'high';
-    var strategy = hiInf ? (hiInt ? 'manage' : 'satisfy') : (hiInt ? 'inform' : 'monitor');
-    return { strategy: strategy, score: WEIGHT[inf] + WEIGHT[int], unrated: false };
-  }
-  function byNameCI(a, b) {
-    var na = ((a && a.name) || '').toLowerCase(), nb = ((b && b.name) || '').toLowerCase();
-    return na < nb ? -1 : (na > nb ? 1 : 0);
-  }
-  // Annotate the register and rank it: strategy priority, then influence+interest score
-  // desc, then primary before secondary, then name. Unrated users sort last and get no
-  // rank. Returns [{ user, strategy, score, unrated, rank? }] (rank is 1-based, rated only).
-  function rankUsers(users) {
-    var list = (users || []).map(function(u) {
-      var e = engagementOf(u);
-      return { user: u, strategy: e.strategy, score: e.score, unrated: e.unrated };
-    });
-    list.sort(function(a, b) {
-      if (a.unrated !== b.unrated) return a.unrated ? 1 : -1;
-      if (a.unrated && b.unrated) return byNameCI(a.user, b.user);
-      var pa = STRATEGY_PRIORITY[a.strategy], pb = STRATEGY_PRIORITY[b.strategy];
-      if (pa !== pb) return pa - pb;
-      if (a.score !== b.score) return b.score - a.score;
-      var ta = a.user.tier === 'primary' ? 0 : 1, tb = b.user.tier === 'primary' ? 0 : 1;
-      if (ta !== tb) return ta - tb;
-      return byNameCI(a.user, b.user);
-    });
-    var rank = 0;
-    list.forEach(function(item) { if (!item.unrated) { item.rank = ++rank; } });
-    return list;
+  // Bucket a user into one engagement quadrant (Mendelow strict: only 'high' is the high
+  // side; medium/low/unset are the low side). Returns an ENGAGEMENT key.
+  function engagementQuad(user) {
+    var infHigh = user && user.influence === 'high';
+    var intHigh = user && user.interest === 'high';
+    if (infHigh && intHigh) return 'manage';
+    if (infHigh) return 'satisfy';
+    if (intHigh) return 'inform';
+    return 'monitor';
   }
 
   function evidenceMap(list) {
@@ -253,9 +247,8 @@
     GATE_DECISION: GATE_DECISION, ETHICS_STATUS: ETHICS_STATUS, DISPOSITION: DISPOSITION,
     IMPL_STATUS: IMPL_STATUS, DELIV_STATUS: DELIV_STATUS, DELIV_SCHED: DELIV_SCHED,
     DIS_STATUS: DIS_STATUS, RISK_STATUS: RISK_STATUS, CADENCE: CADENCE, TIER: TIER, LEVELS: LEVELS,
-    WEIGHT: WEIGHT, STRATEGIES: STRATEGIES,
-    fdate: fdate, levelIdx: levelIdx, daysUntil: daysUntil,
-    engagementOf: engagementOf, rankUsers: rankUsers,
+    ENGAGEMENT: ENGAGEMENT,
+    fdate: fdate, levelIdx: levelIdx, daysUntil: daysUntil, engagementQuad: engagementQuad,
     evidenceMap: evidenceMap, meanRating: meanRating, hasMethod: hasMethod, hasSource: hasSource,
     servedEqIds: servedEqIds, orphanUsers: orphanUsers, refsToNumbers: refsToNumbers, numbersToRefs: numbersToRefs,
     deliverableStatus: deliverableStatus, reviewDaysUntil: reviewDaysUntil, isReviewOpen: isReviewOpen,
