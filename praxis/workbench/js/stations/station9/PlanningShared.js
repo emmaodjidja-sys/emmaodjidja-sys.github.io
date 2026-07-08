@@ -142,7 +142,9 @@
     if (d && d.rubric && RUBRICS[d.rubric]) return RUBRICS[d.rubric];
     var hay = ((d && d.title) || '') + ' ' + ((d && d.type) || '');
     for (var i = 0; i < RUBRIC_HINTS.length; i++) if (RUBRIC_HINTS[i].re.test(hay)) return RUBRICS[RUBRIC_HINTS[i].key];
-    return RUBRICS.report;
+    // Unrecognized kinds fall back to the neutral general rubric, never to the most demanding
+    // evaluation-report rubric (which would judge, say, a workshop note on "validity of findings").
+    return RUBRICS.generic;
   }
   // Backward-compatible alias: the default report rubric's criteria array.
   var RUBRIC = RUBRICS.report.criteria;
@@ -244,11 +246,16 @@
     return rubricOf(rubric).mustPass.some(function(k) { var v = rating.scores[k]; return typeof v === 'number' && v < 3; });
   }
   // A rating is provisional until every must-pass (high-weight) criterion of the applicable
-  // rubric is scored; before that the headline band is not trustworthy and is shown as
+  // rubric is scored AND enough of the rubric's weight has been scored (>= 0.8), so a confident
+  // band can never rest on a small slice of criteria. Before that the headline band is shown as
   // "Provisional".
   function ratingProvisional(rating, rubric) {
     if (!rating || !rating.scores) return true;
-    return rubricOf(rubric).mustPass.some(function(k) { return typeof rating.scores[k] !== 'number'; });
+    var rb = rubricOf(rubric);
+    if (rb.mustPass.some(function(k) { return typeof rating.scores[k] !== 'number'; })) return true;
+    var scoredWeight = 0;
+    rb.criteria.forEach(function(c) { if (typeof rating.scores[c.key] === 'number') scoredWeight += c.weight; });
+    return scoredWeight < 0.8;
   }
   function bandBadge(band) {
     if (band === 'Highly satisfactory') return 'wb-badge-green';
@@ -319,6 +326,12 @@
     var partial = scored < total;
     var provisional = ratingProvisional(rating, rubric);
     var critFail = mustPassFail(rating, rubric);
+    // Non-compensatory gate: a must-pass criterion below the standard caps the band so strong
+    // criteria elsewhere cannot average away a fatal weakness. The mean/number are still shown.
+    if (critFail && !provisional && (band === 'Satisfactory' || band === 'Highly satisfactory')) {
+      band = 'Partially satisfactory';
+      key = 'part';
+    }
     // Suppress a confident band word until the two high-weight criteria are scored; a mean
     // built from low-weight criteria alone is not a defensible quality verdict.
     var bandLabel = provisional ? 'Provisional' : band;

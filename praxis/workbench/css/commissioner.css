@@ -311,6 +311,12 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 .wb-cm-inception-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-right: 2px; }
 .wb-cm-inception-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--text-tertiary); background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius-full); padding: 3px 10px; }
 .wb-cm-inception-chip--done { color: var(--green-strong); background: var(--green-light); border-color: transparent; }
+/* Clickable chips (open the evaluation-team view of the element). */
+button.wb-cm-inception-chip { cursor: pointer; font-family: inherit; line-height: 1.4; transition: border-color 0.12s, color 0.12s; }
+button.wb-cm-inception-chip:hover { border-color: var(--border-strong); color: var(--text-secondary); }
+button.wb-cm-inception-chip--done:hover { border-color: var(--green); color: var(--green-strong); }
+button.wb-cm-inception-chip svg:last-child { opacity: 0.55; }
+button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 
 /* ---- marks (present / warn / dash) --------------------------------------*/
 .wb-cm-mark { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-weight: 700; font-size: 12px; }

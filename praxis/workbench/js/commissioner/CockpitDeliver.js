@@ -69,6 +69,11 @@
     var risks = cm.risks || [];
     var rows = (context.evaluation_matrix && context.evaluation_matrix.rows) || [];
     var report = cm.report_review || { evidence: [] };
+    var gate = cm.gate || {};
+
+    // Endorsement-override prompt state (the accept toggle opens it when preconditions are unmet).
+    var eo = React.useState(false), endorseOverride = eo[0], setEndorseOverride = eo[1];
+    var eor = React.useState(''), endorseReason = eor[0], setEndorseReason = eor[1];
 
     var riskApi = api.listSetter('risks');
 
@@ -179,9 +184,26 @@
       if (!found) next = next.concat([Object.assign({ eq_id: eqId, strength: null, note: '' }, over)]);
       return next;
     }
+    // Endorsement preconditions: every evaluation question rated for strength of evidence, the
+    // inception gate not returned for redesign, and all gate conditions resolved. Endorsing over
+    // an unmet precondition is possible only with a recorded override reason.
+    var unresolvedConds = (gate.conditions || []).filter(function(c) { return !c.resolved; }).length;
+    var endorseBlockers = [];
+    if (!(rows.length && ratedCount === rows.length)) endorseBlockers.push((rows.length - ratedCount) + ' of ' + rows.length + ' questions not yet rated for strength of evidence');
+    if (gate.decision === 'return') endorseBlockers.push('the inception gate returned the design for redesign');
+    if (unresolvedConds) endorseBlockers.push(unresolvedConds + ' inception condition(s) not resolved');
+    var canEndorse = endorseBlockers.length === 0;
+
+    function acceptClean(over) {
+      var patch = { accepted: true, accepted_at: new Date().toISOString() };
+      if (over) patch.accepted_override = { reason: over, at: new Date().toISOString() };
+      saveReport(patch, over ? 'Final report accepted with override' : 'Final report accepted');
+      setEndorseOverride(false); setEndorseReason('');
+    }
     function toggleAccepted() {
-      var next = !report.accepted;
-      saveReport({ accepted: next, accepted_at: next ? new Date().toISOString() : null }, next ? 'Final report accepted' : 'Acceptance cleared');
+      if (report.accepted) { saveReport({ accepted: false, accepted_at: null, accepted_override: null }, 'Acceptance cleared'); return; }
+      if (canEndorse) acceptClean(null);
+      else { setEndorseOverride(true); setEndorseReason(''); }
     }
 
     var acceptBlock = h('div', { className: 'wb-cm-decision' },
@@ -190,6 +212,15 @@
         h('span', { className: 'wb-cm-decision-title' }, 'Final report accepted'),
         report.accepted ? h('span', { className: 'wb-badge wb-badge-green' }, 'Accepted') : null,
         report.accepted && report.accepted_at ? h('span', { className: 'wb-cm-decision-when' }, D.fdate(report.accepted_at)) : null),
+      (!report.accepted && !canEndorse && !endorseOverride) ? h('p', { className: 'wb-cm-recon' }, 'Endorsement is blocked: ' + endorseBlockers.join('; ') + '. Resolve these or endorse with a recorded override.') : null,
+      (report.accepted && report.accepted_override) ? h('p', { className: 'wb-cm-recon' }, 'Accepted by override: ' + report.accepted_override.reason) : null,
+      (!report.accepted && endorseOverride) ? h('div', { className: 'wb-cm-acc' },
+        h('div', { className: 'wb-cm-acc-when', style: { color: 'var(--red-strong)' } }, 'Endorsing despite: ' + endorseBlockers.join('; ') + '.'),
+        h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'reason for endorsing despite this (required)', 'aria-label': 'Endorsement override reason',
+          value: endorseReason, onChange: function(e) { setEndorseReason(e.target.value); } }),
+        h('div', { className: 'wb-cm-acc-row' },
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-primary', disabled: !endorseReason.trim(), onClick: function() { if (endorseReason.trim()) acceptClean(endorseReason.trim()); } }, 'Endorse with override'),
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { setEndorseOverride(false); setEndorseReason(''); } }, 'Cancel'))) : null,
       h('div', { className: 'wb-cm-focus-field', style: { marginTop: 10 } },
         h('label', { className: 'wb-cm-focus-label', htmlFor: 'cm-accepted-by' }, 'Accepted by'),
         h('input', { id: 'cm-accepted-by', className: 'wb-input wb-cm-focus-input', type: 'text', placeholder: 'name and role of the accepting officer', defaultValue: report.accepted_by || '', 'aria-label': 'Accepted by', onBlur: function(e) { saveReport({ accepted_by: e.target.value }); } })));

@@ -20,6 +20,10 @@
   // past-tense state that the badge reads back).
   var DECISION_LABEL = { approve: 'Approve', conditions: 'Approve with conditions', return: 'Return for redesign' };
 
+  // Which evaluator-lens station authors each inception-package element, so a commissioner can
+  // click through from C2 to see and assess the actual work (not just its done/not-done chip).
+  var INCEPTION_STATION = { evaluability: 0, toc: 1, evaluation_matrix: 2, design_recommendation: 3, sample_parameters: 4 };
+
   // Answerability distribution: one bar per band, worst (Not answerable) on the left
   // through best (High confidence) on the right, so it reads with the scale ends.
   function answerabilityDist(rows, evMap) {
@@ -44,8 +48,16 @@
   function CockpitAssure(props) {
     var context = props.state.context;
     var dispatch = props.dispatch;
+    var AT = PraxisContext.ACTION_TYPES;
     var api = Save.make(context, dispatch);
     var SectionCard = window.SectionCard;
+
+    // Switch to the evaluation-team lens and open the station that authors this element, so the
+    // commissioner can assess the underlying design work. The role toggle returns them to C2.
+    function openEvaluatorStation(stationIdx) {
+      dispatch({ type: AT.SET_ACTIVE_STATION, station: stationIdx });
+      dispatch({ type: AT.SET_ROLE, role: 'evaluator' });
+    }
 
     var cm = context.commissioner || {};
     var gov = cm.governance || {};
@@ -113,12 +125,19 @@
           h('div', { className: 'wb-station-empty-title' }, 'No evaluation questions yet'),
           h('div', { className: 'wb-station-empty-desc' }, 'Build the evaluation matrix in Station 2. Each question then appears here for inception design QA before the gate.'));
 
-    // Inception package completeness chips.
+    // Inception package completeness chips. Each is a button that opens the evaluation-team
+    // station authoring that element, so the commissioner can review and assess the actual work.
     var inceptionChips = h('div', { className: 'wb-cm-inception' },
       h('span', { className: 'wb-cm-inception-label' }, 'Inception package'),
       D.INCEPTION.map(function(s) {
         var done = !!(context[s.field] && context[s.field].completed_at);
-        return h('span', { key: s.field, className: 'wb-cm-inception-chip' + (done ? ' wb-cm-inception-chip--done' : '') }, done ? I.check(11) : null, s.label);
+        var st = INCEPTION_STATION[s.field];
+        return h('button', { key: s.field, type: 'button',
+          className: 'wb-cm-inception-chip' + (done ? ' wb-cm-inception-chip--done' : ''),
+          title: 'Open the evaluation team view of ' + s.label + ' (Station ' + st + ') to review it',
+          'aria-label': 'Review ' + s.label + ' in the evaluation team view' + (done ? ', complete' : ', not yet complete'),
+          onClick: function() { openEvaluatorStation(st); } },
+          done ? I.check(11) : null, s.label, I.chevronRight(11));
       }));
 
     // ================= independence attestation ============================
@@ -169,17 +188,36 @@
       h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addCondition }, I.plus(14), ' Add condition'));
 
     var decided = gate.decision && D.GATE_DECISION[gate.decision];
+    // A positive gate decision cannot be recorded until the two structural preconditions are
+    // met: the evaluation team's independence is attested and ethics is cleared (or N/A).
+    // Returning for redesign is always available. This makes the gate a real control.
+    var ethOk = ethStatus === 'cleared' || ethStatus === 'na';
+    var canApprove = attested && ethOk;
+    var approveBlockers = [];
+    if (!attested) approveBlockers.push('independence is attested');
+    if (!ethOk) approveBlockers.push('ethics is cleared or marked not applicable');
     var decisionRow = h('div', { className: 'wb-cm-decision' },
       h('div', { className: 'wb-cm-decision-head' },
         h('span', { className: 'wb-cm-decision-title' }, 'Inception decision'),
         decided ? h('span', { className: 'wb-badge ' + D.GATE_DECISION[gate.decision].badge }, D.GATE_DECISION[gate.decision].label) : null,
-        gate.decided_at ? h('span', { className: 'wb-cm-decision-when' }, D.fdate(gate.decided_at)) : null),
+        gate.decided_at ? h('span', { className: 'wb-cm-decision-when' }, D.fdate(gate.decided_at) + (gate.decided_by ? ' by ' + gate.decided_by : '')) : null),
       h('p', { className: 'wb-cm-decision-sub' }, 'Reviewed by ' + profile.gateReviewers + ', before fieldwork spend. ' + withSource + ' of ' + rows.length + ' questions have a named data source; ' + served + ' trace to an intended use.'),
       h('div', { className: 'wb-cm-decision-btns' }, Object.keys(D.GATE_DECISION).map(function(k) {
         var on = gate.decision === k;
-        return h('button', { key: k, type: 'button', className: 'wb-btn wb-btn-sm' + (on ? ' wb-btn-primary' : ''), onClick: function() { api.setGate({ decision: k, decided_at: new Date().toISOString() }, 'Inception decision recorded: ' + D.GATE_DECISION[k].label); } }, DECISION_LABEL[k] || D.GATE_DECISION[k].label);
+        var blocked = (k === 'approve' || k === 'conditions') && !canApprove;
+        return h('button', { key: k, type: 'button', disabled: blocked,
+          title: blocked ? ('Available once ' + approveBlockers.join(' and ') + '.') : null,
+          className: 'wb-btn wb-btn-sm' + (on ? ' wb-btn-primary' : ''),
+          style: blocked ? { opacity: 0.45, cursor: 'not-allowed' } : null,
+          onClick: function() { if (blocked) return; api.setGate({ decision: k, decided_at: new Date().toISOString() }, 'Inception decision recorded: ' + D.GATE_DECISION[k].label); } }, DECISION_LABEL[k] || D.GATE_DECISION[k].label);
       })),
+      !canApprove ? h('p', { className: 'wb-cm-recon' }, 'Approval is available once ' + approveBlockers.join(' and ') + '. Return for redesign is available now.') : null,
       gate.decision === 'conditions' ? conditionsBlock : null,
+      h('div', { className: 'wb-cm-cfield', style: { maxWidth: 340, marginTop: 8 } },
+        h('label', { className: 'wb-cm-cfield-label', htmlFor: 'gate-by' }, 'Decision by'),
+        h('input', { id: 'gate-by', className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'name and role of the deciding officer',
+          key: 'gateby:' + (gate.decided_by || ''), defaultValue: gate.decided_by || '', 'aria-label': 'Decision by',
+          onBlur: function(e) { api.setGate({ decided_by: e.target.value }); } })),
       h('textarea', { className: 'wb-input wb-cm-decision-note', rows: 2, placeholder: 'Decision rationale (optional)', defaultValue: gate.note || '', 'aria-label': 'Decision rationale', onBlur: function(e) { api.setGate({ note: e.target.value }); } }));
 
     return h('section', { className: 'wb-cm-move', 'aria-label': 'Assure' },

@@ -47,8 +47,26 @@
     var cur = contract.currency || 'USD';
 
     var rr = React.useState(null), ratingId = rr[0], setRatingId = rr[1];
+    // Per-row acceptance-override prompt: holds the deliverable id whose block the commissioner
+    // is overriding, plus the recorded reason (only one prompt is open at a time).
+    var ov = React.useState(null), overrideId = ov[0], setOverrideId = ov[1];
+    var orr = React.useState(''), overrideReason = orr[0], setOverrideReason = orr[1];
+
+    // Inception gate state (C2 Assure). A design returned for redesign blocks acceptance and
+    // invoice approval here, so C2's decision is a real control rather than a note.
+    var gate = (context.commissioner || {}).gate || {};
+    var gateReturned = gate.decision === 'return';
 
     function toast(msg, t) { if (msg) dispatch({ type: AT.SHOW_TOAST, message: msg, toastType: t || 'success' }); }
+
+    // What, if anything, blocks a clean acceptance of this deliverable. null = clean to accept.
+    function acceptBlock(d) {
+      if (gateReturned) return 'The inception gate returned the design for redesign (C2 Assure).';
+      var rubric = PS.rubricFor(d);
+      if (PS.ratingMean(d.rating, rubric) == null) return 'This deliverable has not been quality-rated yet.';
+      if (PS.mustPassFail(d.rating, rubric)) return 'A must-pass quality criterion is below the standard.';
+      return null;
+    }
 
     // ---- contract header + amendments (structural: full planning save) ------
     function saveContract(patch, msg) {
@@ -74,10 +92,20 @@
       api.patchDeliverable(d.id, p);
       toast('Status set to ' + (PS.DELIV_STATUS[status] ? PS.DELIV_STATUS[status].label : status));
     }
-    function acceptDeliverable(d) {
-      var warn = d.rating && PS.mustPassFail(d.rating, PS.rubricFor(d)) ? ' (note: a must-pass quality criterion is below the standard)' : '';
-      api.patchDeliverable(d.id, { status: 'accepted', accepted_at: new Date().toISOString() });
-      toast('Accepted ' + PS.delTitle(d) + warn, warn ? 'warning' : 'success');
+    // Accept a deliverable. If it is clean (rated, no must-pass failure, gate not returned) it
+    // accepts directly; otherwise the caller passes an override reason, which is recorded on the
+    // deliverable so the exception is attributable and auditable.
+    function acceptDeliverable(d, override) {
+      var patch = { status: 'accepted', accepted_at: new Date().toISOString() };
+      if (override) patch.acceptance_override = { reason: override, at: new Date().toISOString() };
+      api.patchDeliverable(d.id, patch);
+      setOverrideId(null); setOverrideReason('');
+      toast(override ? ('Accepted ' + PS.delTitle(d) + ' with override') : ('Accepted ' + PS.delTitle(d)), override ? 'warning' : 'success');
+    }
+    // Accept button handler: accept directly when clean, else open the override prompt.
+    function tryAccept(d) {
+      if (acceptBlock(d)) { setOverrideId(d.id); setOverrideReason(''); }
+      else acceptDeliverable(d, null);
     }
     function reviseDeliverable(d) { api.patchDeliverable(d.id, { status: 'revise', accepted_at: null }); toast('Requested revision of ' + PS.delTitle(d)); }
     function undoAcceptance(d) { api.patchDeliverable(d.id, { status: 'submitted', accepted_at: null }); toast('Acceptance withdrawn for ' + PS.delTitle(d), 'warning'); }
@@ -101,7 +129,11 @@
         var del = deliverables.filter(function(d) { return d.id === id; })[0];
         var scores = Object.assign({}, (del && del.rating && del.rating.scores) || {});
         scores[key] = value;
-        api.patchDeliverable(id, { rating: Object.assign({}, del && del.rating, { scores: scores, rated_at: new Date().toISOString() }) });
+        var patch = { rating: Object.assign({}, del && del.rating, { scores: scores, rated_at: new Date().toISOString() }) };
+        // Pin the resolved rubric on first score so a later title/type edit cannot silently
+        // re-scope the criteria the scores were entered against.
+        if (del && !del.rubric) patch.rubric = PS.rubricFor(del).key;
+        api.patchDeliverable(id, patch);
       },
       setRatingComment: function(id, comment) {
         var del = deliverables.filter(function(d) { return d.id === id; })[0];
@@ -289,15 +321,30 @@
       // editable acceptance record once accepted (reversible), a revision reason once returned.
       var reviewBits = [];
       if (d.status === 'submitted') {
+        var blk = acceptBlock(d);
         reviewBits.push(h('div', { key: 'act', className: 'wb-cm-acc-row' },
-          h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { acceptDeliverable(d); } }, 'Accept'),
+          h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { tryAccept(d); } }, 'Accept'),
           h('button', { className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { reviseDeliverable(d); } }, 'Request revision')));
+        if (blk && overrideId !== d.id) {
+          reviewBits.push(h('div', { key: 'blk', className: 'wb-cm-recon' }, blk + ' Accepting requires an override.'));
+        }
+        if (overrideId === d.id) {
+          reviewBits.push(h('div', { key: 'ovr', className: 'wb-cm-acc' },
+            h('div', { className: 'wb-cm-acc-when', style: { color: 'var(--red-strong)' } }, blk),
+            h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'reason for accepting despite this (required)', 'aria-label': 'Override reason',
+              value: overrideReason, onChange: function(e) { setOverrideReason(e.target.value); } }),
+            h('div', { className: 'wb-cm-acc-row' },
+              h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', disabled: !overrideReason.trim(),
+                onClick: function() { if (overrideReason.trim()) acceptDeliverable(d, overrideReason.trim()); } }, 'Accept with override'),
+              h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { setOverrideId(null); setOverrideReason(''); } }, 'Cancel'))));
+        }
       }
       if (d.status === 'accepted') {
         reviewBits.push(h('div', { key: 'accrec', className: 'wb-cm-acc' },
           h('div', { className: 'wb-cm-acc-row' },
             h('span', { className: 'wb-cm-acc-when' }, d.accepted_at ? 'Accepted ' + PS.fdate(d.accepted_at) : 'Accepted, date not recorded'),
             h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { undoAcceptance(d); } }, 'Withdraw')),
+          d.acceptance_override ? h('div', { className: 'wb-cm-recon' }, 'Accepted by override: ' + d.acceptance_override.reason) : null,
           h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'accepting officer (name and role)', 'aria-label': 'Accepted by',
             key: 'accby:' + d.id + ':' + (d.accepted_by || ''), defaultValue: d.accepted_by || '',
             onBlur: function(e) { editDel(d.id, 'accepted_by', e.target.value); } }),
@@ -378,7 +425,11 @@
       var del = deliverables.filter(function(d) { return d.id === iv.deliverable_id; })[0];
       var typ = PS.invoiceType(iv);
       var linkedAccepted = !!del && del.status === 'accepted';
-      var canApprove = !typ.gated || linkedAccepted;
+      var canApprove = (!typ.gated || linkedAccepted) && !gateReturned;
+      var lockLabel = gateReturned ? 'On hold (design returned)' : 'Locked until accepted';
+      var lockTitle = gateReturned
+        ? 'The inception gate returned the design for redesign (C2 Assure); payment is on hold until the gate clears.'
+        : 'A milestone payment is released only after the linked deliverable is accepted.';
       var milestoneValue = (del && del.payment_percent != null && budgetTotal) ? budgetTotal * del.payment_percent / 100 : null;
       var overMilestone = milestoneValue != null && iv.amount != null && iv.amount > milestoneValue + 1;
 
@@ -387,7 +438,7 @@
         actionCell = h('div', { className: 'wb-cm-acc-row' },
           canApprove
             ? h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { approveInvoice(iv); } }, 'Approve')
-            : h('span', { className: 'wb-plan-lock', title: 'A milestone payment is released only after the linked deliverable is accepted' }, 'Locked until accepted'),
+            : h('span', { className: 'wb-plan-lock', title: lockTitle }, lockLabel),
           h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { returnInvoice(iv); } }, 'Return'));
       } else if (iv.status === 'approved') {
         actionCell = h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' } },
