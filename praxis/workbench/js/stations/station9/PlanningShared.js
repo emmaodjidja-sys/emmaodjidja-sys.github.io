@@ -103,6 +103,20 @@
     if (band === 'Unsatisfactory') return 'wb-badge-red';
     return '';
   }
+  // Short key per band for the quality-mark meter/word classes (kept distinct from the
+  // status-badge colors so a quality band is never confused with a workflow status).
+  function bandKey(band) {
+    if (band === 'Highly satisfactory') return 'high';
+    if (band === 'Satisfactory') return 'sat';
+    if (band === 'Partially satisfactory') return 'part';
+    if (band === 'Unsatisfactory') return 'unsat';
+    return '';
+  }
+  // How many of the RUBRIC criteria were actually scored (mean is renormalized over these).
+  function ratingScored(rating) {
+    if (!rating || !rating.scores) return 0;
+    return RUBRIC.filter(function(c) { return typeof rating.scores[c.key] === 'number'; }).length;
+  }
 
   // ---- view atoms ---------------------------------------------------------
   function statusPill(statusMap, key) {
@@ -124,6 +138,37 @@
     return h('div', { className: 'wb-plan-contract-field' },
       h('div', { className: 'wb-plan-contract-label' }, label),
       h('div', { className: 'wb-plan-contract-value' }, value || '-'));
+  }
+
+  // Compact quality mark for the deliverables table. A discrete 4-tick meter (its fill length
+  // encodes the 1-4 weighted mean), the value, the band word, and a criteria-count sub-line
+  // that exposes partial ratings and the rated-on date for the audit trail. Deliberately NOT a
+  // .wb-badge pill, so an editorial quality band is never mistaken for a workflow status. The
+  // empty ('Not rated') state keeps the column slot identical across un-rated rows.
+  function qualityMark(d) {
+    var rating = d && d.rating;
+    var mean = ratingMean(rating);
+    if (mean == null) {
+      return h('span', { className: 'wb-qual-empty', 'aria-label': 'Quality: not rated yet' },
+        h('span', { className: 'wb-qmeter wb-qmeter--empty' }, h('span', { className: 'wb-qmeter-ticks' })),
+        'Not rated');
+    }
+    var band = ratingBand(mean);
+    var key = bandKey(band);
+    var total = RUBRIC.length;
+    var scored = ratingScored(rating);
+    var partial = scored < total;
+    var subText = scored + ' of ' + total + ' criteria'
+      + (rating && rating.rated_at ? ' · rated ' + fdate(rating.rated_at) : '');
+    return h('div', { className: 'wb-qual-wrap' },
+      h('span', { className: 'wb-qual', role: 'img',
+        'aria-label': 'Quality: ' + band + ', ' + mean.toFixed(1) + ' out of 4, weighted mean of ' + scored + ' of ' + total + ' criteria' },
+        h('span', { className: 'wb-qmeter' },
+          h('span', { className: 'wb-qmeter-fill wb-qmeter-fill--' + key, style: { width: (mean / 4 * 100) + '%' } }),
+          h('span', { className: 'wb-qmeter-ticks' })),
+        h('span', { className: 'wb-qual-num' }, mean.toFixed(1), h('span', { className: 'wb-qual-of' }, '/4')),
+        h('span', { className: 'wb-qual-band wb-qual-band--' + key }, band)),
+      h('span', { className: 'wb-qual-sub' + (partial ? ' wb-qual-sub--warn' : '') }, subText));
   }
 
   // Quality rubric editor for one deliverable. api must expose setRating(id, key, value)
@@ -158,6 +203,7 @@
     money: money, fdate: fdate, sum: sum, delTitle: delTitle,
     stationDone: stationDone, deliverableProgress: deliverableProgress,
     ratingMean: ratingMean, ratingBand: ratingBand, bandBadge: bandBadge,
+    bandKey: bandKey, ratingScored: ratingScored, qualityMark: qualityMark,
     statusPill: statusPill, progressBar: progressBar, statTile: statTile,
     contractField: contractField, ratingPanel: ratingPanel
   };

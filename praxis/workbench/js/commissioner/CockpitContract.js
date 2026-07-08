@@ -171,19 +171,20 @@
     // ---- deliverables (commissioner review) -------------------------------
     var delRows = deliverables.map(function(d) {
       var mean = PS.ratingMean(d.rating);
-      var band = PS.ratingBand(mean);
       var expanded = ratingId === d.id;
       var canRate = d.status === 'accepted' || !!d.rating;
+      // Review cell now holds only the acceptance record and the rate/edit action; the score
+      // itself lives in its own Quality column (PS.qualityMark) so it has a fixed, scannable slot.
       var reviewCell = h('td', null,
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
           d.status === 'submitted' ? h('button', { className: 'wb-btn wb-btn-sm wb-btn-primary', onClick: function() { acceptDeliverable(d); } }, 'Accept') : null,
           d.status === 'submitted' ? h('button', { className: 'wb-btn wb-btn-sm', onClick: function() { reviseDeliverable(d); } }, 'Request revision') : null,
           (d.status === 'accepted' && d.accepted_at) ? h('span', { className: 'wb-plan-del-desc' }, 'Accepted ' + PS.fdate(d.accepted_at)) : null,
+          (d.status === 'accepted' && !d.accepted_at) ? h('span', { className: 'wb-plan-del-desc', style: { color: 'var(--amber-text)' } }, 'Accepted, date not recorded') : null,
           d.status === 'revise' ? h('span', { className: 'wb-plan-del-desc' }, 'Awaiting resubmission') : null,
           (d.status === 'not_started' || d.status === 'in_progress') ? h('span', { className: 'wb-plan-del-desc' }, 'Awaiting submission') : null,
           canRate ? h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', style: { display: 'inline-flex', alignItems: 'center', gap: 6 }, onClick: function() { setRatingId(expanded ? null : d.id); } },
-            (mean != null ? 'Edit quality rating' : 'Rate quality'), expanded ? I.chevronUp(12) : I.chevronDown(12)) : null,
-          (mean != null) ? h('span', { className: 'wb-badge ' + PS.bandBadge(band), title: band }, mean.toFixed(1) + ' / 4') : null));
+            (mean != null ? 'Edit rating' : 'Rate quality'), expanded ? I.chevronUp(12) : I.chevronDown(12)) : null));
       var main = h('tr', { key: d.id },
         h('td', null,
           h('div', { className: 'wb-plan-del-title' }, d.code ? (d.code + '  ') : '', PS.delTitle(d)),
@@ -195,11 +196,12 @@
             key: 'pay:' + d.id + ':' + (d.payment_percent == null ? '' : d.payment_percent), defaultValue: d.payment_percent == null ? '' : d.payment_percent,
             style: { width: 64, textAlign: 'right', display: 'inline-block' }, onBlur: function(e) { setPayment(d.id, e.target.value); } }),
           h('span', { className: 'wb-plan-del-desc', style: { display: 'inline', marginLeft: 4 } }, '%')),
+        h('td', null, PS.qualityMark(d)),
         reviewCell,
         h('td', { className: 'wb-th--center' }, h('button', { className: 'wb-btn wb-btn-sm wb-btn-ghost', 'aria-label': 'Remove ' + PS.delTitle(d), title: 'Remove deliverable', onClick: function() { removeDeliverable(d); } }, I.close(14))));
       if (!expanded) return main;
       var detail = h('tr', { key: d.id + '_rate', className: 'wb-plan-review-detail' },
-        h('td', { colSpan: 6 }, PS.ratingPanel(d, ratingApi)));
+        h('td', { colSpan: 7 }, PS.ratingPanel(d, ratingApi)));
       return [main, detail];
     });
 
@@ -208,7 +210,7 @@
         h('table', { className: 'wb-table wb-plan-table' },
           h('thead', null, h('tr', null,
             h('th', null, 'Deliverable'), h('th', null, 'Due'), h('th', null, 'Status'),
-            h('th', { className: 'wb-th--center' }, 'Payment'), h('th', null, 'Review'),
+            h('th', { className: 'wb-th--center' }, 'Payment'), h('th', null, 'Quality'), h('th', null, 'Review'),
             h('th', { className: 'wb-th--center' }, ''))),
           h('tbody', null, delRows))),
       h('div', { className: 'wb-cm-add' },
