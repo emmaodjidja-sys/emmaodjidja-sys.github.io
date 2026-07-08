@@ -13,6 +13,7 @@
   'use strict';
   var AT = PraxisContext.ACTION_TYPES;
   var D = window.CockpitData;
+  var U = window.PraxisUtils;
 
   function kv(k, v) { var o = {}; o[k] = v; return o; }
 
@@ -27,10 +28,25 @@
     function patch(partial) {
       return Object.assign({}, cm, partial, { completed_at: cm.completed_at || new Date().toISOString() });
     }
+    // Append-only accountability log. Each governance / money act appends an immutable entry
+    // (actor from commissioner.acting_officer, timestamp, action, detail); entries are never
+    // edited or removed. Returns the new array so a caller can fold it into a single save (two
+    // separate commissioner saves in one tick would deep-merge-clobber each other).
+    function appendLog(action, detail) {
+      var entry = { id: U.uid('log_'), at: new Date().toISOString(),
+        actor: (cm.acting_officer || '').trim() || 'Unattributed', action: action, detail: detail };
+      return (cm.audit_log || []).concat([entry]);
+    }
+    // Standalone log for acts whose primary save is on planning (deliverable/invoice), so the
+    // commissioner save here is the only one in the tick and cannot clobber the act.
+    function logEvent(action, detail) { saveCommissioner(patch({ audit_log: appendLog(action, detail) })); }
+
     function setField(key, value, msg) { saveCommissioner(patch(kv(key, value)), msg); }
     function setGov(p, msg) { saveCommissioner(patch({ governance: Object.assign({}, cm.governance || {}, p) }), msg); }
-    function setGate(p, msg) { saveCommissioner(patch({ gate: Object.assign({}, cm.gate || {}, p) }), msg); }
-    function setReportReview(p, msg) { saveCommissioner(patch({ report_review: Object.assign({}, cm.report_review || {}, p) }), msg); }
+    // setGate / setReportReview accept an optional { action, detail } log folded into the SAME
+    // commissioner save, so a commissioner-path act and its audit entry never clobber.
+    function setGate(p, msg, log) { var pt = { gate: Object.assign({}, cm.gate || {}, p) }; if (log) pt.audit_log = appendLog(log.action, log.detail); saveCommissioner(patch(pt), msg); }
+    function setReportReview(p, msg, log) { var pt = { report_review: Object.assign({}, cm.report_review || {}, p) }; if (log) pt.audit_log = appendLog(log.action, log.detail); saveCommissioner(patch(pt), msg); }
 
     // Generic id-keyed list editor for a commissioner.* array (users, management_response,
     // dissemination, risks, appraisal.evidence handled separately).
@@ -56,6 +72,7 @@
       cm: cm, pl: pl,
       saveCommissioner: saveCommissioner, patch: patch, setField: setField,
       setGov: setGov, setGate: setGate, setReportReview: setReportReview,
+      logEvent: logEvent,
       listSetter: listSetter, patchDeliverable: patchDeliverable, savePlanning: savePlanning,
       addDeliverable: addDeliverable, removeDeliverable: removeDeliverable
     };

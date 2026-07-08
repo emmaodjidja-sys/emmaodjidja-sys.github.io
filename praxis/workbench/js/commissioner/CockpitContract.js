@@ -112,6 +112,7 @@
       var patch = { status: 'accepted', accepted_at: new Date().toISOString() };
       if (override) patch.acceptance_override = { reason: override, at: new Date().toISOString() };
       api.patchDeliverable(d.id, patch);
+      api.logEvent('accept', 'Accepted deliverable ' + (PS.delTitle(d) || d.code || '') + (override ? ' by override: ' + override : ''));
       setOverrideId(null); setOverrideReason('');
       toast(override ? ('Accepted ' + PS.delTitle(d) + ' with override') : ('Accepted ' + PS.delTitle(d)), override ? 'warning' : 'success');
     }
@@ -120,8 +121,8 @@
       if (acceptBlock(d)) { setOverrideId(d.id); setOverrideReason(''); }
       else acceptDeliverable(d, null);
     }
-    function reviseDeliverable(d) { api.patchDeliverable(d.id, { status: 'revise', accepted_at: null }); toast('Requested revision of ' + PS.delTitle(d)); }
-    function undoAcceptance(d) { api.patchDeliverable(d.id, { status: 'submitted', accepted_at: null }); toast('Acceptance withdrawn for ' + PS.delTitle(d), 'warning'); }
+    function reviseDeliverable(d) { api.patchDeliverable(d.id, { status: 'revise', accepted_at: null }); api.logEvent('revise', 'Requested revision of ' + (PS.delTitle(d) || d.code || '')); toast('Requested revision of ' + PS.delTitle(d)); }
+    function undoAcceptance(d) { api.patchDeliverable(d.id, { status: 'submitted', accepted_at: null }); api.logEvent('withdraw', 'Withdrew acceptance of ' + (PS.delTitle(d) || d.code || '')); toast('Acceptance withdrawn for ' + PS.delTitle(d), 'warning'); }
     function setPayment(id, v) { api.patchDeliverable(id, { payment_percent: clampPct(v) }); }
     function addDeliverable() {
       api.addDeliverable({
@@ -176,9 +177,9 @@
     }
     function removeInvoice(iv) { saveInvoices(invoices.filter(function(x) { return x.id !== iv.id; }), 'Invoice removed'); }
     function submitInvoice(iv) { patchInvoice(iv.id, { status: 'submitted' }, 'Submitted ' + (iv.number || 'invoice')); }
-    function approveInvoice(iv) { patchInvoice(iv.id, { status: 'approved', approved_at: new Date().toISOString() }, 'Approved ' + (iv.number || 'invoice')); }
-    function returnInvoice(iv) { patchInvoice(iv.id, { status: 'returned', approved_at: null }, 'Returned ' + (iv.number || 'invoice')); }
-    function payInvoice(iv) { patchInvoice(iv.id, { status: 'paid', paid_date: new Date().toISOString() }, 'Marked ' + (iv.number || 'invoice') + ' paid'); }
+    function approveInvoice(iv) { patchInvoice(iv.id, { status: 'approved', approved_at: new Date().toISOString() }, 'Approved ' + (iv.number || 'invoice')); api.logEvent('approve', 'Approved invoice ' + (iv.number || '') + ' (' + PS.money(iv.amount, cur) + ')'); }
+    function returnInvoice(iv) { patchInvoice(iv.id, { status: 'returned', approved_at: null }, 'Returned ' + (iv.number || 'invoice')); api.logEvent('return', 'Returned invoice ' + (iv.number || '')); }
+    function payInvoice(iv) { patchInvoice(iv.id, { status: 'paid', paid_date: new Date().toISOString() }, 'Marked ' + (iv.number || 'invoice') + ' paid'); api.logEvent('pay', 'Paid invoice ' + (iv.number || '') + ' (' + PS.money(iv.amount, cur) + ')'); }
 
     var head = A.moveHead('C1', 'Contract', 'Procure and manage the contract',
       'The contract of record: parties and ceiling, budget burn, the deliverable schedule with quality review and acceptance, and the invoice ledger. Milestone payment is released on acceptance; advances are not.');

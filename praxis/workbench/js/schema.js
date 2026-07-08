@@ -214,6 +214,10 @@
         dissemination: [],  // [{ id, product, format, audience, due_date, status, note }]
         // Delivery-risk register: risks reported to the evaluation manager with mitigation.
         risks: [],          // [{ id, risk, category, likelihood, impact, mitigation, owner, status }]
+        // Accountability: the officer acting now (attributed on logged actions) and an
+        // append-only log of governance and payment acts (never edited or removed).
+        acting_officer: '', // name and role of the current acting commissioner officer
+        audit_log: [],      // [{ id, at, actor, action, detail }] append-only
         completed_at: null
       },
 

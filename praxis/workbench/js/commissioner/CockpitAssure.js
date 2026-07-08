@@ -84,7 +84,7 @@
     // ---- gate.independence --------------------------------------------------
     var ind = gate.independence || { attested: false, statement: '', conflicts: [], attested_by: '', attested_at: null };
     var conflicts = (ind.conflicts || []).map(function(c, i) { return typeof c === 'string' ? { id: 'cfl_' + i, text: c } : c; });
-    function saveInd(p, msg) { api.setGate({ independence: Object.assign({}, ind, p) }, msg); }
+    function saveInd(p, msg, log) { api.setGate({ independence: Object.assign({}, ind, p) }, msg, log); }
 
     // ---- gate.ethics --------------------------------------------------------
     var eth = gate.ethics || { status: 'none', body: '', note: '', cleared_at: null };
@@ -148,7 +148,9 @@
           h('button', { type: 'button', role: 'switch', 'aria-checked': attested ? 'true' : 'false',
             className: 'wb-cm-cond-check' + (attested ? ' wb-cm-cond-check--on' : ''),
             'aria-label': attested ? 'Withdraw independence attestation' : 'Attest independence',
-            onClick: function() { saveInd(attested ? { attested: false } : { attested: true, attested_at: new Date().toISOString() }, attested ? null : 'Independence attested'); } }, attested ? I.check(12) : ''),
+            onClick: function() { attested
+              ? saveInd({ attested: false }, null, { action: 'attest', detail: 'Withdrew independence attestation' })
+              : saveInd({ attested: true, attested_at: new Date().toISOString() }, 'Independence attested', { action: 'attest', detail: 'Attested evaluation-team independence' }); } }, attested ? I.check(12) : ''),
           h('div', null,
             h('div', { className: 'wb-cm-cond-text' }, 'The evaluation team is independent of the program under review and its management.'),
             attested && ind.attested_at ? h('div', { className: 'wb-cm-muted' }, 'Attested ' + D.fdate(ind.attested_at) + (ind.attested_by ? ' by ' + ind.attested_by : '')) : null)),
@@ -209,7 +211,7 @@
           title: blocked ? ('Available once ' + approveBlockers.join(' and ') + '.') : null,
           className: 'wb-btn wb-btn-sm' + (on ? ' wb-btn-primary' : ''),
           style: blocked ? { opacity: 0.45, cursor: 'not-allowed' } : null,
-          onClick: function() { if (blocked) return; api.setGate({ decision: k, decided_at: new Date().toISOString() }, 'Inception decision recorded: ' + D.GATE_DECISION[k].label); } }, DECISION_LABEL[k] || D.GATE_DECISION[k].label);
+          onClick: function() { if (blocked) return; api.setGate({ decision: k, decided_at: new Date().toISOString() }, 'Inception decision recorded: ' + D.GATE_DECISION[k].label, { action: 'gate', detail: 'Inception gate decision: ' + D.GATE_DECISION[k].label }); } }, DECISION_LABEL[k] || D.GATE_DECISION[k].label);
       })),
       !canApprove ? h('p', { className: 'wb-cm-recon' }, 'Approval is available once ' + approveBlockers.join(' and ') + '. Return for redesign is available now.') : null,
       gate.decision === 'conditions' ? conditionsBlock : null,

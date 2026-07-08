@@ -166,7 +166,7 @@
     var ratedCount = (report.evidence || []).filter(function(e) { return typeof e.strength === 'number'; }).length;
 
     // One canonical save shape for every report_review edit; setReportReview merges it in.
-    function saveReport(over, msg) {
+    function saveReport(over, msg, log) {
       var next = {
         accepted: !!report.accepted,
         accepted_by: report.accepted_by || '',
@@ -174,7 +174,7 @@
         evidence: (report.evidence || []).slice()
       };
       Object.assign(next, over);
-      api.setReportReview(next, msg);
+      api.setReportReview(next, msg, log);
     }
     function upsertEvidence(eqId, over) {
       var found = false;
@@ -195,11 +195,12 @@
     function acceptClean(over) {
       var patch = { accepted: true, accepted_at: new Date().toISOString() };
       if (over) patch.accepted_override = { reason: over, at: new Date().toISOString() };
-      saveReport(patch, over ? 'Final report accepted with override' : 'Final report accepted');
+      saveReport(patch, over ? 'Final report accepted with override' : 'Final report accepted',
+        { action: 'endorse', detail: 'Endorsed the final report' + (over ? ' by override: ' + over : '') });
       setEndorseOverride(false); setEndorseReason('');
     }
     function toggleAccepted() {
-      if (report.accepted) { saveReport({ accepted: false, accepted_at: null, accepted_override: null }, 'Acceptance cleared'); return; }
+      if (report.accepted) { saveReport({ accepted: false, accepted_at: null, accepted_override: null }, 'Acceptance cleared', { action: 'withdraw', detail: 'Cleared final-report acceptance' }); return; }
       if (canEndorse) acceptClean(null);
       else { setEndorseOverride(true); setEndorseReason(''); }
     }

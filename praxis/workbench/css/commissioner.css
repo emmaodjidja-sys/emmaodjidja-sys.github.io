@@ -548,6 +548,14 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 .wb-cm-soe-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
 /* Inline two-step remove confirmation (contract system of record). */
 .wb-cm-confirm { display: inline-flex; gap: 4px; flex-wrap: nowrap; justify-content: center; }
+/* Append-only accountability log (Overview flight deck). */
+.wb-cm-log { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden auto; margin-top: 12px; max-height: 340px; }
+.wb-cm-logrow { display: grid; grid-template-columns: 150px 170px 1fr; gap: 10px; align-items: baseline; padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: var(--text-xs); }
+.wb-cm-logrow:last-child { border-bottom: none; }
+.wb-cm-logrow-when { font-family: var(--font-mono); color: var(--text-tertiary); white-space: nowrap; }
+.wb-cm-logrow-actor { font-weight: 600; color: var(--text-secondary); }
+.wb-cm-logrow-detail { color: var(--text); }
+@media (max-width: 640px) { .wb-cm-logrow { grid-template-columns: 1fr; gap: 2px; } }
 
 /* ---- C2 ethics status ----------------------------------------------------*/
 .wb-cm-eth-status { display: inline-flex; align-items: center; gap: 8px; }

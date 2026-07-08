@@ -8,6 +8,39 @@
   var h = React.createElement;
   var AT = PraxisContext.ACTION_TYPES;
   var A = window.CockpitAtoms;
+  var D = window.CockpitData;
+
+  // Read-only accountability panel: who is acting, a segregation-of-duties check, and the
+  // append-only log of governance and payment acts.
+  function accountability(context, api) {
+    var cm = context.commissioner || {}, pl = context.planning || {};
+    var log = (cm.audit_log || []).slice().reverse();
+    var acting = (cm.acting_officer || '').trim();
+    var invoices = pl.invoices || [], dels = pl.deliverables || [];
+    var payConflicts = invoices.filter(function(iv) { return iv.approved_by && iv.paid_by && iv.approved_by.trim() && iv.approved_by.trim() === iv.paid_by.trim(); });
+    var acceptConflicts = dels.filter(function(d) { return d.accepted_by && d.rating && d.rating.rated_by && d.accepted_by.trim() && d.accepted_by.trim() === d.rating.rated_by.trim(); });
+    var flags = [];
+    if (!acting) flags.push('No acting officer is set, so new actions are logged as "Unattributed". Name the acting officer below.');
+    if (payConflicts.length) flags.push(payConflicts.length + ' invoice(s) were approved and paid by the same officer (no separation between approval and payment).');
+    if (acceptConflicts.length) flags.push(acceptConflicts.length + ' deliverable(s) were quality-rated and accepted by the same officer.');
+    return h(SectionCard, { title: 'Accountability', badge: log.length ? log.length + ' logged' : 'No log yet', variant: flags.length ? 'warning' : null },
+      h('div', { className: 'wb-cm-focus-field', style: { maxWidth: 380, marginBottom: 12 } },
+        h('label', { className: 'wb-cm-focus-label', htmlFor: 'cm-acting' }, 'Acting officer (attributed on every logged action)'),
+        h('input', { id: 'cm-acting', className: 'wb-input wb-cm-focus-input', type: 'text', placeholder: 'name and role of the officer acting now',
+          key: 'acting:' + acting, defaultValue: cm.acting_officer || '', 'aria-label': 'Acting officer',
+          onBlur: function(e) { api.setField('acting_officer', e.target.value); } })),
+      flags.length
+        ? flags.map(function(f, i) { return h('div', { key: 'f' + i, className: 'wb-cm-over', role: 'status', style: { marginTop: i ? 6 : 0 } }, f); })
+        : h('p', { className: 'wb-cm-hint' }, 'No segregation-of-duties conflicts detected across acceptance, approval and payment.'),
+      log.length
+        ? h('div', { className: 'wb-cm-log', role: 'log', 'aria-label': 'Decision and payment log' }, log.map(function(e) {
+            return h('div', { key: e.id, className: 'wb-cm-logrow' },
+              h('span', { className: 'wb-cm-logrow-when' }, D.fdate(e.at) + ' ' + String(e.at || '').slice(11, 16)),
+              h('span', { className: 'wb-cm-logrow-actor' }, e.actor || 'Unattributed'),
+              h('span', { className: 'wb-cm-logrow-detail' }, e.detail || e.action));
+          }))
+        : h('p', { className: 'wb-cm-hint', style: { marginTop: 10 } }, 'No decisions logged yet. Gate decisions, acceptances, endorsements and payments are recorded here, append-only, as they happen.'));
+  }
 
   var CARDS = [
     { idx: 1, code: 'C0', label: 'Commission', desc: 'Name the intended users and the decisions they must make.' },
@@ -29,6 +62,7 @@
 
   function Overview(props) {
     var context = props.state.context, dispatch = props.dispatch, alerts = props.alerts || [];
+    var api = window.CockpitSave.make(context, dispatch);
     var cm = context.commissioner || {}, gov = cm.governance || {};
     var pl = context.planning || {};
     var hasData = (cm.users || []).length || (pl.deliverables || []).length || (cm.management_response || []).length || gov.funder_profile;
@@ -57,7 +91,8 @@
             h('span', { className: 'wb-cm-navcard-code' }, c.code),
             h('span', { className: 'wb-cm-navcard-label' }, c.label),
             h('span', { className: 'wb-cm-navcard-desc' }, c.desc));
-        }))));
+        }))),
+      accountability(context, api));
   }
 
   window.CockpitOverview = Overview;
