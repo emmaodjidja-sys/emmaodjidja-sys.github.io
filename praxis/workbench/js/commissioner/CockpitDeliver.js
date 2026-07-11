@@ -205,6 +205,15 @@
       else { setEndorseOverride(true); setEndorseReason(''); }
     }
 
+    // Latest completed commissioner first review, referenced at the Endorse act.
+    var frRuns = (context.report_screens || []).filter(function(r) { return r && r.role === 'commissioner' && r.completed_at; });
+    var frLast = frRuns.length ? frRuns[frRuns.length - 1] : null;
+    var frRec = frLast && window.PraxisScreenCore ? window.PraxisScreenCore.recommendVerdict(frLast.items || []) : null;
+    var frLine = frLast ? h('p', { className: 'wb-cm-hint' },
+      'First review (' + D.fdate(frLast.completed_at) + (frLast.reviewer ? ', ' + frLast.reviewer : '') + '): ' +
+      frRec.redFlags.length + ' red flag(s), verdict ' +
+      ((window.PraxisScreenCore.VERDICTS[frLast.verdict] || {}).label || 'none') + '.') : null;
+
     var acceptBlock = h('div', { className: 'wb-cm-decision' },
       h('div', { className: 'wb-cm-decision-head' },
         h('button', { type: 'button', className: 'wb-cm-cond-check' + (report.accepted ? ' wb-cm-cond-check--on' : ''), role: 'checkbox', 'aria-checked': report.accepted ? 'true' : 'false', 'aria-label': 'Final report accepted', onClick: toggleAccepted }, report.accepted ? I.check(12) : ''),
@@ -224,6 +233,13 @@
         h('label', { className: 'wb-cm-focus-label', htmlFor: 'cm-accepted-by' }, 'Accepted by'),
         h('input', { id: 'cm-accepted-by', className: 'wb-input wb-cm-focus-input', type: 'text', placeholder: 'name and role of the accepting officer', defaultValue: report.accepted_by || '', 'aria-label': 'Accepted by', onBlur: function(e) { saveReport({ accepted_by: e.target.value }); } })));
 
+    // What the first review said about each question, echoed at endorsement.
+    var frAnsMap = {};
+    if (frLast) (frLast.items || []).forEach(function(it) {
+      if (it && it.source === 'eq' && it.ref != null && it.answer) frAnsMap[it.ref] = it.answer;
+    });
+    var FR_ANS_LABEL = { yes: 'answered', partial: 'partly answered', no: 'not answered', cant_tell: 'unclear' };
+
     var soeTable = rows.length ? h('div', { className: 'wb-table-container' },
       h('table', { className: 'wb-table wb-cm-table' },
         h('thead', null, h('tr', null,
@@ -235,7 +251,10 @@
           var ev = evMap[r.id] || {};
           return h('tr', { key: r.id },
             h('td', { className: 'wb-td--meta' }, r.number != null ? r.number : ''),
-            h('td', null, h('div', { className: 'wb-cm-eq' }, r.question || '(untitled question)')),
+            h('td', null,
+              h('div', { className: 'wb-cm-eq' }, r.question || '(untitled question)'),
+              frAnsMap[r.id] ? h('span', { className: 'wb-fr-chip ' + (frAnsMap[r.id] === 'yes' ? 'wb-fr-chip--found' : (frAnsMap[r.id] === 'partial' ? 'wb-fr-chip--weak' : 'wb-fr-chip--miss')) },
+                'First review: ' + FR_ANS_LABEL[frAnsMap[r.id]]) : null),
             h('td', { className: 'wb-th--center' }, h('div', { className: 'wb-cm-soe', role: 'group', 'aria-label': 'Strength of evidence for question ' + (r.number != null ? r.number : '') + ': ' + (r.question || 'untitled') },
               D.SOE.map(function(s) {
                 var on = ev.strength === s.v;
@@ -254,13 +273,15 @@
 
     // ---- empty state: nothing scheduled and nothing accepted yet ---------------------------
     var hasReport = !!(report.accepted || (report.evidence && report.evidence.length) || (report.accepted_by && String(report.accepted_by).trim()));
-    if (!deliverables.length && !hasReport) {
+    var hasScreens = !!((context.report_screens || []).length);
+    if (!deliverables.length && !hasReport && !hasScreens) {
       return h('section', { className: 'wb-cm-move', 'aria-label': 'Deliver' },
         moveHead('C3', 'Deliver', 'Hold delivery to schedule', 'Track every deliverable against its due date and review body, so slippage is visible while it can still be managed, then accept the final report.'),
         h('div', { className: 'wb-station-empty' },
           h('div', { className: 'wb-station-empty-title' }, 'Set up the delivery schedule'),
           h('div', { className: 'wb-station-empty-desc' }, 'Deliverables and their due dates are managed in C1 Contract. Add them there to track to on-time delivery. The final report is then accepted here, where the strength of evidence is rated per question.'),
-          h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: goContract }, 'Open C1 Contract'))));
+          h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: goContract }, 'Open C1 Contract'))),
+        window.FirstReview ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'commissioner' }) : null);
     }
 
     var acceptBadge = report.accepted ? 'Accepted' : (rows.length ? (ratedCount + ' / ' + rows.length + ' rated') : 'Pending');
@@ -275,8 +296,10 @@
         h('p', { className: 'wb-cm-panel-intro' }, 'Risks to timely, credible delivery, reported to the evaluation manager with a mitigation and an owner.'),
         riskTable(),
         h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addRisk }, I.plus(14), ' Add risk'))),
+      window.FirstReview ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'commissioner' }) : null,
       h(SectionCard, { title: 'Report acceptance', badge: acceptBadge },
         h('p', { className: 'wb-cm-panel-intro' }, 'This is where evidence exists. Rate the strength of evidence for each question at report acceptance (higher is stronger).'),
+        frLine,
         acceptBlock,
         soeTable));
   }
