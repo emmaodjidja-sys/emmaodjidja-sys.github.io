@@ -684,7 +684,16 @@
 .wb-fr-chip--found { background: var(--surface-muted); color: var(--text-secondary); border: 1px solid var(--border-strong); }
 .wb-fr-chip--weak { background: var(--amber-light); color: var(--amber-text); }
 .wb-fr-chip--miss { background: var(--red-light); color: var(--red-strong); }
-.wb-fr-chip-confirm { border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 3px; font-size: 0.7rem; padding: 0 6px; cursor: pointer; }
+/* Recording an answer off a machine signal is a consequential act, so the target
+   is sized for one: WCAG 2.2 SC 2.5.8 asks for at least 24x24 CSS px, and at
+   padding 0 6px with no min-height this button rendered about 15px tall. The chip
+   is an inline-flex row with align-items: center, so a taller child grows the chip
+   rather than breaking its layout. */
+.wb-fr-chip-confirm { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; min-width: 24px; border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 3px; font-size: 0.7rem; padding: 0 6px; cursor: pointer; }
 .wb-fr-ev { margin: 3px 0 0; font-size: 0.78rem; color: var(--text-secondary); }
 .wb-fr-ev-note { color: var(--text-tertiary); }
+/* The safeguarding caveat on the three ethics rows, which carry a chip but no
+   one-click confirm. It has to be VISIBLE text, not a tooltip: a caveat nobody
+   sees is not a caveat. Amber, not red: it is a prompt to read, not a finding. */
+.wb-fr-ev-caution { color: var(--amber-text); font-weight: 600; }
 .wb-fr-paste { width: 100%; min-height: 140px; font-family: inherit; font-size: 0.85rem; }

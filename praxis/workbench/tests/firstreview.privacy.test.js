@@ -159,4 +159,99 @@ H.assert(typeof item('eq:q1').machine_hits === 'number', 'an EQ signal persists 
 var timing = item('timing:window');
 H.assert(!timing || !timing.machine_signal, 'the computed timing item never receives a signal');
 
+// ---- no one-click confirm on the three ethics items --------------------------
+// A 'found' on ethics:consent means only that a keyword appeared. The line the
+// scan quotes as "Basis:" can be a table-of-contents entry ("3. Ethics and
+// consent ..... 21") or an annex title ("Annex 4: Consent forms"): it passes
+// isHeadingLine, and it LOOKS to a hurried reviewer like corroboration of a
+// critical, GBV-adjacent safeguarding claim. The chip and the basis line stay
+// (no information is withheld), but the shortcut that turns a keyword into a
+// recorded answer with one click does not, and the row says why. The gate is on
+// SOURCE, not severity: EQ items are critical too, and they keep their confirm
+// because their chip prints a denominator and its own caveat.
+var ETHICS_TEXT = { 'ethics:consent': 1, 'ethics:identifiable': 1, 'ethics:harm': 1 };
+var ethicsTexts = C.buildScreenItems(ctx, {}).filter(function(it) { return ETHICS_TEXT[it.id]; })
+  .map(function(it) { return it.text; });
+H.eq(ethicsTexts.length, 3, 'the checklist has the three ethics items');
+
+hookIdx = 0;
+var scanned = sandbox.FirstReview({ context: ctx, dispatch: dispatch, role: 'team' });
+var confirms = findAll(scanned, function(el) {
+  return el.type === 'button' && String(el.props.className || '').indexOf('wb-fr-chip-confirm') !== -1;
+});
+H.assert(confirms.length > 0, 'non-ethics items with a signal still offer a one-click confirm');
+H.assert(confirms.every(function(b) {
+  return ethicsTexts.every(function(t) { return String(b.props['aria-label'] || '').indexOf(t) === -1; });
+}), 'no ethics item offers a one-click confirm');
+
+// The chip and its basis line must survive: withholding the shortcut may not cost
+// the reviewer information.
+var chipText = findAll(scanned, function(el) {
+  return el.type === 'span' && String(el.props.className || '').indexOf('wb-fr-chip') !== -1
+    && String(el.props.className || '').indexOf('confirm') === -1;
+}).map(function(el) { return JSON.stringify(el.children); }).join(' ');
+H.assert(chipText.indexOf('Text scan') !== -1, 'signal chips still render');
+
+// The caveat has to be VISIBLE text, not a title tooltip. It rides with the chip,
+// so it appears on exactly those ethics rows a scan actually spoke about: only
+// ethics:consent has a SECTION_FAMILIES pattern, because no regex can judge
+// ethics:identifiable or ethics:harm and prescan deliberately gives them no key
+// rather than a fabricated one. A row with no chip has nothing to caveat.
+var CAVEAT = 'Safeguarding: the scan can only see the word. Read the section and answer this one yourself.';
+var caveats = findAll(scanned, function(el) {
+  return el.type === 'p' && (el.children || []).indexOf(CAVEAT) !== -1;
+});
+var signalledEthics = pr.items.filter(function(it) { return it.source === 'ethics' && it.machine_signal; });
+H.assert(signalledEthics.length > 0, 'at least one ethics row carries a signal, so the caveat has something to guard');
+H.eq(caveats.length, signalledEthics.length, 'every ethics row with a signal carries the safeguarding caveat as visible text');
+
+// ---- a completed run cannot be re-scanned ------------------------------------
+// A scan rewrites every item's machine_signal AND sets run.prescan. On a run
+// whose verdict is already signed (and, for a commissioner, already in the audit
+// log) that RETROACTIVELY rewrites the exported Method paragraph of a review that
+// was completed before any scan existed. So: no paste box on a completed run. To
+// scan, the reviewer must Reopen, which is an explicit act that clears the
+// verdict. Recorded here through the real flow, by clicking the verdict button.
+var proceed = findAll(scanned, function(el) {
+  return el.type === 'button' && el.children[0] === 'Proceed to full review';
+})[0];
+H.assert(!!proceed, 'an open run offers the verdict buttons');
+proceed.props.onClick();
+
+hookIdx = 0;
+var doneTree = sandbox.FirstReview({ context: ctx, dispatch: dispatch, role: 'team' });
+var doneRun = ctx.report_screens[0];
+H.assert(!!doneRun.completed_at, 'the run is completed');
+H.eq(doneRun.verdict, 'proceed', 'the verdict is recorded');
+H.eq(findAll(doneTree, function(el) {
+  return el.type === 'textarea' && String(el.props.className || '').indexOf('wb-fr-paste') !== -1;
+}).length, 0, 'a completed run renders no paste box');
+H.eq(findAll(doneTree, function(el) {
+  return el.type === 'button' && el.children[0] === 'Run pre-scan';
+}).length, 0, 'a completed run offers no Run pre-scan button');
+H.assert(findAll(doneTree, function(el) {
+  return el.type === 'button' && el.children[0] === 'Reopen';
+}).length === 1, 'the completed run can still be reopened, which is the way back to a scan');
+
+// ---- the short-text warning is not a green success toast ---------------------
+// "Is that the whole report?" is a caution. In a feature whose organising
+// principle is no false green, it may not arrive in the green of a clean save.
+var shortCtx = S.createEmptyContext();
+shortCtx.report_screens = [C.newScreenRun(shortCtx, 'team', null)];
+var shortDispatched = [];
+function shortDispatch(a) {
+  shortDispatched.push(a);
+  if (a.type === 'SAVE_STATION' && a.payload && a.payload.report_screens) shortCtx.report_screens = a.payload.report_screens;
+}
+hookState = []; hookIdx = 0;
+var shortTree = sandbox.FirstReview({ context: shortCtx, dispatch: shortDispatch, role: 'team' });
+var shortPaste = findAll(shortTree, function(el) {
+  return el.type === 'textarea' && String(el.props.className || '').indexOf('wb-fr-paste') !== -1;
+})[0];
+shortPaste.props.ref.current.value = 'Executive Summary\nA very short note, well under five hundred words.';
+findAll(shortTree, function(el) { return el.type === 'button' && el.children[0] === 'Run pre-scan'; })[0].props.onClick();
+var shortToast = shortDispatched.filter(function(a) { return a.type === 'SHOW_TOAST'; }).pop();
+H.assert(shortToast.message.indexOf('under 500 words') !== -1, 'a short paste warns that it may not be the whole report');
+H.eq(shortToast.toastType, 'warning', 'the short-text warning is a warning toast, not a green success');
+
 H.summary('firstreview.privacy.test');

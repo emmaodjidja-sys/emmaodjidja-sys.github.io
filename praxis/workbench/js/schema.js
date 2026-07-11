@@ -29,7 +29,9 @@
   //   1.7.0  adds the top-level report_screens list: First Review rapid red-flag
   //          screening runs over an incoming evaluation report, shared by the
   //          evaluator (Station 7 self-screen) and commissioner (C3) lenses.
-  //          Fully additive; a new top-level array needs no per-item backfill.
+  //          Additive, plus one scrub: items[].machine_evidence is forced to ''
+  //          so that a file written by any build that persisted pre-scan evidence
+  //          snippets (confidential report text) is cleaned at rest on load.
   var PRAXIS_VERSION = '1.7.0';
 
   // Navigation bounds (single source; consumed by router.js and context.js clamps).
@@ -242,6 +244,21 @@
       //     started_at, completed_at: null|iso, items: [see PraxisScreenCore],
       //     prescan: null|{ ran_at, chars, words }  (derived only, NEVER the pasted text),
       //     verdict: null|'return'|'reserved'|'proceed', verdict_recommended: same, note }
+      // Persisted item fields written by the optional paste-text pre-scan:
+      //   machine_signal  null|'found'|'weak'|'not_found'  the indicative signal for
+      //                   this item. A DETECTION (a keyword or heading matched), never
+      //                   an approval, and never an answer: only the reviewer's own
+      //                   click writes `answer`.
+      //   machine_hits    int|null   evaluation-question items only: how many of the
+      //   machine_total   int|null   question's distinctive terms matched, out of how
+      //                   many were extracted. Counts, never content: they exist so the
+      //                   UI and the reader can see how thin the basis is ("matched 3 of
+      //                   8 question terms"). A re-scan owns every signal and clears
+      //                   these on items the new scan says nothing about.
+      //   machine_evidence  ''       TOMBSTONE. The quoted line justifying a signal is
+      //                   body text of a confidential report and is NEVER persisted; it
+      //                   lives in session state only. The field is retained for shape
+      //                   stability and is scrubbed to '' by the 1.6.0 -> 1.7.0 migration.
       report_screens: [],
 
       staleness: { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false },
@@ -456,9 +473,25 @@
     // 1.6.0 -> 1.7.0: deep-default adds the top-level report_screens list (First
     // Review red-flag screens). New top-level array, so deep-default alone is
     // enough; the explicit guard is belt-and-braces against a non-array value.
+    //
+    // Then scrub item.machine_evidence to '' on every run. The shipped code never
+    // writes that field (evidence snippets live in ephemeral React state and die
+    // with the tab), but an INTERMEDIATE build did persist them, and validateContext
+    // preserves unknown keys, so a .praxis file written by such a build carries
+    // verbatim lines of a confidential report at rest. Scrubbing here makes the
+    // invariant true of the DATA, not merely of the write path: whatever produced
+    // the file, once it has been through this migration no evidence snippet
+    // survives in it. Defence in depth, and cheap: the field is a tombstone
+    // (PraxisScreenCore.mk) that nothing may ever populate again.
     '1.6.0': function(ctx) {
       var next = deepDefault(createEmptyContext(), ctx);
       if (!Array.isArray(next.report_screens)) next.report_screens = [];
+      next.report_screens.forEach(function(run) {
+        if (!run || typeof run !== 'object' || !Array.isArray(run.items)) return;
+        run.items.forEach(function(it) {
+          if (it && typeof it === 'object' && it.machine_evidence) it.machine_evidence = '';
+        });
+      });
       next.version = '1.7.0';
       return next;
     }

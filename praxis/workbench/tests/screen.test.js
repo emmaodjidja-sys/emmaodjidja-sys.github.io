@@ -180,7 +180,18 @@ H.assert(html.indexOf('Return for revision') !== -1, 'verdict label appears');
 H.assert(html.indexOf('Red flags') < html.indexOf('All screening items'), 'red flags section comes before the full table');
 H.assert(html.indexOf('machine') === -1 || html.indexOf('No machine signals were used') !== -1, 'prescan disclosure states machine signals were not used');
 xr.prescan = { ran_at: '2026-07-11T09:00:00.000Z', chars: 90000, words: 14000 };
-H.assert(X.buildHtml(xr, full).indexOf('Machine signals from a pasted-text pre-scan were used') !== -1, 'prescan disclosure flips when a prescan ran');
+// The Method paragraph is the only provenance statement that leaves the tool, so
+// it must be TRUE. A scan never writes an answer, so the note may not claim the
+// answers were machine "pre-fills" the reviewer merely "confirmed": it must say
+// the scan answered nothing.
+var scanned = X.buildHtml(xr, full);
+H.assert(scanned.indexOf('It answered nothing: every answer in this note was recorded by the reviewer.') !== -1,
+  'prescan disclosure says the scan answered nothing');
+H.assert(scanned.indexOf('pre-fill') === -1 && scanned.indexOf('confirmed by the reviewer') === -1,
+  'prescan disclosure never claims answers were machine pre-fills confirmed by the reviewer');
+H.assert(scanned.indexOf('The pasted text was discarded after scanning.') !== -1,
+  'prescan disclosure records that the pasted text was discarded');
+H.assert(scanned.indexOf('No machine signals were used') === -1, 'the no-prescan wording is not also printed');
 H.assert(X.buildHtml(xr, full).indexOf('First review') !== -1, 'titled as a first review');
 
 // ---- latestCompleted: selection by completed_at, not array position ---------

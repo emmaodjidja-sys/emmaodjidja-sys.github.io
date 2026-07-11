@@ -15,10 +15,16 @@
 
   function fdate(iso) { return window.CockpitData ? window.CockpitData.fdate(iso) : String(iso || '').slice(0, 10); }
 
-  function saveScreens(dispatch, nextList, msg) {
+  // toastType defaults to 'success' (the ordinary save), but a caller may ask for
+  // any type the toast component supports (info | success | warning | error). A
+  // save whose MESSAGE is a caution must not arrive in the green of a clean save:
+  // this feature's organising principle is that nothing shows green unless it is
+  // actually good, and a hardcoded 'success' broke that for the short-text
+  // warning ("the text was under 500 words. Is that the whole report?").
+  function saveScreens(dispatch, nextList, msg, toastType) {
     var AT = PraxisContext.ACTION_TYPES;
     dispatch({ type: AT.SAVE_STATION, stationId: 10, payload: { report_screens: nextList } });
-    if (msg) dispatch({ type: AT.SHOW_TOAST, message: msg, toastType: 'success' });
+    if (msg) dispatch({ type: AT.SHOW_TOAST, message: msg, toastType: toastType || 'success' });
   }
 
   var SEV_LABEL = { critical: 'Critical', major: 'Major' };
@@ -88,6 +94,24 @@
     var label = 'Text scan: ' + m.label;
     var isEq = item.machine_total != null;
     if (isEq) label += ', matched ' + item.machine_hits + ' of ' + item.machine_total + ' question terms';
+    // The three ethics items get the chip and the basis line (the reviewer loses
+    // no information) but NO one-click confirm, and they say why on the row.
+    // The gate is on the SOURCE, not on the severity: an EQ item is critical too,
+    // but its chip prints its denominator ("matched 3 of 8 question terms") and
+    // its own caveat, so the reviewer can see how thin the basis is. An ethics
+    // signal has no denominator to print. 'found' on ethics:consent means the
+    // regex saw the word, and the line it quotes as "Basis:" can be a
+    // table-of-contents entry ("3. Ethics and consent .......... 21") or an annex
+    // title ("Annex 4: Consent forms"), which passes isHeadingLine and LOOKS like
+    // corroboration of a critical, GBV-adjacent safeguarding claim. The Confirm
+    // button is only a shortcut for the Yes button already sitting in the same
+    // row, so removing it costs one mouse-move and removes the "the machine said
+    // yes, I agreed" anchor exactly where a false green does the most harm. The
+    // harm is symmetric: a one-click "Record No" off a machine MISS (a report
+    // that writes "assent" or "data safeguarding protocol", neither of which the
+    // regex covers) would write a critical red flag straight into the
+    // commissioner's one-click request-revision.
+    var isEthics = item.source === 'ethics';
     var basis = evidence
       ? 'Basis: ' + evidence
       : 'Basis: the scanned text was discarded, so the matching line is no longer available. Re-scan to see it.';
@@ -95,12 +119,15 @@
       h('span', { className: 'wb-fr-chip ' + m.cls,
         title: 'A keyword or heading match in the text you pasted. It reports what the words do, not whether the requirement is met.' },
         label,
-        !item.answer ? h('button', { type: 'button', className: 'wb-fr-chip-confirm',
+        (!item.answer && !isEthics) ? h('button', { type: 'button', className: 'wb-fr-chip-confirm',
           'aria-label': 'Record ' + C.ANSWER_LABELS[m.answer] + ' as my answer for: ' + item.text,
           onClick: function() { onConfirm(item.id, m.answer); } }, 'I checked. Record ' + C.ANSWER_LABELS[m.answer]) : null),
       h('p', { className: 'wb-fr-ev' }, basis,
         isEq ? h('span', { className: 'wb-fr-ev-note' }, ' The report mentions the topic. Whether it answers the question is yours to judge.') : null,
-        evidence ? h('span', { className: 'wb-fr-ev-note' }, ' Shown in this tab only; never saved.') : null));
+        evidence ? h('span', { className: 'wb-fr-ev-note' }, ' Shown in this tab only; never saved.') : null),
+      // Visible text, not a tooltip: a caveat nobody can see is not a caveat.
+      isEthics ? h('p', { className: 'wb-fr-ev wb-fr-ev-caution' },
+        'Safeguarding: the scan can only see the word. Read the section and answer this one yourself.') : null);
   }
 
   function itemRow(item, onAnswer, onNote, evidence) {
@@ -219,8 +246,8 @@
     var rec = run ? C.recommendVerdict(run.items) : null;
     var api = role === 'commissioner' ? window.CockpitSave.make(context, dispatch) : null;
 
-    function persist(nextRun, msg, log) {
-      saveScreens(dispatch, C.upsertRun(screens, nextRun), msg);
+    function persist(nextRun, msg, log, toastType) {
+      saveScreens(dispatch, C.upsertRun(screens, nextRun), msg, toastType);
       if (log && api) api.logEvent(log.action, log.detail);
     }
 
@@ -296,9 +323,13 @@
       // local that falls out of scope with this call.
       var el = pasteRef.current;
       if (el) el.value = '';
+      // A short paste is a CAUTION ("is that really the whole report?"), so it
+      // must not arrive in the green of a clean save. Only the ordinary scan is a
+      // success toast.
       persist(next, res.meta.short
         ? 'Scanned, but the text was under 500 words. Is that the whole report?'
-        : 'Scanned. Signals are keyword matches, not judgments. Answer each item yourself.');
+        : 'Scanned. Signals are keyword matches, not judgments. Answer each item yourself.',
+        null, res.meta.short ? 'warning' : 'success');
     }
 
     function runPrescan() {
@@ -478,9 +509,18 @@
       // (defaultValue), and item ids are stable across runs, so without a key
       // change React would reuse those DOM nodes and carry one run's typed text
       // into another. The key remounts the subtree when the run changes.
+      // NO paste box on a completed run. A scan rewrites every item's
+      // machine_signal and sets run.prescan; on a run whose verdict is already
+      // recorded (and, for a commissioner, already written to the audit log) that
+      // is a RETROACTIVE rewrite of the method disclosure. ScreenExport keys its
+      // Method paragraph off run.prescan, so the note exported for a review that
+      // was completed before any scan existed would flip from "No machine signals
+      // were used" to the machine-signals wording. To scan, the reviewer must
+      // Reopen the run first, which is an explicit act that clears completed_at
+      // and the verdict.
       body = h('div', { key: 'fr-run-' + run.id },
         h('p', { className: 'wb-cm-panel-intro' }, intro),
-        prescanBlock,
+        done ? null : prescanBlock,
         groups,
         flagPanel,
         ledger(run, context),

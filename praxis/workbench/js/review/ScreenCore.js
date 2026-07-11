@@ -36,6 +36,16 @@
       detail: 'Each recommendation is specific, prioritised and addressed to a named user or body.' }
   ];
 
+  // machine_evidence is a TOMBSTONE and must stay empty forever. An earlier build
+  // did persist the quoted line that justified a signal; that line is body text
+  // lifted verbatim from a confidential report (the worst case in the fixtures is
+  // "Consent was refused by <name>, age 14, of <village>"), and anything on an
+  // item flows into the run, into localStorage, into the .praxis file and into
+  // exports. Evidence now lives only in ephemeral React state, for this tab, for
+  // this session. The field is KEPT rather than deleted so that the persisted item
+  // shape is stable across the versions that had it, and so the 1.6.0 -> 1.7.0
+  // migration has a known key to scrub on data written by those builds. NOTHING
+  // may ever populate it: see tests/firstreview.privacy.test.js.
   function mk(base) {
     return {
       id: base.id, source: base.source, ref: base.ref || null,

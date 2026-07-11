@@ -66,4 +66,46 @@ var kept17 = S.migrate(withRun);
 H.eq(kept17.report_screens.length, 1, 'existing screen run preserved');
 H.eq(kept17.report_screens[0].reviewer, 'Jane', 'screen run fields preserved');
 
+// ---- 1.7.0: machine_evidence is scrubbed at rest ---------------------------
+// The shipped code never writes item.machine_evidence: a pre-scan's quoted line
+// is body text of a confidential report and lives only in ephemeral React state.
+// But an intermediate build DID persist it, and validateContext preserves unknown
+// keys, so a .praxis file from that build carries those lines at rest. The
+// migration scrubs the field, which makes the invariant true of the DATA and not
+// only of the write path. SECRET is the worst case, and is the same line the
+// privacy test uses.
+var SECRET = 'Consent was refused by Mary Akol, age 14, of Kotido village.';
+var dirty = S.createEmptyContext();
+dirty.version = '1.6.0';
+dirty.report_screens = [
+  { id: 'scr_dirty', role: 'commissioner', deliverable_id: null, reviewer: 'Jane',
+    started_at: '2026-07-01T00:00:00.000Z', completed_at: '2026-07-02T00:00:00.000Z',
+    items: [
+      { id: 'ethics:consent', source: 'ethics', severity: 'critical', text: 'Consent and data protection are described',
+        answer: 'yes', note: 'p.21', machine_signal: 'found', machine_evidence: SECRET },
+      { id: 'uneg:methods', source: 'uneg', severity: 'critical', text: 'The methodology is transparent',
+        answer: null, note: '', machine_signal: 'weak', machine_evidence: 'Mixed methods with a household survey (n=236).' },
+      { id: 'timing:window', source: 'timing', severity: 'critical', auto: true, text: 'The report is in time for the decision',
+        answer: 'yes', note: '', machine_signal: null, machine_evidence: '' }
+    ],
+    prescan: { ran_at: '2026-07-01T09:00:00.000Z', chars: 90000, words: 14000 },
+    verdict: 'proceed', verdict_recommended: 'proceed', note: '' },
+  // A malformed run must not throw the migration: items missing entirely.
+  { id: 'scr_bare', role: 'team' }
+];
+var clean = S.migrate(dirty);
+var cleanJson = JSON.stringify(clean);
+H.assert(cleanJson.indexOf(SECRET) === -1, 'migration scrubs the confidential evidence line out of the context');
+H.assert(cleanJson.indexOf('household survey') === -1, 'migration scrubs every evidence snippet, not just the worst one');
+var scrubbed = clean.report_screens[0];
+H.assert(scrubbed.items.every(function(it) { return it.machine_evidence === ''; }), 'every item comes out with machine_evidence emptied');
+H.eq(clean.report_screens.length, 2, 'a run with no items array does not break the migration');
+// The scrub takes the evidence and NOTHING else: signals, counts, answers and
+// notes are legitimate persisted state.
+H.eq(scrubbed.items[0].machine_signal, 'found', 'the machine signal survives the scrub');
+H.eq(scrubbed.items[0].answer, 'yes', "the reviewer's own answer survives the scrub");
+H.eq(scrubbed.items[0].note, 'p.21', "the reviewer's own note survives the scrub");
+H.eq(scrubbed.prescan.words, 14000, 'the prescan word count survives the scrub');
+H.eq(scrubbed.verdict, 'proceed', 'the recorded verdict survives the scrub');
+
 H.summary('migration.test');
