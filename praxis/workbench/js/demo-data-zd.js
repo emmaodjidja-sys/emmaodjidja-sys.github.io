@@ -1,11 +1,11 @@
 /**
  * demo-data-zd.js - Gavi Zero-Dose evaluation.
- * Regenerated at schema 1.4.0 (unified deliverables, commissioner cockpit).
+ * Regenerated at schema 1.6.0 (dated decision windows, gate lock, user status).
  */
 (function() {
   'use strict';
   window.PRAXIS_DEMO_ZD = {
-  "version": "1.4.0",
+  "version": "1.6.0",
   "schema": "praxis-workbench",
   "created_at": "2024-01-15T09:00:00.000Z",
   "updated_at": "2024-03-28T14:30:00.000Z",
@@ -2128,6 +2128,8 @@
       "oversight_body": "Evaluation Advisory Committee (EAC)",
       "evaluation_manager": "Central Evaluation Team (Head of Evaluation)",
       "decision_clock": "Gavi 6.0 design and 5.0/5.1 course-correction",
+      "decision_window_opens": "2025-06-01",
+      "decision_window_closes": "2025-12-10",
       "lifecycle_stage": "track",
       "purpose": "A real-time evaluation of Gavi's zero-dose agenda (IRMMA framework) to test relevance, coherence and early contribution, and to feed course-correction while the strategy is still being delivered.",
       "primary_use": "Course-correct Gavi 5.0/5.1 delivery and shape the Gavi 6.0 design so the Alliance reaches and sustains zero-dose and under-immunised children."
@@ -2140,6 +2142,10 @@
         "tier": "primary",
         "intended_use": "Decide Gavi 6.0 strategic direction and hold the Secretariat to account for the zero-dose agenda.",
         "decision_window": "Gavi 6.0 design decisions",
+        "window_opens": "2025-06-02",
+        "window_closes": "2025-12-10",
+        "status": "in_post",
+        "successor": "",
         "influence": "high",
         "interest": "medium",
         "eq_refs": [
@@ -2155,6 +2161,10 @@
         "tier": "primary",
         "intended_use": "Course-correct country support and grant operationalisation for zero-dose during 5.0/5.1.",
         "decision_window": "Ongoing 5.0/5.1 delivery",
+        "window_opens": "2023-01-09",
+        "window_closes": "2026-12-31",
+        "status": "left",
+        "successor": "Deputy Director, Country Programmes (incoming)",
         "influence": "high",
         "interest": "high",
         "eq_refs": [
@@ -2170,6 +2180,10 @@
         "tier": "primary",
         "intended_use": "Embed zero-dose indicators and a value-for-money lens into the Gavi 6.0 monitoring framework.",
         "decision_window": "Gavi 6.0 measurement design",
+        "window_opens": "2025-01-15",
+        "window_closes": "2025-10-31",
+        "status": "in_post",
+        "successor": "",
         "influence": "high",
         "interest": "high",
         "eq_refs": [
@@ -2185,6 +2199,10 @@
         "tier": "secondary",
         "intended_use": "Operationalise grants and prioritise zero-dose communities in national plans.",
         "decision_window": "Country grant cycles",
+        "window_opens": "2024-01-08",
+        "window_closes": "2026-12-31",
+        "status": "in_post",
+        "successor": "",
         "influence": "medium",
         "interest": "high",
         "eq_refs": [
@@ -2200,6 +2218,10 @@
         "tier": "secondary",
         "intended_use": "Align technical support and equity programming with the zero-dose agenda.",
         "decision_window": "Partner planning",
+        "window_opens": "2024-06-03",
+        "window_closes": "2026-06-30",
+        "status": "in_post",
+        "successor": "",
         "influence": "medium",
         "interest": "medium",
         "eq_refs": [
@@ -2214,6 +2236,10 @@
         "tier": "secondary",
         "intended_use": "Assure evaluation quality and the strength of evidence behind conclusions.",
         "decision_window": "EAC review points",
+        "window_opens": "2023-03-01",
+        "window_closes": "2026-09-30",
+        "status": "in_post",
+        "successor": "",
         "influence": "high",
         "interest": "high",
         "eq_refs": [
@@ -2226,6 +2252,49 @@
       "decision": "conditions",
       "decided_by": "Central Evaluation Team and EAC",
       "decided_at": "2023-02-20T10:00:00.000Z",
+      "eq_snapshot": [
+        {
+          "eq_id": "eq_1",
+          "number": 1,
+          "question": "How relevant is Gavi 5.0/5.1's focus on zero-dose children and missed communities to countries' needs?"
+        },
+        {
+          "eq_id": "eq_2",
+          "number": 2,
+          "question": "How relevant are the Gavi funding levers to the needs of countries with regard to reaching zero-dose children and missed communities?"
+        },
+        {
+          "eq_id": "eq_3",
+          "number": 3,
+          "question": "How coherent is Gavi's ZD agenda with the focus of other international and national actors?"
+        },
+        {
+          "eq_id": "eq_4",
+          "number": 4,
+          "question": "To what extent have Gavi 5.0/5.1 funding levers, processes and guidance enabled countries to focus their support towards reaching zero-dose children and missed communities?"
+        },
+        {
+          "eq_id": "eq_5",
+          "number": 5,
+          "question": "How have Gavi grants initiated under Gavi 4.0, with continued implementation in 5.0/5.1, contributed to delivery of the ZD agenda at country level?"
+        },
+        {
+          "eq_id": "eq_6",
+          "number": 6,
+          "question": "What impact have Gavi grants initiated in Gavi 5.0/5.1 had on delivery of the ZD agenda at country level, established through formal contribution analysis?"
+        },
+        {
+          "eq_id": "eq_7",
+          "number": 7,
+          "question": "To what extent are the theory of action and theory of change for the ZD agenda fit for purpose?"
+        },
+        {
+          "eq_id": "eq_8",
+          "number": 8,
+          "question": "To what extent, and how, is sustainability addressed in Gavi's approach to reaching zero-dose children and missed communities?"
+        }
+      ],
+      "snapped_at": "2023-02-20T10:00:00.000Z",
       "note": "Inception framework, ToC assumptions and an evaluability assessment per question reviewed with the Central Evaluation Team, the expert steering committee and the EAC. Approved to proceed, subject to the conditions below.",
       "conditions": [
         {
@@ -2303,7 +2372,7 @@
     "report_review": {
       "accepted": true,
       "accepted_by": "Evaluation Advisory Committee (EAC)",
-      "accepted_at": "2025-02-15",
+      "accepted_at": "2026-06-24",
       "evidence": [
         {
           "eq_id": "eq_1",

@@ -1,11 +1,11 @@
 /**
  * demo-data-gf.js - Global Fund ELO Malaria Sub-National Tailoring evaluation.
- * Regenerated at schema 1.4.0 (unified deliverables, commissioner cockpit).
+ * Regenerated at schema 1.6.0 (dated decision windows, gate lock, user status).
  */
 (function() {
   'use strict';
   window.PRAXIS_DEMO_GF = {
-  "version": "1.4.0",
+  "version": "1.6.0",
   "schema": "praxis-workbench",
   "created_at": "2025-03-18T09:00:00.000Z",
   "updated_at": "2025-03-18T09:00:00.000Z",
@@ -2608,6 +2608,8 @@
       "oversight_body": "Independent Evaluation Panel (IEP)",
       "evaluation_manager": "ELO Evaluation Manager",
       "decision_clock": "Grant Cycle 8 (GC8) funding requests",
+      "decision_window_opens": "2025-02-03",
+      "decision_window_closes": "2026-03-31",
       "lifecycle_stage": "track",
       "purpose": "Give the Global Fund Board, Strategy Committee and Secretariat an independent evaluation of data use and decision-making in sub-national tailoring (SNT) for optimal malaria programming, to inform tailored, locally appropriate approaches and related investment and grant design.",
       "primary_use": "Shape GC8 malaria funding-request design, and Secretariat processes and indicators, so investments better incentivise SNT and financial optimisation."
@@ -2620,6 +2622,10 @@
         "tier": "primary",
         "intended_use": "Endorse the strategic direction on SNT and evidence-based malaria investment, and hold the Secretariat to account for acting on the findings.",
         "decision_window": "Board decisions on the malaria portfolio",
+        "window_opens": "2025-04-01",
+        "window_closes": "2025-11-20",
+        "status": "in_post",
+        "successor": "",
         "influence": "high",
         "interest": "medium",
         "eq_refs": [
@@ -2635,6 +2641,10 @@
         "tier": "primary",
         "intended_use": "Steer strategic priorities on SNT and financial optimisation, and oversee that the evaluation is used.",
         "decision_window": "Strategy Committee cycle",
+        "window_opens": "2025-03-10",
+        "window_closes": "2025-07-15",
+        "status": "in_post",
+        "successor": "",
         "influence": "high",
         "interest": "high",
         "eq_refs": [
@@ -2651,6 +2661,10 @@
         "tier": "primary",
         "intended_use": "Improve grant design, processes and indicators to incentivise SNT and financial optimisation ahead of GC8.",
         "decision_window": "GC8 process and applicant guidance design",
+        "window_opens": "2025-02-03",
+        "window_closes": "2025-08-29",
+        "status": "in_post",
+        "successor": "",
         "influence": "high",
         "interest": "high",
         "eq_refs": [
@@ -2669,6 +2683,10 @@
         "tier": "secondary",
         "intended_use": "Strengthen sub-national data generation and use, and reflect SNT and stratification in their funding requests.",
         "decision_window": "GC8 funding requests",
+        "window_opens": "2025-06-02",
+        "window_closes": "2026-03-31",
+        "status": "in_post",
+        "successor": "",
         "influence": "medium",
         "interest": "high",
         "eq_refs": [
@@ -2687,6 +2705,10 @@
         "tier": "secondary",
         "intended_use": "Align technical assistance to SNT and allocative-efficiency modelling, and inform the WHO SNT guidance under development.",
         "decision_window": "TA planning for GC8",
+        "window_opens": "2025-09-01",
+        "window_closes": "2026-01-30",
+        "status": "in_post",
+        "successor": "",
         "influence": "medium",
         "interest": "medium",
         "eq_refs": [
@@ -2702,6 +2724,10 @@
         "tier": "secondary",
         "intended_use": "Use disaggregated analysis for epidemiological stratification and intervention-mix decisions in their districts.",
         "decision_window": "NMSP and sub-national planning",
+        "window_opens": "2025-03-03",
+        "window_closes": "2026-06-30",
+        "status": "in_post",
+        "successor": "",
         "influence": "low",
         "interest": "high",
         "eq_refs": [
@@ -2718,6 +2744,10 @@
         "tier": "secondary",
         "intended_use": "Inform the malaria funding landscape and complementary investment in SNT and data systems.",
         "decision_window": "Replenishment and co-financing",
+        "window_opens": "2025-06-01",
+        "window_closes": "2026-06-30",
+        "status": "in_post",
+        "successor": "",
         "influence": "medium",
         "interest": "low",
         "eq_refs": [
@@ -2730,6 +2760,139 @@
       "decision": "conditions",
       "decided_by": "ELO, Secretariat Teams, External Reference Group and IEP",
       "decided_at": "2024-06-28T10:00:00.000Z",
+      "eq_snapshot": [
+        {
+          "eq_id": "eq_1",
+          "number": 1,
+          "question": "How adequate are country sub-national systems in capturing and analysing malaria programming data to support better tailoring and programming of malaria responses, and what systems or data points are missing?"
+        },
+        {
+          "eq_id": "eq_2",
+          "number": 2,
+          "question": "What sub-national systems exist for capturing malaria burden data, intervention data and contextual information, and to what extent is community and private-sector data collected, disaggregated and integrated into routine systems?"
+        },
+        {
+          "eq_id": "eq_3",
+          "number": 3,
+          "question": "What input was obtained from sub-national level for malaria vaccine introduction in relevant countries, and how were focus coverage areas identified?"
+        },
+        {
+          "eq_id": "eq_4",
+          "number": 4,
+          "question": "What is the quality of sub-national data, are validation, verification and quality-improvement processes in place and by whom, and what is the right balance between funding LFAs for verification and supporting sub-national data review and use?"
+        },
+        {
+          "eq_id": "eq_5",
+          "number": 5,
+          "question": "To what extent are analytical capacities in place at national, regional and district levels to analyse data and inform SNT and programming?"
+        },
+        {
+          "eq_id": "eq_6",
+          "number": 6,
+          "question": "To what extent do population denominators inform SNT, and what data sources and methods are used for estimating denominators and service coverage at sub-national level?"
+        },
+        {
+          "eq_id": "eq_7",
+          "number": 7,
+          "question": "What is the level of awareness of the SNT approach at sub-national and national levels, and how well does disaggregated malaria analysis inform stratification, intervention-mix optimisation, monitoring and quality improvement?"
+        },
+        {
+          "eq_id": "eq_8",
+          "number": 8,
+          "question": "What are the challenges related to decision-making in SNT, and how much have Global Fund investments played a role in addressing these challenges?"
+        },
+        {
+          "eq_id": "eq_9",
+          "number": 9,
+          "question": "What is the degree of autonomy at sub-national level for SNT and malaria-programming decisions, and how adequate are the structures, mandates, guidelines and coordination processes between national and sub-national levels?"
+        },
+        {
+          "eq_id": "eq_10",
+          "number": 10,
+          "question": "What contextual factors, including political, legal, economic and social dimensions, affect decision-making at the sub-national level for SNT?"
+        },
+        {
+          "eq_id": "eq_11",
+          "number": 11,
+          "question": "What political-economy, governance and other factors differ between countries where sub-national decisions are made, in law and/or practice, and where they are not, and how can sub-national decision-making capacity be strengthened short and long term?"
+        },
+        {
+          "eq_id": "eq_12",
+          "number": 12,
+          "question": "What has been the role of Global Fund investments in supporting decision-making for SNT, who makes the key decisions, and what evidence do they use as the basis for decision-making?"
+        },
+        {
+          "eq_id": "eq_13",
+          "number": 13,
+          "question": "To what extent are the Global Fund malaria Funding Requests based on SNT?"
+        },
+        {
+          "eq_id": "eq_14",
+          "number": 14,
+          "question": "How much have the key concepts of SNT been reflected in malaria Funding Requests, and how can this be strengthened in GC8?"
+        },
+        {
+          "eq_id": "eq_15",
+          "number": 15,
+          "question": "To what extent do Funding Requests reflect stratification and tailoring of interventions at sub-national level, and why might an initial stratification not reflect the chosen interventions?"
+        },
+        {
+          "eq_id": "eq_16",
+          "number": 16,
+          "question": "What difficulties are faced by countries in moving from input-based to impact-based programming based on SNT, and how can Global Fund processes better incentivise Funding Requests based on SNT and financial optimisation?"
+        },
+        {
+          "eq_id": "eq_17",
+          "number": 17,
+          "question": "To what extent have countries requested and been provided resources and technical assistance for sustainable data compilation, stratification, intervention-mix identification, scenario-building and modelling?"
+        },
+        {
+          "eq_id": "eq_18",
+          "number": 18,
+          "question": "To what degree does the Global Fund promote generation and use of high-quality malaria data at national and sub-national level, and how could it better support countries to manage, analyse and use their sub-national data?"
+        },
+        {
+          "eq_id": "eq_19",
+          "number": 19,
+          "question": "To what extent has the Global Fund facilitated the creation, maintenance and use of sub-national data systems, including consolidated malaria data repositories (MDRs), and what sources do MDRs draw from?"
+        },
+        {
+          "eq_id": "eq_20",
+          "number": 20,
+          "question": "Are the Global Fund monitoring frameworks (PUDRs, DHIS district dashboards and other tools) built in a way that supports a sub-nationally tailored response and encourages data use and action?"
+        },
+        {
+          "eq_id": "eq_21",
+          "number": 21,
+          "question": "Do current indicators facilitate and incentivise the Secretariat and countries to work towards SNT and financial optimisation, and are the indicators adaptable and usable by sub-national teams at appropriate granularity and periodicity?"
+        },
+        {
+          "eq_id": "eq_22",
+          "number": 22,
+          "question": "What is the role of country stakeholders, including partners, TA providers and in-country research institutions, and national structures and strategies in facilitating SNT, and how do partners engage with the country?"
+        },
+        {
+          "eq_id": "eq_23",
+          "number": 23,
+          "question": "To what extent has sub-national evidence informed National Malaria Strategic Plans, National Health Strategic Plans and sub-national plans, and how does the costing of NMSPs consider sub-national needs and use SNT to optimise financial requests?"
+        },
+        {
+          "eq_id": "eq_24",
+          "number": 24,
+          "question": "What climate-change and environmental-management structures and policies are in place at national and sub-national level, and to what extent have malaria stakeholders engaged with climate-change, environmental-management and disaster-risk-reduction programmes?"
+        },
+        {
+          "eq_id": "eq_25",
+          "number": 25,
+          "question": "How adequate is the guidance and activity level of national reference groups (M&E working group and other relevant technical groups) with regard to SNT and financial optimisation, and how can it be improved?"
+        },
+        {
+          "eq_id": "eq_26",
+          "number": 26,
+          "question": "To what extent does technical assistance focus on SNT, and how can the TA scope be expanded to focus on SNT and related financial optimisation in preparation for GC8 as well as systematic local capacity-building?"
+        }
+      ],
+      "snapped_at": "2024-06-28T10:00:00.000Z",
       "note": "Inception report (max 20 pages) reviewed by the ELO, Secretariat Teams, the External Reference Group and the IEP before country-insight fieldwork. Evaluation framework, data-collection tools and country selection (5-7 of the 11 HBHI countries) confirmed.",
       "conditions": [
         {
