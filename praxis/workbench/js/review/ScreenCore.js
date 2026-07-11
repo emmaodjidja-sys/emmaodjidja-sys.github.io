@@ -300,8 +300,179 @@
     return Object.assign({}, run, { items: items });
   }
 
+  // ---- phase 2: deterministic paste-text prescan ---------------------------
+  // Indicative machine signals only. A regex can see that a line reading
+  // "Limitations" exists; it cannot see whether the limitations disclosed are
+  // the ones that matter. So every signal must be confirmed by the reviewer
+  // before it becomes an answer, and items whose truth no regex can judge
+  // (uneg:conclusions, ethics:identifiable, ethics:harm, design:fidelity,
+  // timing:window) get NO key here rather than a fabricated one.
+  //
+  // PRIVACY: the pasted report is NEVER stored. prescan takes the text as an
+  // argument, derives signals from it, and returns only those signals plus
+  // counts. The only body text that survives is a bounded evidence snippet
+  // (<= EVIDENCE_MAX_CHARS + 3 chars) per signal, so callers can persist the
+  // whole result without persisting the report.
+  var MAX_PRESCAN_CHARS = 1500000;   // refuse pastes above this; guards the O(n) scans
+  var SHORT_WORDS = 500;             // below this a "report" is probably a fragment
+  var EVIDENCE_MAX_CHARS = 150;      // hard cap on any snippet of body text we keep
+  var HEADING_MAX_CHARS = 90;        // a line longer than this reads as prose, not a heading
+  var EQ_TOKEN_CAP = 10;             // distinctive terms taken from one evaluation question
+  var EQ_FOUND_RATIO = 0.5;          // >= half the question's terms present -> found
+  var EQ_WEAK_RATIO = 0.25;          // >= a quarter -> weak
+  var EQ_EVIDENCE_MIN_HITS = 2;      // terms on one line before we quote that line
+  var TITLE_TOKEN_CAP = 6;           // distinctive terms taken from one agreed section title
+  var TITLE_MATCH_RATIO = 0.6;       // share of a title's terms needed on one line to call it present
+  var STRUCTURE_WEAK_FRAC = 0.5;     // share of titles present before a partial outline is weak
+  var SAMPLE_TOLERANCE = 0.1;        // achieved n within 10 percent of planned n counts as met
+
+  // EN + FR function words and evaluation boilerplate, diacritics pre-stripped.
+  // These are stripped from questions and titles so that matching turns on the
+  // distinctive terms ("vaccination", "karamoja") and not on "the" or "dans".
+  var STOPWORDS = {};
+  ('about after against all and any are been before being best between both but can could did does doing down during each evaluation extent few for from further had has have having how into its itself more most not now off once only other our out over own programme program same should some such than that the their theirs them then there these they this those through under until very was were what when where which while who whom why will with would you your ' +
+   'ainsi apres aussi autre autres avant avec cela celle celles cette ceux comment dans des elle elles entre etre ils leur leurs mais meme memes mesure notre nous ont par pas peut plus pour quel quelle quelles quels qui quoi sans ses son sont sur tous tout toute toutes une vos votre vous')
+    .split(/\s+/).forEach(function(w) { if (w) STOPWORDS[w] = true; });
+
+  // Lowercase and strip combining marks (NFD then drop U+0300..U+036F), so that
+  // an accented French heading and the same word typed without accents both
+  // match one pattern that is itself written without accents.
+  function normText(s) {
+    return String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+  function tokensOf(s, cap) {
+    var out = [], seen = {};
+    normText(s).split(/[^a-z0-9]+/).forEach(function(t) {
+      if (t.length < 4 || STOPWORDS[t] || seen[t]) return;
+      seen[t] = true;
+      if (out.length < (cap || EQ_TOKEN_CAP)) out.push(t);
+    });
+    return out;
+  }
+  function snippet(line) {
+    var s = String(line || '').trim();
+    return s.length > EVIDENCE_MAX_CHARS ? s.slice(0, EVIDENCE_MAX_CHARS - 3) + '...' : s;
+  }
+
+  var SECTION_FAMILIES = {
+    'uneg:exec': /(executive\s+summary|resume\s+(executif|analytique)|sommaire\s+executif)/,
+    'uneg:methods': /(methodolog|methodes?\b|approche\s+et\s+methodes)/,
+    'uneg:limitations': /(limitation|\blimites\b)/,
+    'uneg:recommendations': /(recommendation|recommandation)/,
+    'ethics:consent': /(ethic|ethique|consent|consentement|safeguard|protection\s+des\s+donnees|do\s+no\s+harm)/
+  };
+
+  // A heading is a short line that matches the family and does not read like a
+  // sentence. A body-text mention anywhere else degrades to a weak signal.
+  function isHeadingLine(rawLine) {
+    var t = String(rawLine || '').trim();
+    if (!t || t.length > HEADING_MAX_CHARS) return false;
+    return !/[.!?]$/.test(t);
+  }
+
+  // Count how many of `toks` appear in one normalised line.
+  function hitsInLine(normLine, toks) {
+    var c = 0;
+    toks.forEach(function(t) { if (normLine.indexOf(t) !== -1) c++; });
+    return c;
+  }
+
+  function prescan(rawText, context) {
+    var text = String(rawText == null ? '' : rawText);
+    if (text.length > MAX_PRESCAN_CHARS) return { ok: false, error: 'too_long' };
+    var lines = text.split(/\r?\n/);
+    var norm = normText(text);
+    var normLines = lines.map(normText);
+    var words = (norm.match(/[a-z0-9]+/g) || []).length;
+    var signals = {};
+
+    // Section families -> heading found / body mention weak / absent.
+    Object.keys(SECTION_FAMILIES).forEach(function(itemId) {
+      var re = SECTION_FAMILIES[itemId];
+      var headingIdx = -1;
+      for (var i = 0; i < normLines.length; i++) {
+        var stripped = normLines[i].replace(/^[0-9ivx]+[\s.):-]+/, '');
+        if (re.test(stripped) && isHeadingLine(lines[i])) { headingIdx = i; break; }
+      }
+      if (headingIdx >= 0) {
+        signals[itemId] = { signal: 'found', evidence: snippet(lines[headingIdx]) };
+      } else if (re.test(norm)) {
+        signals[itemId] = { signal: 'weak', evidence: 'Mentioned in body text but no section heading detected.' };
+      } else {
+        signals[itemId] = { signal: 'not_found', evidence: 'No matching heading or mention detected.' };
+      }
+    });
+
+    // Per-EQ coverage: distinctive question terms found in the text. This says
+    // the report TALKS ABOUT the question, never that it ANSWERS it.
+    var eq = eqRows(context || {});
+    eq.rows.forEach(function(r) {
+      var toks = tokensOf(r.question, EQ_TOKEN_CAP);
+      if (!toks.length) return;
+      var hits = hitsInLine(norm, toks);
+      var ratio = hits / toks.length;
+      var sig = ratio >= EQ_FOUND_RATIO ? 'found' : (ratio >= EQ_WEAK_RATIO ? 'weak' : 'not_found');
+      var ev = 'Matched ' + hits + ' of ' + toks.length + ' question terms.';
+      if (sig !== 'not_found') {
+        for (var i = 0; i < normLines.length; i++) {
+          if (hitsInLine(normLines[i], toks) >= EQ_EVIDENCE_MIN_HITS) { ev = snippet(lines[i]); break; }
+        }
+      }
+      signals['eq:' + r.eq_id] = { signal: sig, evidence: ev };
+    });
+
+    // Agreed structure: each agreed title matched against one line. A title with
+    // no distinctive terms of its own cannot be judged either way, so it is left
+    // out of the denominator rather than counted as present.
+    var sections = ((context || {}).report_structure || {}).sections || [];
+    var titles = sections.map(function(s) { return (s && s.title) || ''; }).filter(Boolean);
+    if (titles.length) {
+      var judged = 0;
+      var missing = [];
+      titles.forEach(function(title) {
+        var tw = tokensOf(title, TITLE_TOKEN_CAP);
+        if (!tw.length) return;
+        judged++;
+        var need = Math.max(1, Math.ceil(tw.length * TITLE_MATCH_RATIO));
+        var seen = false;
+        for (var i = 0; i < normLines.length && !seen; i++) {
+          if (hitsInLine(normLines[i], tw) >= need) seen = true;
+        }
+        if (!seen) missing.push(title);
+      });
+      if (judged) {
+        var frac = (judged - missing.length) / judged;
+        signals['structure:agreed'] = {
+          signal: !missing.length ? 'found' : (frac >= STRUCTURE_WEAK_FRAC ? 'weak' : 'not_found'),
+          evidence: missing.length
+            ? 'Missing: ' + snippet(missing.join('; '))
+            : 'All agreed section titles detected.'
+        };
+      }
+    }
+
+    // Sample numbers: n= style figures against the planned n, within tolerance.
+    var plannedN = parseInt((((context || {}).sample_parameters || {}).result || {}).primary, 10);
+    if (!isNaN(plannedN) && plannedN > 0) {
+      var found = [], m;
+      var reN = /\bn\s*=\s*([0-9][0-9,]{0,9})/gi;
+      while ((m = reN.exec(text)) !== null) found.push(parseInt(m[1].replace(/,/g, ''), 10));
+      var close = found.filter(function(n) { return Math.abs(n - plannedN) / plannedN <= SAMPLE_TOLERANCE; });
+      signals['sample:achieved'] = {
+        signal: close.length ? 'found' : (found.length ? 'weak' : 'not_found'),
+        evidence: found.length
+          ? 'Sample figures found: ' + found.slice(0, 5).join(', ') + '. Planned: ' + plannedN + '.'
+          : 'No n= style sample figure detected. Planned: ' + plannedN + '.'
+      };
+    }
+
+    return { ok: true, signals: signals, meta: { chars: text.length, words: words, short: words < SHORT_WORDS } };
+  }
+
   window.PraxisScreenCore = {
     ANSWER_LABELS: ANSWER_LABELS,
+    MAX_PRESCAN_CHARS: MAX_PRESCAN_CHARS,
+    prescan: prescan,
     VERDICTS: VERDICTS,
     eqRows: eqRows,
     buildScreenItems: buildScreenItems,
