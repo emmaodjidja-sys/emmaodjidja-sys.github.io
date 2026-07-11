@@ -198,10 +198,81 @@
     return items;
   }
 
+  // Red flag: a critical item answered no or cannot-tell, or a major item
+  // answered no. Amber: any partial, or a major item answered cannot-tell.
+  function computeRedFlags(items) {
+    return (items || []).filter(function(it) {
+      if (!it || !it.answer) return false;
+      if (it.severity === 'critical') return it.answer === 'no' || it.answer === 'cant_tell';
+      return it.answer === 'no';
+    });
+  }
+  function computeAmbers(items) {
+    return (items || []).filter(function(it) {
+      if (!it || !it.answer) return false;
+      if (it.answer === 'partial') return true;
+      return it.severity === 'major' && it.answer === 'cant_tell';
+    });
+  }
+
+  // The recommendation only. The reviewer records the actual verdict; the tool
+  // never decides. Null verdict = clean so far but not every item is answered.
+  function recommendVerdict(items) {
+    var redFlags = computeRedFlags(items);
+    var ambers = computeAmbers(items);
+    var unanswered = (items || []).filter(function(it) { return it && !it.auto && !it.answer; });
+    var verdict = null;
+    if (redFlags.length) verdict = 'return';
+    else if (ambers.length) verdict = 'reserved';
+    else if (!unanswered.length) verdict = 'proceed';
+    return { verdict: verdict, redFlags: redFlags, ambers: ambers, unanswered: unanswered };
+  }
+
+  function newScreenRun(context, role, deliverable, todayIso) {
+    return {
+      id: U.uid('scr_'),
+      role: role === 'commissioner' ? 'commissioner' : 'team',
+      deliverable_id: deliverable && deliverable.id ? deliverable.id : null,
+      reviewer: '',
+      started_at: new Date().toISOString(),
+      completed_at: null,
+      items: buildScreenItems(context, { deliverable: deliverable || null, todayIso: todayIso }),
+      prescan: null,
+      verdict: null,
+      verdict_recommended: null,
+      note: ''
+    };
+  }
+
+  function upsertRun(list, run) {
+    var found = false;
+    var next = (list || []).map(function(r) { if (r && r.id === run.id) { found = true; return run; } return r; });
+    if (!found) next = next.concat([run]);
+    return next;
+  }
+
+  // Immutably patch one item in a run. The timing item is computed, so its
+  // answer cannot be hand-edited; its note can.
+  function setItemAnswer(run, itemId, patch) {
+    var items = (run.items || []).map(function(it) {
+      if (!it || it.id !== itemId) return it;
+      var p = Object.assign({}, patch);
+      if (it.auto && 'answer' in p) delete p.answer;
+      return Object.assign({}, it, p);
+    });
+    return Object.assign({}, run, { items: items });
+  }
+
   window.PraxisScreenCore = {
     ANSWER_LABELS: ANSWER_LABELS,
     VERDICTS: VERDICTS,
     eqRows: eqRows,
-    buildScreenItems: buildScreenItems
+    buildScreenItems: buildScreenItems,
+    computeRedFlags: computeRedFlags,
+    computeAmbers: computeAmbers,
+    recommendVerdict: recommendVerdict,
+    newScreenRun: newScreenRun,
+    upsertRun: upsertRun,
+    setItemAnswer: setItemAnswer
   };
 })();

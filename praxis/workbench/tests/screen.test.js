@@ -100,4 +100,52 @@ items.forEach(function(it) {
   H.assert(it.machine_signal === null, it.id + ' starts with no machine signal');
 });
 
+// ---- red flags, ambers, verdict --------------------------------------------
+function it(id, sev, answer, auto) {
+  return { id: id, source: 'uneg', ref: null, severity: sev, text: id, detail: '',
+    auto: !!auto, answer: answer === undefined ? null : answer, note: '', machine_signal: null, machine_evidence: '' };
+}
+var mix = [
+  it('a', 'critical', 'yes'), it('b', 'critical', 'no'), it('c', 'critical', 'cant_tell'),
+  it('d', 'major', 'no'), it('e', 'major', 'cant_tell'), it('f', 'major', 'partial'),
+  it('g', 'critical', 'partial'), it('h', 'major', 'yes')
+];
+var flags = C.computeRedFlags(mix);
+H.eq(flags.length, 3, 'red flags: critical no, critical cant_tell, major no');
+H.eq(flags.map(function(x) { return x.id; }).join(','), 'b,c,d', 'red flag identity');
+var ambers = C.computeAmbers(mix);
+H.eq(ambers.map(function(x) { return x.id; }).join(','), 'e,f,g', 'ambers: major cant_tell plus any partial');
+
+H.eq(C.recommendVerdict(mix).verdict, 'return', 'any red flag recommends return');
+var soft = [it('a', 'critical', 'yes'), it('f', 'major', 'partial')];
+H.eq(C.recommendVerdict(soft).verdict, 'reserved', 'ambers only recommends reserved');
+var clean = [it('a', 'critical', 'yes'), it('h', 'major', 'yes')];
+H.eq(C.recommendVerdict(clean).verdict, 'proceed', 'clean and complete recommends proceed');
+var incomplete = [it('a', 'critical', 'yes'), it('x', 'major', null)];
+H.eq(C.recommendVerdict(incomplete).verdict, null, 'clean but incomplete recommends nothing yet');
+H.eq(C.recommendVerdict(incomplete).unanswered.length, 1, 'unanswered surfaced');
+var autoDone = [it('a', 'critical', 'yes'), it('t', 'critical', 'yes', true)];
+H.eq(C.recommendVerdict(autoDone).verdict, 'proceed', 'auto items never count as unanswered');
+
+// ---- run lifecycle -----------------------------------------------------------
+var run = C.newScreenRun(full, 'commissioner', { id: 'del_9', submitted_at: '2026-07-10T00:00:00.000Z' }, '2026-07-11');
+H.eq(run.role, 'commissioner', 'run role');
+H.eq(run.deliverable_id, 'del_9', 'run linked to deliverable');
+H.assert(run.items.length > 5, 'run carries generated items');
+H.eq(run.verdict, null, 'run starts with no verdict');
+H.eq(run.prescan, null, 'run starts with no prescan');
+H.assert(typeof run.id === 'string' && run.id.indexOf('scr_') === 0, 'run id prefixed');
+
+var run2 = C.setItemAnswer(run, run.items[0].id, { answer: 'no', note: 'missing' });
+H.eq(run2.items[0].answer, 'no', 'setItemAnswer patches the item');
+H.eq(run.items[0].answer, null, 'setItemAnswer does not mutate the original');
+H.eq(run2.items[0].note, 'missing', 'note patched too');
+
+var list = C.upsertRun([], run);
+H.eq(list.length, 1, 'upsert appends new run');
+var list2 = C.upsertRun(list, run2);
+H.eq(list2.length, 1, 'upsert replaces by id');
+H.eq(list2[0].items[0].answer, 'no', 'replacement carries the edit');
+H.eq(list.length, 1, 'upsert does not mutate the input list');
+
 H.summary('screen.test');
