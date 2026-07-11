@@ -656,6 +656,14 @@
 .wb-fr-auto-ans--no { color: var(--red-strong); }
 .wb-fr-flags { border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
 .wb-fr-flags--hot { border-color: var(--red); background: var(--red-light); }
+/* On the hot panel the canvas is --red-light (#FEE2E2), not --surface. The small
+   text inside it (.wb-fr-ledger-title at 12.8px, .wb-cm-hint at 12px) defaults to
+   --text-tertiary, which measures only 3.90:1 there and fails WCAG AA. Re-ink it
+   to --red-strong (5.30:1), the same tint/ink pairing used by .wb-cm-over, the
+   .wb-badge-* set and .wb-fr-sev--critical. The non-hot panel is untouched:
+   --text-tertiary on --surface stays at 4.76:1. */
+.wb-fr-flags--hot .wb-fr-ledger-title,
+.wb-fr-flags--hot .wb-cm-hint { color: var(--red-strong); }
 .wb-fr-flag-list { margin: 6px 0; padding-left: 18px; color: var(--red-strong); font-weight: 600; }
 .wb-fr-reco { font-size: 0.85rem; color: var(--text-secondary); margin: 6px 0 0; }
 .wb-fr-mark { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; color: #fff; font-size: 0.72rem; font-weight: 700; align-items: center; justify-content: center; }

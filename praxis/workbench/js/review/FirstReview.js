@@ -158,16 +158,23 @@
     // Every hook is called here, unconditionally, before any branch. The render
     // below forks on whether a run is active, so nothing hook-shaped may move
     // below that fork.
+    // Which view is on screen is two independent facts, not one: the run the
+    // reviewer picked (selectedId), and whether they explicitly asked for the list
+    // (listView). Deriving the list from selectedId === null alone conflated them:
+    // 'Back to list' was a no-op while any run was open, and recording a verdict
+    // completed the run out from under a reviewer who had not selected it in this
+    // session, snapping them to the list before they could act on it.
     var sel = React.useState(null), selectedId = sel[0], setSelectedId = sel[1];
+    var lv = React.useState(false), listView = lv[0], setListView = lv[1];
     // Lazy initialiser: the default deliverable is only resolved on first render.
     var delSel = React.useState(function() { return defaultDeliverableId(deliverables); }),
         delId = delSel[0], setDelId = delSel[1];
 
-    // Active run: newest incomplete run for this role, unless the reviewer
-    // switched to a past run explicitly.
-    var openIncomplete = null;
-    for (var i = mine.length - 1; i >= 0; i--) { if (!mine[i].completed_at) { openIncomplete = mine[i].id; break; } }
-    var activeId = selectedId || openIncomplete;
+    // Runs of this role still open. The newest is where the panel lands when the
+    // reviewer has selected nothing this session (the page-reload path).
+    var openRuns = mine.filter(function(r) { return !r.completed_at; });
+    var openIncomplete = openRuns.length ? openRuns[openRuns.length - 1].id : null;
+    var activeId = listView ? null : (selectedId || openIncomplete);
     var run = null;
     for (var j = 0; j < screens.length; j++) { if (screens[j].id === activeId) { run = screens[j]; break; } }
 
@@ -179,11 +186,16 @@
       if (log && api) api.logEvent(log.action, log.detail);
     }
 
+    // The only two ways to move between the views. Every entry into the run view
+    // names its run, so no later state change can pull the run out from under it.
+    function openRun(id) { setSelectedId(id); setListView(false); }
+    function backToList() { setSelectedId(null); setListView(true); }
+
     function startRun() {
       var del = null;
       for (var m = 0; m < deliverables.length; m++) { if (deliverables[m].id === delId) { del = deliverables[m]; break; } }
       var fresh = C.newScreenRun(context, role, role === 'commissioner' ? del : null);
-      setSelectedId(fresh.id);
+      openRun(fresh.id);
       persist(fresh, 'First review started');
     }
 
@@ -195,11 +207,18 @@
         verdict: v, verdict_recommended: rec.verdict,
         completed_at: new Date().toISOString()
       });
+      // Pin the run before completing it. completed_at drops it out of openRuns,
+      // so a reviewer who arrived by the reload path (selectedId still null) would
+      // otherwise be thrown to the list on this very render: never seeing the
+      // recorded verdict, and never reaching 'Request revision on the deliverable',
+      // which is the whole point of a return verdict.
+      openRun(run.id);
       persist(next, 'First review verdict recorded',
         role === 'commissioner' ? { action: 'first_review',
           detail: 'First review verdict: ' + C.VERDICTS[v].label + ' with ' + rec.redFlags.length + ' red flag(s)' } : null);
     }
     function reopen() {
+      openRun(run.id);
       persist(Object.assign({}, run, { verdict: null, completed_at: null }), 'First review reopened');
     }
 
@@ -213,7 +232,9 @@
     // ---- render ------------------------------------------------------------
     var badge;
     var completedMine = mine.filter(function(r) { return r.completed_at; });
-    if (run && !run.completed_at) badge = 'In progress';
+    // Reads the runs, not the current view: the list is now reachable while a run
+    // is open, and the badge should still say so.
+    if (openRuns.length) badge = 'In progress';
     else if (completedMine.length) badge = completedMine.length + ' completed';
     else badge = 'Not run';
 
@@ -230,9 +251,24 @@
           ? 'Team self-screen: run ' + fdate(teamRuns[teamRuns.length - 1].completed_at) + '.'
           : 'Team self-screen: not run.');
       }
+      // Runs still open are not in 'Past reviews' (that list is completed runs), so
+      // without this block a reviewer who came back to the list mid-run would have
+      // no way back into it.
+      var resume = openRuns.length ? h('div', { className: 'wb-fr-past' },
+        h('h4', { className: 'wb-fr-ledger-title' }, 'In progress'),
+        openRuns.map(function(r) {
+          var left = C.recommendVerdict(r.items).unanswered.length;
+          return h('div', { className: 'wb-fr-past-row', key: r.id },
+            h('span', null, 'Started ' + fdate(r.started_at) + (r.reviewer ? ', ' + r.reviewer : '')),
+            h('span', { className: 'wb-cm-muted' }, left + ' item(s) still to answer'),
+            h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline',
+              onClick: function() { openRun(r.id); } }, 'Continue'));
+        })) : null;
+
       body = h('div', { key: 'fr-list' },
         h('p', { className: 'wb-cm-panel-intro' }, intro),
         teamNote,
+        resume,
         role === 'commissioner' && deliverables.length ? h('div', { className: 'wb-fr-start-row' },
           h('label', { className: 'wb-cm-focus-label', htmlFor: 'fr-del' }, 'Screen which deliverable'),
           h('select', { id: 'fr-del', className: 'wb-input wb-cm-select', value: delId, onChange: function(e) { setDelId(e.target.value); } },
@@ -251,7 +287,7 @@
               h('span', null, fdate(r.completed_at) + (r.reviewer ? ', ' + r.reviewer : '')),
               v ? h('span', { className: 'wb-badge ' + v.badge }, v.label) : null,
               h('span', { className: 'wb-cm-muted' }, rrec.redFlags.length + ' red flag(s)'),
-              h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { setSelectedId(r.id); } }, 'Open'),
+              h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { openRun(r.id); } }, 'Open'),
               h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { window.PraxisScreenExport.download(r, context); } }, 'Export'));
           })) : null);
     } else {
@@ -300,7 +336,7 @@
           : null,
         h('div', { className: 'wb-cm-add' },
           h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { window.PraxisScreenExport.download(run, context); } }, 'Export review note'),
-          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: function() { setSelectedId(null); } }, 'Back to list')));
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', onClick: backToList }, 'Back to list')));
 
       // Keyed by run id: the reviewer and note inputs are uncontrolled
       // (defaultValue), and item ids are stable across runs, so without a key
