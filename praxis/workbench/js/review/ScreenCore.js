@@ -321,6 +321,8 @@
   var EQ_FOUND_RATIO = 0.5;          // >= half the question's terms present -> found
   var EQ_WEAK_RATIO = 0.25;          // >= a quarter -> weak
   var EQ_EVIDENCE_MIN_HITS = 2;      // terms on one line before we quote that line
+  var EQ_MIN_TERMS = 3;              // a question with fewer distinctive terms cannot reach found
+  var EQ_MIN_FOUND_HITS = 2;         // and one term, however distinctive, is never enough
   var TITLE_TOKEN_CAP = 6;           // distinctive terms taken from one agreed section title
   var TITLE_MATCH_RATIO = 0.6;       // share of a title's terms needed on one line to call it present
   var STRUCTURE_WEAK_FRAC = 0.5;     // share of titles present before a partial outline is weak
@@ -354,10 +356,17 @@
     return s.length > EVIDENCE_MAX_CHARS ? s.slice(0, EVIDENCE_MAX_CHARS - 3) + '...' : s;
   }
 
+  // Patterns are tested against NORMALISED text (lowercased, diacritics stripped),
+  // so they are written without accents and match "Resume", "Resume" and "RESUME"
+  // alike. Each family carries the EN and the FR heading vocabulary side by side:
+  // methodolog* covers "Methodology" and "Methodologie" and "Demarche
+  // methodologique"; \bmethods?\b covers the bare English "Methods", "Evaluation
+  // Methods", "Approach and Methods" and "Data collection methods"; \bmethodes?\b
+  // covers the French "Methode(s)" and "Approche et methodes".
   var SECTION_FAMILIES = {
-    'uneg:exec': /(executive\s+summary|resume\s+(executif|analytique)|sommaire\s+executif)/,
-    'uneg:methods': /(methodolog|methodes?\b|approche\s+et\s+methodes)/,
-    'uneg:limitations': /(limitation|\blimites\b)/,
+    'uneg:exec': /(executive\s+summary|sommaire\s+executif|\bresume\b|\bsynthese\b)/,
+    'uneg:methods': /(methodolog|\bmethods?\b|\bmethodes?\b)/,
+    'uneg:limitations': /(limitation|\blimites\b|\bcaveats?\b|\bconstraints?\b)/,
     'uneg:recommendations': /(recommendation|recommandation)/,
     'ethics:consent': /(ethic|ethique|consent|consentement|safeguard|protection\s+des\s+donnees|do\s+no\s+harm)/
   };
@@ -370,7 +379,12 @@
     return !/[.!?]$/.test(t);
   }
 
-  // Count how many of `toks` appear in one normalised line.
+  // Count how many of `toks` appear in one normalised line. Matching is
+  // deliberately SUBSTRING-based, not word-based: it is a poor man's stemming
+  // that lets "improve" match "improved" and "vaccin" match "vaccination", at the
+  // cost of letting "dose" match "overdose". That trade is self-consistent because
+  // both the token and the line pass through the same normalizer, and the result
+  // is only ever an indicative signal a human confirms.
   function hitsInLine(normLine, toks) {
     var c = 0;
     toks.forEach(function(t) { if (normLine.indexOf(t) !== -1) c++; });
@@ -403,51 +417,76 @@
       }
     });
 
-    // Per-EQ coverage: distinctive question terms found in the text. This says
-    // the report TALKS ABOUT the question, never that it ANSWERS it.
+    // Per-EQ coverage: distinctive question terms found in the text. An EQ signal
+    // measures TOPIC COVERAGE only. It says the report TALKS ABOUT the question;
+    // it can never say the question was ANSWERED, and no reader of these fields
+    // may treat it as if it did.
+    //
+    // FLOOR (why hits and total are both reported): with EQ_FOUND_RATIO at 0.5, a
+    // question that tokenises to two terms would reach 'found' on ONE common word
+    // ("Was the project relevant?" -> 'project' appears -> 1/2 = 0.5). So 'found'
+    // additionally requires at least EQ_MIN_FOUND_HITS terms matched AND at least
+    // EQ_MIN_TERMS distinctive terms in the question: a thin question can never be
+    // more than 'weak', however generously its one word is echoed. hits and total
+    // ride on EVERY eq signal so the caller can always print the denominator next
+    // to the quoted line, which otherwise replaces it in `evidence`.
     var eq = eqRows(context || {});
     eq.rows.forEach(function(r) {
       var toks = tokensOf(r.question, EQ_TOKEN_CAP);
       if (!toks.length) return;
       var hits = hitsInLine(norm, toks);
       var ratio = hits / toks.length;
-      var sig = ratio >= EQ_FOUND_RATIO ? 'found' : (ratio >= EQ_WEAK_RATIO ? 'weak' : 'not_found');
+      var canFind = toks.length >= EQ_MIN_TERMS && hits >= EQ_MIN_FOUND_HITS;
+      var sig = (canFind && ratio >= EQ_FOUND_RATIO) ? 'found' : (ratio >= EQ_WEAK_RATIO ? 'weak' : 'not_found');
       var ev = 'Matched ' + hits + ' of ' + toks.length + ' question terms.';
       if (sig !== 'not_found') {
         for (var i = 0; i < normLines.length; i++) {
           if (hitsInLine(normLines[i], toks) >= EQ_EVIDENCE_MIN_HITS) { ev = snippet(lines[i]); break; }
         }
       }
-      signals['eq:' + r.eq_id] = { signal: sig, evidence: ev };
+      signals['eq:' + r.eq_id] = { signal: sig, evidence: ev, hits: hits, total: toks.length };
     });
 
     // Agreed structure: each agreed title matched against one line. A title with
     // no distinctive terms of its own cannot be judged either way, so it is left
-    // out of the denominator rather than counted as present.
+    // out of the denominator rather than counted as present. A title only counts
+    // as PRESENT when it matches a line that reads like a heading: a report whose
+    // prose merely says "in our executive summary we noted the findings" has not
+    // shipped those sections, so title matches that land only in body text degrade
+    // the signal to weak instead of claiming the outline is complete.
     var sections = ((context || {}).report_structure || {}).sections || [];
     var titles = sections.map(function(s) { return (s && s.title) || ''; }).filter(Boolean);
     if (titles.length) {
       var judged = 0;
       var missing = [];
+      var proseOnly = [];
       titles.forEach(function(title) {
         var tw = tokensOf(title, TITLE_TOKEN_CAP);
         if (!tw.length) return;
         judged++;
         var need = Math.max(1, Math.ceil(tw.length * TITLE_MATCH_RATIO));
-        var seen = false;
-        for (var i = 0; i < normLines.length && !seen; i++) {
-          if (hitsInLine(normLines[i], tw) >= need) seen = true;
+        var asHeading = false, inProse = false;
+        for (var i = 0; i < normLines.length && !asHeading; i++) {
+          if (hitsInLine(normLines[i], tw) < need) continue;
+          if (isHeadingLine(lines[i])) asHeading = true; else inProse = true;
         }
-        if (!seen) missing.push(title);
+        if (asHeading) return;
+        if (inProse) proseOnly.push(title); else missing.push(title);
       });
       if (judged) {
         var frac = (judged - missing.length) / judged;
-        signals['structure:agreed'] = {
-          signal: !missing.length ? 'found' : (frac >= STRUCTURE_WEAK_FRAC ? 'weak' : 'not_found'),
-          evidence: missing.length
-            ? 'Missing: ' + snippet(missing.join('; '))
-            : 'All agreed section titles detected.'
-        };
+        var ssig, sev;
+        if (!missing.length && !proseOnly.length) {
+          ssig = 'found';
+          sev = 'All agreed section titles detected as headings.';
+        } else {
+          ssig = frac >= STRUCTURE_WEAK_FRAC ? 'weak' : 'not_found';
+          var parts = [];
+          if (missing.length) parts.push('Missing: ' + missing.join('; ') + '.');
+          if (proseOnly.length) parts.push('In body text but not as a heading: ' + proseOnly.join('; ') + '.');
+          sev = snippet(parts.join(' '));
+        }
+        signals['structure:agreed'] = { signal: ssig, evidence: sev };
       }
     }
 
@@ -460,9 +499,9 @@
       var close = found.filter(function(n) { return Math.abs(n - plannedN) / plannedN <= SAMPLE_TOLERANCE; });
       signals['sample:achieved'] = {
         signal: close.length ? 'found' : (found.length ? 'weak' : 'not_found'),
-        evidence: found.length
+        evidence: snippet(found.length
           ? 'Sample figures found: ' + found.slice(0, 5).join(', ') + '. Planned: ' + plannedN + '.'
-          : 'No n= style sample figure detected. Planned: ' + plannedN + '.'
+          : 'No n= style sample figure detected. Planned: ' + plannedN + '.')
       };
     }
 
