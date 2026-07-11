@@ -206,8 +206,10 @@
     }
 
     // Latest completed commissioner first review, referenced at the Endorse act.
-    var frRuns = (context.report_screens || []).filter(function(r) { return r && r.role === 'commissioner' && r.completed_at; });
-    var frLast = frRuns.length ? frRuns[frRuns.length - 1] : null;
+    // latestCompleted compares completed_at (not array position): upsertRun
+    // replaces a reopened run in place, so a run completed later can otherwise
+    // sit at an earlier array index than one completed before it.
+    var frLast = window.PraxisScreenCore ? window.PraxisScreenCore.latestCompleted(context.report_screens || [], 'commissioner') : null;
     var frRec = frLast && window.PraxisScreenCore ? window.PraxisScreenCore.recommendVerdict(frLast.items || []) : null;
     var frLine = frLast ? h('p', { className: 'wb-cm-hint' },
       'First review (' + D.fdate(frLast.completed_at) + (frLast.reviewer ? ', ' + frLast.reviewer : '') + '): ' +

@@ -246,9 +246,9 @@
     if (!run) {
       var teamNote = null;
       if (role === 'commissioner') {
-        var teamRuns = screens.filter(function(r) { return r && r.role === 'team' && r.completed_at; });
-        teamNote = h('p', { className: 'wb-cm-hint' }, teamRuns.length
-          ? 'Team self-screen: run ' + fdate(teamRuns[teamRuns.length - 1].completed_at) + '.'
+        var teamLast = C.latestCompleted(screens, 'team');
+        teamNote = h('p', { className: 'wb-cm-hint' }, teamLast
+          ? 'Team self-screen: run ' + fdate(teamLast.completed_at) + '.'
           : 'Team self-screen: not run.');
       }
       // Runs still open are not in 'Past reviews' (that list is completed runs), so

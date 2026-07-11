@@ -251,6 +251,27 @@
     return next;
   }
 
+  // The completed run with the greatest completed_at, optionally restricted to
+  // one role; null when there is none. upsertRun replaces a run IN PLACE by id,
+  // so array position tracks CREATION order, not completion order: a reopened
+  // and re-completed earlier run can end up ahead, in array terms, of a run
+  // completed after it. Callers that want "the latest completed review" must
+  // compare completed_at, not read arr[arr.length - 1]. completed_at values are
+  // ISO 8601 timestamps of one fixed format (new Date().toISOString()), so a
+  // plain string comparison orders them chronologically without parsing dates.
+  // Runs with a missing or null completed_at are ignored. On a tie (identical
+  // completed_at, possible since two saves can land in the same millisecond),
+  // the LATER array position wins, so the result is deterministic.
+  function latestCompleted(list, role) {
+    var best = null;
+    (list || []).forEach(function(r) {
+      if (!r || !r.completed_at) return;
+      if (role && r.role !== role) return;
+      if (!best || r.completed_at >= best.completed_at) best = r;
+    });
+    return best;
+  }
+
   // Immutably patch one item in a run. The timing item is computed, so its
   // answer cannot be hand-edited; its note can.
   function setItemAnswer(run, itemId, patch) {
@@ -273,6 +294,7 @@
     recommendVerdict: recommendVerdict,
     newScreenRun: newScreenRun,
     upsertRun: upsertRun,
-    setItemAnswer: setItemAnswer
+    setItemAnswer: setItemAnswer,
+    latestCompleted: latestCompleted
   };
 })();

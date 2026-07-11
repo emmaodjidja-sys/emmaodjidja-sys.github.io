@@ -183,4 +183,78 @@ xr.prescan = { ran_at: '2026-07-11T09:00:00.000Z', chars: 90000, words: 14000 };
 H.assert(X.buildHtml(xr, full).indexOf('Machine signals from a pasted-text pre-scan were used') !== -1, 'prescan disclosure flips when a prescan ran');
 H.assert(X.buildHtml(xr, full).indexOf('First review') !== -1, 'titled as a first review');
 
+// ---- latestCompleted: selection by completed_at, not array position ---------
+// upsertRun replaces an existing run IN PLACE by id, so array order tracks
+// CREATION order, not completion order. A reviewer can reopen and re-complete
+// an earlier run after a later one was completed; the run's array position
+// never moves, only its completed_at does. arr[arr.length - 1] would then
+// silently return the wrong run. latestCompleted must compare completed_at.
+function stubRun(id, role, completedAt) {
+  return { id: id, role: role, completed_at: completedAt, items: [] };
+}
+
+H.eq(C.latestCompleted([]), null, 'no runs at all returns null');
+H.eq(C.latestCompleted([], 'commissioner'), null, 'no runs at all returns null (role given)');
+
+var noneCompleted = [stubRun('r1', 'commissioner', null), stubRun('r2', 'commissioner', null)];
+H.eq(C.latestCompleted(noneCompleted, 'commissioner'), null, 'no completed runs among the list returns null');
+
+// Runs with a missing or null completed_at must be ignored even alongside a
+// genuinely completed run, never mistaken for "most recent".
+var withNulls = [
+  stubRun('r1', 'commissioner', '2026-07-01T00:00:00.000Z'),
+  stubRun('r2', 'commissioner', null),
+  { id: 'r3', role: 'commissioner', items: [] } // no completed_at property at all
+];
+H.eq(C.latestCompleted(withNulls, 'commissioner').id, 'r1', 'runs with missing or null completed_at are ignored');
+
+// Role filtering: a completed 'team' run must not be returned when asking for
+// 'commissioner', even when it is the only completed run in the list.
+var onlyTeam = [stubRun('team_only', 'team', '2026-07-05T00:00:00.000Z')];
+H.eq(C.latestCompleted(onlyTeam, 'commissioner'), null, 'a completed team run is not returned when asking for commissioner');
+
+// Minimal reproduction of the bug: the earlier array position (team1) has the
+// LATER completed_at. arr[arr.length - 1] after filtering would wrongly pick
+// cm1 (last position); latestCompleted must pick team1 (latest completed_at).
+var mixedRoles = [
+  stubRun('team1', 'team', '2026-07-05T00:00:00.000Z'),
+  stubRun('cm1', 'commissioner', '2026-07-01T00:00:00.000Z')
+];
+H.eq(C.latestCompleted(mixedRoles, 'commissioner').id, 'cm1', 'role filter selects the matching role even though the other role completed later');
+H.eq(C.latestCompleted(mixedRoles, 'team').id, 'team1', 'role filter selects the matching role');
+H.eq(C.latestCompleted(mixedRoles).id, 'team1', 'omitted role considers all roles and the later completed_at wins over array position');
+
+// Deterministic tie: identical completed_at (two saves landing in the same
+// millisecond) resolves to the LATER array position.
+var tie = [
+  stubRun('first', 'commissioner', '2026-07-10T12:00:00.000Z'),
+  stubRun('second', 'commissioner', '2026-07-10T12:00:00.000Z')
+];
+H.eq(C.latestCompleted(tie, 'commissioner').id, 'second', 'identical completed_at ties resolve to the later array position');
+
+// The reopen-and-recomplete-an-earlier-run scenario from the bug report: a
+// commissioner completes Run A, later completes Run B (a rescreen of a
+// revised report), then reopens Run A and re-records its verdict. A is now
+// the most recently completed review, but upsertRun keeps A at array index 0
+// (it replaces in place; it never moves a run to the end), so array position
+// alone still points at B.
+var runA = C.newScreenRun(full, 'commissioner', null, '2026-07-01');
+runA.id = 'run_a';
+var runB = C.newScreenRun(full, 'commissioner', null, '2026-07-01');
+runB.id = 'run_b';
+var listAB = C.upsertRun([], runA);
+listAB = C.upsertRun(listAB, runB);
+// Complete A, then complete B (B later than A).
+listAB = C.upsertRun(listAB, Object.assign({}, listAB[0], { completed_at: '2026-07-01T09:00:00.000Z', verdict: 'reserved' }));
+listAB = C.upsertRun(listAB, Object.assign({}, listAB[1], { completed_at: '2026-07-02T09:00:00.000Z', verdict: 'proceed' }));
+H.eq(listAB[listAB.length - 1].id, 'run_b', 'sanity: B sits at the last array position once both are completed in order');
+// Reopen A, then re-complete A with a completed_at AFTER B's. A stays at
+// array index 0 throughout: upsertRun replaces by id, it does not reorder.
+listAB = C.upsertRun(listAB, Object.assign({}, listAB[0], { completed_at: null, verdict: null }));
+listAB = C.upsertRun(listAB, Object.assign({}, listAB[0], { completed_at: '2026-07-03T09:00:00.000Z', verdict: 'proceed' }));
+H.eq(listAB[0].id, 'run_a', 'sanity: A is still at array index 0 after reopen and re-complete');
+H.eq(listAB[listAB.length - 1].id, 'run_b', 'sanity: B is still at the last array position');
+H.eq(C.latestCompleted(listAB, 'commissioner').id, 'run_a',
+  'reopened-and-recompleted A is selected over B: array position alone would wrongly keep returning B');
+
 H.summary('screen.test');
