@@ -223,7 +223,7 @@
     }
 
     function requestRevision() {
-      var reasons = rec.redFlags.map(function(it) { return it.text; }).join('; ');
+      var reasons = rec.redFlags.map(function(it) { return C.flagLabel(it); }).join('; ');
       api.patchDeliverable(run.deliverable_id, { status: 'revise', revision_reason: 'First review red flags: ' + reasons });
       api.logEvent('first_review', 'Requested revision on first review: ' + reasons);
       dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: 'Revision requested on the deliverable', toastType: 'success' });
@@ -304,7 +304,7 @@
         h('h4', { className: 'wb-fr-ledger-title' }, 'Red flags (' + rec.redFlags.length + ')'),
         rec.redFlags.length
           ? h('ul', { className: 'wb-fr-flag-list' }, rec.redFlags.map(function(it) {
-              return h('li', { key: it.id }, it.text + (it.note ? ' (' + it.note + ')' : ''));
+              return h('li', { key: it.id }, C.flagLabel(it) + (it.note ? ' (' + it.note + ')' : ''));
             }))
           : h('p', { className: 'wb-cm-hint' }, rec.unanswered.length
               ? rec.unanswered.length + ' item(s) still to answer.'

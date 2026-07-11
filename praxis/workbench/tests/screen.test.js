@@ -257,4 +257,20 @@ H.eq(listAB[listAB.length - 1].id, 'run_b', 'sanity: B is still at the last arra
 H.eq(C.latestCompleted(listAB, 'commissioner').id, 'run_a',
   'reopened-and-recompleted A is selected over B: array position alone would wrongly keep returning B');
 
+// ---- flagLabel: items are affirmative claims, so printing item.text alone at
+// a listing site reads as if the claim were true. flagLabel must state the
+// actual answer plainly enough for a reader who never saw the app.
+H.eq(C.flagLabel(it('claim', 'critical', 'no')), 'claim (answered: No)', 'flagLabel states a No answer plainly');
+H.eq(C.flagLabel(it('claim', 'critical', 'cant_tell')), 'claim (answered: Cannot tell)', 'flagLabel states a Cannot tell answer plainly');
+H.eq(C.flagLabel(it('claim', 'major', 'partial')), 'claim (answered: Partial)', 'flagLabel states a Partial answer plainly');
+H.eq(C.flagLabel(it('claim', 'critical', null)), 'claim', 'flagLabel falls back to the bare claim text when there is no answer yet');
+
+// ---- exported red-flag list carries the answer, not just the bare claim -----
+// xr above answers 'uneg:limitations' (text: 'Limitations are disclosed') with
+// 'no'. Printing the bare claim there would read as though the claim were
+// true. The exported bullet must carry both the claim text and the answer
+// wording together, not the claim alone.
+H.assert(html.indexOf('Limitations are disclosed (answered: No)') !== -1,
+  'exported red-flag bullet carries the claim together with the answer, not the bare affirmative claim alone');
+
 H.summary('screen.test');

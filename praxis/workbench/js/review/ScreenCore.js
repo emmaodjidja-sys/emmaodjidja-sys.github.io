@@ -272,6 +272,22 @@
     return best;
   }
 
+  // Every screening item is phrased as an affirmative claim ("Limitations are
+  // disclosed", "The report is in time for the decision"). A red flag or amber
+  // means the reviewer answered something other than a clean Yes, so printing
+  // item.text alone at a listing site reads as if the claim were true. This is
+  // the one place that turns an item into a sentence that states what actually
+  // happened; every listing site must call it instead of reading item.text
+  // directly. Pure: no formatting assumptions beyond string concatenation, so
+  // it is identical whether the caller renders it in a React node or writes it
+  // into an exported document.
+  function flagLabel(item) {
+    if (!item || !item.text) return (item && item.text) || '';
+    if (!item.answer) return item.text;
+    var label = ANSWER_LABELS[item.answer] || item.answer;
+    return item.text + ' (answered: ' + label + ')';
+  }
+
   // Immutably patch one item in a run. The timing item is computed, so its
   // answer cannot be hand-edited; its note can.
   function setItemAnswer(run, itemId, patch) {
@@ -292,6 +308,7 @@
     computeRedFlags: computeRedFlags,
     computeAmbers: computeAmbers,
     recommendVerdict: recommendVerdict,
+    flagLabel: flagLabel,
     newScreenRun: newScreenRun,
     upsertRun: upsertRun,
     setItemAnswer: setItemAnswer,

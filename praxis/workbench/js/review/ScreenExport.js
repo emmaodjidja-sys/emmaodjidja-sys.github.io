@@ -57,7 +57,7 @@
     if (rec.redFlags.length) {
       html.push('<ul>');
       rec.redFlags.forEach(function(it) {
-        html.push('<li class="flag">' + esc(it.text) + (it.note ? ' &middot; ' + esc(it.note) : '') + '</li>');
+        html.push('<li class="flag">' + esc(C.flagLabel(it)) + (it.note ? ' &middot; ' + esc(it.note) : '') + '</li>');
       });
       html.push('</ul>');
     } else {
