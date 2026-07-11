@@ -127,6 +127,13 @@
     mitigating: { label: 'Mitigating', badge: 'wb-badge-amber' },
     closed: { label: 'Closed', badge: 'wb-badge-green' }
   };
+  // Intended-user register status. A primary user leaving before their decision
+  // window is how utilization quietly dies; the register has to see it coming.
+  var USER_STATUS = {
+    in_post: { label: 'In post', badge: '' },
+    handing_over: { label: 'Handing over', badge: 'wb-badge-amber' },
+    left: { label: 'Left post', badge: 'wb-badge-red' }
+  };
   var CADENCE = [{ v: 3, label: 'Quarterly' }, { v: 6, label: 'Semi-annual' }, { v: 12, label: 'Annual' }];
   var TIER = { primary: 'Primary', secondary: 'Secondary' };
   var LEVELS = ['low', 'medium', 'high'];
@@ -239,6 +246,110 @@
     return !!r && r.disposition !== 'reject' && r.implementation_status !== 'implemented' && r.implementation_status !== 'superseded';
   }
 
+  // The final-report deliverable: explicit "final report" type match first, then a
+  // final+report title. No fuzzy fallback; null when the schedule has none.
+  function finalReportDeliverable(dels) {
+    var list = dels || [], i, t;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && /final\s*report/i.test(String(list[i].type || ''))) return list[i];
+    }
+    for (i = 0; i < list.length; i++) {
+      t = String((list[i] && list[i].title) || '');
+      if (/final/i.test(t) && /report/i.test(t)) return list[i];
+    }
+    return null;
+  }
+
+  // Decision-window fit: does the final report land inside the earliest primary
+  // user's decision window? The single check most evaluation waste traces to.
+  // Null when nothing is dated. status: landed | on_course | at_risk | missed |
+  // undated. marginDays is (window close minus report date) in local calendar
+  // days, negative = past the close; for undated/missed-without-report it is
+  // days until the close (daysUntilLocal semantics).
+  function decisionWindowFit(context) {
+    var cm = (context && context.commissioner) || {};
+    var pl = (context && context.planning) || {};
+    var gov = cm.governance || {};
+    var wins = (cm.users || []).filter(function(u) { return u && u.tier === 'primary' && u.window_closes; })
+      .map(function(u) { return { label: (u.name || '').trim() || 'primary user', closes: u.window_closes, userId: u.id }; });
+    if (!wins.length && gov.decision_window_closes) {
+      wins = [{ label: (gov.decision_clock || '').trim() || 'the decision', closes: gov.decision_window_closes, userId: null }];
+    }
+    if (!wins.length) return null;
+    wins.sort(function(a, b) { return a.closes < b.closes ? -1 : (a.closes > b.closes ? 1 : 0); });
+    var win = wins[0];
+    var rr = cm.report_review || {};
+    var accepted = !!rr.accepted && !!U.ymd(rr.accepted_at);
+    var fr = finalReportDeliverable(pl.deliverables || []);
+    var reportDate = accepted ? String(rr.accepted_at).slice(0, 10) : ((fr && fr.due_date) || null);
+    var closesIn = U.daysUntilLocal(win.closes);
+    var out = { window: win, reportDate: reportDate, reportAccepted: accepted };
+    if (!reportDate) {
+      out.marginDays = closesIn;
+      out.status = (closesIn != null && closesIn < 0) ? 'missed' : 'undated';
+      return out;
+    }
+    var margin = U.diffDaysLocal(reportDate, win.closes);
+    out.marginDays = margin;
+    if (accepted) out.status = (margin != null && margin >= 0) ? 'landed' : 'missed';
+    else if (closesIn != null && closesIn < 0) out.status = 'missed';
+    else out.status = (margin != null && margin >= 0) ? 'on_course' : 'at_risk';
+    return out;
+  }
+
+  function normQuestion(s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim().toLowerCase(); }
+
+  // Pre-commitment drift: how the live matrix differs from the questions locked
+  // at the gate decision. Null before any snapshot exists.
+  function gateDrift(context) {
+    var cm = (context && context.commissioner) || {};
+    var gate = cm.gate || {};
+    var snap = gate.eq_snapshot;
+    if (!Array.isArray(snap) || !snap.length) return null;
+    var rows = ((context && context.evaluation_matrix) || {}).rows || [];
+    var byId = {};
+    rows.forEach(function(r) { if (r && r.id) byId[r.id] = r; });
+    var inSnap = {}, reworded = [], removed = [];
+    snap.forEach(function(s) {
+      if (!s || s.eq_id == null) return;
+      inSnap[s.eq_id] = true;
+      var r = byId[s.eq_id];
+      if (!r) removed.push(s);
+      else if (normQuestion(r.question) !== normQuestion(s.question)) {
+        reworded.push({ eq_id: s.eq_id, number: r.number != null ? r.number : s.number, before: s.question, after: r.question });
+      }
+    });
+    var added = rows.filter(function(r) { return r && r.id && !inSnap[r.id]; });
+    return { snapped_at: gate.snapped_at || gate.decided_at || null, count: snap.length,
+      added: added, removed: removed, reworded: reworded,
+      clean: !added.length && !removed.length && !reworded.length };
+  }
+
+  function sumBy(arr, f) { return (arr || []).reduce(function(a, x) { return a + (Number(f(x)) || 0); }, 0); }
+
+  // C4 money-against-use: what the evaluation costs against whether it is used.
+  // Reuses the C1 vocabulary exactly: ceiling = contract value (base + amendment
+  // deltas, with budget lines as the base fallback); committed = approved plus
+  // paid invoices. verdict: used (an accepted action is underway or done),
+  // informing (a recommendation is accepted), unused (report accepted, nothing
+  // accepted), pending (report not yet accepted).
+  function moneyAgainstUse(context) {
+    var pl = (context && context.planning) || {};
+    var cm = (context && context.commissioner) || {};
+    var contract = pl.contract || {};
+    var base = Number(contract.total_budget) || sumBy(pl.budget_lines, function(l) { return l && l.amount; });
+    var ceiling = base + sumBy(contract.amendments, function(a) { return a && a.ceiling_delta; });
+    var committed = sumBy((pl.invoices || []).filter(function(i) { return i && (i.status === 'approved' || i.status === 'paid'); }),
+      function(i) { return i.amount; });
+    var reg = cm.management_response || [];
+    var used = reg.some(function(r) { return r && (r.implementation_status === 'in_progress' || r.implementation_status === 'implemented'); });
+    var informing = reg.some(function(r) { return r && (r.disposition === 'agree' || r.disposition === 'partial'); });
+    var reportAccepted = !!(cm.report_review && cm.report_review.accepted);
+    var verdict = used ? 'used' : (informing ? 'informing' : (reportAccepted ? 'unused' : 'pending'));
+    return { ceiling: ceiling, committed: committed, currency: contract.currency || 'USD',
+      verdict: verdict, reportAccepted: reportAccepted };
+  }
+
   function defaultCommissioner() { return PraxisSchema.createEmptyContext().commissioner; }
 
   window.CockpitData = {
@@ -246,12 +357,15 @@
     LIFECYCLE: LIFECYCLE, STATIONS: STATIONS, ANSW: ANSW, SOE: SOE, INCEPTION: INCEPTION,
     GATE_DECISION: GATE_DECISION, ETHICS_STATUS: ETHICS_STATUS, DISPOSITION: DISPOSITION,
     IMPL_STATUS: IMPL_STATUS, DELIV_STATUS: DELIV_STATUS, DELIV_SCHED: DELIV_SCHED,
-    DIS_STATUS: DIS_STATUS, RISK_STATUS: RISK_STATUS, CADENCE: CADENCE, TIER: TIER, LEVELS: LEVELS,
+    DIS_STATUS: DIS_STATUS, RISK_STATUS: RISK_STATUS, USER_STATUS: USER_STATUS,
+    CADENCE: CADENCE, TIER: TIER, LEVELS: LEVELS,
     ENGAGEMENT: ENGAGEMENT,
     fdate: fdate, levelIdx: levelIdx, daysUntil: daysUntil, engagementQuad: engagementQuad,
     evidenceMap: evidenceMap, meanRating: meanRating, hasMethod: hasMethod, hasSource: hasSource,
     servedEqIds: servedEqIds, orphanUsers: orphanUsers, refsToNumbers: refsToNumbers, numbersToRefs: numbersToRefs,
     deliverableStatus: deliverableStatus, reviewDaysUntil: reviewDaysUntil, isReviewOpen: isReviewOpen,
+    finalReportDeliverable: finalReportDeliverable, decisionWindowFit: decisionWindowFit,
+    gateDrift: gateDrift, moneyAgainstUse: moneyAgainstUse,
     defaultCommissioner: defaultCommissioner
   };
 })();

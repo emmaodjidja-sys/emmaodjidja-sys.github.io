@@ -1,0 +1,109 @@
+'use strict';
+var H = require('./helpers');
+var W = H.loadWorkbench();
+var D = W.CockpitData;
+var day = H.isoDaysFromNow;
+
+function ctx(over) {
+  var c = W.PraxisSchema.createEmptyContext();
+  Object.keys(over || {}).forEach(function(k) { c[k] = over[k]; });
+  return c;
+}
+
+// ---- USER_STATUS ----
+H.assert(D.USER_STATUS && D.USER_STATUS.in_post && D.USER_STATUS.handing_over && D.USER_STATUS.left, 'USER_STATUS exported with three states');
+
+// ---- finalReportDeliverable ----
+H.eq(D.finalReportDeliverable([]), null, 'finalReport: none');
+H.eq(D.finalReportDeliverable([{ id: 'a', type: 'Final report', title: 'X' }]).id, 'a', 'finalReport: by type');
+H.eq(D.finalReportDeliverable([{ id: 'b', type: 'Draft', title: 'Year 3 Final Report' }]).id, 'b', 'finalReport: by title fallback');
+H.eq(D.finalReportDeliverable([{ id: 'c', type: 'Draft', title: 'Draft report' }]), null, 'finalReport: draft is not final');
+
+// ---- decisionWindowFit ----
+H.eq(D.decisionWindowFit(ctx()), null, 'fit: null when nothing dated');
+
+var c1 = ctx();
+c1.commissioner.users = [
+  { id: 'p1', tier: 'primary', name: 'Board', window_closes: day(60) },
+  { id: 'p2', tier: 'primary', name: 'Strategy', window_closes: day(30) },
+  { id: 's1', tier: 'secondary', name: 'Partners', window_closes: day(5) }
+];
+c1.planning.deliverables = [{ id: 'd1', type: 'Final report', title: 'Final', due_date: day(10) }];
+var f1 = D.decisionWindowFit(c1);
+H.eq(f1.window.label, 'Strategy', 'fit: earliest PRIMARY window wins (secondary ignored)');
+H.eq(f1.status, 'on_course', 'fit: on course when due before close');
+H.eq(f1.marginDays, 20, 'fit: margin is close minus due');
+
+c1.planning.deliverables[0].due_date = day(45);
+H.eq(D.decisionWindowFit(c1).status, 'at_risk', 'fit: at risk when due after close');
+
+var c2 = ctx();
+c2.commissioner.users = [{ id: 'p1', tier: 'primary', name: 'Board', window_closes: day(-10) }];
+H.eq(D.decisionWindowFit(c2).status, 'missed', 'fit: missed when window passed with no accepted report');
+
+var c3 = ctx();
+c3.commissioner.users = [{ id: 'p1', tier: 'primary', name: 'Board', window_closes: '2026-06-30' }];
+c3.commissioner.report_review = { accepted: true, accepted_at: '2026-06-01T10:00:00.000Z', evidence: [] };
+var f3 = D.decisionWindowFit(c3);
+H.eq(f3.status, 'landed', 'fit: landed when accepted before close');
+H.eq(f3.reportAccepted, true, 'fit: reportAccepted flag');
+
+c3.commissioner.report_review.accepted_at = '2026-07-04T10:00:00.000Z';
+H.eq(D.decisionWindowFit(c3).status, 'missed', 'fit: missed when accepted after close');
+
+var c4 = ctx();
+c4.commissioner.governance.decision_clock = 'GC8 requests';
+c4.commissioner.governance.decision_window_closes = day(90);
+var f4 = D.decisionWindowFit(c4);
+H.eq(f4.window.label, 'GC8 requests', 'fit: governance window is the fallback');
+H.eq(f4.status, 'undated', 'fit: undated when no report date exists yet');
+
+// ---- gateDrift ----
+H.eq(D.gateDrift(ctx()), null, 'drift: null before snapshot');
+var c5 = ctx();
+c5.evaluation_matrix.rows = [
+  { id: 'q1', number: 1, question: 'Is targeting  effective?' },
+  { id: 'q3', number: 3, question: 'Brand new question' }
+];
+c5.commissioner.gate.eq_snapshot = [
+  { eq_id: 'q1', number: 1, question: 'Is targeting effective?' },
+  { eq_id: 'q2', number: 2, question: 'Removed question' }
+];
+c5.commissioner.gate.snapped_at = '2026-01-01T00:00:00.000Z';
+var dr = D.gateDrift(c5);
+H.eq(dr.reworded.length, 0, 'drift: whitespace-only change is not a reword');
+H.eq(dr.removed.length, 1, 'drift: removed detected');
+H.eq(dr.added.length, 1, 'drift: added detected');
+H.eq(dr.clean, false, 'drift: not clean');
+c5.evaluation_matrix.rows = [{ id: 'q1', number: 1, question: 'Is targeting REALLY effective?' }, { id: 'q2', number: 2, question: 'Removed question' }];
+var dr2 = D.gateDrift(c5);
+H.eq(dr2.reworded.length, 1, 'drift: rewording detected');
+H.eq(dr2.reworded[0].before, 'Is targeting effective?', 'drift: before text carried');
+c5.evaluation_matrix.rows = [{ id: 'q1', number: 1, question: 'is targeting effective?' }, { id: 'q2', number: 2, question: 'Removed question' }];
+H.eq(D.gateDrift(c5).clean, true, 'drift: case-insensitive match is clean');
+
+// ---- moneyAgainstUse ----
+var c6 = ctx();
+c6.planning.contract = { total_budget: 100000, currency: 'EUR', amendments: [{ id: 'a1', ceiling_delta: 20000 }] };
+c6.planning.invoices = [
+  { id: 'i1', amount: 30000, status: 'paid' },
+  { id: 'i2', amount: 20000, status: 'approved' },
+  { id: 'i3', amount: 50000, status: 'submitted' }
+];
+var m1 = D.moneyAgainstUse(c6);
+H.eq(m1.ceiling, 120000, 'money: ceiling includes amendments');
+H.eq(m1.committed, 50000, 'money: committed is approved plus paid only');
+H.eq(m1.currency, 'EUR', 'money: currency from contract');
+H.eq(m1.verdict, 'pending', 'money: pending before report acceptance');
+
+c6.commissioner.report_review = { accepted: true, accepted_at: '2026-01-01T00:00:00.000Z', evidence: [] };
+H.eq(D.moneyAgainstUse(c6).verdict, 'unused', 'money: unused after acceptance with no accepted rec');
+c6.commissioner.management_response = [{ id: 'r1', disposition: 'agree', implementation_status: 'not_started' }];
+H.eq(D.moneyAgainstUse(c6).verdict, 'informing', 'money: informing when a rec is accepted');
+c6.commissioner.management_response[0].implementation_status = 'in_progress';
+H.eq(D.moneyAgainstUse(c6).verdict, 'used', 'money: used when action underway');
+
+var c7 = ctx();
+c7.planning.budget_lines = [{ id: 'b1', amount: 40000 }, { id: 'b2', amount: 10000 }];
+H.eq(D.moneyAgainstUse(c7).ceiling, 50000, 'money: budget lines fallback when no total_budget');
+H.summary('derive.test');
