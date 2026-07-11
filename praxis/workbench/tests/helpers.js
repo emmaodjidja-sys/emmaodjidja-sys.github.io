@@ -9,9 +9,11 @@ var vm = require('vm');
 var FILES = [
   'js/utils.js',
   'js/schema.js',
+  'js/export-utils.js',
   'js/commissioner/CockpitData.js',
   'js/commissioner/CockpitAlerts.js',
-  'js/review/ScreenCore.js'
+  'js/review/ScreenCore.js',
+  'js/review/ScreenExport.js'
 ];
 
 function loadWorkbench() {

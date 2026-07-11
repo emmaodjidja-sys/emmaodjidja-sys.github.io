@@ -164,4 +164,23 @@ H.eq(list2.length, 1, 'upsert replaces by id');
 H.eq(list2[0].items[0].answer, 'no', 'replacement carries the edit');
 H.eq(list.length, 1, 'upsert does not mutate the input list');
 
+// ---- export builder ----------------------------------------------------------
+var X = W.PraxisScreenExport;
+H.assert(!!X, 'PraxisScreenExport loaded');
+var xr = C.newScreenRun(full, 'commissioner', null, '2026-07-11');
+xr.reviewer = 'Jane Doe <script>';
+xr = C.setItemAnswer(xr, 'uneg:limitations', { answer: 'no', note: 'No limitations section at all' });
+xr = C.setItemAnswer(xr, 'uneg:exec', { answer: 'partial' });
+xr.verdict = 'return';
+xr.completed_at = '2026-07-11T10:00:00.000Z';
+var html = X.buildHtml(xr, full);
+H.assert(html.indexOf('<script>') === -1, 'reviewer name is escaped');
+H.assert(html.indexOf('Limitations are disclosed') !== -1, 'red flag appears in the note');
+H.assert(html.indexOf('Return for revision') !== -1, 'verdict label appears');
+H.assert(html.indexOf('Red flags') < html.indexOf('All screening items'), 'red flags section comes before the full table');
+H.assert(html.indexOf('machine') === -1 || html.indexOf('No machine signals were used') !== -1, 'prescan disclosure states machine signals were not used');
+xr.prescan = { ran_at: '2026-07-11T09:00:00.000Z', chars: 90000, words: 14000 };
+H.assert(X.buildHtml(xr, full).indexOf('Machine signals from a pasted-text pre-scan were used') !== -1, 'prescan disclosure flips when a prescan ran');
+H.assert(X.buildHtml(xr, full).indexOf('First review') !== -1, 'titled as a first review');
+
 H.summary('screen.test');
