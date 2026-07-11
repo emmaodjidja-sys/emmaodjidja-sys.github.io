@@ -34,6 +34,18 @@
     return Math.round((due - today) / 86400000);
   }
 
+  // Whole-day difference between two date-only values in the user's LOCAL
+  // calendar: positive when b is after a. Same local-midnight construction as
+  // daysUntilLocal, so DST cannot introduce an off-by-one. Null when either
+  // side has no leading YYYY-MM-DD.
+  function diffDaysLocal(aIso, bIso) {
+    var a = ymd(aIso), b = ymd(bIso);
+    if (!a || !b) return null;
+    var da = new Date(a[0], a[1] - 1, a[2]);
+    var db = new Date(b[0], b[1] - 1, b[2]);
+    return Math.round((db - da) / 86400000);
+  }
+
   // Add n calendar months to a date-only ISO string, clamping the day to the target
   // month's last day (Aug 31 + 6 -> Feb 28/29). To get the k-th occurrence from an
   // anchor, call addMonths(anchor, interval*k) so the day re-clamps from the true
@@ -140,7 +152,7 @@
 
   window.PraxisUtils = {
     uid: uid, debounce: debounce, formatDate: formatDate, formatTime: formatTime,
-    ymd: ymd, daysUntilLocal: daysUntilLocal, addMonths: addMonths,
+    ymd: ymd, daysUntilLocal: daysUntilLocal, diffDaysLocal: diffDaysLocal, addMonths: addMonths,
     deepMerge: deepMerge, clamp: clamp, sanitizeFilename: sanitizeFilename,
     downloadJSON: downloadJSON, downloadBlob: downloadBlob,
     readFileAsJSON: readFileAsJSON, estimateJSONSize: estimateJSONSize,
