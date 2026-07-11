@@ -548,6 +548,7 @@
               : h('button', { className: 'wb-btn wb-btn-primary', onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 2 }); } }, 'Go to Station 2')
           )
         ),
+        window.FirstReview ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'team' }) : null,
         typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 7, dispatch: dispatch }) : null
       );
     }
@@ -600,6 +601,8 @@
         h('button', { className: 'wb-btn wb-btn-teal', onClick: handleSave }, 'Save Report Structure'),
         h('button', { className: 'wb-btn', onClick: handleExport }, 'Export as Word Outline')
       ),
+
+      window.FirstReview ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'team' }) : null,
 
       // Navigation
       typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 7, dispatch: dispatch, onSave: handleSave }) : null
