@@ -69,6 +69,35 @@
     var rows = (context.evaluation_matrix && context.evaluation_matrix.rows) || [];
     var soeMap = D.evidenceMap((cm.report_review || {}).evidence);
 
+    // Money against use: the C1 figures (same vocabulary, same numbers) set
+    // against a derived use verdict, so an unused evaluation reads as money
+    // spent for nothing rather than a quiet funnel.
+    var PS = window.PlanningShared;
+    var money = D.moneyAgainstUse(context);
+    var fit = D.decisionWindowFit(context);
+    var VERDICT = {
+      used: { label: 'Informing decisions', cls: 'good', note: 'At least one accepted action is underway or implemented.' },
+      informing: { label: 'Response accepted', cls: 'good', note: 'Recommendations are accepted; implementation has not started.' },
+      unused: { label: 'Spent, unused so far', cls: 'bad', note: 'The report is accepted but no recommendation has been accepted or acted on.' },
+      pending: { label: 'Too early to call', cls: 'na', note: 'The final report is not yet accepted.' }
+    };
+    function moneyLine() {
+      if (!money.ceiling && !money.committed) return null;
+      var v = VERDICT[money.verdict];
+      var missNote = (fit && fit.status === 'missed' && money.verdict !== 'used')
+        ? ' The earliest decision window (' + fit.window.label + ') has already closed.' : '';
+      return h('div', { className: 'wb-cm-moneyline wb-cm-moneyline--' + v.cls, role: 'group', 'aria-label': 'Money against use' },
+        h('div', { className: 'wb-cm-moneyline-cell' },
+          h('span', { className: 'wb-cm-moneyline-v' }, PS.money(money.ceiling, money.currency)),
+          h('span', { className: 'wb-cm-moneyline-l' }, 'Contract value')),
+        h('div', { className: 'wb-cm-moneyline-cell' },
+          h('span', { className: 'wb-cm-moneyline-v' }, PS.money(money.committed, money.currency)),
+          h('span', { className: 'wb-cm-moneyline-l' }, 'Committed to date')),
+        h('div', { className: 'wb-cm-moneyline-cell wb-cm-moneyline-cell--verdict' },
+          h('span', { className: 'wb-cm-moneyline-v' }, v.label),
+          h('span', { className: 'wb-cm-moneyline-l' }, v.note + missNote)));
+    }
+
     var mr = api.listSetter('management_response');
     var dis = api.listSetter('dissemination');
 
@@ -170,6 +199,7 @@
     return h('section', { className: 'wb-cm-move', 'aria-label': 'Use' },
       moveHead('C4', 'Use', 'Drive findings to use', 'A recommendation is not done when it is accepted; it is done when it is implemented. Record the management response, and make sure each audience gets the product it needs to act.'),
       register.length ? funnel(register) : null,
+      moneyLine(),
       h(SectionCard, { title: 'Management response', badge: register.length ? register.length + ' tracked' : 'Empty' },
         h('p', { className: 'wb-cm-panel-intro' }, 'Record the commissioner response to each recommendation and name who owns it' + (dual ? ', across the Alliance and national programmes.' : '.') + ' Implementation is then tracked six-monthly in C5 Follow-up.'),
         mrBody,

@@ -418,6 +418,19 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 .wb-cm-driftlist { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
 .wb-cm-drift { font-size: var(--text-sm); color: var(--text-secondary); }
 
+/* ---- money against use (C4) ----------------------------------------------*/
+.wb-cm-moneyline {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: var(--space-6);
+}
+.wb-cm-moneyline-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wb-cm-moneyline-v { font-size: var(--text-lg); font-weight: 700; color: var(--text); }
+.wb-cm-moneyline-l { font-size: var(--text-xs); color: var(--text-secondary); }
+.wb-cm-moneyline--good .wb-cm-moneyline-cell--verdict .wb-cm-moneyline-v { color: var(--green-strong); }
+.wb-cm-moneyline--bad .wb-cm-moneyline-cell--verdict .wb-cm-moneyline-v { color: var(--red-strong); }
+@media (max-width: 640px) { .wb-cm-moneyline { grid-template-columns: 1fr; } }
+
 /* ---- responsive ----------------------------------------------------------*/
 @media (max-width: 1040px) {
   .wb-cm-kpis { grid-template-columns: repeat(3, 1fr); }
