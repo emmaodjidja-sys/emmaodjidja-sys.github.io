@@ -360,17 +360,26 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 .wb-cm-cond-check--on { background: var(--green); border-color: transparent; }
 .wb-cm-cond-text { flex: 1; font-size: var(--text-sm); }
 
-/* ---- Movement 3: milestone track ----------------------------------------*/
-.wb-cm-track { position: relative; height: 132px; margin: 8px 8px 18px; }
-.wb-cm-track-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--border-strong); border-radius: 2px; }
-.wb-cm-track-today { position: absolute; top: 14px; bottom: 14px; width: 2px; background: var(--teal); transform: translateX(-1px); }
+/* ---- shared time track (C3 delivery, C5 review cadence) ------------------*/
+/* Height, and the left/top of every dot, stem and label, are set inline from the
+   measured pixel layout in CockpitData.packTrackLanes. Dots hold their true date;
+   only labels move, into as many lanes as the bunching needs. */
+.wb-cm-track { position: relative; margin: 8px 8px 18px; }
+.wb-cm-track-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--border-strong); border-radius: 2px; transform: translateY(-1px); }
+/* Dashed, so it reads as a reference line behind the labels it now runs the full height
+   of rather than as a divider cutting through them. */
+.wb-cm-track-today { position: absolute; width: 2px; transform: translateX(-1px); background-image: linear-gradient(var(--teal) 60%, transparent 60%); background-size: 2px 7px; background-repeat: repeat-y; }
 .wb-cm-track-today-lbl { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-ink); white-space: nowrap; }
-.wb-cm-mile { position: absolute; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; }
-.wb-cm-mile-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 3px var(--surface); z-index: 1; }
-.wb-cm-mile-lbl { position: absolute; bottom: 16px; display: flex; flex-direction: column; align-items: center; width: 96px; text-align: center; }
-.wb-cm-mile--below .wb-cm-mile-lbl { bottom: auto; top: 16px; }
-.wb-cm-mile-name { font-size: 10px; font-weight: 700; color: var(--text-secondary); line-height: 1.2; }
-.wb-cm-mile-date { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-top: 1px; }
+.wb-cm-mile-dot { position: absolute; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 3px var(--surface); transform: translate(-50%, -50%); z-index: 2; }
+.wb-cm-mile-stem { position: absolute; width: 1px; background: var(--border-strong); opacity: 0.55; transform: translateX(-0.5px); z-index: 1; }
+.wb-cm-mile-lbl { position: absolute; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: hidden; }
+.wb-cm-mile-name { font-size: 10px; font-weight: 700; color: var(--text-secondary); line-height: 1.3; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wb-cm-mile-name--2 { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+/* Both lines carry an explicit line-height: the row height is computed in JS, and an
+   inherited body line-height would overflow the row and clip the label. */
+.wb-cm-mile-date { font-family: var(--font-mono); font-size: 10px; line-height: 1.3; color: var(--text-tertiary); margin-top: 1px; white-space: nowrap; }
+/* The track is drawn with dots, so its readable equivalent is an off-screen list. */
+.wb-cm-track-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 /* aging chips */
 .wb-cm-age { display: inline-block; margin-left: 6px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: var(--radius-sm); color: var(--text-tertiary); background: var(--surface-muted); border: 1px solid var(--border); }

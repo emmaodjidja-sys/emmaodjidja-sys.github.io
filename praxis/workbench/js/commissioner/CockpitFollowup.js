@@ -74,8 +74,10 @@
   }
 
   // ---- cadence timeline: logged review dates + upcoming next review ------------
-  // Read-only, a single line across all tracked actions with a today marker. Mirrors the
-  // Movement-3 milestone track. Skipped when there are fewer than two dated points.
+  // Read-only, a single line across all tracked actions with a today marker. Reviews
+  // bunch in real registers (several logged in the same week, two on the same day), so
+  // the shared TimeTrack clusters same-day reviews onto one dot and packs the labels
+  // into lanes. Skipped when there are fewer than two dated dots to compare.
   function cadenceTimeline(tracked, todayISO) {
     var points = [];
     tracked.forEach(function(r) {
@@ -88,33 +90,25 @@
         if (tn != null) points.push({ t: tn, iso: r.next_review, code: r.code || 'action', color: 'var(--teal)', upcoming: true });
       }
     });
-    if (points.length < 2) return null;
 
-    var times = points.map(function(p) { return p.t; });
-    var min = Math.min.apply(null, times), max = Math.max.apply(null, times);
-    var span = Math.max(1, max - min);
-    var now = msLocal(todayISO);
-    var showToday = now != null && now >= min && now <= max;
-    points.sort(function(a, b) { return a.t - b.t; });
+    var clusters = D.clusterTrackPoints(points);
+    if (clusters.length < 2) return null;
 
-    var track = h('div', { className: 'wb-cm-track', role: 'img', 'aria-label': 'Review cadence across ' + points.length + ' dated reviews' },
-      h('div', { className: 'wb-cm-track-line' }),
-      showToday ? h('div', { className: 'wb-cm-track-today', style: { left: ((now - min) / span * 100) + '%' } },
-        h('span', { className: 'wb-cm-track-today-lbl' }, 'today')) : null,
-      points.map(function(p, i) {
-        var xp = (p.t - min) / span * 100;
-        var below = i % 2 === 1;
-        return h('div', { key: i, className: 'wb-cm-mile' + (below ? ' wb-cm-mile--below' : ''), style: { left: xp + '%' },
-            title: p.code + (p.upcoming ? ', next review ' : ', reviewed ') + D.fdate(p.iso) },
-          h('span', { className: 'wb-cm-mile-dot', style: { background: p.color } }),
-          h('span', { className: 'wb-cm-mile-lbl' },
-            h('span', { className: 'wb-cm-mile-name' }, p.code),
-            h('span', { className: 'wb-cm-mile-date' }, D.fdate(p.iso))));
-      }));
+    function phrase(c) {
+      return c.codes.join(', ') + (c.upcoming ? ', next review ' : ', reviewed ') + D.fdate(c.iso);
+    }
 
     return h(SectionCard, { title: 'Review cadence', badge: points.length + ' dated reviews' },
-      h('p', { className: 'wb-cm-panel-intro' }, 'Logged reviews and the next scheduled review (teal), on a single line against today. A read of whether the cadence is being kept.'),
-      track);
+      h('p', { className: 'wb-cm-panel-intro' }, 'Logged reviews and the next scheduled review (teal), on a single line against today. A read of whether the cadence is being kept. Reviews falling on the same day share one dot.'),
+      h(A.TimeTrack, {
+        clusters: clusters,
+        todayT: msLocal(todayISO),
+        label: 'Review cadence across ' + points.length + ' dated reviews',
+        rowHeight: 28,
+        nameLines: 1,
+        tooltip: phrase,
+        sr: phrase
+      }));
   }
 
   // ---- one accepted action -----------------------------------------------------

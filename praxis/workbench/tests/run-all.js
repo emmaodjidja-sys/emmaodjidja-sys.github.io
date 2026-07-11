@@ -2,7 +2,7 @@
 var cp = require('child_process');
 var fs = require('fs');
 var path = require('path');
-var files = ['utils.test.js', 'migration.test.js', 'derive.test.js', 'alerts.test.js'];
+var files = ['utils.test.js', 'migration.test.js', 'derive.test.js', 'alerts.test.js', 'track.test.js'];
 var failed = false;
 files.forEach(function(f) {
   var full = path.join(__dirname, f);

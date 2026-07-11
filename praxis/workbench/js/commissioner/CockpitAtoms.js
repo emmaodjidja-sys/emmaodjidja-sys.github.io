@@ -68,9 +68,96 @@
   function warnMark(title) { return h('span', { className: 'wb-cm-mark wb-cm-mark--warn', title: title, 'aria-label': title }, '!'); }
   function dashMark(title) { return h('span', { className: 'wb-cm-mark wb-cm-mark--dash', title: title, 'aria-label': title }, ''); }
 
+  // ---- TimeTrack -----------------------------------------------------------
+  // One horizontal time line with a today rule, shared by C3 Deliver and C5 Follow-up.
+  // Dots sit at their true date. Labels are packed into lanes above and below the line
+  // by CockpitData.packTrackLanes so none overlap however tightly the dates bunch, and
+  // a stem ties each label back to its dot. The layout is measured in pixels, so the
+  // track re-packs on resize.
+  //
+  // Props: clusters (from CockpitData.clusterTrackPoints), todayT, label, rowHeight,
+  // nameLines (1 or 2), tooltip(cluster) -> string, sr(cluster) -> string.
+  var STEM = 12;          // clear space between the line and the first label row
+  var TODAY_H = 14;       // room for the "today" caption above everything
+
+  function TimeTrack(props) {
+    var D = window.CockpitData;
+    var clusters = props.clusters || [];
+    var rowH = props.rowHeight || 30;
+    var lines = props.nameLines === 2 ? 2 : 1;
+
+    var ref = React.useRef(null);
+    var ws = React.useState(0), width = ws[0], setWidth = ws[1];
+
+    React.useLayoutEffect(function() {
+      var el = ref.current;
+      if (!el) return;
+      function measure() { var w = el.clientWidth; if (w) setWidth(w); }
+      measure();
+      if (typeof ResizeObserver === 'undefined') return;   // older browsers keep the first measurement
+      var ro = new ResizeObserver(measure);
+      ro.observe(el);
+      return function() { ro.disconnect(); };
+    }, []);
+
+    // Nominal width for the very first paint, replaced the moment the layout effect runs.
+    var L = D.packTrackLanes(clusters, { width: width || 880, labelWidth: props.labelWidth || 92 });
+    var padTop = TODAY_H + L.rowsAbove * rowH + STEM;
+    var padBottom = L.rowsBelow * rowH + STEM;
+    var todayX = D.trackX(L, props.todayT);
+
+    var marks = [];
+    L.clusters.forEach(function(c) {
+      var above = c.side === 'above';
+      var reach = STEM + c.row * rowH;                       // line -> near edge of this row
+      var labelTop = above ? padTop - reach - rowH : padTop + reach;
+      var tip = props.tooltip ? props.tooltip(c) : c.iso;
+
+      marks.push(h('span', { key: 'stem' + c.iso + c.lane, className: 'wb-cm-mile-stem', 'aria-hidden': 'true',
+        style: { left: c.x + 'px', top: (above ? labelTop + rowH : padTop + 6) + 'px', height: Math.max(0, reach - 6) + 'px' } }));
+
+      marks.push(h('span', { key: 'dot' + c.iso + c.lane, className: 'wb-cm-mile-dot', title: tip,
+        style: { left: c.x + 'px', top: padTop + 'px', background: dotFill(c) } }));
+
+      marks.push(h('span', { key: 'lbl' + c.iso + c.lane, className: 'wb-cm-mile-lbl', title: tip,
+          style: { left: c.labelLeft + 'px', top: labelTop + 'px', width: c.labelWidth + 'px', height: rowH + 'px' } },
+        h('span', { className: 'wb-cm-mile-name' + (lines === 2 ? ' wb-cm-mile-name--2' : '') }, codeLabel(c)),
+        h('span', { className: 'wb-cm-mile-date' }, D.fdate(c.iso))));
+    });
+
+    return h('div', { className: 'wb-cm-track', ref: ref, style: { height: (padTop + padBottom) + 'px' } },
+      h('div', { className: 'wb-cm-track-line', style: { top: padTop + 'px' } }),
+      todayX != null ? h('div', { className: 'wb-cm-track-today', style: { left: todayX + 'px', top: TODAY_H + 'px', height: (padTop + padBottom - TODAY_H) + 'px' } },
+        h('span', { className: 'wb-cm-track-today-lbl' }, 'today')) : null,
+      h('div', { 'aria-hidden': 'true' }, marks),
+      // The dots carry no text, so the readable version of the track is this list.
+      h('ul', { className: 'wb-cm-track-sr', 'aria-label': props.label || 'Timeline' }, L.clusters.map(function(c) {
+        return h('li', { key: c.iso + c.lane }, props.sr ? props.sr(c) : (codeLabel(c) + ', ' + D.fdate(c.iso)));
+      })));
+  }
+
+  // Codes carried by one dot. Two fit the label; beyond that the rest become a count.
+  function codeLabel(c) {
+    var codes = c.codes || [];
+    if (codes.length <= 2) return codes.join(', ');
+    return codes.slice(0, 2).join(', ') + ' +' + (codes.length - 2);
+  }
+
+  // A dot holding several statuses is split between them rather than picking a winner.
+  function dotFill(c) {
+    var cols = c.colors || [];
+    if (cols.length <= 1) return cols[0] || 'var(--border-strong)';
+    var n = cols.length;
+    var stops = cols.map(function(col, i) {
+      return col + ' ' + (i / n * 100) + '% ' + ((i + 1) / n * 100) + '%';
+    });
+    return 'conic-gradient(' + stops.join(', ') + ')';
+  }
+
   window.CockpitAtoms = {
     statusBadge: statusBadge, agingChip: agingChip, kpi: kpi, govItem: govItem,
     moveHead: moveHead, meterBar: meterBar, ring: ring,
-    okMark: okMark, warnMark: warnMark, dashMark: dashMark
+    okMark: okMark, warnMark: warnMark, dashMark: dashMark,
+    TimeTrack: TimeTrack
   };
 })();
