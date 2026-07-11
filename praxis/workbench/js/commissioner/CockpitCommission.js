@@ -2,9 +2,13 @@
  * CockpitCommission: C0 Commission ("Design for use"), the first working station of the
  * commissioner cockpit. Names the governance frame (funder profile, purpose, the decision
  * the evaluation serves, oversight and evaluation manager), builds the intended-user
- * register, and reads back an influence/interest engagement grid plus a use-to-question
- * coverage meter that flags any orphaned primary user (a stated use that no evaluation
- * question serves) before the inception gate.
+ * register, and reads it back as "Engage the right users": an influence/interest quadrant
+ * on the right, with the selected quadrant's engagement strategy beside it. Any orphaned
+ * primary user (a stated use that no evaluation question serves) is flagged inline on the
+ * register before the inception gate.
+ *
+ * There is no use-to-question coverage meter here: that ratio is already a KPI tile in the
+ * cockpit header strip, and repeating it stole the width the engagement grid needed.
  *
  * Returns ONLY the station body (a section). CockpitShell renders the persistent cockpit
  * header above. Ported markup/classes come from the old Commissioner.commissionMovement.
@@ -27,12 +31,29 @@
       D.LEVELS.slice().reverse().map(function(l) { return h('option', { key: l, value: l }, abbr + ': ' + l.charAt(0).toUpperCase() + l.slice(1)); }));
   }
 
-  // Influence (y) x interest (x) engagement grid (ported, now interactive). Each quadrant
-  // is a button that opens its engagement checklist below; the grid keeps the ported dot
-  // plot. Quadrants and their action lists share one source of truth: D.ENGAGEMENT.
-  function stakeholderGrid(users, selected, onSelect) {
+  function quadCounts(users) {
     var counts = { manage: 0, satisfy: 0, inform: 0, monitor: 0 };
     users.forEach(function(u) { counts[D.engagementQuad(u)]++; });
+    return counts;
+  }
+
+  // The quadrant shown when the commissioner has not picked one: the busiest, with ties
+  // broken towards the most demanding strategy. Keeps the engagement panel beside the grid
+  // populated from the first render, since there is no longer a below-the-fold empty state.
+  var QUAD_PRIORITY = ['manage', 'satisfy', 'inform', 'monitor'];
+  function defaultQuad(users) {
+    var counts = quadCounts(users), best = QUAD_PRIORITY[0];
+    QUAD_PRIORITY.forEach(function(k) { if (counts[k] > counts[best]) best = k; });
+    return best;
+  }
+
+  // Influence (y) x interest (x) engagement grid (ported, now interactive). Each quadrant
+  // is a button that selects the engagement strategy shown beside the grid; the grid keeps
+  // the ported dot plot. Exactly one quadrant is always selected, so the buttons are
+  // pressed-state toggles rather than disclosures. Quadrants and their action lists share
+  // one source of truth: D.ENGAGEMENT.
+  function stakeholderGrid(users, selected, onSelect) {
+    var counts = quadCounts(users);
     var dots = users.map(function(u, i) {
       var xi = D.levelIdx(u.interest), yi = D.levelIdx(u.influence);
       var jit = ((i % 3) - 1) * 5;
@@ -48,9 +69,9 @@
           var on = selected === q.key, n = counts[q.key];
           return h('button', { key: q.key, type: 'button',
             className: 'wb-cm-quad wb-cm-quad--' + q.x + q.y + (on ? ' wb-cm-quad--on' : ''),
-            'aria-expanded': on ? 'true' : 'false', 'aria-controls': 'wb-cm-eng-panel',
+            'aria-pressed': on ? 'true' : 'false', 'aria-controls': 'wb-cm-eng-panel',
             'aria-label': q.label + ', ' + q.pos + ', ' + n + ' ' + (n === 1 ? 'user' : 'users') + '. Show engagement actions.',
-            onClick: function() { onSelect(on ? null : q.key); } },
+            onClick: function() { onSelect(q.key); } },
             h('span', { className: 'wb-cm-quad-t' }, q.label),
             h('span', { className: 'wb-cm-quad-s' }, q.sub),
             n ? h('span', { className: 'wb-cm-quad-n', 'aria-hidden': 'true' }, String(n)) : null);
@@ -58,7 +79,7 @@
         h('div', { className: 'wb-cm-grid-plot', 'aria-hidden': 'true' }, dots),
         h('span', { className: 'wb-cm-axis wb-cm-axis--y', 'aria-hidden': 'true' }, 'Influence'),
         h('span', { className: 'wb-cm-axis wb-cm-axis--x', 'aria-hidden': 'true' }, 'Interest')),
-      h('div', { className: 'wb-cm-grid-hint' }, selected ? 'Showing engagement actions below.' : 'Select a quadrant to plan its engagement.'),
+      h('div', { className: 'wb-cm-grid-hint' }, 'Select a quadrant to plan its engagement.'),
       h('div', { className: 'wb-cm-grid-legend', 'aria-hidden': 'true' },
         h('span', null, h('i', { className: 'wb-cm-dot wb-cm-dot--primary wb-cm-dot--static' }), 'Primary'),
         h('span', null, h('i', { className: 'wb-cm-dot wb-cm-dot--secondary wb-cm-dot--static' }), 'Secondary')));
@@ -147,9 +168,6 @@
     // ---- intended-user register ------------------------------------------
     var primary = users.filter(function(u) { return u.tier === 'primary'; });
     var secondary = users.filter(function(u) { return u.tier === 'secondary'; });
-    var usesDefined = users.filter(function(u) { return (u.intended_use || '').trim(); });
-    var usesCovered = usesDefined.filter(function(u) { return (u.eq_refs || []).length; });
-    var coveragePct = usesDefined.length ? (usesCovered.length / usesDefined.length) * 100 : 0;
     var orphans = D.orphanUsers(users);
 
     function userTable(list, tier) {
@@ -193,24 +211,14 @@
           }))));
     }
 
-    // Coverage panel, upgraded to flag orphaned primary users (a stated use that no
-    // evaluation question serves): the sharpest utilization failure to close before spend.
-    function coveragePanel() {
-      var tone = usesDefined.length ? (usesCovered.length === usesDefined.length ? 'good' : 'warn') : 'teal';
-      var gap = usesDefined.length - usesCovered.length;
+    // An orphaned primary user (a stated use that no evaluation question serves) is the
+    // sharpest utilization failure to close before spend, so it is flagged on the register
+    // itself rather than in a side panel. The running coverage ratio is a header KPI tile.
+    function orphanAlert() {
+      if (!orphans.length) return null;
       var names = orphans.map(function(u) { return (u.name || '').trim() || 'unnamed user'; }).join(', ');
-      return h('div', { className: 'wb-cm-cov' },
-        h('div', { className: 'wb-cm-cov-head' },
-          h('span', { className: 'wb-cm-cov-title' }, 'Use-to-question coverage'),
-          h('span', { className: 'wb-cm-cov-num' }, usesDefined.length ? (usesCovered.length + '/' + usesDefined.length) : '-')),
-        A.meterBar(coveragePct, tone === 'good' ? 'green' : (tone === 'warn' ? 'amber' : 'teal'), 'Use-to-question coverage'),
-        h('p', { className: 'wb-cm-cov-note', role: 'status' }, usesDefined.length
-          ? (gap > 0
-              ? gap + ' intended use' + (gap > 1 ? 's are' : ' is') + ' not yet served by any evaluation question. Fix the design before the gate.'
-              : 'Every named use is served by at least one evaluation question.')
-          : 'Add intended uses, then link the questions that serve each. Uncovered uses are design gaps to close before spend.'),
-        orphans.length ? h('p', { className: 'wb-cm-cov-note', role: 'status', style: { color: 'var(--red)', fontWeight: 700 } },
-          orphans.length + ' primary user' + (orphans.length > 1 ? 's have' : ' has') + ' a use that no evaluation question serves: ' + names + '. Close this before the gate.') : null);
+      return h('p', { className: 'wb-cm-orphan', role: 'status' },
+        orphans.length + ' primary user' + (orphans.length > 1 ? 's have' : ' has') + ' a use that no evaluation question serves: ' + names + '. Close this before the gate.');
     }
 
     function toggleAction(key, idx) {
@@ -221,7 +229,8 @@
     }
 
     // The engagement checklist for the selected quadrant: who falls here (strict Mendelow
-    // split) and the trackable actions for the strategy. Rendered full-width under the grid.
+    // split) and the trackable actions for the strategy. Sits beside the grid, and is always
+    // open on one quadrant, so it has no close control.
     function engagementPanel(s) {
       var checked = (cm.engagement_actions && cm.engagement_actions[s.key]) || [];
       var here = users.filter(function(u) { return D.engagementQuad(u) === s.key; });
@@ -229,8 +238,7 @@
         h('div', { className: 'wb-cm-eng-head' },
           h('span', { className: 'wb-cm-eng-name' }, s.label),
           h('span', { className: 'wb-cm-eng-gloss' }, s.gloss + ' · ' + s.pos),
-          h('span', { className: 'wb-cm-eng-prog' }, checked.length + ' of ' + s.actions.length + ' done'),
-          h('button', { type: 'button', className: 'wb-cm-eng-close', 'aria-label': 'Close ' + s.label + ' actions', onClick: function() { setSelectedQuad(null); } }, I.close(14))),
+          h('span', { className: 'wb-cm-eng-prog' }, checked.length + ' of ' + s.actions.length + ' done')),
         h('div', { className: 'wb-cm-eng-body' },
           h('div', { className: 'wb-cm-eng-people' },
             h('div', { className: 'wb-cm-eng-sub' }, 'In this quadrant', h('span', { className: 'wb-cm-eng-cnt' }, String(here.length))),
@@ -253,22 +261,23 @@
             })))));
     }
 
-    var selEntry = selectedQuad ? D.ENGAGEMENT.filter(function(e) { return e.key === selectedQuad; })[0] : null;
+    // Exactly one quadrant is always shown. Until the commissioner picks one, it tracks the
+    // busiest quadrant as the register changes.
+    var activeQuad = selectedQuad || defaultQuad(users);
+    var selEntry = D.ENGAGEMENT.filter(function(e) { return e.key === activeQuad; })[0];
     var registerBody = users.length
       ? h(React.Fragment, null,
-          h('div', { className: 'wb-cm-two' },
-            h('div', { className: 'wb-cm-two-main' },
-              h('div', { className: 'wb-cm-sub' }, 'Primary intended users', h('span', { className: 'wb-cm-sub-count' }, primary.length)),
-              primary.length ? userTable(primary, 'primary') : h('p', { className: 'wb-cm-hint' }, 'Name the users who will act on this evaluation. Their decisions shape the questions.'),
-              h('div', { className: 'wb-cm-sub wb-cm-sub--mt' }, 'Secondary users', h('span', { className: 'wb-cm-sub-count' }, secondary.length)),
-              userTable(secondary, 'secondary'),
-              h('div', { className: 'wb-cm-add' },
-                h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('primary'); } }, I.plus(14), ' Primary user'),
-                h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('secondary'); } }, I.plus(14), ' Secondary user'))),
-            h('div', { className: 'wb-cm-two-side' },
-              stakeholderGrid(users, selectedQuad, setSelectedQuad),
-              coveragePanel())),
-          selEntry ? engagementPanel(selEntry) : null)
+          h('div', { className: 'wb-cm-sub' }, 'Primary intended users', h('span', { className: 'wb-cm-sub-count' }, primary.length)),
+          primary.length ? userTable(primary, 'primary') : h('p', { className: 'wb-cm-hint' }, 'Name the users who will act on this evaluation. Their decisions shape the questions.'),
+          orphanAlert(),
+          h('div', { className: 'wb-cm-sub wb-cm-sub--mt' }, 'Secondary users', h('span', { className: 'wb-cm-sub-count' }, secondary.length)),
+          userTable(secondary, 'secondary'),
+          h('div', { className: 'wb-cm-add' },
+            h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('primary'); } }, I.plus(14), ' Primary user'),
+            h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: function() { addUser('secondary'); } }, I.plus(14), ' Secondary user')),
+          h('div', { className: 'wb-cm-two-side' },
+            engagementPanel(selEntry),
+            stakeholderGrid(users, activeQuad, setSelectedQuad)))
       : h('div', { className: 'wb-station-empty' },
           h('div', { className: 'wb-station-empty-title' }, 'Name the primary intended users'),
           h('div', { className: 'wb-station-empty-desc' }, 'No intended users yet. Name who will use this evaluation, and their decisions become the test the design has to pass.'),
