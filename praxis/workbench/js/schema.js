@@ -21,7 +21,12 @@
   //   1.5.0  adds the per-quadrant stakeholder engagement checklist state
   //          (commissioner.engagement_actions) driving the C0 influence/interest grid.
   //          Fully additive.
-  var PRAXIS_VERSION = '1.5.0';
+  //   1.6.0  dates the decision windows (governance.decision_window_opens/_closes and
+  //          users[].window_opens/_closes with the old free text kept as the label),
+  //          adds the user register status/successor fields (in_post|handing_over|left)
+  //          and the gate pre-commitment lock (gate.eq_snapshot + snapped_at). Additive;
+  //          per-user fields are backfilled explicitly since deep-default skips arrays.
+  var PRAXIS_VERSION = '1.6.0';
 
   // Navigation bounds (single source; consumed by router.js and context.js clamps).
   // MAX_STATION: highest evaluator-rail station index (0..9, includes Planning).
@@ -180,13 +185,17 @@
         governance: {
           funder_profile: '', oversight_body: '', evaluation_manager: '',
           decision_clock: '', lifecycle_stage: '',
+          decision_window_opens: '',   // when the decision the evaluation serves opens
+          decision_window_closes: '',  // and when it closes (date-only, local calendar)
           purpose: '',      // the evaluation's purpose in one or two sentences
           primary_use: ''   // the single headline intended use (the decision it serves)
         },
         // Intended-user register (utilization-focused evaluation): the named primary
         // and secondary users, the use each will make of the evaluation, when they
         // need it, and their influence/interest for engagement planning.
-        users: [],          // [{ id, name, role, tier, intended_use, decision_window, influence, interest, engagement, eq_refs:[] }]
+        users: [],          // [{ id, name, role, tier, intended_use, decision_window (label),
+                            //    window_opens, window_closes, status: in_post|handing_over|left,
+                            //    successor, influence, interest, engagement, eq_refs:[] }]
         // Per-quadrant engagement checklist state: for each Mendelow strategy, the indices
         // of the completed engagement actions (action lists live in CockpitData.ENGAGEMENT).
         engagement_actions: { manage: [], satisfy: [], inform: [], monitor: [] },
@@ -195,6 +204,9 @@
         // ethics are formal inception checkpoints for IEP/EAC-grade work.
         gate: {
           decision: '', decided_by: '', decided_at: null, note: '', conditions: [],
+          // Pre-commitment lock: the matrix questions as they stood when the gate
+          // decision was recorded. Drift against the live matrix is derived, never stored.
+          eq_snapshot: [], snapped_at: null,
           independence: { attested: false, statement: '', conflicts: [], attested_by: '', attested_at: null },
           ethics: { status: 'none', body: '', note: '', cleared_at: null } // none|pending|cleared|na
         },
@@ -412,6 +424,22 @@
     '1.4.0': function(ctx) {
       var next = deepDefault(createEmptyContext(), ctx);
       next.version = '1.5.0';
+      return next;
+    },
+    // 1.5.0 -> 1.6.0: deep-default adds the dated decision windows (governance) and the
+    // gate pre-commitment lock fields. users[] is an array, which deep-default replaces
+    // wholesale, so the new per-user fields are backfilled explicitly here.
+    '1.5.0': function(ctx) {
+      var next = deepDefault(createEmptyContext(), ctx);
+      var cm = next.commissioner || (next.commissioner = {});
+      (Array.isArray(cm.users) ? cm.users : []).forEach(function(u) {
+        if (!u || typeof u !== 'object') return;
+        if (u.window_opens == null) u.window_opens = '';
+        if (u.window_closes == null) u.window_closes = '';
+        if (u.status == null) u.status = 'in_post';
+        if (u.successor == null) u.successor = '';
+      });
+      next.version = '1.6.0';
       return next;
     }
   };
