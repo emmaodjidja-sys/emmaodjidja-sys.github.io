@@ -2,6 +2,8 @@
  * CockpitAlerts: derived alert engine (nothing stored) plus actionable mailto/.ics
  * builders. window.CockpitAlerts. Alerts are recomputed each render from due dates and
  * review dates vs today, so there is no stale-notification cache to invalidate.
+ * Covers deliverable deadlines, six-monthly reviews, open gate conditions, the
+ * decision-window fit check, and primary-user departures.
  *
  * Safety: mailto encodes every value (RFC 6068 header-injection defense) and drops
  * non-email recipients; .ics is RFC 5545 (CRLF, VALUE=DATE all-day, deterministic UID,
@@ -64,6 +66,39 @@
         alerts.push(mk('review_due', 1, n, r.next_review, 'Six-monthly review due: ' + (r.code || 'action'),
           'Next review in ' + n + ' days. Owner: ' + (r.owner || 'unassigned') + '.', r.owner, em, 6, r.id));
       }
+    });
+
+    // The decision clock: does the final report land inside the earliest primary
+    // decision window? Severity 0 once missed, 1 while a miss is only projected.
+    var fit = D.decisionWindowFit(context);
+    if (fit && fit.status === 'missed') {
+      var missBy = fit.marginDays == null ? null : Math.abs(fit.marginDays);
+      alerts.push(mk('decision_window_missed', 0, fit.marginDays, fit.window.closes,
+        'Decision window missed: ' + fit.window.label,
+        (fit.reportAccepted
+          ? 'The final report was accepted ' + missBy + ' days after this window closed'
+          : 'This window closed with no accepted final report') + ' (' + D.fdate(fit.window.closes) + ').',
+        '', [], 1, 'dw:' + (fit.window.userId || 'gov')));
+    } else if (fit && fit.status === 'at_risk') {
+      alerts.push(mk('decision_window_risk', 1, fit.marginDays, fit.window.closes,
+        'Decision window at risk: ' + fit.window.label,
+        'The final report is due ' + Math.abs(fit.marginDays) + ' days after this window closes (' +
+          D.fdate(fit.window.closes) + '). Re-scope or re-sequence now.',
+        '', [], 1, 'dw:' + (fit.window.userId || 'gov')));
+    }
+
+    // A primary intended user leaving before their window is how use quietly dies.
+    // Silent once the window has closed; the departure no longer bites.
+    (cm.users || []).forEach(function(u) {
+      if (!u || u.tier !== 'primary') return;
+      if (u.status !== 'left' && u.status !== 'handing_over') return;
+      var closesIn = u.window_closes ? U.daysUntilLocal(u.window_closes) : null;
+      if (closesIn != null && closesIn < 0) return;
+      var succ = (u.successor || '').trim();
+      alerts.push(mk('user_left', u.status === 'left' ? 0 : 1, closesIn, u.window_closes || null,
+        (u.status === 'left' ? 'Primary user left post: ' : 'Primary user handing over: ') + ((u.name || '').trim() || 'unnamed user'),
+        (succ ? 'Successor: ' + succ + '.' : 'No successor named.') + ' Re-engage before the decision window closes.',
+        succ, [], 1, u.id));
     });
 
     var gate = cm.gate || {};
