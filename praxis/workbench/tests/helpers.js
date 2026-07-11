@@ -10,7 +10,8 @@ var FILES = [
   'js/utils.js',
   'js/schema.js',
   'js/commissioner/CockpitData.js',
-  'js/commissioner/CockpitAlerts.js'
+  'js/commissioner/CockpitAlerts.js',
+  'js/review/ScreenCore.js'
 ];
 
 function loadWorkbench() {
