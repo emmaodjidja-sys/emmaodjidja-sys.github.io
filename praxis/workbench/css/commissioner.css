@@ -129,8 +129,12 @@
 }
 .wb-cm-focus-input { font-size: var(--text-sm); line-height: 1.5; resize: vertical; }
 
-.wb-cm-two { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--space-6); align-items: start; }
-.wb-cm-two-side { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 8px; }
+/* Register spans the full width; the stakeholder grid + coverage sit in a row
+   beneath it. A fixed side column starved the wide user table (~944px natural
+   width), overflowing its Influence/Interest controls behind a scroller. */
+.wb-cm-two { display: flex; flex-direction: column; gap: var(--space-6); }
+.wb-cm-two-side { display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; align-items: start; }
+.wb-cm-two-side > * { flex: 1 1 300px; }
 
 /* ---- table inputs (in-cell editing) -------------------------------------*/
 .wb-cm-table { width: 100%; }
@@ -182,6 +186,7 @@ textarea.wb-cm-inp { line-height: 1.45; resize: vertical; }
 .wb-cm-grid-wrap {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: 14px;
+  flex: 0 1 360px; max-width: 400px;
 }
 .wb-cm-grid-title {
   font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
@@ -402,9 +407,6 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 /* ---- responsive ----------------------------------------------------------*/
 @media (max-width: 1040px) {
   .wb-cm-kpis { grid-template-columns: repeat(3, 1fr); }
-  .wb-cm-two { grid-template-columns: 1fr; }
-  .wb-cm-two-side { position: static; flex-direction: row; flex-wrap: wrap; }
-  .wb-cm-two-side > * { flex: 1 1 260px; }
   .wb-cm-assure-top { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
