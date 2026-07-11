@@ -34,28 +34,28 @@
 
   // Horizontal milestone track with a today marker. Read-only at-a-glance; the table below
   // manages the detail. Dot colour is the DERIVED schedule status of each deliverable.
+  // Schedules routinely land two deliverables on the same date, so the shared TimeTrack
+  // clusters those onto one dot and packs the labels into non-overlapping lanes.
   function milestoneTrack(dels) {
-    var dated = dels.filter(function(d) { return ms(d.due_date) != null; });
-    if (dated.length < 2) return null;
-    var times = dated.map(function(d) { return ms(d.due_date); });
-    var min = Math.min.apply(null, times), max = Math.max.apply(null, times);
-    var span = Math.max(1, max - min);
-    var now = todayMs();
-    var showToday = now >= min && now <= max;
-    var sorted = dated.slice().sort(byDue);
-    return h('div', { className: 'wb-cm-track', role: 'img', 'aria-label': 'Delivery timeline with ' + dated.length + ' milestones' },
-      h('div', { className: 'wb-cm-track-line' }),
-      showToday ? h('div', { className: 'wb-cm-track-today', style: { left: ((now - min) / span * 100) + '%' } }, h('span', { className: 'wb-cm-track-today-lbl' }, 'today')) : null,
-      sorted.map(function(d, i) {
-        var xp = (ms(d.due_date) - min) / span * 100;
-        var sched = D.DELIV_SCHED[D.deliverableStatus(d)] || D.DELIV_SCHED.planned;
-        var below = i % 2 === 1;
-        return h('div', { key: d.id, className: 'wb-cm-mile' + (below ? ' wb-cm-mile--below' : ''), style: { left: xp + '%' } },
-          h('span', { className: 'wb-cm-mile-dot', style: { background: sched.dot } }),
-          h('span', { className: 'wb-cm-mile-lbl' },
-            h('span', { className: 'wb-cm-mile-name' }, d.title || 'deliverable'),
-            h('span', { className: 'wb-cm-mile-date' }, D.fdate(d.due_date))));
-      }));
+    var points = dels.filter(function(d) { return ms(d.due_date) != null; }).map(function(d) {
+      var sched = D.DELIV_SCHED[D.deliverableStatus(d)] || D.DELIV_SCHED.planned;
+      return { t: ms(d.due_date), iso: d.due_date, code: d.title || 'deliverable', color: sched.dot, upcoming: false };
+    });
+    var clusters = D.clusterTrackPoints(points);
+    if (clusters.length < 2) return null;
+
+    function phrase(c) { return c.codes.join('; ') + ', due ' + D.fdate(c.iso); }
+
+    return h(A.TimeTrack, {
+      clusters: clusters,
+      todayT: todayMs(),
+      label: 'Delivery timeline with ' + points.length + ' milestones',
+      rowHeight: 42,
+      nameLines: 2,
+      labelWidth: 104,
+      tooltip: phrase,
+      sr: phrase
+    });
   }
 
   function CockpitDeliver(props) {

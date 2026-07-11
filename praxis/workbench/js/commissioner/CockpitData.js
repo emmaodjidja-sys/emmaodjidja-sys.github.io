@@ -246,6 +246,95 @@
     return !!r && r.disposition !== 'reject' && r.implementation_status !== 'implemented' && r.implementation_status !== 'superseded';
   }
 
+  // ---- time-track layout --------------------------------------------------
+  // Shared by the C3 delivery track and the C5 review-cadence track. Dates cluster in
+  // real evaluations (two reviews logged on the same day, four inside a fortnight), and
+  // a label placed at its true time position then collides with its neighbours. These
+  // two pure functions fix that without ever moving a dot off its true date.
+  //
+  // clusterTrackPoints: one dot per calendar date, carrying every code logged on it.
+  // packTrackLanes:     pixel layout for the labels. Greedy interval-graph colouring in
+  //                     x order, which uses exactly as many lanes as the largest set of
+  //                     mutually overlapping labels. Lanes alternate above / below the
+  //                     line and stack outward (0 above, 1 below, 2 above, ...), so a
+  //                     sparse track stays a single row per side and only a dense one
+  //                     grows. Labels clamp inside the track; dots never move.
+
+  // Group points by (date, upcoming) into one cluster each, ascending by time. Points
+  // are { t, iso, code, color, upcoming }. Logged and upcoming never merge, so a review
+  // logged on the day another falls due stays two dots, not one.
+  function clusterTrackPoints(points) {
+    var byKey = {}, order = [];
+    (points || []).forEach(function(p) {
+      if (!p || typeof p.t !== 'number' || isNaN(p.t)) return;
+      var key = p.iso + '|' + (p.upcoming ? 'u' : 'l');
+      if (!byKey[key]) {
+        byKey[key] = { t: p.t, iso: p.iso, upcoming: !!p.upcoming, codes: [], colors: [] };
+        order.push(key);
+      }
+      var c = byKey[key];
+      if (p.code != null) c.codes.push(p.code);
+      if (p.color && c.colors.indexOf(p.color) < 0) c.colors.push(p.color);
+    });
+    return order.map(function(k) { return byKey[k]; }).sort(function(a, b) { return a.t - b.t; });
+  }
+
+  // Lay the clusters out in pixels. Returns a new array (the input is not mutated) plus
+  // the row counts the caller needs to size the track. opts: width, labelWidth, gutter,
+  // maxLanes.
+  function packTrackLanes(clusters, opts) {
+    var o = opts || {};
+    var width = Math.max(1, o.width || 880);
+    var lw = Math.min(o.labelWidth || 92, width);
+    var gutter = o.gutter == null ? 8 : o.gutter;
+    var maxLanes = o.maxLanes || 8;
+    var list = (clusters || []).slice().sort(function(a, b) { return a.t - b.t; });
+    if (!list.length) return { clusters: [], lanes: 0, rowsAbove: 0, rowsBelow: 0, min: null, max: null, span: 1, width: width };
+
+    var times = list.map(function(c) { return c.t; });
+    var min = Math.min.apply(null, times), max = Math.max.apply(null, times);
+    var span = max - min;
+    var laneRight = [];   // right edge in px of the last label placed in each lane
+
+    var out = list.map(function(c) {
+      // Every cluster on one date has nowhere to spread, so centre it rather than
+      // pinning the whole track to the left edge.
+      var x = span > 0 ? (c.t - min) / span * width : width / 2;
+      var labelLeft = Math.max(0, Math.min(width - lw, x - lw / 2));
+      var lane = -1, i;
+      for (i = 0; i < maxLanes; i++) {
+        if (laneRight[i] === undefined || labelLeft >= laneRight[i] + gutter) { lane = i; break; }
+      }
+      if (lane < 0) {                       // more mutually overlapping labels than lanes
+        lane = 0;                           // fall back to the lane with the most room left
+        for (i = 1; i < maxLanes; i++) { if (laneRight[i] < laneRight[lane]) lane = i; }
+      }
+      laneRight[lane] = labelLeft + lw;
+      return {
+        t: c.t, iso: c.iso, upcoming: !!c.upcoming,
+        codes: c.codes || [], colors: c.colors || [], count: (c.codes || []).length,
+        x: x, labelLeft: labelLeft, labelWidth: lw,
+        lane: lane, side: lane % 2 === 0 ? 'above' : 'below', row: Math.floor(lane / 2)
+      };
+    });
+
+    var lanes = laneRight.length;           // greedy fills lanes 0..n-1 with no gaps
+    return {
+      clusters: out, lanes: lanes,
+      rowsAbove: Math.ceil(lanes / 2), rowsBelow: Math.floor(lanes / 2),
+      min: min, max: max, span: Math.max(1, span), width: width
+    };
+  }
+
+  // x in px for an arbitrary time on a packed track (the today rule). Null when the
+  // time falls outside the track, which is when there is nothing to mark.
+  function trackX(layout, t) {
+    if (!layout || t == null || layout.min == null) return null;
+    if (t < layout.min || t > layout.max) return null;
+    if (layout.max === layout.min) return layout.width / 2;
+    return (t - layout.min) / (layout.max - layout.min) * layout.width;
+  }
+
   // The final-report deliverable: explicit "final report" type match first, then a
   // final+report title. No fuzzy fallback; null when the schedule has none.
   function finalReportDeliverable(dels) {
@@ -364,6 +453,7 @@
     evidenceMap: evidenceMap, meanRating: meanRating, hasMethod: hasMethod, hasSource: hasSource,
     servedEqIds: servedEqIds, orphanUsers: orphanUsers, refsToNumbers: refsToNumbers, numbersToRefs: numbersToRefs,
     deliverableStatus: deliverableStatus, reviewDaysUntil: reviewDaysUntil, isReviewOpen: isReviewOpen,
+    clusterTrackPoints: clusterTrackPoints, packTrackLanes: packTrackLanes, trackX: trackX,
     finalReportDeliverable: finalReportDeliverable, decisionWindowFit: decisionWindowFit,
     gateDrift: gateDrift, moneyAgainstUse: moneyAgainstUse,
     defaultCommissioner: defaultCommissioner
