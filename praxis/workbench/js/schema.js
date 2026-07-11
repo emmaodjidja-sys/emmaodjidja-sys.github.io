@@ -26,7 +26,11 @@
   //          adds the user register status/successor fields (in_post|handing_over|left)
   //          and the gate pre-commitment lock (gate.eq_snapshot + snapped_at). Additive;
   //          per-user fields are backfilled explicitly since deep-default skips arrays.
-  var PRAXIS_VERSION = '1.6.0';
+  //   1.7.0  adds the top-level report_screens list: First Review rapid red-flag
+  //          screening runs over an incoming evaluation report, shared by the
+  //          evaluator (Station 7 self-screen) and commissioner (C3) lenses.
+  //          Fully additive; a new top-level array needs no per-item backfill.
+  var PRAXIS_VERSION = '1.7.0';
 
   // Navigation bounds (single source; consumed by router.js and context.js clamps).
   // MAX_STATION: highest evaluator-rail station index (0..9, includes Planning).
@@ -232,6 +236,13 @@
         audit_log: [],      // [{ id, at, actor, action, detail }] append-only
         completed_at: null
       },
+
+      // First Review runs (rapid red-flag screen of an incoming report). Shape:
+      //   { id, role: 'team'|'commissioner', deliverable_id: string|null, reviewer,
+      //     started_at, completed_at: null|iso, items: [see PraxisScreenCore],
+      //     prescan: null|{ ran_at, chars, words }  (derived only, NEVER the pasted text),
+      //     verdict: null|'return'|'reserved'|'proceed', verdict_recommended: same, note }
+      report_screens: [],
 
       staleness: { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false },
       reviews: []
@@ -440,6 +451,15 @@
         if (u.successor == null) u.successor = '';
       });
       next.version = '1.6.0';
+      return next;
+    },
+    // 1.6.0 -> 1.7.0: deep-default adds the top-level report_screens list (First
+    // Review red-flag screens). New top-level array, so deep-default alone is
+    // enough; the explicit guard is belt-and-braces against a non-array value.
+    '1.6.0': function(ctx) {
+      var next = deepDefault(createEmptyContext(), ctx);
+      if (!Array.isArray(next.report_screens)) next.report_screens = [];
+      next.version = '1.7.0';
       return next;
     }
   };
