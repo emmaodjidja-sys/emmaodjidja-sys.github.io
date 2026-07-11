@@ -78,7 +78,19 @@
     var usersApi = api.listSetter('users');
 
     function addUser(tier) {
-      usersApi.add({ id: U.uid('usr_'), name: '', role: '', tier: tier, intended_use: '', decision_window: '', influence: 'medium', interest: 'medium', eq_refs: [] }, 'Intended user added');
+      usersApi.add({ id: U.uid('usr_'), name: '', role: '', tier: tier, intended_use: '',
+        decision_window: '', window_opens: '', window_closes: '', status: 'in_post', successor: '',
+        influence: 'medium', interest: 'medium', eq_refs: [] }, 'Intended user added');
+    }
+
+    // One dated bound of a user's decision window (opens / closes), captioned so the
+    // two stacked date inputs stay tellable apart.
+    function winDate(u, key, caption) {
+      return h('label', { className: 'wb-cm-windate' },
+        h('span', { className: 'wb-cm-windate-cap', 'aria-hidden': 'true' }, caption),
+        h('input', { className: 'wb-input wb-cm-inp wb-cm-date', type: 'date', defaultValue: u[key] || '',
+          'aria-label': 'Decision window ' + caption,
+          onBlur: function(e) { var p = {}; p[key] = e.target.value; usersApi.set(u.id, p); } }));
     }
 
     // ---- governance -------------------------------------------------------
@@ -118,6 +130,17 @@
           h('input', { id: 'cm-decision_clock', className: 'wb-input wb-cm-focus-input', type: 'text', placeholder: 'e.g. Grant Cycle 8 funding requests',
             defaultValue: gov.decision_clock || '', onBlur: function(e) { api.setGov({ decision_clock: e.target.value }); } })),
         h('div', { className: 'wb-cm-focus' },
+          h('div', { className: 'wb-cm-focus-field' },
+            h('label', { className: 'wb-cm-focus-label', htmlFor: 'cm-dw-opens' }, 'Decision window opens'),
+            h('input', { id: 'cm-dw-opens', className: 'wb-input wb-cm-focus-input', type: 'date',
+              defaultValue: gov.decision_window_opens || '',
+              onBlur: function(e) { api.setGov({ decision_window_opens: e.target.value }); } })),
+          h('div', { className: 'wb-cm-focus-field' },
+            h('label', { className: 'wb-cm-focus-label', htmlFor: 'cm-dw-closes' }, 'Decision window closes'),
+            h('input', { id: 'cm-dw-closes', className: 'wb-input wb-cm-focus-input', type: 'date',
+              defaultValue: gov.decision_window_closes || '',
+              onBlur: function(e) { api.setGov({ decision_window_closes: e.target.value }); } }))),
+        h('div', { className: 'wb-cm-focus' },
           govText('oversight_body', 'Independent oversight body', profile.oversight, true),
           govText('evaluation_manager', 'Evaluation manager', profile.manager, true))));
 
@@ -136,7 +159,7 @@
           h('thead', null, h('tr', null,
             h('th', null, tier === 'primary' ? 'Primary intended user' : 'Secondary user'),
             h('th', null, 'Intended use (the decision or action)'),
-            h('th', { style: { minWidth: 120 } }, 'Needs it by'),
+            h('th', { style: { minWidth: 168 } }, 'Decision window'),
             h('th', { className: 'wb-th--center', style: { width: 92 } }, 'Serves EQ'),
             h('th', { className: 'wb-th--center', style: { width: 116 } }, 'Influence / interest'),
             h('th', { style: { width: 34 } }, ''))),
@@ -145,9 +168,21 @@
             return h('tr', { key: u.id },
               h('td', null,
                 h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--strong', type: 'text', placeholder: 'user / body', defaultValue: u.name || '', 'aria-label': 'User name', onBlur: function(e) { usersApi.set(u.id, { name: e.target.value }); } }),
-                h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--sub', type: 'text', placeholder: 'role', defaultValue: u.role || '', 'aria-label': 'User role', onBlur: function(e) { usersApi.set(u.id, { role: e.target.value }); } })),
+                h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--sub', type: 'text', placeholder: 'role', defaultValue: u.role || '', 'aria-label': 'User role', onBlur: function(e) { usersApi.set(u.id, { role: e.target.value }); } }),
+                h('select', { className: 'wb-input wb-cm-select wb-cm-select--sub', value: u.status || 'in_post',
+                  'aria-label': 'User status', onChange: function(e) { usersApi.set(u.id, { status: e.target.value }); } },
+                  Object.keys(D.USER_STATUS).map(function(k) { return h('option', { key: k, value: k }, D.USER_STATUS[k].label); })),
+                (u.status === 'handing_over' || u.status === 'left')
+                  ? h('input', { className: 'wb-input wb-cm-inp wb-cm-inp--sub', type: 'text', placeholder: 'successor (name, role)',
+                      defaultValue: u.successor || '', 'aria-label': 'Successor',
+                      onBlur: function(e) { usersApi.set(u.id, { successor: e.target.value }); } })
+                  : null),
               h('td', null, h('textarea', { className: 'wb-input wb-cm-inp', rows: 2, placeholder: 'what they will do with the findings', defaultValue: u.intended_use || '', 'aria-label': 'Intended use', onBlur: function(e) { usersApi.set(u.id, { intended_use: e.target.value }); } })),
-              h('td', null, h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'decision window', defaultValue: u.decision_window || '', 'aria-label': 'Decision window', onBlur: function(e) { usersApi.set(u.id, { decision_window: e.target.value }); } })),
+              h('td', null,
+                h('input', { className: 'wb-input wb-cm-inp', type: 'text', placeholder: 'window label', defaultValue: u.decision_window || '', 'aria-label': 'Decision window label', onBlur: function(e) { usersApi.set(u.id, { decision_window: e.target.value }); } }),
+                winDate(u, 'window_opens', 'opens'),
+                winDate(u, 'window_closes', 'closes'),
+                u.window_closes ? A.agingChip(u.window_closes, true, 30) : null),
               h('td', { className: 'wb-th--center' }, rows.length
                 ? h('input', { className: 'wb-input wb-cm-inp wb-cm-eqinp' + (nums.length ? '' : ' wb-cm-eqinp--empty'), type: 'text', placeholder: 'e.g. 1, 13', defaultValue: nums.join(', '), title: 'Evaluation questions that serve this use', 'aria-label': 'Evaluation questions serving this use', onBlur: function(e) { usersApi.set(u.id, { eq_refs: D.numbersToRefs(e.target.value, rows) }); } })
                 : h('span', { className: 'wb-cm-muted' }, '-')),

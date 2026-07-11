@@ -404,6 +404,15 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 
 .wb-cm-add { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
 
+/* ---- decision window dates and user status (C0 register) -----------------*/
+.wb-cm-windate { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.wb-cm-windate-cap {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--text-tertiary); width: 42px; flex: none;
+}
+.wb-cm-windate .wb-cm-date { min-width: 0; flex: 1; }
+.wb-cm-select--sub { margin-top: 4px; font-size: var(--text-xs); }
+
 /* ---- responsive ----------------------------------------------------------*/
 @media (max-width: 1040px) {
   .wb-cm-kpis { grid-template-columns: repeat(3, 1fr); }
