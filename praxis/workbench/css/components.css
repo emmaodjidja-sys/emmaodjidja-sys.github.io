@@ -672,9 +672,19 @@
 .wb-fr-verdict-done { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 .wb-fr-past-row { display: flex; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
 .wb-fr-start-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
-.wb-fr-chip { display: inline-flex; gap: 6px; align-items: center; font-size: 0.72rem; border-radius: 3px; padding: 2px 7px; margin-top: 4px; }
-.wb-fr-chip--found { background: var(--teal-light); color: var(--teal-ink); }
+.wb-fr-sig { margin-top: 4px; }
+.wb-fr-chip { display: inline-flex; gap: 6px; align-items: center; font-size: 0.72rem; border-radius: 3px; padding: 2px 7px; }
+/* A 'found' signal means a keyword or a heading matched: a detection, never an
+   approval. It was tinted teal, which on a checklist row reads as a tick, i.e.
+   as "this requirement is met" (on ethics:consent it would have read that way
+   off the bare word "consent" in a bibliography). It is deliberately neutral
+   ink on a neutral tint now: the words carry the finding, the colour does not
+   pass a verdict the scan is not entitled to. Amber and red stay: they claim an
+   absence, which is a prompt to look, not a claim that anything is met. */
+.wb-fr-chip--found { background: var(--surface-muted); color: var(--text-secondary); border: 1px solid var(--border-strong); }
 .wb-fr-chip--weak { background: var(--amber-light); color: var(--amber-text); }
 .wb-fr-chip--miss { background: var(--red-light); color: var(--red-strong); }
 .wb-fr-chip-confirm { border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 3px; font-size: 0.7rem; padding: 0 6px; cursor: pointer; }
+.wb-fr-ev { margin: 3px 0 0; font-size: 0.78rem; color: var(--text-secondary); }
+.wb-fr-ev-note { color: var(--text-tertiary); }
 .wb-fr-paste { width: 100%; min-height: 140px; font-family: inherit; font-size: 0.85rem; }

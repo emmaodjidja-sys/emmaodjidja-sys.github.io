@@ -57,25 +57,53 @@
       }));
   }
 
-  // Indicative signal from the Phase 2 paste-text prescan. Dormant until
-  // PraxisScreenCore.prescan sets machine_signal; it never answers on its own.
-  function machineChip(item, onConfirm) {
-    if (!item.machine_signal) return null;
+  // Indicative signal from the paste-text prescan. A signal is a keyword or
+  // heading match and nothing more: it is a DETECTION, never an approval. The
+  // copy here has to carry that, because the failure mode is a reviewer reading
+  // a chip as a tick. 'ethics:consent' fires on the word "consent" appearing
+  // anywhere, a bibliography entry included, on a critical safeguarding item;
+  // an EQ 'found' means the report mentions the question's TOPIC, which is not
+  // the same fact as the question having been answered, so its chip prints the
+  // denominator (matched 4 of 8 terms) and says so.
+  //
+  // PRIVACY: `evidence` is passed in from session state and is NEVER read off
+  // the item. It is a line lifted verbatim from a confidential report (the worst
+  // case, seen in a real fixture, is "Consent was refused by <name>, age 14, of
+  // <village>"), so it is not allowed anywhere near the run, the context,
+  // localStorage, the project file or an export. It lives in this tab, for this
+  // session, and dies with it.
+  function machineChip(item, onConfirm, evidence) {
+    // The AUTO item (timing) is computed, so no chip and no confirm may ever be
+    // offered on it. prescan emits no signal for it either; this is the belt to
+    // that brace.
+    if (!item.machine_signal || item.auto) return null;
+    var C = core();
     var map = {
-      found: { label: 'Machine: detected', cls: 'wb-fr-chip--found', answer: 'yes' },
-      weak: { label: 'Machine: weak signal', cls: 'wb-fr-chip--weak', answer: 'partial' },
-      not_found: { label: 'Machine: not found', cls: 'wb-fr-chip--miss', answer: 'no' }
+      found: { label: 'mentioned in the text', cls: 'wb-fr-chip--found', answer: 'yes' },
+      weak: { label: 'weak signal only', cls: 'wb-fr-chip--weak', answer: 'partial' },
+      not_found: { label: 'not detected', cls: 'wb-fr-chip--miss', answer: 'no' }
     };
     var m = map[item.machine_signal];
     if (!m) return null;
-    return h('span', { className: 'wb-fr-chip ' + m.cls, title: item.machine_evidence || 'Indicative signal from the pasted text. Confirm or override.' },
-      m.label,
-      !item.answer ? h('button', { type: 'button', className: 'wb-fr-chip-confirm',
-        'aria-label': 'Confirm machine signal as the answer for: ' + item.text,
-        onClick: function() { onConfirm(item.id, m.answer); } }, 'Confirm') : null);
+    var label = 'Text scan: ' + m.label;
+    var isEq = item.machine_total != null;
+    if (isEq) label += ', matched ' + item.machine_hits + ' of ' + item.machine_total + ' question terms';
+    var basis = evidence
+      ? 'Basis: ' + evidence
+      : 'Basis: the scanned text was discarded, so the matching line is no longer available. Re-scan to see it.';
+    return h('div', { className: 'wb-fr-sig' },
+      h('span', { className: 'wb-fr-chip ' + m.cls,
+        title: 'A keyword or heading match in the text you pasted. It reports what the words do, not whether the requirement is met.' },
+        label,
+        !item.answer ? h('button', { type: 'button', className: 'wb-fr-chip-confirm',
+          'aria-label': 'Record ' + C.ANSWER_LABELS[m.answer] + ' as my answer for: ' + item.text,
+          onClick: function() { onConfirm(item.id, m.answer); } }, 'I checked. Record ' + C.ANSWER_LABELS[m.answer]) : null),
+      h('p', { className: 'wb-fr-ev' }, basis,
+        isEq ? h('span', { className: 'wb-fr-ev-note' }, ' The report mentions the topic. Whether it answers the question is yours to judge.') : null,
+        evidence ? h('span', { className: 'wb-fr-ev-note' }, ' Shown in this tab only; never saved.') : null));
   }
 
-  function itemRow(item, onAnswer, onNote) {
+  function itemRow(item, onAnswer, onNote, evidence) {
     return h('div', { className: 'wb-fr-item' + (item.auto ? ' wb-fr-item--auto' : ''), key: item.id },
       h('div', { className: 'wb-fr-item-head' },
         sevTag(item.severity),
@@ -83,7 +111,7 @@
           h('div', { className: 'wb-fr-item-title' }, item.text,
             item.answerability != null ? h('span', { className: 'wb-fr-answ', title: 'C2 answerability rating for this question (1 to 4, higher is more answerable)' }, 'C2: ' + item.answerability + '/4') : null),
           item.detail ? h('p', { className: 'wb-fr-item-detail' }, item.detail) : null,
-          machineChip(item, onAnswer))),
+          machineChip(item, onAnswer, evidence))),
       h('div', { className: 'wb-fr-item-body' },
         item.auto
           ? h('span', { className: 'wb-fr-auto-ans wb-fr-auto-ans--' + (item.answer || 'none') },
@@ -169,6 +197,16 @@
     // Lazy initialiser: the default deliverable is only resolved on first render.
     var delSel = React.useState(function() { return defaultDeliverableId(deliverables); }),
         delId = delSel[0], setDelId = delSel[1];
+    // The paste box is uncontrolled on purpose: the report text must exist in one
+    // place only (the DOM node the reviewer typed into), so that clearing that
+    // node is the whole of forgetting it. Putting it in state or in the run would
+    // put it in localStorage.
+    var pasteRef = React.useRef(null);
+    // Evidence snippets are session-only, keyed by the run they were scanned for
+    // (item ids repeat across runs, so an unkeyed map would show run A's quoted
+    // lines against run B's items). Shape: null | { run_id, by_item: { id: str } }.
+    var evd = React.useState(null), evidence = evd[0], setEvidence = evd[1];
+    var scn = React.useState(false), scanning = scn[0], setScanning = scn[1];
 
     // Runs of this role still open. The newest is where the panel lands when the
     // reviewer has selected nothing this session (the page-reload path).
@@ -201,6 +239,86 @@
 
     function onAnswer(itemId, answer) { persist(C.setItemAnswer(run, itemId, { answer: answer })); }
     function onNote(itemId, note) { persist(C.setItemAnswer(run, itemId, { note: note })); }
+
+    // ---- pre-scan ------------------------------------------------------------
+    // What a scan is allowed to leave behind. Per item: the SIGNAL ('found' |
+    // 'weak' | 'not_found'), and for an evaluation question the two integers that
+    // make the thinness of the basis visible (matched N of M question terms).
+    // Signals and counts are derived facts about the text, not the text. The
+    // quoted line that justifies each signal is body text of a confidential
+    // report, so it goes to session state (setEvidence) and NOWHERE else: not
+    // into the item, not into the run, not into the context.
+    //
+    // A signal NEVER becomes an answer. `answer` is not in any patch below; only
+    // the reviewer's own click (onAnswer, from the chip's Record button or the
+    // answer buttons) writes one.
+    function applySignals(target, signals) {
+      var next = target;
+      (target.items || []).forEach(function(it) {
+        var s = signals[it.id];
+        if (s) {
+          var patch = { machine_signal: s.signal };
+          // hits/total ride only on EQ signals. They are counts of matched terms,
+          // never content.
+          if (s.total != null) { patch.machine_hits = s.hits; patch.machine_total = s.total; }
+          next = C.setItemAnswer(next, it.id, patch);
+        } else if (it.machine_signal) {
+          // A re-scan owns every signal. An item the new scan says nothing about
+          // must not keep the last scan's verdict about it.
+          next = C.setItemAnswer(next, it.id, { machine_signal: null, machine_hits: null, machine_total: null });
+        }
+      });
+      return next;
+    }
+
+    function finishPrescan(text) {
+      if (!run) { setScanning(false); return; }
+      // Cleared AFTER the blocking call, not before it: React 18 would batch a
+      // clear made here either way, but this does not lean on that, so the
+      // scanning state cannot blink off while the thread is still held.
+      var res = C.prescan(text, context);
+      setScanning(false);
+      if (!res.ok) {
+        dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST,
+          message: 'That text is too long to scan. The cap is ' + C.MAX_PRESCAN_CHARS + ' characters; scan the report a part at a time.',
+          toastType: 'error' });
+        return;
+      }
+      var byItem = {};
+      Object.keys(res.signals).forEach(function(id) { byItem[id] = res.signals[id].evidence; });
+      setEvidence({ run_id: run.id, by_item: byItem });
+
+      var next = applySignals(run, res.signals);
+      next = Object.assign({}, next, {
+        prescan: { ran_at: new Date().toISOString(), chars: res.meta.chars, words: res.meta.words }
+      });
+      // The pasted text is discarded here and is held nowhere else: `text` is a
+      // local that falls out of scope with this call.
+      var el = pasteRef.current;
+      if (el) el.value = '';
+      persist(next, res.meta.short
+        ? 'Scanned, but the text was under 500 words. Is that the whole report?'
+        : 'Scanned. Signals are keyword matches, not judgments. Answer each item yourself.');
+    }
+
+    function runPrescan() {
+      if (scanning) return;
+      var el = pasteRef.current;
+      var text = el ? el.value : '';
+      if (!text.trim()) {
+        dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: 'Paste the report text first.', toastType: 'error' });
+        return;
+      }
+      setScanning(true);
+      // prescan is synchronous and O(n) over a paste that may run to a million
+      // characters, so it can hold the main thread long enough to look like a
+      // hang. Yield a frame (rAF fires before the paint that shows the scanning
+      // state) and then a task (setTimeout fires after it), so the reviewer sees
+      // the state change before the thread is taken.
+      window.requestAnimationFrame(function() {
+        window.setTimeout(function() { finishPrescan(text); }, 0);
+      });
+    }
 
     function recordVerdict(v) {
       var next = Object.assign({}, run, {
@@ -292,13 +410,31 @@
           })) : null);
     } else {
       var done = !!run.completed_at;
+      // Evidence is only ever shown against the run it was scanned for.
+      var evMap = (evidence && evidence.run_id === run.id) ? evidence.by_item : {};
       var groups = GROUPS.map(function(g) {
         var its = (run.items || []).filter(function(it) { return g.sources[it.source]; });
         if (!its.length) return null;
         return h('div', { className: 'wb-fr-group', key: g.key },
           h('h4', { className: 'wb-fr-group-title' }, g.title),
-          its.map(function(it) { return itemRow(it, onAnswer, onNote); }));
+          its.map(function(it) { return itemRow(it, onAnswer, onNote, evMap[it.id] || null); }));
       });
+
+      var prescanBlock = h('div', { className: 'wb-fr-group' },
+        h('h4', { className: 'wb-fr-group-title' }, 'Optional text pre-scan'),
+        h('p', { className: 'wb-cm-hint' },
+          'Paste the report text for an indicative first pass. The scan runs in this browser. The text is not uploaded, it is not saved, and it is cleared the moment the scan ends. What is saved is the signal per item (mentioned, weak, not detected), the matched-term counts for a question, and the word count. The quoted lines that explain a signal are held in this tab for this session only: they are never written to the project file, to storage, or to an export.'),
+        h('p', { className: 'wb-cm-hint' },
+          'A signal is a keyword or heading match, not a judgment. It can see that the word "consent" is somewhere in the text; it cannot see whether consent was obtained. It answers nothing for you. Every answer stays your call.'),
+        run.prescan ? h('p', { className: 'wb-cm-hint' },
+          'Last scanned ' + fdate(run.prescan.ran_at) + ' (' + run.prescan.words + ' words, ' + run.prescan.chars + ' characters). The text itself is gone.') : null,
+        h('textarea', { ref: pasteRef, className: 'wb-input wb-fr-paste', disabled: scanning,
+          'aria-label': 'Paste the report text to pre-scan', placeholder: 'paste the full report text here' }),
+        h('div', { className: 'wb-cm-add' },
+          h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', disabled: scanning, onClick: runPrescan },
+            scanning ? 'Scanning' : 'Run pre-scan'),
+          scanning ? h('span', { className: 'wb-cm-muted', role: 'status' },
+            'Scanning in this browser. A long report can take a moment.') : null));
 
       var flagPanel = h('div', { className: 'wb-fr-flags' + (rec.redFlags.length ? ' wb-fr-flags--hot' : '') },
         h('h4', { className: 'wb-fr-ledger-title' }, 'Red flags (' + rec.redFlags.length + ')'),
@@ -344,6 +480,7 @@
       // into another. The key remounts the subtree when the run changes.
       body = h('div', { key: 'fr-run-' + run.id },
         h('p', { className: 'wb-cm-panel-intro' }, intro),
+        prescanBlock,
         groups,
         flagPanel,
         ledger(run, context),
