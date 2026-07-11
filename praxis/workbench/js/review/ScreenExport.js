@@ -20,6 +20,23 @@
       if (!it.answer) return 'Not answered';
       return C.ANSWER_LABELS[it.answer] || it.answer;
     }
+    // A run where the reviewer answered nothing, or three items of fifteen, used to
+    // export as "Verdict: Proceed to full review / Red flags (0) / None." with not a
+    // word to say the screen was never worked. Zero red flags out of zero answers is
+    // not a clean bill; it is an empty page. The in-app panel warns ("N item(s) still
+    // to answer") but the export is the surface that LEAVES the panel and reaches a
+    // commissioner, so the disclosure has to travel with it, next to the verdict and
+    // next to the red-flag count, not buried in the table at the bottom.
+    // Auto items (the computed timing check) are excluded from the denominator:
+    // recommendVerdict does not count them as unanswered, and nobody is expected to
+    // answer them by hand.
+    var toAnswer = (run.items || []).filter(function(it) { return it && !it.auto; }).length;
+    var unanswered = rec.unanswered.length;
+    var incompleteLine = unanswered
+      ? '<p class="flag">' + unanswered + ' of ' + toAnswer +
+        ' items were not answered. This is not a completed screen: an unanswered item is not a passed item.</p>'
+      : '';
+
     function itemRows(items) {
       return items.map(function(it) {
         return '<tr><td>' + esc(it.severity === 'critical' ? 'Critical' : 'Major') + '</td>' +
@@ -51,8 +68,10 @@
       '<p>' + (verdict ? '<strong>' + esc(verdict.label) + '</strong>' : 'Not yet recorded') +
         (rec.verdict && (!run.verdict || rec.verdict !== run.verdict)
           ? ' <span class="meta">(recommended: ' + esc(C.VERDICTS[rec.verdict].label) + ')</span>' : '') + '</p>',
+      incompleteLine,
       run.note ? '<p>' + esc(run.note) + '</p>' : '',
-      '<h2>Red flags (' + rec.redFlags.length + ')</h2>'
+      '<h2>Red flags (' + rec.redFlags.length + ')</h2>',
+      incompleteLine
     ];
     if (rec.redFlags.length) {
       html.push('<ul>');

@@ -211,10 +211,17 @@
     // sit at an earlier array index than one completed before it.
     var frLast = window.PraxisScreenCore ? window.PraxisScreenCore.latestCompleted(context.report_screens || [], 'commissioner') : null;
     var frRec = frLast && window.PraxisScreenCore ? window.PraxisScreenCore.recommendVerdict(frLast.items || []) : null;
+    // This line sits directly above the Endorse checkbox, the most consequential
+    // control in the tool, so it may not read as a clean bill when it is not one.
+    // "0 red flag(s), verdict Proceed to full review" off a screen where the
+    // reviewer answered nothing is an empty page, not a pass: zero red flags out of
+    // zero answers says only that nobody looked. The panel warns; this surface is
+    // outside the panel, so the count of never-answered items travels with it.
     var frLine = frLast ? h('p', { className: 'wb-cm-hint' },
       'First review (' + D.fdate(frLast.completed_at) + (frLast.reviewer ? ', ' + frLast.reviewer : '') + '): ' +
       frRec.redFlags.length + ' red flag(s), verdict ' +
-      ((window.PraxisScreenCore.VERDICTS[frLast.verdict] || {}).label || 'none') + '.') : null;
+      ((window.PraxisScreenCore.VERDICTS[frLast.verdict] || {}).label || 'none') +
+      (frRec.unanswered.length ? ', ' + frRec.unanswered.length + ' item(s) never answered' : '') + '.') : null;
 
     var acceptBlock = h('div', { className: 'wb-cm-decision' },
       h('div', { className: 'wb-cm-decision-head' },
@@ -283,7 +290,7 @@
           h('div', { className: 'wb-station-empty-title' }, 'Set up the delivery schedule'),
           h('div', { className: 'wb-station-empty-desc' }, 'Deliverables and their due dates are managed in C1 Contract. Add them there to track to on-time delivery. The final report is then accepted here, where the strength of evidence is rated per question.'),
           h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-primary wb-btn-sm', onClick: goContract }, 'Open C1 Contract'))),
-        window.FirstReview ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'commissioner' }) : null);
+        (window.FirstReview && window.PraxisScreenCore) ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'commissioner' }) : null);
     }
 
     var acceptBadge = report.accepted ? 'Accepted' : (rows.length ? (ratedCount + ' / ' + rows.length + ' rated') : 'Pending');
@@ -298,7 +305,12 @@
         h('p', { className: 'wb-cm-panel-intro' }, 'Risks to timely, credible delivery, reported to the evaluation manager with a mitigation and an owner.'),
         riskTable(),
         h('div', { className: 'wb-cm-add' }, h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', onClick: addRisk }, I.plus(14), ' Add risk'))),
-      window.FirstReview ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'commissioner' }) : null,
+      // FirstReview READS PraxisScreenCore on its first render (core() is not
+      // optional to it), so an optional script that 404s or arrives truncated would
+      // throw here and the app-level ErrorBoundary would replace the WHOLE C3
+      // Deliver page. Both scripts, or neither: a feature that fails to load must
+      // not take out the station.
+      (window.FirstReview && window.PraxisScreenCore) ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'commissioner' }) : null,
       h(SectionCard, { title: 'Report acceptance', badge: acceptBadge },
         h('p', { className: 'wb-cm-panel-intro' }, 'This is where evidence exists. Rate the strength of evidence for each question at report acceptance (higher is stronger).'),
         frLine,

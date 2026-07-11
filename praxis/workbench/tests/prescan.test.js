@@ -248,11 +248,59 @@ H.eq(refused.error, 'too_long', 'over-length error named');
 var mention = C.prescan('The methodology is described in the annex to this letter which is quite long as a body sentence.', S.createEmptyContext());
 H.assert(!mention.signals['uneg:methods'] || mention.signals['uneg:methods'].signal === 'weak', 'body-text mention is at most weak, not a heading');
 
-// Empty paste is scannable and simply finds nothing.
+// Empty paste is scannable, is not readable, and says nothing about any item.
 var empty = C.prescan('', S.createEmptyContext());
 H.assert(empty.ok, 'empty paste still returns ok');
 H.eq(empty.meta.words, 0, 'empty paste counts zero words');
-H.eq(empty.signals['uneg:limitations'].signal, 'not_found', 'empty paste finds no limitations section');
+H.eq(empty.meta.unreadable, true, 'empty paste is unreadable');
+H.eq(Object.keys(empty.signals).length, 0, 'empty paste emits no signals at all');
+
+// ---- text this scanner cannot read ---------------------------------------------
+// Every pattern here is a Latin word and every token is [a-z0-9]: the scan reads
+// English and French and nothing else. On an Arabic, Amharic, Cyrillic or Chinese
+// report it matches nothing, and "matched nothing" is a fact about the SCANNER,
+// not about the report. Emitting the usual full set of not_found signals there
+// would put a red "not detected" chip, with a one-click "I checked. Record No",
+// on uneg:methods and uneg:limitations, both CRITICAL: answering No writes
+// critical red flags, which drive the recommended verdict to `return`, which
+// surfaces the one-click request for revision on the deliverable. So on
+// unreadable text: zero signals, and meta.unreadable so the panel can say why.
+var nlCtx = S.createEmptyContext();
+nlCtx.evaluation_matrix.rows = [
+  { id: 'n1', number: 1, question: 'To what extent did the programme improve vaccination coverage?' }
+];
+nlCtx.report_structure.sections = [{ id: 'z1', title: 'Executive Summary' }, { id: 'z2', title: 'Methodology' }];
+nlCtx.sample_parameters.result = { primary: 240, label: '240 households' };
+
+[
+  ['Arabic', 'تقرير التقييم النهائي\n\nالملخص التنفيذي\nحسنت الحملة تغطية التطعيم بين الأطفال.\n\nالمنهجية\nمسح للأسر المعيشية ومقابلات مع مخبرين رئيسيين.'],
+  ['Amharic', 'የመጨረሻ የግምገማ ሪፖርት\n\nአጭር ማጠቃለያ\nፕሮግራሙ የክትባት ሽፋንን አሻሽሏል።\n\nዘዴ\nየቤተሰብ ዳሰሳ እና ቃለ መጠይቆች።'],
+  ['Cyrillic', 'ИТОГОВЫЙ ОТЧЕТ ОБ ОЦЕНКЕ\n\nРезюме\nПрограмма улучшила охват вакцинацией детей.\n\nМетодология\nОбследование домохозяйств и интервью.'],
+  ['Chinese', '最终评估报告\n\n执行摘要\n该方案提高了儿童的疫苗接种覆盖率。\n\n方法\n住户调查和关键信息人访谈。']
+].forEach(function(pair) {
+  var r = C.prescan(pair[1], nlCtx);
+  H.assert(r.ok, pair[0] + ' text scans without error');
+  H.eq(r.meta.unreadable, true, pair[0] + ' text is reported unreadable');
+  H.eq(Object.keys(r.signals).length, 0, pair[0] + ' text produces ZERO signals: no not_found chips are fabricated');
+  H.assert(r.signals['uneg:methods'] === undefined, pair[0] + ': no signal on the critical methods item');
+  H.assert(r.signals['uneg:limitations'] === undefined, pair[0] + ': no signal on the critical limitations item');
+  H.assert(r.signals['eq:n1'] === undefined, pair[0] + ': no signal on an evaluation question');
+  H.eq(r.meta.chars, pair[1].length, pair[0] + ': meta still counts the characters');
+});
+
+// A non-Latin report carrying a few Latin tokens (page numbers, an acronym, an
+// n= figure) is still unreadable: a handful of digits does not make a text
+// scannable, and the Latin share stays essentially zero.
+var mostlyNonLatin = C.prescan('تقرير التقييم النهائي 2026\n\nالملخص التنفيذي 12\nحسنت الحملة تغطية التطعيم بين الأطفال في المنطقة الشمالية.\n\nالمنهجية 21\nمسح للأسر المعيشية (n=236) ومقابلات مع مخبرين رئيسيين حول التغطية.', nlCtx);
+H.eq(mostlyNonLatin.meta.unreadable, true, 'a non-Latin report with a few Latin figures is still unreadable');
+H.eq(Object.keys(mostlyNonLatin.signals).length, 0, 'and it still produces no signals, not even a sample signal off its n= figure');
+
+// The gate must not swallow real reports: the English and French fixtures above
+// are readable, and they still emit signals.
+H.eq(res.meta.unreadable, false, 'the English report is readable');
+H.eq(fres.meta.unreadable, false, 'the French report, diacritics and all, is readable');
+H.assert(Object.keys(res.signals).length > 4, 'the readable English report still emits its signals');
+H.assert(Object.keys(fres.signals).length > 4, 'the readable French report still emits its signals');
 
 // prescan never answers an item: it returns signals only.
 H.assert(JSON.stringify(res).indexOf('"answer"') === -1, 'prescan never sets an answer');

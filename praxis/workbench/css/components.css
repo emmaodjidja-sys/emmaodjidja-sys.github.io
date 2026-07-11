@@ -637,6 +637,12 @@
 .wb-fr-item { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; background: var(--surface); }
 .wb-fr-item--auto { background: var(--surface-muted); }
 .wb-fr-item-head { display: flex; gap: 10px; align-items: flex-start; }
+/* The flex child that holds the item text. min-width:0 overrides the flex default
+   of min-width:auto, which refuses to shrink below the widest unbreakable token:
+   an evaluation question carrying a URL or a long identifier would otherwise push
+   the card wider than the panel. overflow-wrap breaks such a token rather than
+   letting it spill. */
+.wb-fr-item-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .wb-fr-item-title { font-weight: 600; color: var(--text); }
 .wb-fr-item-detail { margin: 2px 0 0; font-size: 0.85rem; color: var(--text-secondary); }
 .wb-fr-sev { flex: 0 0 auto; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 3px; margin-top: 2px; }

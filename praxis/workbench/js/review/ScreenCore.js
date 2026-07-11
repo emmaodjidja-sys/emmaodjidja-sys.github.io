@@ -43,9 +43,11 @@
   // item flows into the run, into localStorage, into the .praxis file and into
   // exports. Evidence now lives only in ephemeral React state, for this tab, for
   // this session. The field is KEPT rather than deleted so that the persisted item
-  // shape is stable across the versions that had it, and so the 1.6.0 -> 1.7.0
-  // migration has a known key to scrub on data written by those builds. NOTHING
-  // may ever populate it: see tests/firstreview.privacy.test.js.
+  // shape is stable across the versions that had it, and so PraxisSchema's
+  // scrubScreens has a known key to empty on data written by those builds. That
+  // scrub runs on every path through migrate, whatever version stamp the file
+  // carries, because the builds that wrote snippets already stamped them 1.7.0.
+  // NOTHING may ever populate it: see tests/firstreview.privacy.test.js.
   function mk(base) {
     return {
       id: base.id, source: base.source, ref: base.ref || null,
@@ -325,6 +327,7 @@
   // whole result without persisting the report.
   var MAX_PRESCAN_CHARS = 1500000;   // refuse pastes above this; guards the O(n) scans
   var SHORT_WORDS = 500;             // below this a "report" is probably a fragment
+  var LATIN_MIN_SHARE = 0.05;        // Latin letters as a share of non-space characters
   var EVIDENCE_MAX_CHARS = 150;      // hard cap on any snippet of body text we keep
   var HEADING_MAX_CHARS = 90;        // a line longer than this reads as prose, not a heading
   var EQ_TOKEN_CAP = 10;             // distinctive terms taken from one evaluation question
@@ -401,14 +404,46 @@
     return c;
   }
 
+  // Can this scanner read this text at all? Every pattern in this file is a Latin
+  // word and every token is [a-z0-9], so the scan reads English and French and
+  // nothing else. On an Arabic, Amharic, Cyrillic or Chinese report it matches
+  // nothing, which is NOT the same fact as the report lacking a methods section:
+  // it is the fact that the scanner is illiterate in that script. Emitting the
+  // usual full set of not_found signals there would put a red "not detected" chip,
+  // with a one-click "I checked. Record No", on uneg:methods and uneg:limitations,
+  // both CRITICAL. Answering No there writes critical red flags, which drive the
+  // recommended verdict to `return`, which surfaces the one-click request for
+  // revision on the deliverable. An unearned machine assertion, running in the
+  // harmful direction, on text the machine could not read. So: no signals at all,
+  // and meta.unreadable so the panel can say why.
+  //
+  // Two ways to be unreadable: no [a-z0-9] token at all, or a text whose non-space
+  // characters are essentially not Latin letters. The second test is what catches
+  // a Chinese or Arabic report that still carries Latin page numbers and a stray
+  // acronym. Digits alone never make a text readable.
+  function readability(norm) {
+    var words = (norm.match(/[a-z0-9]+/g) || []).length;
+    var letters = (norm.match(/[a-z]/g) || []).length;
+    var solid = norm.replace(/\s+/g, '').length;
+    var share = solid ? letters / solid : 0;
+    return { words: words, unreadable: words === 0 || letters === 0 || share < LATIN_MIN_SHARE };
+  }
+
   function prescan(rawText, context) {
     var text = String(rawText == null ? '' : rawText);
     if (text.length > MAX_PRESCAN_CHARS) return { ok: false, error: 'too_long' };
     var lines = text.split(/\r?\n/);
     var norm = normText(text);
     var normLines = lines.map(normText);
-    var words = (norm.match(/[a-z0-9]+/g) || []).length;
+    var read = readability(norm);
+    var words = read.words;
     var signals = {};
+
+    // Illegible to this scanner: say so, and say NOTHING about the report.
+    if (read.unreadable) {
+      return { ok: true, signals: {},
+        meta: { chars: text.length, words: words, short: words < SHORT_WORDS, unreadable: true } };
+    }
 
     // Section families -> heading found / body mention weak / absent.
     Object.keys(SECTION_FAMILIES).forEach(function(itemId) {
@@ -515,7 +550,8 @@
       };
     }
 
-    return { ok: true, signals: signals, meta: { chars: text.length, words: words, short: words < SHORT_WORDS } };
+    return { ok: true, signals: signals,
+      meta: { chars: text.length, words: words, short: words < SHORT_WORDS, unreadable: false } };
   }
 
   window.PraxisScreenCore = {

@@ -31,7 +31,10 @@
   //          evaluator (Station 7 self-screen) and commissioner (C3) lenses.
   //          Additive, plus one scrub: items[].machine_evidence is forced to ''
   //          so that a file written by any build that persisted pre-scan evidence
-  //          snippets (confidential report text) is cleaned at rest on load.
+  //          snippets (confidential report text) is cleaned at rest on load. The
+  //          scrub is VERSION-INDEPENDENT (see scrubScreens and migrate): it runs
+  //          on every path through migrate, not inside one version step, because
+  //          the builds that persisted snippets already stamped their files 1.7.0.
   var PRAXIS_VERSION = '1.7.0';
 
   // Navigation bounds (single source; consumed by router.js and context.js clamps).
@@ -52,6 +55,20 @@
     'Deck Generator'
   ];
 
+  // The context fields each station owns. Used by SAVE_STATION and, critically,
+  // by LOAD_FILE's partial-merge branch, which copies ONLY these keys out of an
+  // imported _partial file into the live project.
+  //
+  // report_screens is DELIBERATELY NOT LISTED under 10 (or anywhere). First Review
+  // saves ride on stationId 10 but write the top-level report_screens key, and that
+  // asymmetry is load-bearing: because the key is not in STATION_FIELDS, a partial
+  // .praxis file cannot inject report_screens (and any machine_evidence snippet of
+  // confidential report text it might carry, written by an intermediate build) into
+  // somebody else's live project. A full-file import goes through validateContext
+  // and migrate, which scrub the field; the partial-merge branch does not, so the
+  // only safe posture there is to not copy the key at all.
+  // NEXT MAINTAINER: this is not an omission. Do not "fix" it by adding
+  // 'report_screens' to key 10. Doing so reopens that injection path.
   var STATION_FIELDS = {
     0: ['project_meta', 'tor_constraints', 'evaluability', 'protection'],
     1: ['toc'],
@@ -258,7 +275,8 @@
       //   machine_evidence  ''       TOMBSTONE. The quoted line justifying a signal is
       //                   body text of a confidential report and is NEVER persisted; it
       //                   lives in session state only. The field is retained for shape
-      //                   stability and is scrubbed to '' by the 1.6.0 -> 1.7.0 migration.
+      //                   stability and is scrubbed to '' by scrubScreens, which migrate
+      //                   runs on EVERY path, whatever version the context carries.
       report_screens: [],
 
       staleness: { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false },
@@ -473,33 +491,58 @@
     // 1.6.0 -> 1.7.0: deep-default adds the top-level report_screens list (First
     // Review red-flag screens). New top-level array, so deep-default alone is
     // enough; the explicit guard is belt-and-braces against a non-array value.
-    //
-    // Then scrub item.machine_evidence to '' on every run. The shipped code never
-    // writes that field (evidence snippets live in ephemeral React state and die
-    // with the tab), but an INTERMEDIATE build did persist them, and validateContext
-    // preserves unknown keys, so a .praxis file written by such a build carries
-    // verbatim lines of a confidential report at rest. Scrubbing here makes the
-    // invariant true of the DATA, not merely of the write path: whatever produced
-    // the file, once it has been through this migration no evidence snippet
-    // survives in it. Defence in depth, and cheap: the field is a tombstone
-    // (PraxisScreenCore.mk) that nothing may ever populate again.
+    // The machine_evidence scrub does NOT live here: see scrubScreens, which
+    // migrate runs on every path, because a version step cannot reach the files
+    // that need it (they are already stamped 1.7.0).
     '1.6.0': function(ctx) {
       var next = deepDefault(createEmptyContext(), ctx);
       if (!Array.isArray(next.report_screens)) next.report_screens = [];
-      next.report_screens.forEach(function(run) {
-        if (!run || typeof run !== 'object' || !Array.isArray(run.items)) return;
-        run.items.forEach(function(it) {
-          if (it && typeof it === 'object' && it.machine_evidence) it.machine_evidence = '';
-        });
-      });
       next.version = '1.7.0';
       return next;
     }
   };
 
+  // Empty item.machine_evidence on every item of every screening run, whatever
+  // version the context carries.
+  //
+  // The shipped code never writes that field (a pre-scan's quoted line is body
+  // text of a confidential report, so it lives in ephemeral React state and dies
+  // with the tab), but INTERMEDIATE builds of this feature did persist it, and
+  // validateContext preserves unknown keys, so a .praxis file or localStorage blob
+  // written by one of those builds carries verbatim lines of a confidential report
+  // at rest.
+  //
+  // WHY THIS IS NOT A VERSION STEP. The obvious home for the scrub is
+  // MIGRATIONS['1.6.0'], and that is where it first lived. It was inert. The
+  // version bump to 1.7.0 landed in the FIRST commit of the feature, before the
+  // pre-scan existed, so every build that persisted an evidence snippet stamped
+  // its files 1.7.0. migrate() does nothing at all to a 1.7.0 context: there is no
+  // MIGRATIONS['1.7.0'], and the reset-to-1.0 guard is skipped because the version
+  // is the current one. The scrub therefore never ran on a single file that
+  // actually carried a snippet. Only a scrub that ignores the version stamp can
+  // reach them, so this runs on EVERY return path of migrate: the migrated path,
+  // the already-at-current-version path, and the newer-than-current early return.
+  //
+  // Idempotent, and tolerant of anything: a missing report_screens, a non-array
+  // report_screens, a run that is null or has no items array, a null item. It
+  // touches machine_evidence and nothing else; machine_signal, machine_hits,
+  // machine_total, answers, notes, verdicts and prescan counts are legitimate
+  // persisted state and must survive untouched.
+  function scrubScreens(ctx) {
+    if (!ctx || typeof ctx !== 'object') return ctx;
+    if (!Array.isArray(ctx.report_screens)) return ctx;
+    ctx.report_screens.forEach(function(run) {
+      if (!run || typeof run !== 'object' || !Array.isArray(run.items)) return;
+      run.items.forEach(function(it) {
+        if (it && typeof it === 'object' && it.machine_evidence) it.machine_evidence = '';
+      });
+    });
+    return ctx;
+  }
+
   // Bring a validated context up to PRAXIS_VERSION. Contexts without a
   // usable version string are treated as 1.0. Unknown (newer) versions are
-  // returned unchanged rather than guessed at.
+  // returned unchanged rather than guessed at (but still scrubbed).
   function migrate(context) {
     if (!context || typeof context !== 'object') return context;
     var ctx = context;
@@ -508,7 +551,9 @@
       // Switch to a numeric (component-wise) compare before any 1.10-style bump,
       // where "1.9" would sort after "1.10" as strings.
       var isKnownNewer = typeof ctx.version === 'string' && ctx.version > PRAXIS_VERSION;
-      if (isKnownNewer) return ctx;
+      // A newer file's SHAPE is not guessed at, but its evidence snippets are
+      // still scrubbed: the privacy invariant does not wait for a version we know.
+      if (isKnownNewer) return scrubScreens(ctx);
       ctx = deepDefault({}, ctx);
       ctx.version = '1.0';
     }
@@ -517,7 +562,9 @@
       ctx = MIGRATIONS[ctx.version](ctx);
       guard += 1;
     }
-    return ctx;
+    // Covers both the migrated chain and the context that was already at
+    // PRAXIS_VERSION (the loop body never ran), which is the case that matters.
+    return scrubScreens(ctx);
   }
 
   window.PraxisSchema = {

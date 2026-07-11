@@ -194,6 +194,53 @@ H.assert(scanned.indexOf('The pasted text was discarded after scanning.') !== -1
 H.assert(scanned.indexOf('No machine signals were used') === -1, 'the no-prescan wording is not also printed');
 H.assert(X.buildHtml(xr, full).indexOf('First review') !== -1, 'titled as a first review');
 
+// ---- an unworked screen may not export as a clean bill -----------------------
+// A run where the reviewer answered nothing (or three items of fifteen) and then
+// recorded "Proceed to full review" used to export as "Verdict: Proceed to full
+// review / Red flags (0) / None." with nothing at all to say the screen was never
+// worked. Zero red flags out of zero answers is not a clean bill, it is an empty
+// page, and the export is the surface that leaves the panel and reaches a
+// commissioner. The disclosure must ride next to the verdict AND next to the
+// red-flag count.
+var DISCLOSURE = 'This is not a completed screen';
+var lazy = C.newScreenRun(full, 'commissioner', null, '2026-07-11');
+lazy.verdict = 'proceed';
+lazy.completed_at = '2026-07-11T10:00:00.000Z';
+var lazyRec = C.recommendVerdict(lazy.items);
+var lazyToAnswer = lazy.items.filter(function(i) { return !i.auto; }).length;
+H.assert(lazyRec.unanswered.length > 0, 'the unworked fixture really does leave items unanswered');
+H.eq(lazyRec.redFlags.length, 0, 'the unworked fixture really does show zero red flags');
+var lazyHtml = X.buildHtml(lazy, full);
+H.assert(lazyHtml.indexOf(DISCLOSURE) !== -1, 'an export of an unworked screen discloses that it is not a completed screen');
+H.assert(lazyHtml.indexOf(lazyRec.unanswered.length + ' of ' + lazyToAnswer + ' items were not answered') !== -1,
+  'the disclosure states how many of how many items were left unanswered');
+// Prominence: it appears above the red-flag heading (next to the verdict) and
+// again beside the red-flag count, never only in the table at the bottom.
+H.assert(lazyHtml.indexOf(DISCLOSURE) > lazyHtml.indexOf('<h2>Verdict</h2>')
+  && lazyHtml.indexOf(DISCLOSURE) < lazyHtml.indexOf('<h2>Red flags'),
+  'the disclosure appears next to the verdict, above the red-flag heading');
+H.assert(lazyHtml.indexOf(DISCLOSURE, lazyHtml.indexOf('<h2>Red flags')) !== -1
+  && lazyHtml.indexOf(DISCLOSURE, lazyHtml.indexOf('<h2>Red flags')) < lazyHtml.indexOf('All screening items'),
+  'the disclosure appears again beside the red-flag heading, before the item table');
+H.assert(lazyHtml.indexOf('Proceed to full review') !== -1, 'the recorded verdict is still printed, disclosure or no');
+
+// A partially worked screen discloses too: three of fifteen is not a screen.
+var partial = C.setItemAnswer(lazy, 'uneg:exec', { answer: 'yes' });
+H.assert(X.buildHtml(partial, full).indexOf(DISCLOSURE) !== -1,
+  'a partially worked screen still discloses the unanswered items');
+
+// And a FULLY answered run must not carry the disclosure: a clean bill that was
+// actually earned reads as one.
+var worked = lazy;
+lazy.items.forEach(function(i) { if (!i.auto) worked = C.setItemAnswer(worked, i.id, { answer: 'yes' }); });
+var workedRec = C.recommendVerdict(worked.items);
+H.eq(workedRec.unanswered.length, 0, 'the fully answered fixture leaves nothing unanswered');
+H.eq(workedRec.verdict, 'proceed', 'the fully answered fixture recommends proceed');
+var workedHtml = X.buildHtml(worked, full);
+H.assert(workedHtml.indexOf(DISCLOSURE) === -1, 'a fully answered run carries NO not-a-completed-screen disclosure');
+H.assert(workedHtml.indexOf('were not answered') === -1, 'a fully answered run says nothing about unanswered items');
+H.assert(workedHtml.indexOf('<h2>Red flags (0)</h2>') !== -1, 'the fully answered clean run still reports zero red flags');
+
 // ---- latestCompleted: selection by completed_at, not array position ---------
 // upsertRun replaces an existing run IN PLACE by id, so array order tracks
 // CREATION order, not completion order. A reviewer can reopen and re-complete

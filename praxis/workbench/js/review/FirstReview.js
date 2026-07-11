@@ -30,7 +30,7 @@
   var SEV_LABEL = { critical: 'Critical', major: 'Major' };
   var GROUPS = [
     { key: 'own', title: 'This evaluation', sources: { eq: 1, design: 1, sample: 1, structure: 1, timing: 1 } },
-    { key: 'uneg', title: 'Report quality (UNEG and OECD DAC)', sources: { uneg: 1 } },
+    { key: 'uneg', title: 'Report quality (UNEG and OECD-DAC)', sources: { uneg: 1 } },
     { key: 'ethics', title: 'Ethics and safeguarding', sources: { ethics: 1 } }
   ];
 
@@ -186,8 +186,12 @@
             var a = it && it.answerability != null ? it.answerability : null;
             var ans = it && it.answer ? ansMark[it.answer] : null;
             var s = soeMap[r.eq_id] != null ? soeMap[r.eq_id] : null;
+            // role 'img' on the coloured disc: a bare span is role=generic, so an
+            // aria-label on it is ignored and a screen reader announces only the
+            // glyph ("Y", "3"). With role img the label is what gets read
+            // ("Answerability 3 of 4"), which is the whole content of the cell.
             function mark(text, color, label) {
-              return h('span', { className: 'wb-fr-mark', style: { background: color }, 'aria-label': label }, text);
+              return h('span', { className: 'wb-fr-mark', role: 'img', style: { background: color }, 'aria-label': label }, text);
             }
             return h('tr', { key: r.eq_id },
               h('td', { className: 'wb-td--meta' }, r.number != null ? r.number : ''),
@@ -234,6 +238,10 @@
     // lines against run B's items). Shape: null | { run_id, by_item: { id: str } }.
     var evd = React.useState(null), evidence = evd[0], setEvidence = evd[1];
     var scn = React.useState(false), scanning = scn[0], setScanning = scn[1];
+    // Session-only note that the last scan in THIS tab could not read the text.
+    // Shape: null | { run_id }. Not persisted: run.prescan carries counts only,
+    // and this is a fact about a scan, not about the report.
+    var unr = React.useState(null), unreadable = unr[0], setUnreadable = unr[1];
 
     // Runs of this role still open. The newest is where the panel lands when the
     // reviewer has selected nothing this session (the page-reload path).
@@ -298,38 +306,58 @@
       return next;
     }
 
+    // try/finally, not a bare sequence: anything thrown in here (a malformed
+    // context reaching prescan, a dispatch that throws) used to leave scanning
+    // stuck at true forever, which disables the Run pre-scan button AND the
+    // textarea, with the pasted report still sitting in the DOM node, until the
+    // reviewer navigates away. The scan is over when this function is over,
+    // however it ends.
     function finishPrescan(text) {
-      if (!run) { setScanning(false); return; }
-      // Cleared AFTER the blocking call, not before it: React 18 would batch a
-      // clear made here either way, but this does not lean on that, so the
-      // scanning state cannot blink off while the thread is still held.
-      var res = C.prescan(text, context);
-      setScanning(false);
-      if (!res.ok) {
-        dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST,
-          message: 'That text is too long to scan. The cap is ' + C.MAX_PRESCAN_CHARS + ' characters; scan the report a part at a time.',
-          toastType: 'error' });
-        return;
-      }
-      var byItem = {};
-      Object.keys(res.signals).forEach(function(id) { byItem[id] = res.signals[id].evidence; });
-      setEvidence({ run_id: run.id, by_item: byItem });
+      try {
+        if (!run) return;
+        var res = C.prescan(text, context);
+        if (!res.ok) {
+          dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST,
+            message: 'That text is too long to scan. The cap is ' + C.MAX_PRESCAN_CHARS + ' characters; scan the report a part at a time.',
+            toastType: 'error' });
+          return;
+        }
+        var byItem = {};
+        Object.keys(res.signals).forEach(function(id) { byItem[id] = res.signals[id].evidence; });
+        setEvidence({ run_id: run.id, by_item: byItem });
+        setUnreadable(res.meta.unreadable ? { run_id: run.id } : null);
 
-      var next = applySignals(run, res.signals);
-      next = Object.assign({}, next, {
-        prescan: { ran_at: new Date().toISOString(), chars: res.meta.chars, words: res.meta.words }
-      });
-      // The pasted text is discarded here and is held nowhere else: `text` is a
-      // local that falls out of scope with this call.
-      var el = pasteRef.current;
-      if (el) el.value = '';
-      // A short paste is a CAUTION ("is that really the whole report?"), so it
-      // must not arrive in the green of a clean save. Only the ordinary scan is a
-      // success toast.
-      persist(next, res.meta.short
-        ? 'Scanned, but the text was under 500 words. Is that the whole report?'
-        : 'Scanned. Signals are keyword matches, not judgments. Answer each item yourself.',
-        null, res.meta.short ? 'warning' : 'success');
+        // On unreadable text res.signals is {}, so applySignals CLEARS every signal
+        // a previous scan left behind. That is the correct reading of a re-scan
+        // that could read nothing: the tool now says nothing about any item.
+        var next = applySignals(run, res.signals);
+        next = Object.assign({}, next, {
+          prescan: { ran_at: new Date().toISOString(), chars: res.meta.chars, words: res.meta.words }
+        });
+        // The pasted text is discarded here and is held nowhere else: `text` is a
+        // local that falls out of scope with this call.
+        var el = pasteRef.current;
+        if (el) el.value = '';
+        // Neither the unreadable case nor a short paste is a clean save, so neither
+        // may arrive in the green of one. Only the ordinary scan is a success toast.
+        var msg, kind;
+        if (res.meta.unreadable) {
+          msg = 'The scan could not read that text. It reads Latin-script English and French only, so it produced no signals at all. Screen the report yourself.';
+          kind = 'warning';
+        } else if (res.meta.short) {
+          msg = 'Scanned, but the text was under 500 words. Is that the whole report?';
+          kind = 'warning';
+        } else {
+          msg = 'Scanned. Signals are keyword matches, not judgments. Answer each item yourself.';
+          kind = 'success';
+        }
+        persist(next, msg, null, kind);
+      } finally {
+        // Cleared AFTER the work, not before it, so the scanning state cannot blink
+        // off while the thread is still held; and cleared on EVERY exit, including
+        // an early return and a throw.
+        setScanning(false);
+      }
     }
 
     function runPrescan() {
@@ -459,6 +487,13 @@
           'A signal is a keyword or heading match, not a judgment. It can see that the word "consent" is somewhere in the text; it cannot see whether consent was obtained. It answers nothing for you. Every answer stays your call.'),
         run.prescan ? h('p', { className: 'wb-cm-hint' },
           'Last scanned ' + fdate(run.prescan.ran_at) + ' (' + run.prescan.words + ' words, ' + run.prescan.chars + ' characters). The text itself is gone.') : null,
+        // The truth, plainly, when the scanner could not read the text. It does not
+        // say the report is missing a methods section, because it did not look at a
+        // methods section: it looked at a script it cannot read. Saying "not
+        // detected" here would be an assertion the scan did not earn, and it would
+        // run in the harmful direction (a No on a critical item is a red flag).
+        (unreadable && unreadable.run_id === run.id) ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
+          'The scan could not read that text. It reads Latin-script English and French only: it has no patterns for Arabic, Amharic, Cyrillic, Chinese or any other script. It has produced no signals, because it saw nothing, and "nothing detected" would tell you about the scanner and not about the report. Screen this report yourself.') : null,
         h('textarea', { ref: pasteRef, className: 'wb-input wb-fr-paste', disabled: scanning,
           'aria-label': 'Paste the report text to pre-scan', placeholder: 'paste the full report text here' }),
         h('div', { className: 'wb-cm-add' },

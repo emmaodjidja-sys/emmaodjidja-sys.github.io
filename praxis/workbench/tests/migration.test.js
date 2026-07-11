@@ -66,46 +66,115 @@ var kept17 = S.migrate(withRun);
 H.eq(kept17.report_screens.length, 1, 'existing screen run preserved');
 H.eq(kept17.report_screens[0].reviewer, 'Jane', 'screen run fields preserved');
 
-// ---- 1.7.0: machine_evidence is scrubbed at rest ---------------------------
+// ---- machine_evidence is scrubbed at rest, WHATEVER THE VERSION STAMP -------
 // The shipped code never writes item.machine_evidence: a pre-scan's quoted line
 // is body text of a confidential report and lives only in ephemeral React state.
-// But an intermediate build DID persist it, and validateContext preserves unknown
-// keys, so a .praxis file from that build carries those lines at rest. The
-// migration scrubs the field, which makes the invariant true of the DATA and not
-// only of the write path. SECRET is the worst case, and is the same line the
-// privacy test uses.
+// But intermediate builds DID persist it, and validateContext preserves unknown
+// keys, so a .praxis file or localStorage blob from one of those builds carries
+// those lines at rest. migrate scrubs the field, which makes the invariant true
+// of the DATA and not only of the write path.
+//
+// THE VERSION THAT MATTERS IS 1.7.0, NOT 1.6.0. The scrub first lived inside
+// MIGRATIONS['1.6.0'], where it was INERT for every file it was written to
+// protect: the version bump to 1.7.0 landed in the first commit of the feature,
+// before the pre-scan existed, so the builds that persisted snippets stamped
+// their files 1.7.0, and migrate() is a no-op on a 1.7.0 context (no
+// MIGRATIONS['1.7.0'], and the reset-to-1.0 guard is skipped because the version
+// IS the current one). Worse, a 1.6.0 context carrying report_screens is a
+// combination that cannot exist in the wild, because 1.6.0 builds had no such
+// field: the old fixture tested an impossible input and passed. So the fixture
+// below is stamped 1.7.0, the version that can actually occur, and the 1.6.0 and
+// newer-than-current cases are kept alongside it. SECRET is the worst case, and
+// is the same line the privacy test uses.
 var SECRET = 'Consent was refused by Mary Akol, age 14, of Kotido village.';
-var dirty = S.createEmptyContext();
-dirty.version = '1.6.0';
-dirty.report_screens = [
-  { id: 'scr_dirty', role: 'commissioner', deliverable_id: null, reviewer: 'Jane',
-    started_at: '2026-07-01T00:00:00.000Z', completed_at: '2026-07-02T00:00:00.000Z',
-    items: [
-      { id: 'ethics:consent', source: 'ethics', severity: 'critical', text: 'Consent and data protection are described',
-        answer: 'yes', note: 'p.21', machine_signal: 'found', machine_evidence: SECRET },
-      { id: 'uneg:methods', source: 'uneg', severity: 'critical', text: 'The methodology is transparent',
-        answer: null, note: '', machine_signal: 'weak', machine_evidence: 'Mixed methods with a household survey (n=236).' },
-      { id: 'timing:window', source: 'timing', severity: 'critical', auto: true, text: 'The report is in time for the decision',
-        answer: 'yes', note: '', machine_signal: null, machine_evidence: '' }
-    ],
-    prescan: { ran_at: '2026-07-01T09:00:00.000Z', chars: 90000, words: 14000 },
-    verdict: 'proceed', verdict_recommended: 'proceed', note: '' },
-  // A malformed run must not throw the migration: items missing entirely.
-  { id: 'scr_bare', role: 'team' }
-];
-var clean = S.migrate(dirty);
-var cleanJson = JSON.stringify(clean);
-H.assert(cleanJson.indexOf(SECRET) === -1, 'migration scrubs the confidential evidence line out of the context');
-H.assert(cleanJson.indexOf('household survey') === -1, 'migration scrubs every evidence snippet, not just the worst one');
-var scrubbed = clean.report_screens[0];
-H.assert(scrubbed.items.every(function(it) { return it.machine_evidence === ''; }), 'every item comes out with machine_evidence emptied');
-H.eq(clean.report_screens.length, 2, 'a run with no items array does not break the migration');
-// The scrub takes the evidence and NOTHING else: signals, counts, answers and
-// notes are legitimate persisted state.
-H.eq(scrubbed.items[0].machine_signal, 'found', 'the machine signal survives the scrub');
-H.eq(scrubbed.items[0].answer, 'yes', "the reviewer's own answer survives the scrub");
-H.eq(scrubbed.items[0].note, 'p.21', "the reviewer's own note survives the scrub");
-H.eq(scrubbed.prescan.words, 14000, 'the prescan word count survives the scrub');
-H.eq(scrubbed.verdict, 'proceed', 'the recorded verdict survives the scrub');
+var SNIPPET2 = 'Mixed methods with a household survey (n=236).';
+
+function dirtyScreens() {
+  return [
+    { id: 'scr_dirty', role: 'commissioner', deliverable_id: null, reviewer: 'Jane',
+      started_at: '2026-07-01T00:00:00.000Z', completed_at: '2026-07-02T00:00:00.000Z',
+      items: [
+        { id: 'ethics:consent', source: 'ethics', severity: 'critical', text: 'Consent and data protection are described',
+          answer: 'yes', note: 'p.21', machine_signal: 'found', machine_evidence: SECRET },
+        { id: 'eq:q1', source: 'eq', severity: 'critical', text: 'EQ1 is answered',
+          answer: null, note: '', machine_signal: 'weak', machine_hits: 3, machine_total: 8,
+          machine_evidence: SNIPPET2 },
+        { id: 'timing:window', source: 'timing', severity: 'critical', auto: true, text: 'The report is in time for the decision',
+          answer: 'yes', note: '', machine_signal: null, machine_evidence: '' }
+      ],
+      prescan: { ran_at: '2026-07-01T09:00:00.000Z', chars: 90000, words: 14000 },
+      verdict: 'proceed', verdict_recommended: 'proceed', note: '' },
+    // Malformed runs must not throw the scrub: no items array at all, a null run,
+    // a non-array items, a null item.
+    { id: 'scr_bare', role: 'team' },
+    null,
+    { id: 'scr_weird', role: 'team', items: 'not an array' },
+    { id: 'scr_nullitem', role: 'team', items: [null, { id: 'x', machine_evidence: SECRET }] }
+  ];
+}
+
+// Everything a scrub must NOT touch, asserted on one migrated context.
+function assertScrubbed(clean, label) {
+  var json = JSON.stringify(clean);
+  H.assert(json.indexOf(SECRET) === -1, label + ': the confidential evidence line is scrubbed out of the context');
+  H.assert(json.indexOf('household survey') === -1, label + ': every evidence snippet is scrubbed, not just the worst one');
+  var run = clean.report_screens[0];
+  H.assert(run.items.every(function(it) { return it.machine_evidence === ''; }), label + ': every item comes out with machine_evidence emptied');
+  H.eq(clean.report_screens.length, 5, label + ': malformed runs do not break the migration');
+  // The scrub takes the evidence and NOTHING else: signals, counts, answers,
+  // notes and verdicts are legitimate persisted state.
+  H.eq(run.items[0].machine_signal, 'found', label + ': the machine signal survives the scrub');
+  H.eq(run.items[0].answer, 'yes', label + ": the reviewer's own answer survives the scrub");
+  H.eq(run.items[0].note, 'p.21', label + ": the reviewer's own note survives the scrub");
+  H.eq(run.items[1].machine_hits, 3, label + ': the matched-term hit count survives the scrub');
+  H.eq(run.items[1].machine_total, 8, label + ': the matched-term denominator survives the scrub');
+  H.eq(run.prescan.words, 14000, label + ': the prescan word count survives the scrub');
+  H.eq(run.verdict, 'proceed', label + ': the recorded verdict survives the scrub');
+}
+
+// (a) THE CASE THAT ACTUALLY OCCURS: a context already stamped at the current
+// version. migrate runs no migration step on it at all, so only a
+// version-independent scrub can clean it.
+var dirty17 = S.createEmptyContext();
+dirty17.version = '1.7.0';
+dirty17.report_screens = dirtyScreens();
+var clean17 = S.migrate(dirty17);
+H.eq(clean17.version, '1.7.0', 'a 1.7.0 context stays at 1.7.0');
+assertScrubbed(clean17, '1.7.0 (the version intermediate builds actually stamped)');
+
+// (b) the 1.6.0 case kept alongside it: a context that does take a migration step.
+var dirty16 = S.createEmptyContext();
+dirty16.version = '1.6.0';
+dirty16.report_screens = dirtyScreens();
+var clean16 = S.migrate(dirty16);
+H.eq(clean16.version, '1.7.0', 'a 1.6.0 context migrates to 1.7.0');
+assertScrubbed(clean16, '1.6.0');
+
+// (c) a context NEWER than PRAXIS_VERSION: migrate returns it unchanged in SHAPE
+// (it will not guess at a future schema) and that early return is a return path
+// like any other, so the snippets must still be gone.
+var dirtyNew = S.createEmptyContext();
+dirtyNew.version = '9.9.9';
+dirtyNew.report_screens = dirtyScreens();
+var cleanNew = S.migrate(dirtyNew);
+H.assert('9.9.9' > S.PRAXIS_VERSION, 'the fixture version really is newer than the current one');
+H.eq(cleanNew.version, '9.9.9', 'a newer context is not migrated backwards or forwards');
+assertScrubbed(cleanNew, 'newer than current (the isKnownNewer early return)');
+
+// The scrub is idempotent: a second pass changes nothing and throws nothing.
+var twice = S.migrate(S.migrate(dirty17));
+H.assert(JSON.stringify(twice).indexOf(SECRET) === -1, 'the scrub is idempotent');
+H.eq(twice.report_screens[0].items[0].machine_signal, 'found', 'a second pass still leaves the signal alone');
+
+// A context with no report_screens key at all, and one whose report_screens is
+// not an array, must not throw.
+var noScreens = S.createEmptyContext();
+noScreens.version = '1.7.0';
+delete noScreens.report_screens;
+H.assert(!!S.migrate(noScreens), 'a context with no report_screens key migrates without throwing');
+var badScreens = S.createEmptyContext();
+badScreens.version = '9.9.9';
+badScreens.report_screens = 'not an array';
+H.eq(S.migrate(badScreens).report_screens, 'not an array', 'a non-array report_screens is left alone rather than throwing');
 
 H.summary('migration.test');
