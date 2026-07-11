@@ -27,9 +27,26 @@
     var late = dels.filter(function(d) { return D.deliverableStatus(d) === 'late'; }).length;
     var implemented = reg.filter(function(r) { return r.implementation_status === 'implemented'; }).length;
     var gateLabel = gate.decision && D.GATE_DECISION[gate.decision] ? D.GATE_DECISION[gate.decision].label : 'Not decided';
+    // Decision-window fit: the clock the whole commissioning runs against.
+    var fit = D.decisionWindowFit(context);
+    var FIT_LABEL = { landed: 'Landed in window', on_course: 'On course', at_risk: 'At risk', missed: 'Missed', undated: 'Clock running' };
+    var winKpi = { key: 'window', label: 'Decision window', value: '-', sub: 'date the windows in C0', tone: null, cstation: 1 };
+    if (fit) {
+      var wk = fit.marginDays == null ? null : Math.round(Math.abs(fit.marginDays) / 7);
+      var winSub = fit.window.label + ' closes ' + D.fdate(fit.window.closes);
+      if (fit.status === 'missed' && wk != null) winSub = 'by about ' + wk + ' wk (' + fit.window.label + ')';
+      if (fit.status === 'at_risk' && wk != null) winSub = 'projected miss by about ' + wk + ' wk';
+      if (fit.status === 'on_course' && wk != null) winSub = wk + ' wk of margin (' + fit.window.label + ')';
+      if (fit.status === 'landed') winSub = fit.window.label + ', in time';
+      winKpi = { key: 'window', label: 'Decision window', value: FIT_LABEL[fit.status], sub: winSub,
+        tone: (fit.status === 'landed' || fit.status === 'on_course') ? 'good'
+          : (fit.status === 'undated' ? null : 'warn'),
+        cstation: 1 };
+    }
     return [
       { key: 'users', label: 'Primary intended users', value: String(primary), sub: primary ? 'named' : 'name them first', tone: primary ? 'good' : 'warn', cstation: 1 },
       { key: 'coverage', label: 'Use-to-question coverage', value: usesDef.length ? (usesCov.length + ' / ' + usesDef.length) : '-', sub: usesDef.length ? (usesCov.length + ' of ' + usesDef.length + ' uses served') : 'no uses yet', tone: usesDef.length && usesCov.length < usesDef.length ? 'warn' : (usesDef.length ? 'good' : null), cstation: 1, frac: usesDef.length ? usesCov.length / usesDef.length : null },
+      winKpi,
       { key: 'gate', label: 'Inception gate', value: gateLabel, sub: gate.decided_at ? D.fdate(gate.decided_at) : 'awaiting decision', tone: gate.decision === 'approve' ? 'good' : (gate.decision ? 'warn' : null), cstation: 3 },
       { key: 'deliverables', label: 'Deliverables on track', value: dels.length ? (accepted + ' / ' + dels.length) : '-', sub: late ? late + ' late' : (dels.length ? 'accepted' : 'no schedule'), tone: late ? 'warn' : (dels.length ? 'good' : null), cstation: 4 },
       { key: 'uptake', label: 'Recommendations implemented', value: reg.length ? (implemented + ' / ' + reg.length) : '-', sub: reg.length ? (implemented + ' of ' + reg.length + ' implemented') : 'none yet', tone: reg.length && implemented < reg.length ? null : (reg.length ? 'good' : null), cstation: 6, frac: reg.length ? implemented / reg.length : null }
