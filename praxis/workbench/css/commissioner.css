@@ -413,6 +413,11 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 .wb-cm-windate .wb-cm-date { min-width: 0; flex: 1; }
 .wb-cm-select--sub { margin-top: 4px; font-size: var(--text-xs); }
 
+/* ---- pre-commitment drift (C2) -------------------------------------------*/
+.wb-cm-drift-chip { margin-left: 8px; vertical-align: middle; white-space: nowrap; }
+.wb-cm-driftlist { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.wb-cm-drift { font-size: var(--text-sm); color: var(--text-secondary); }
+
 /* ---- responsive ----------------------------------------------------------*/
 @media (max-width: 1040px) {
   .wb-cm-kpis { grid-template-columns: repeat(3, 1fr); }

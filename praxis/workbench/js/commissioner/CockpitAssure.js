@@ -71,6 +71,14 @@
     var withSource = rows.filter(function(r) { return D.hasSource(r); }).length;
     var served = rows.filter(function(r) { return servedIds[r.id]; }).length;
 
+    // Pre-commitment drift: which live questions no longer match the gate snapshot.
+    var drift = D.gateDrift(context);
+    var driftIds = {};
+    if (drift && !drift.clean) {
+      drift.reworded.forEach(function(d) { driftIds[d.eq_id] = 'reworded'; });
+      drift.added.forEach(function(r) { driftIds[r.id] = 'added'; });
+    }
+
     // ---- appraisal.evidence (answerability), upsert keyed by eq_id ----------
     function saveEvidence(eqId, partial, msg) {
       var list = (appraisal.evidence || []).slice();
@@ -111,7 +119,10 @@
           var ev = evMap[r.id] || {};
           return h('tr', { key: r.id },
             h('td', { className: 'wb-td--meta' }, r.number != null ? r.number : ''),
-            h('td', null, h('div', { className: 'wb-cm-eq' }, r.question || '(untitled question)')),
+            h('td', null, h('div', { className: 'wb-cm-eq' }, r.question || '(untitled question)',
+              driftIds[r.id] ? h('span', { className: 'wb-badge wb-badge-amber wb-cm-drift-chip',
+                title: 'This question changed after the gate decision' },
+                driftIds[r.id] === 'added' ? 'Added after gate' : 'Amended after gate') : null)),
             h('td', { className: 'wb-th--center' }, D.hasMethod(r) ? A.okMark() : A.warnMark('No indicator/method')),
             h('td', { className: 'wb-th--center' }, D.hasSource(r) ? A.okMark() : A.warnMark('No named data source')),
             h('td', { className: 'wb-th--center' }, servedIds[r.id] ? A.okMark() : A.dashMark('Not linked to an intended use')),
@@ -139,6 +150,35 @@
           onClick: function() { openEvaluatorStation(st); } },
           done ? I.check(11) : null, s.label, I.chevronRight(11));
       }));
+
+    // ================= pre-committed questions (the gate lock) =============
+    var lockCard = h(SectionCard, {
+      title: 'Pre-committed questions',
+      badge: drift ? (drift.clean ? drift.count + ' locked' : 'Amended after gate') : 'Not locked yet',
+      variant: drift ? (drift.clean ? 'complete' : 'warning') : null },
+      drift
+        ? h('div', null,
+            h('p', { className: 'wb-cm-panel-intro' },
+              drift.count + ' evaluation questions were locked with the gate decision on ' + D.fdate(drift.snapped_at) +
+              '. Changing them afterwards without re-approval undermines the guard the gate provides.'),
+            drift.clean
+              ? h('p', { className: 'wb-cm-hint' }, 'The live matrix still matches the locked questions.')
+              : h('ul', { className: 'wb-cm-driftlist' },
+                  drift.reworded.map(function(d) {
+                    return h('li', { key: 'w' + d.eq_id, className: 'wb-cm-drift' },
+                      'Q' + (d.number != null ? d.number : '?') + ' reworded after the gate. Was: "' + (d.before || '') + '"');
+                  }).concat(drift.added.map(function(r) {
+                    return h('li', { key: 'a' + r.id, className: 'wb-cm-drift' },
+                      'Q' + (r.number != null ? r.number : '?') + ' added after the gate: "' + (r.question || '') + '"');
+                  })).concat(drift.removed.map(function(s) {
+                    return h('li', { key: 'r' + s.eq_id, className: 'wb-cm-drift' },
+                      'Q' + (s.number != null ? s.number : '?') + ' removed after the gate. Was: "' + (s.question || '') + '"');
+                  }))),
+            drift.clean ? null : h('p', { className: 'wb-cm-recon' },
+              'If these amendments are agreed, re-record the gate decision to re-lock the questions as they stand today.'))
+        : h('p', { className: 'wb-cm-hint' },
+            'The evaluation questions are locked automatically when the inception decision is recorded. ' +
+            'An evaluation that answers pre-committed questions with transparent methods is far harder to steer after the fact.'));
 
     // ================= independence attestation ============================
     var attested = !!ind.attested;
@@ -211,7 +251,15 @@
           title: blocked ? ('Available once ' + approveBlockers.join(' and ') + '.') : null,
           className: 'wb-btn wb-btn-sm' + (on ? ' wb-btn-primary' : ''),
           style: blocked ? { opacity: 0.45, cursor: 'not-allowed' } : null,
-          onClick: function() { if (blocked) return; api.setGate({ decision: k, decided_at: new Date().toISOString() }, 'Inception decision recorded: ' + D.GATE_DECISION[k].label, { action: 'gate', detail: 'Inception gate decision: ' + D.GATE_DECISION[k].label }); } }, DECISION_LABEL[k] || D.GATE_DECISION[k].label);
+          onClick: function() {
+            if (blocked) return;
+            // Recording the decision locks the matrix questions as they stand: the
+            // pre-commitment guard the C2 gate exists to provide.
+            var snap = rows.map(function(r) { return { eq_id: r.id, number: r.number, question: r.question || '' }; });
+            api.setGate({ decision: k, decided_at: new Date().toISOString(), eq_snapshot: snap, snapped_at: new Date().toISOString() },
+              'Inception decision recorded: ' + D.GATE_DECISION[k].label,
+              { action: 'gate', detail: 'Inception gate decision: ' + D.GATE_DECISION[k].label + '; ' + snap.length + ' questions locked' });
+          } }, DECISION_LABEL[k] || D.GATE_DECISION[k].label);
       })),
       !canApprove ? h('p', { className: 'wb-cm-recon' }, 'Approval is available once ' + approveBlockers.join(' and ') + '. Return for redesign is available now.') : null,
       gate.decision === 'conditions' ? conditionsBlock : null,
@@ -223,11 +271,13 @@
       h('textarea', { className: 'wb-input wb-cm-decision-note', rows: 2, placeholder: 'Decision rationale (optional)', defaultValue: gate.note || '', 'aria-label': 'Decision rationale', onBlur: function(e) { api.setGate({ note: e.target.value }); } }));
 
     return h('section', { className: 'wb-cm-move', 'aria-label': 'Assure' },
-      A.moveHead('C2', 'Assure', 'Quality-gate before spend', 'The commissioner signs off the design at inception, when course-correction is still cheap.'),
+      A.moveHead('C2', 'Assure', 'The independence guard',
+        'Questions pre-committed at the gate, methods transparent, quality assurance at arm\'s length. Signed off at inception, when course-correction is still cheap.'),
       rows.length ? h('div', { className: 'wb-cm-assure-top' }, answerabilityDist(rows, evMap), inceptionChips) : null,
       h(SectionCard, { title: 'Inception design QA', badge: rows.length ? (withSource + ' / ' + rows.length + ' sourced') : 'Awaiting matrix', variant: (rows.length && withSource < rows.length) ? 'warning' : null },
         rows.length ? h('p', { className: 'wb-cm-panel-intro' }, PANEL_INTRO) : null,
         table),
+      lockCard,
       independenceCard,
       ethicsCard,
       decisionRow);
