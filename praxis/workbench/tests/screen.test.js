@@ -126,6 +126,10 @@ H.eq(C.recommendVerdict(incomplete).verdict, null, 'clean but incomplete recomme
 H.eq(C.recommendVerdict(incomplete).unanswered.length, 1, 'unanswered surfaced');
 var autoDone = [it('a', 'critical', 'yes'), it('t', 'critical', 'yes', true)];
 H.eq(C.recommendVerdict(autoDone).verdict, 'proceed', 'auto items never count as unanswered');
+var autoUnanswered = [it('a', 'critical', 'yes'), it('h', 'major', 'yes'), it('t', 'critical', null, true)];
+var autoUnansweredResult = C.recommendVerdict(autoUnanswered);
+H.eq(autoUnansweredResult.verdict, 'proceed', 'an unanswered auto item still recommends proceed');
+H.eq(autoUnansweredResult.unanswered.length, 0, 'an unanswered auto item is excluded from unanswered');
 
 // ---- run lifecycle -----------------------------------------------------------
 var run = C.newScreenRun(full, 'commissioner', { id: 'del_9', submitted_at: '2026-07-10T00:00:00.000Z' }, '2026-07-11');
@@ -140,6 +144,18 @@ var run2 = C.setItemAnswer(run, run.items[0].id, { answer: 'no', note: 'missing'
 H.eq(run2.items[0].answer, 'no', 'setItemAnswer patches the item');
 H.eq(run.items[0].answer, null, 'setItemAnswer does not mutate the original');
 H.eq(run2.items[0].note, 'missing', 'note patched too');
+
+// setItemAnswer on an auto item: the computed answer cannot be hand-edited,
+// but other patched fields (e.g. note) still apply.
+var tctx = S.createEmptyContext();
+tctx.commissioner.governance.decision_window_closes = '2026-09-30';
+var trun = C.newScreenRun(tctx, 'commissioner', { id: 'del_x', submitted_at: '2026-10-05T00:00:00.000Z' }, '2026-07-11');
+var timingBefore = byId(trun.items, 'timing:window');
+H.eq(timingBefore.answer, 'no', 'timing item computed answer before any patch');
+var trun2 = C.setItemAnswer(trun, 'timing:window', { answer: 'yes', note: 'reviewer note' });
+var timingAfter = byId(trun2.items, 'timing:window');
+H.eq(timingAfter.answer, 'no', 'setItemAnswer cannot override an auto item computed answer');
+H.eq(timingAfter.note, 'reviewer note', 'setItemAnswer still applies note to an auto item');
 
 var list = C.upsertRun([], run);
 H.eq(list.length, 1, 'upsert appends new run');
