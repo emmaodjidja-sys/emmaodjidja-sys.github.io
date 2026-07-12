@@ -58,6 +58,59 @@ var f4 = D.decisionWindowFit(c4);
 H.eq(f4.window.label, 'GC8 requests', 'fit: governance window is the fallback');
 H.eq(f4.status, 'undated', 'fit: undated when no report date exists yet');
 
+// ---- decisionWindowDisplay ----
+H.eq(D.decisionWindowDisplay(null), null, 'display: null when fit is null');
+
+// landed, positive margin: settled success reads as "early", not a countdown.
+var dl1 = D.decisionWindowDisplay({ window: { label: 'Board' }, marginDays: 8, status: 'landed', reportDate: '2026-01-01', reportAccepted: true });
+H.eq(dl1.value, '8d early', 'display: landed with margin shows days early');
+H.eq(dl1.sub, 'Board · Landed in window', 'display: landed sub carries label and phrase');
+
+// landed, margin exactly 0: must not read "0d early".
+var dl2 = D.decisionWindowDisplay({ window: { label: 'Board' }, marginDays: 0, status: 'landed', reportDate: '2026-01-01', reportAccepted: true });
+H.eq(dl2.value, 'On the closing day', 'display: landed with zero margin does not say 0d early');
+H.eq(dl2.sub, 'Board · Landed in window', 'display: landed zero-margin sub unchanged');
+
+// missed WITH a report date: late report, not a countdown against today.
+var dm1 = D.decisionWindowDisplay({ window: { label: 'Board' }, marginDays: -5, status: 'missed', reportDate: '2026-07-05', reportAccepted: true });
+H.eq(dm1.value, '5d late', 'display: missed with report date shows days late');
+H.eq(dm1.sub, 'Board · Window missed', 'display: missed sub carries label and phrase');
+
+// missed with NO report date: window closed with nothing accepted, distinct from "late".
+var dm2 = D.decisionWindowDisplay({ window: { label: 'Board' }, marginDays: -12, status: 'missed', reportDate: null, reportAccepted: false });
+H.eq(dm2.value, '12d, no report', 'display: missed without report date reports days since close, not lateness');
+H.eq(dm2.sub, 'Board · Window missed', 'display: missed-no-report sub matches missed-with-report');
+
+// at_risk: still live, forward countdown against today.
+var c8 = ctx();
+c8.commissioner.users = [{ id: 'p1', tier: 'primary', name: 'Board', window_closes: day(30) }];
+c8.planning.deliverables = [{ id: 'd1', type: 'Final report', title: 'Final', due_date: day(45) }];
+var atRiskFit = D.decisionWindowFit(c8);
+H.eq(atRiskFit.status, 'at_risk', 'display: fixture is at_risk');
+var dar = D.decisionWindowDisplay(atRiskFit);
+H.eq(dar.value, '30d left', 'display: at_risk counts down to the close, not the due date');
+H.eq(dar.sub, 'Board · At risk', 'display: at_risk sub carries label and phrase');
+
+// on_course: still live, forward countdown against today.
+var c9 = ctx();
+c9.commissioner.users = [{ id: 'p1', tier: 'primary', name: 'Board', window_closes: day(30) }];
+c9.planning.deliverables = [{ id: 'd1', type: 'Final report', title: 'Final', due_date: day(10) }];
+var onCourseFit = D.decisionWindowFit(c9);
+H.eq(onCourseFit.status, 'on_course', 'display: fixture is on_course');
+var doc = D.decisionWindowDisplay(onCourseFit);
+H.eq(doc.value, '30d left', 'display: on_course counts down to the close');
+H.eq(doc.sub, 'Board · On course', 'display: on_course sub carries label and phrase');
+
+// undated: no report date, window still open, forward countdown.
+var c10 = ctx();
+c10.commissioner.governance.decision_clock = 'GC8 requests';
+c10.commissioner.governance.decision_window_closes = day(90);
+var undatedFit = D.decisionWindowFit(c10);
+H.eq(undatedFit.status, 'undated', 'display: fixture is undated');
+var du = D.decisionWindowDisplay(undatedFit);
+H.eq(du.value, '90d left', 'display: undated counts down to the close');
+H.eq(du.sub, 'GC8 requests · Report undated', 'display: undated sub carries label and phrase');
+
 // ---- gateDrift ----
 H.eq(D.gateDrift(ctx()), null, 'drift: null before snapshot');
 var c5 = ctx();

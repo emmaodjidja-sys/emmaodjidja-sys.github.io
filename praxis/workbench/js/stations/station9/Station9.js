@@ -88,13 +88,8 @@
     var fit = (CD && CD.decisionWindowFit) ? CD.decisionWindowFit(context) : null;
     var fitTile = null;
     if (fit) {
-      var daysLeft = PraxisUtils.daysUntilLocal(fit.window.closes);
-      var fitValue = daysLeft == null ? 'Undated'
-        : (daysLeft < 0 ? Math.abs(daysLeft) + 'd past' : daysLeft + 'd left');
-      var FIT_SUB = { missed: 'Window missed', at_risk: 'At risk', on_course: 'On course',
-        landed: 'Landed in window', undated: 'Report undated' };
-      fitTile = PS.statTile('Decision window', fitValue,
-        fit.window.label + (FIT_SUB[fit.status] ? ' · ' + FIT_SUB[fit.status] : ''));
+      var fitDisplay = CD.decisionWindowDisplay(fit);
+      fitTile = PS.statTile('Decision window', fitDisplay.value, fitDisplay.sub);
     }
 
     var summary = h('div', { className: 'wb-plan-stats' },

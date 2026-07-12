@@ -402,6 +402,41 @@
     return out;
   }
 
+  // Display strings for the decision-window-fit tile (Station 9 and anywhere else
+  // that renders decisionWindowFit). Pure: takes the fit object, returns
+  // { value, sub }. Kept separate from decisionWindowFit so a settled window
+  // (landed or missed) reports history, not a countdown against today, which is
+  // the wrong quantity once the window has closed. Live statuses (on_course,
+  // at_risk, undated) still read as a forward countdown.
+  var FIT_STATUS_PHRASE = { missed: 'Window missed', at_risk: 'At risk', on_course: 'On course',
+    landed: 'Landed in window', undated: 'Report undated' };
+  function decisionWindowDisplay(fit) {
+    if (!fit) return null;
+    var value;
+    if (fit.status === 'landed') {
+      // Settled success: how many days ahead of the close the report landed.
+      value = fit.marginDays === 0 ? 'On the closing day' : fit.marginDays + 'd early';
+    } else if (fit.status === 'missed') {
+      // Settled failure, but two different shapes underneath. When a report date
+      // exists, marginDays is close-minus-report (negative = late), so the days
+      // late is the negation. When there is no report date at all, marginDays is
+      // daysUntilLocal(closes) instead (see decisionWindowFit), i.e. how many days
+      // ago the window closed with nothing accepted; do not call that "late".
+      if (fit.reportDate) {
+        value = (fit.marginDays == null ? 'Late' : (-fit.marginDays) + 'd late');
+      } else {
+        value = (fit.marginDays == null ? 'No report' : Math.abs(fit.marginDays) + 'd, no report');
+      }
+    } else {
+      // on_course / at_risk / undated: the window is still live, so a forward
+      // countdown against today is the right quantity.
+      var daysLeft = U.daysUntilLocal(fit.window.closes);
+      value = daysLeft == null ? 'Undated' : (daysLeft < 0 ? Math.abs(daysLeft) + 'd past' : daysLeft + 'd left');
+    }
+    var phrase = FIT_STATUS_PHRASE[fit.status];
+    return { value: value, sub: fit.window.label + (phrase ? ' · ' + phrase : '') };
+  }
+
   function normQuestion(s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim().toLowerCase(); }
 
   // Pre-commitment drift: how the live matrix differs from the questions locked
@@ -494,6 +529,7 @@
     deliverableStatus: deliverableStatus, reviewDaysUntil: reviewDaysUntil, isReviewOpen: isReviewOpen,
     clusterTrackPoints: clusterTrackPoints, packTrackLanes: packTrackLanes, trackX: trackX,
     finalReportDeliverable: finalReportDeliverable, decisionWindowFit: decisionWindowFit,
+    decisionWindowDisplay: decisionWindowDisplay,
     gateDrift: gateDrift, moneyAgainstUse: moneyAgainstUse,
     newUser: newUser, useOutcomeRollup: useOutcomeRollup,
     defaultCommissioner: defaultCommissioner
