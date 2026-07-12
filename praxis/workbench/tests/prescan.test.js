@@ -528,6 +528,238 @@ H.eq(sigOf(fres, 'ethics:consent'), 'not_found', 'the French report still report
 H.assert(notFoundKeys(res).length > 0, 'not_found is alive and well on a normal English report');
 H.assert(notFoundKeys(fres).length > 0, 'not_found is alive and well on a normal French report');
 
+// ---- THE LATIN-SCRIPT LANGUAGE THE SCANNER DOES NOT KNOW ------------------------
+// Every gate above keys on SCRIPT. A Spanish or Portuguese evaluation report (common
+// in this domain) is 0.99 Latin and 0.00 other-script, so it sails through all of
+// them into the fully-readable regime, and NONE of the patterns match it:
+// /(methodolog|\bmethods?\b|\bmethodes?\b)/ does not match "Metodologia de la
+// evaluacion", the limitations family does not match "Limitaciones", \bresume\b does
+// not match "Resumen Ejecutivo". The fixtures below HAVE all four sections. Before
+// the language gate they collected 7 not_found signals, including uneg:methods and
+// uneg:limitations, both CRITICAL, each rendering a red "not detected" chip with a
+// one-click "I checked. Record No" -> 7 critical red flags -> recommendVerdict
+// returns 'return' -> the one-click "Request revision on the deliverable", which
+// flips the deliverable and writes the audit log. The same harmful chain the script
+// gates exist to close, reached through a different door. These are the fixtures that
+// catch it.
+var esCtx = S.createEmptyContext();
+esCtx.evaluation_matrix.rows = [
+  { id: 'e1', number: 1, question: 'To what extent did the programme improve vaccination coverage among children?' }
+];
+esCtx.report_structure.sections = [
+  { id: 'y1', title: 'Executive Summary' }, { id: 'y2', title: 'Methodology' }, { id: 'y3', title: 'Recommendations' }
+];
+esCtx.sample_parameters.result = { primary: 240, label: '240 households' };
+
+var ES_REPORT = [
+  'INFORME FINAL DE EVALUACION',
+  'Evaluacion independiente del Programa Nacional de Inmunizacion',
+  '',
+  'Resumen Ejecutivo',
+  'El programa mejoro la cobertura de vacunacion entre los ninos menores de cinco anos en las regiones del norte en dieciocho puntos porcentuales durante el periodo evaluado. Las actividades incluyeron campanas de sensibilizacion comunitaria y la capacitacion del personal de salud.',
+  'La evaluacion concluye que el programa alcanzo la mayoria de sus metas a nivel de productos, aunque el avance en los resultados de mediano plazo fue desigual entre las provincias.',
+  '',
+  'Metodologia de la evaluacion',
+  'El equipo adopto un diseno mixto que combina datos cuantitativos y cualitativos. Se realizo una encuesta de hogares con una muestra aleatoria estratificada en seis provincias, junto con entrevistas a informantes clave en los niveles ministerial y provincial.',
+  'Se organizaron grupos focales con cuidadores en las comunidades destinatarias y se triangularon los datos de los registros de los establecimientos con los resultados de la encuesta y con el material cualitativo.',
+  '',
+  'Limitaciones',
+  'Las restricciones de seguridad impidieron el acceso a dos provincias del nororiente, por lo que los hallazgos no se aplican a esas zonas. Ademas, los registros de los establecimientos estaban incompletos en algunos casos.',
+  '',
+  'Hallazgos principales',
+  'La cobertura aumento de manera notable en las zonas alcanzadas por las brigadas moviles y mejoro la regularidad de la cadena de frio en los establecimientos rurales.',
+  'Los cuidadores senalaron que las visitas de las brigadas moviles se volvieron regulares y previsibles, y que el personal de salud paso a ser conocido por las familias.',
+  '',
+  'Conclusiones',
+  'La evaluacion concluye que el programa fue pertinente para las necesidades de la poblacion y eficaz para elevar la cobertura, pero su sostenibilidad depende de la contratacion de personal.',
+  '',
+  'Recomendaciones',
+  'Ampliar el modelo de sensibilizacion comunitaria a las provincias restantes, con un presupuesto operativo estable para las brigadas moviles.',
+  'Fortalecer el sistema de informacion sanitaria para que registre a los ninos que no recibieron ninguna dosis.'
+].join('\n');
+
+// The same in Portuguese. Both languages are ordinary in this domain, and both used
+// to behave identically to each other and identically badly.
+var PT_REPORT = [
+  'RELATORIO FINAL DE AVALIACAO',
+  'Avaliacao independente do Programa Nacional de Imunizacao',
+  '',
+  'Sumario Executivo',
+  'O programa melhorou a cobertura vacinal entre as criancas menores de cinco anos nas regioes do norte em dezoito pontos percentuais durante o periodo avaliado. As atividades incluiram campanhas de sensibilizacao comunitaria e a formacao dos profissionais de saude.',
+  'A avaliacao conclui que o programa alcancou a maioria das suas metas ao nivel dos produtos, embora o progresso ao nivel dos resultados de medio prazo tenha sido desigual entre as provincias.',
+  '',
+  'Metodologia da avaliacao',
+  'A equipa adotou um desenho misto que combina dados quantitativos e qualitativos. Realizou-se um inquerito aos agregados familiares com uma amostra aleatoria estratificada em seis provincias, a par de entrevistas a informantes chave aos niveis ministerial e provincial.',
+  'Foram organizados grupos focais com cuidadores nas comunidades visadas e os dados dos registos das unidades foram triangulados com os resultados do inquerito e com o material qualitativo.',
+  '',
+  'Limitacoes',
+  'As restricoes de seguranca impediram o acesso a duas provincias do nordeste, pelo que os achados nao se aplicam a essas zonas. Alem disso, os registos das unidades estavam incompletos nalguns casos.',
+  '',
+  'Principais achados',
+  'A cobertura aumentou de forma notavel nas zonas alcancadas pelas brigadas moveis e melhorou a regularidade da cadeia de frio nas unidades rurais.',
+  'Os cuidadores referiram que as visitas das brigadas moveis se tornaram regulares e previsiveis, e que os profissionais de saude passaram a ser conhecidos pelas familias.',
+  '',
+  'Conclusoes',
+  'A avaliacao conclui que o programa foi pertinente para as necessidades da populacao e eficaz para aumentar a cobertura, mas a sua sustentabilidade depende da contratacao de pessoal.',
+  '',
+  'Recomendacoes',
+  'Alargar o modelo de sensibilizacao comunitaria as provincias restantes, com um orcamento operacional estavel para as brigadas moveis.',
+  'Reforcar o sistema de informacao sanitaria para que registe as criancas que nao receberam nenhuma dose.'
+].join('\n');
+
+// Accented, to prove the gate does not merely key on the absence of diacritics: a
+// Spanish report typed properly is still Spanish.
+var ES_ACCENTED = [
+  'INFORME FINAL DE EVALUACIÓN',
+  '',
+  'Resumen Ejecutivo',
+  'El programa mejoró la cobertura de vacunación entre los niños menores de cinco años en las regiones del norte durante el período evaluado. Las actividades incluyeron campañas de sensibilización comunitaria y la capacitación del personal de salud.',
+  '',
+  'Metodología de la evaluación',
+  'El equipo adoptó un diseño mixto. Se realizó una encuesta de hogares (n=236) con una muestra aleatoria estratificada en seis provincias, junto con entrevistas a informantes clave.',
+  '',
+  'Limitaciones',
+  'Las restricciones de seguridad impidieron el acceso a dos provincias, por lo que los hallazgos no se aplican a esas zonas.',
+  '',
+  'Recomendaciones',
+  'Ampliar el modelo de sensibilización comunitaria a las provincias restantes.'
+].join('\n');
+
+[['Spanish', ES_REPORT], ['Portuguese', PT_REPORT], ['Spanish with diacritics', ES_ACCENTED]].forEach(function(pair) {
+  var name = pair[0], r = C.prescan(pair[1], esCtx);
+  H.assert(r.ok, name + ': scans without error');
+  // It really is the paste that every SCRIPT gate waves through: ordinary Latin text.
+  H.assert(latinShare(pair[1]) > 0.9, name + ': Latin share is over 0.9, so every script gate passes it');
+  H.eq(r.meta.unreadable, false, name + ': it is perfectly legible text, not an unreadable one');
+  H.eq(r.meta.mixed_script, false, name + ': and it is not mixed-script, so the previous fix does not touch it');
+  // The new gate, and the whole point.
+  H.eq(r.meta.unknown_language, true, name + ': but it is not a language this scan can read');
+  H.assert(r.meta.enfr_density < 0.08, name + ': its EN/FR function-word density is under the floor (got ' + r.meta.enfr_density.toFixed(4) + ')');
+  H.eq(notFoundKeys(r).length, 0, name + ': ZERO not_found signals, though the scan matched none of its headings');
+  H.assert(r.signals['uneg:methods'] === undefined,
+    name + ': uneg:methods carries NO KEY, so no chip and no one-click "Record No" on a CRITICAL item, though the report HAS a methodology section');
+  H.assert(r.signals['uneg:limitations'] === undefined,
+    name + ': uneg:limitations carries NO KEY, so no chip and no one-click "Record No" on a CRITICAL item, though the report HAS a limitations section');
+  H.assert(r.signals['uneg:exec'] === undefined, name + ': no fabricated absence on the executive summary, which the report HAS');
+  H.assert(r.signals['uneg:recommendations'] === undefined, name + ': no fabricated absence on recommendations, which the report HAS');
+  H.assert(r.signals['ethics:consent'] === undefined, name + ': no fabricated absence on the critical consent item');
+  H.assert(r.signals['eq:e1'] === undefined, name + ': no fabricated absence on an evaluation question');
+  H.assert(r.signals['structure:agreed'] === undefined || r.signals['structure:agreed'].signal !== 'not_found',
+    name + ': no fabricated absence on the agreed structure');
+});
+
+// THE CHAIN, END TO END. Taking every one-click the panel offers must no longer be
+// able to drive the verdict to 'return' on a Spanish report that has every section.
+// This is the assertion that speaks about the HARM, not about the plumbing.
+var esRun = C.newScreenRun(esCtx, 'team', null, '2026-07-11');
+var esScan = C.prescan(ES_REPORT, esCtx);
+notFoundKeys(esScan).forEach(function(id) { esRun = C.setItemAnswer(esRun, id, { answer: 'no' }); });
+var esRec = C.recommendVerdict(esRun.items);
+H.eq(esRec.redFlags.length, 0, 'Spanish report: taking every one-click the scan offers writes ZERO red flags');
+H.assert(esRec.verdict !== 'return', 'Spanish report: the scan can no longer drive the recommended verdict to return');
+
+// ---- the fix suppresses ABSENCE CLAIMS ONLY, never DETECTIONS -------------------
+// A detection is safe in any language: the scanner genuinely saw the thing it
+// reports. Two cases where the words really do coincide, and both must survive.
+var esDetect = C.prescan(ES_ACCENTED, esCtx);
+H.eq(sigOf(esDetect, 'sample:achieved'), 'found',
+  'Spanish: the n=236 figure IS there and IS within tolerance of the planned 240, so the detection is still reported');
+// "consent" is a substring of "consentimiento": the scanner really did see its own
+// pattern, so this is a detection, not a guess.
+var esConsent = C.prescan([
+  'Resumen Ejecutivo',
+  'El programa mejoro la cobertura de vacunacion entre los ninos de las regiones del norte.',
+  'Consentimiento informado y proteccion de datos',
+  'Se obtuvo el consentimiento informado de todos los participantes antes de la encuesta.'
+].join('\n'), S.createEmptyContext());
+H.eq(sigOf(esConsent, 'ethics:consent'), 'found',
+  'Spanish: a heading the pattern really does match is still reported found');
+H.eq(notFoundKeys(esConsent).length, 0, 'Spanish: and it still asserts no absence anywhere');
+
+// ---- a NORMAL EN and FR report is COMPLETELY UNAFFECTED --------------------------
+// The assertion that stops this fix from silently disabling the scanner's one useful
+// negative. If a future change widens the language suppression, these fail.
+H.eq(res.meta.unknown_language, false, 'the English report IS recognisably English: regime (c)');
+H.eq(fres.meta.unknown_language, false, 'the French report with diacritics IS recognisably French: regime (c)');
+H.assert(res.meta.enfr_density >= 0.08, 'the English report clears the density floor (got ' + res.meta.enfr_density.toFixed(4) + ')');
+H.assert(fres.meta.enfr_density >= 0.08, 'the French report clears the density floor (got ' + fres.meta.enfr_density.toFixed(4) + ')');
+H.eq(sigOf(res, 'ethics:consent'), 'not_found', 'the English report STILL reports its genuinely missing consent section');
+H.eq(sigOf(fres, 'ethics:consent'), 'not_found', 'the French report STILL reports its genuinely missing consent section');
+
+// French WITHOUT diacritics, at full length: the same report typed on a keyboard that
+// has none must be recognised as French just as well, and must keep its one useful
+// negative. It has no consent section and no n= figure; both are genuinely absent.
+var FR_PLAIN = [
+  'RAPPORT FINAL D EVALUATION',
+  '',
+  'Resume executif',
+  'Le programme a ameliore la couverture vaccinale des enfants zero dose dans les districts du nord. Les equipes mobiles ont atteint des villages que les centres de sante fixes n avaient jamais desservis, et la chaine du froid a tenu dans les entrepots de district pendant toute la campagne.',
+  '',
+  'Methodologie',
+  'L equipe a mene une enquete aupres des menages dans six districts, ainsi que des entretiens avec des informateurs cles dans les bureaux de district. Les donnees quantitatives tirees des registres des centres ont ete triangulees avec le materiel qualitatif.',
+  '',
+  'Limites',
+  'Les contraintes de securite ont empeche l acces a deux districts du nord est, et les resultats ne valent donc pas pour ces zones.',
+  '',
+  'Constatations',
+  'La couverture a progresse dans les districts atteints par la campagne. Les soignants ont indique que les visites des equipes mobiles etaient previsibles et que les agents de sante leur etaient connus.',
+  '',
+  'Recommandations',
+  'Etendre le modele de sensibilisation communautaire aux districts restants avec un budget operationnel stable pour les equipes mobiles.'
+].join('\n');
+var frPlain = C.prescan(FR_PLAIN, esCtx);
+H.eq(frPlain.meta.unknown_language, false, 'unaccented French is still recognised as French');
+H.assert(frPlain.meta.enfr_density >= 0.08, 'unaccented French clears the density floor (got ' + frPlain.meta.enfr_density.toFixed(4) + ')');
+H.eq(sigOf(frPlain, 'uneg:methods'), 'found', 'unaccented French: the methodologie heading is detected');
+H.eq(sigOf(frPlain, 'uneg:limitations'), 'found', 'unaccented French: the limites heading is detected');
+H.eq(sigOf(frPlain, 'ethics:consent'), 'not_found',
+  'unaccented French STILL reports a genuine absence: it says nothing about consent');
+H.eq(sigOf(frPlain, 'sample:achieved'), 'not_found',
+  'unaccented French STILL reports a genuine absence: it carries no n= figure');
+H.assert(notFoundKeys(frPlain).length > 0, 'not_found is alive and well on a normal unaccented French report');
+H.assert(notFoundKeys(res).length > 0, 'not_found is alive and well on a normal English report');
+
+// ---- the density is the discriminator, and the SHARED words are why it works ------
+// Order-of-magnitude separation, measured. If a future change adds a marker that
+// Spanish and Portuguese also use (de, la, que, en, no, se, es, son, por, para, con,
+// or a homograph like FR "tres" = ES/PT "three", FR "sur" = ES "south"), the Spanish
+// density climbs and this fails before the harm ships.
+H.assert(esScan.meta.enfr_density === 0, 'the Spanish report scores EXACTLY zero: no marker is a word Spanish also uses');
+H.assert(C.prescan(PT_REPORT, esCtx).meta.enfr_density === 0, 'the Portuguese report scores EXACTLY zero too');
+H.assert(res.meta.enfr_density > 0.15, 'the English report is an order of magnitude clear of them (got ' + res.meta.enfr_density.toFixed(4) + ')');
+H.assert(frPlain.meta.enfr_density > 0.15, 'so is the French one (got ' + frPlain.meta.enfr_density.toFixed(4) + ')');
+
+// ---- the MINOR: structure:agreed may not assert an absence in its EVIDENCE --------
+// structure:agreed is the one signal that can SURVIVE the emit gate while still
+// carrying an absence claim, because a partial match is a 'weak', not a 'not_found'.
+// Its evidence used to read "Missing: Methodology." even in the mixed-script regime,
+// which is an assertion about a section that may sit in the very half of the document
+// the scan could not read, and the row it lands on offers a one-click "I checked.
+// Record Partial".
+var stCtx = S.createEmptyContext();
+stCtx.report_structure.sections = [{ id: 'm1', title: 'Executive Summary' }, { id: 'm2', title: 'Methodology' }];
+var mixStruct = C.prescan(BILINGUAL, stCtx);
+H.eq(mixStruct.meta.mixed_script, true, 'the bilingual fixture is mixed-script, so absences are not allowed');
+H.eq(sigOf(mixStruct, 'structure:agreed'), 'weak', 'structure:agreed survives as weak: one of the two titles IS there as a heading');
+H.assert(mixStruct.signals['structure:agreed'].evidence.indexOf('Missing') === -1,
+  'mixed-script: the structure evidence names NOTHING as missing');
+H.assert(mixStruct.signals['structure:agreed'].evidence.indexOf('Methodology') === -1,
+  'mixed-script: and it does not name the section it could not find, which may be in the half it could not read');
+H.assert(mixStruct.signals['structure:agreed'].evidence.indexOf('Detected as headings: 1 of 2') !== -1,
+  'mixed-script: it states only what it SAW (1 of 2 titles detected as headings)');
+H.assert(mixStruct.signals['structure:agreed'].evidence.length <= EVIDENCE_CAP,
+  'the rewritten structure evidence still respects the evidence cap');
+// The paired proof: on the SAME English text alone, regime (c), it still names the
+// missing section. The evidence gate suppresses an unearned claim; it does not blind
+// the check.
+var enStruct = C.prescan(EN_HALF, stCtx);
+H.eq(enStruct.meta.mixed_script, false, 'the English half alone is regime (c)');
+H.assert(enStruct.signals['structure:agreed'].evidence.indexOf('Missing: Methodology') !== -1,
+  'regime (c): the structure evidence DOES still name the genuinely missing section');
+// And on a Spanish report the whole signal is gone, not merely its sentence.
+H.assert(esScan.signals['structure:agreed'] === undefined || esScan.signals['structure:agreed'].signal !== 'not_found',
+  'Spanish: structure:agreed asserts no absence');
+
 // prescan never answers an item: it returns signals only.
 H.assert(JSON.stringify(res).indexOf('"answer"') === -1, 'prescan never sets an answer');
 

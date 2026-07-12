@@ -254,4 +254,72 @@ var shortToast = shortDispatched.filter(function(a) { return a.type === 'SHOW_TO
 H.assert(shortToast.message.indexOf('under 500 words') !== -1, 'a short paste warns that it may not be the whole report');
 H.eq(shortToast.toastType, 'warning', 'the short-text warning is a warning toast, not a green success');
 
+// ---- a Spanish report, through the REAL panel --------------------------------
+// The defect was measured end to end against this panel, so it is closed end to end
+// against it. A Spanish report that HAS a methodology section, a limitations section,
+// an executive summary and recommendations used to come back as a GREEN success
+// toast plus seven red "not detected" chips, each with a one-click "I checked. Record
+// No" that writes a critical red flag. What must arrive now: a WARNING toast that
+// says the scan reads English and French only, and NO machine_signal at all on the
+// two critical items, so the panel can render no chip and offer no one-click on them.
+var esCtx2 = S.createEmptyContext();
+esCtx2.report_structure.sections = [{ id: 'p1', title: 'Executive Summary' }, { id: 'p2', title: 'Methodology' }];
+esCtx2.report_screens = [C.newScreenRun(esCtx2, 'team', null)];
+var esDispatched = [];
+function esDispatch(a) {
+  esDispatched.push(a);
+  if (a.type === 'SAVE_STATION' && a.payload && a.payload.report_screens) esCtx2.report_screens = a.payload.report_screens;
+}
+var ES_PANEL_REPORT = [
+  'INFORME FINAL DE EVALUACION',
+  '',
+  'Resumen Ejecutivo',
+  'El programa mejoro la cobertura de vacunacion entre los ninos menores de cinco anos en las regiones del norte durante el periodo evaluado.',
+  '',
+  'Metodologia de la evaluacion',
+  'El equipo adopto un diseno mixto que combina datos cuantitativos y cualitativos. Se realizo una encuesta de hogares en seis provincias.',
+  '',
+  'Limitaciones',
+  'Las restricciones de seguridad impidieron el acceso a dos provincias, por lo que los hallazgos no se aplican a esas zonas.',
+  '',
+  'Recomendaciones',
+  'Ampliar el modelo de sensibilizacion comunitaria a las provincias restantes.'
+].join('\n');
+hookState = []; hookIdx = 0;
+var esTree = sandbox.FirstReview({ context: esCtx2, dispatch: esDispatch, role: 'team' });
+findAll(esTree, function(el) {
+  return el.type === 'textarea' && String(el.props.className || '').indexOf('wb-fr-paste') !== -1;
+})[0].props.ref.current.value = ES_PANEL_REPORT;
+findAll(esTree, function(el) { return el.type === 'button' && el.children[0] === 'Run pre-scan'; })[0].props.onClick();
+
+var esToast = esDispatched.filter(function(a) { return a.type === 'SHOW_TOAST'; }).pop();
+H.eq(esToast.toastType, 'warning', 'a Spanish report does NOT come back as a green success toast');
+H.assert(esToast.message.indexOf('does not read as English or French') !== -1,
+  'the toast says plainly that the scan could not read the language');
+H.assert(esToast.message.indexOf('cannot report what is missing') !== -1,
+  'and that it therefore cannot report what is missing');
+
+var esRunSaved = esCtx2.report_screens[0];
+function esItem(id) { return esRunSaved.items.filter(function(i) { return i.id === id; })[0]; }
+H.eq(esItem('uneg:methods').machine_signal, null,
+  'the panel holds NO signal on uneg:methods, so it renders no "not detected" chip on a CRITICAL item');
+H.eq(esItem('uneg:limitations').machine_signal, null, 'nor on uneg:limitations');
+H.assert(esRunSaved.items.every(function(it) { return it.machine_signal !== 'not_found'; }),
+  'not one item in the run carries a not_found signal after a Spanish scan');
+H.assert(esRunSaved.items.every(function(it) { return it.answer === null || it.auto; }),
+  'and nothing was answered');
+
+// The panel must SAY so, in visible text, not merely fall silent: a bare row with no
+// chip looks exactly like a row the scan cleared.
+hookIdx = 0;
+var esAfter = sandbox.FirstReview({ context: esCtx2, dispatch: esDispatch, role: 'team' });
+var esCaution = findAll(esAfter, function(el) {
+  return el.type === 'p' && (el.children || []).some(function(c) {
+    return typeof c === 'string' && c.indexOf('does not read as English or French') !== -1;
+  });
+});
+H.eq(esCaution.length, 1, 'the panel tells the reviewer, in visible text, that the scan could not read the language');
+H.assert(String(esCaution[0].children[0]).indexOf('absence checks were skipped') !== -1,
+  'and that the absence checks were skipped, so a bare row is not read as a clean row');
+
 H.summary('firstreview.privacy.test');

@@ -403,11 +403,11 @@
     return c;
   }
 
-  // ---- script regimes: what the scanner is allowed to ASSERT -------------------
-  // Every pattern in this file is a Latin word and every token is [a-z0-9], so the
-  // scan reads English and French and nothing else. That makes the DIRECTION of a
-  // signal decisive, and it is the direction, not a single global flag, that these
-  // rules gate.
+  // ---- reading regimes: what the scanner is allowed to ASSERT -------------------
+  // Every pattern in this file is an English or French word, so the scan reads
+  // English and French and nothing else. That makes the DIRECTION of a signal
+  // decisive, and it is the direction, not a single global flag, that these rules
+  // gate.
   //
   // `found` and `weak` report what the scanner SAW. They are earned on any text
   // that carries the word, whatever script surrounds it: the word was there.
@@ -420,29 +420,35 @@
   // which drive the recommended verdict to `return`, which surfaces the one-click
   // request for revision on the deliverable. An unearned machine assertion, running
   // in the harmful direction, on text the machine could not read. So the affirmative
-  // signals are gated on nothing, and every absence claim is gated on script. This
-  // is the same rule the scan already applies to the five items no regex can judge
-  // (uneg:conclusions, ethics:identifiable, ethics:harm, design:fidelity,
-  // timing:window): where the tool cannot know, it emits NO KEY, rather than
-  // inventing a signal.
+  // signals are gated on nothing, and every absence claim is gated on whether the
+  // text is one this scanner can READ. This is the same rule the scan already applies
+  // to the five items no regex can judge (uneg:conclusions, ethics:identifiable,
+  // ethics:harm, design:fidelity, timing:window): where the tool cannot know, it emits
+  // NO KEY, rather than inventing a signal.
   //
-  // THE THREE REGIMES. Checked in this order; (a) returns early, so they compose
-  // without contradiction. (a) is strictly stronger than (b), and any text that is
-  // neither is (c).
+  // THE FOUR REGIMES. (a) returns early. (b) and (d) are independent of each other
+  // and either one alone suppresses absences, so they compose in one boolean at the
+  // emit chokepoint; a text that is in neither is (c).
   //
   //   (a) essentially no readable Latin text: no [a-z0-9] token at all, or no
   //       [a-z] letter at all, or a Latin share under LATIN_MIN_SHARE.
   //         -> meta.unreadable = true, and ZERO signals of any kind.
-  //   (b) real Latin content, but a substantial part of the text is in a script
+  //   (b) real Latin content, but a substantial part of the text is in a SCRIPT
   //       this scanner cannot read (other-script share at or above
   //       OTHER_SCRIPT_MAX_SHARE).
   //         -> meta.mixed_script = true. `found` and `weak` emitted as usual;
   //            EVERY not_found SUPPRESSED, with no key on the item, so no chip and
   //            no one-click "Record No" can be offered for it.
-  //   (c) ordinary Latin-script English or French.
+  //   (d) Latin script, readable, but not recognisably in a LANGUAGE this scanner
+  //       knows: EN/FR function-word density under ENFR_MIN_DENSITY. Spanish and
+  //       Portuguese evaluation reports live here, and they are common in this
+  //       domain.
+  //         -> meta.unknown_language = true. Same treatment as (b): detections yes,
+  //            absence claims no.
+  //   (c) ordinary English or French.
   //         -> unchanged: all three signal values are allowed.
   //
-  // WHERE THE TWO BOUNDARIES SIT, AND WHY THEY ARE MEASURED DIFFERENTLY.
+  // WHERE THE BOUNDARIES SIT, AND WHY THEY ARE MEASURED DIFFERENTLY.
   //
   // (a) is a share of the NON-SPACE CHARACTERS that are Latin letters. Measured on
   // real pastes: English prose 0.98, French with diacritics 0.98, an English
@@ -473,8 +479,123 @@
   // than enough to make "I did not find a methods heading" an unearned claim, and
   // it leaves a transliterated name or a mathematical symbol in an EN/FR report an
   // order of magnitude clear of the line.
+  //
+  // (d) THE LATIN-SCRIPT LANGUAGE THE SCANNER DOES NOT KNOW. Both boundaries above
+  // key on SCRIPT, and script is not language. A Spanish or Portuguese evaluation
+  // report (common in this domain) is 0.99 Latin and 0.00 other-script, so it lands
+  // in the fully-readable regime (c) and every gate above waves it through. None of
+  // the patterns match it: /(methodolog|\bmethods?\b|\bmethodes?\b)/ does not match
+  // "Metodologia de la evaluacion", the limitations family does not match
+  // "Limitaciones", \bresume\b does not match "Resumen Ejecutivo". So a Spanish
+  // report that HAS all four sections used to collect the full set of not_found
+  // signals, including uneg:methods and uneg:limitations, both CRITICAL, each with a
+  // one-click "I checked. Record No" -> critical red flags -> recommendVerdict
+  // returns 'return' -> the one-click "Request revision on the deliverable". That is
+  // the same harmful chain the script gates exist to close, reached through a
+  // different door, so it is closed by the same rule and at the same chokepoint: an
+  // ABSENCE may only be asserted about a text the scanner can actually READ, and it
+  // can read English and French. A DETECTION stays safe in any language, because the
+  // scanner genuinely saw the word it reports.
+  //
+  // The discriminator is the density of function words DISTINCTIVE to English and
+  // French, as a share of all [a-z0-9] tokens. Function words are the part of a
+  // language a report cannot avoid, whatever its subject, so the measure does not
+  // depend on the topic, the sector or the length.
+  //
+  // CALIBRATION (measured on the fixtures in tests/prescan.test.js, all of them full
+  // pastes of the kind a reviewer actually drops into the box):
+  //     EN report                                 0.225
+  //     EN half of a bilingual EN/AR document     0.361
+  //     FR report, no diacritics, full length     0.312
+  //     FR report, diacritics, thin 8-line paste  0.118   <- the lowest real EN/FR text
+  //     ES report (has all four sections)         0.000
+  //     ES report, with diacritics                0.000
+  //     PT report (has all four sections)         0.000   <- the highest text we must deny
+  // An order of magnitude of clean air, and no real document anywhere in it.
+  //
+  // The floor goes at 0.08. It is not placed at the middle of that gap but low in it,
+  // for two reasons. Above, the binding constraint is the thinnest GENUINE EN/FR
+  // paste (0.118), and silencing a real English or French report would cost the
+  // scanner its one useful negative; 0.08 keeps 1.47x of margin under it. Below,
+  // there is nothing to be careful about: pure Spanish and Portuguese score exactly
+  // 0.000, so any floor above zero separates them.
+  //
+  // The floor also has to survive DILUTION, which is the realistic shape of the
+  // problem: a Spanish report is rarely pure, it carries an English cover page or an
+  // English annex. Measured: ES report + an English executive-summary section 0.058,
+  // EN report + ES report half and half 0.026, FR report + ES report 0.068. All fall
+  // below 0.08, so all are suppressed, which is right: the scanner cannot read the
+  // half that carries the sections it is about to call missing. KNOWN LIMIT: this is
+  // a floor on RECOGNITION, not a precise mixture estimator. A document that is
+  // mostly Spanish but carries enough English to clear 0.08 (measured: an ES report
+  // with TWO English sections bolted on, 0.100) will be treated as readable. That is
+  // the same latitude regime (c) already extends to any document whose body the scan
+  // can mostly read, and the residue is bounded by the fact that the English it CAN
+  // read is the English the absence claims are then made about.
+  //
+  // CRITICAL, and the whole reason the numbers above are zero and not merely small:
+  // the marker sets EXCLUDE every function word English or French SHARES with Spanish
+  // or Portuguese. Without that exclusion the discriminator COLLAPSES, because the
+  // shared words are the commonest words in all four languages: French alone would
+  // contribute de, la, le, un, en, que, si, entre, y and a, which is most of what a
+  // Spanish sentence is made of, and a Spanish report would then score like a French
+  // one and collect the full set of fabricated absences again. That is not a
+  // hypothetical: it is what the list does if the subtraction is removed, and
+  // tests/prescan.test.js pins both Spanish and Portuguese at EXACTLY zero so the
+  // removal cannot pass.
+  //
+  // SHARED_WORDS below holds the exclusions. The obvious ones are the articles and
+  // prepositions (de, la, que, un, en, no, a, e, o, se, es, son, por, para, del, al,
+  // su, lo, las, los). The dangerous ones are the HOMOGRAPHS, which look like safe
+  // markers and are not, and which are exactly what leaked when this was measured:
+  // FR "tres" (very) is ES/PT "tres" (three); FR "sur" (on) is ES "sur" (south); FR
+  // "par" (by) is PT "par" (as in "a par de"); FR "bien" is ES "bien"; FR "deja" is
+  // ES "deja" (from dejar); FR "vos" is ES/PT "vos"; EN "so" is PT "so" (only); EN
+  // "as" is PT "as" (the). Each one was found by measuring, not by reasoning: "tres"
+  // and "sur" were what kept Spanish off zero, and "par" was what kept Portuguese off
+  // zero. Every marker is matched as a WHOLE TOKEN, never as a substring, so no marker
+  // can be found inside a longer Spanish word.
   var LATIN_MIN_SHARE = 0.35;         // Latin letters / non-space chars: below this, unreadable
   var OTHER_SCRIPT_MAX_SHARE = 0.10;  // other-script chars / non-space chars: at or above this, no absence claims
+  var ENFR_MIN_DENSITY = 0.08;        // EN/FR function words / all tokens: below this, no absence claims
+
+  // Function words English or French SHARES with Spanish or Portuguese. Never a
+  // marker: see the note above. Kept as a separate list, and subtracted from the
+  // marker sets at build time, so that adding a marker cannot silently reintroduce
+  // one of these.
+  var SHARED_WORDS = ('a as de del e em en es la las le lo los mais mas na no nos o os ou para por ' +
+    'que se si son su sobre so um uma un una y da do dos das ao como sem ja ha ate entre ni ' +
+    'tres sur bien deja vos par').split(/\s+/);
+
+  // The function words of each language, written as an HONEST list of that language:
+  // "a", "as" and "so" really are English, and "de", "la", "le", "que", "sur" and
+  // "tres" really are French. The list does not pre-filter itself. SHARED_WORDS above
+  // is the ONE place that removes the collisions, and it is subtracted below. Written
+  // this way on purpose: a list that had been hand-pruned would look identical to a
+  // list that had never needed pruning, and the next person to add a French word to
+  // it would have no way of knowing that "sur" is also Spanish for "south". Here,
+  // every marker goes through the same subtraction, so the rule cannot be forgotten.
+  // tests/prescan.test.js pins the Spanish and Portuguese densities at EXACTLY zero,
+  // which is the assertion that fails if this subtraction is ever removed.
+  var EN_MARKERS = ('the and of to in is was were be been being are this that these those with from ' +
+    'which what when where who whom have has had their they them there would should could will shall ' +
+    'can may must but not than then we our us its it at on for an or all also such only more most ' +
+    'other others into about over under during through between both each any some however therefore ' +
+    'thus while after before because if by he she his her him whose upon within without across ' +
+    'toward towards among against above below out off again further once here how why a as so no');
+
+  // French, written WITHOUT diacritics: matched against the normalised text, where
+  // combining marks are already stripped, so "etait" here matches the accented form
+  // and the unaccented one alike.
+  var FR_MARKERS = ('le la les de des du un une est sont dans en et pour avec sur par que qui ne pas ' +
+    'plus comme entre si ou y a au aux cette cet ces ont aussi ainsi leur leurs nous vous ils elles ' +
+    'dont donc afin selon chez tres etre ete etait etaient fait peut doit cela celle ceux tout toute ' +
+    'tous toutes sans quoi quel quelle quels quelles lors alors apres avant depuis il elle son sa ses ' +
+    'mesure meme autre autres nos vos notre votre quand puis encore deja bien tant');
+
+  var ENFR_MARKERS = {};
+  (EN_MARKERS + ' ' + FR_MARKERS).split(/\s+/).forEach(function(w) { if (w) ENFR_MARKERS[w] = true; });
+  SHARED_WORDS.forEach(function(w) { delete ENFR_MARKERS[w]; });
 
   // A character this scanner has no pattern for: anything outside Basic Latin,
   // Latin-1 Supplement and Latin Extended-A/B, other than whitespace and General
@@ -486,18 +607,28 @@
   // Takes the NORMALISED text (lowercased, combining marks stripped), so an
   // accented French report counts as Latin and an Arabic one does not.
   function readability(norm) {
-    var words = (norm.match(/[a-z0-9]+/g) || []).length;
+    var toks = norm.match(/[a-z0-9]+/g) || [];
+    var words = toks.length;
     var letters = (norm.match(/[a-z]/g) || []).length;
     var other = (norm.match(RE_OTHER_SCRIPT) || []).length;
     var solid = norm.replace(/\s+/g, '').length;
     var share = solid ? letters / solid : 0;
     var otherShare = solid ? other / solid : 0;
+    // Whole-token matching, not substring: a marker can never be found inside a
+    // longer Spanish or Portuguese word.
+    var marks = 0;
+    for (var i = 0; i < words; i++) { if (ENFR_MARKERS[toks[i]]) marks++; }
+    var enfr = words ? marks / words : 0;
     // Digits alone never make a text readable, and an empty paste is not readable
     // either. Both fall into (a) with the wrong-script case.
     var unreadable = words === 0 || letters === 0 || share < LATIN_MIN_SHARE;
     return {
-      words: words, share: share, other_share: otherShare, unreadable: unreadable,
-      mixed_script: !unreadable && otherShare >= OTHER_SCRIPT_MAX_SHARE
+      words: words, share: share, other_share: otherShare, enfr_density: enfr,
+      unreadable: unreadable,
+      mixed_script: !unreadable && otherShare >= OTHER_SCRIPT_MAX_SHARE,
+      // (d): readable Latin script, but not recognisably English or French. The scan
+      // may report what it FOUND; it may not report what it did not find.
+      unknown_language: !unreadable && enfr < ENFR_MIN_DENSITY
     };
   }
 
@@ -516,17 +647,24 @@
     if (read.unreadable) {
       return { ok: true, signals: {},
         meta: { chars: text.length, words: words, short: words < SHORT_WORDS,
-          unreadable: true, mixed_script: false } };
+          unreadable: true, mixed_script: false, unknown_language: false,
+          enfr_density: read.enfr_density } };
     }
 
-    // Regime (b) vs (c), enforced in ONE place. Every signal in this function,
+    // Regimes (b), (c) and (d), enforced in ONE place. Every signal in this function,
     // whatever family it comes from, goes through emit, and emit is the only door
-    // an absence claim can walk through. On mixed-script text a not_found is
-    // dropped WITHOUT A KEY: an item with no key gets no machine_signal, so the
-    // panel renders no chip on it, so there is no one-click "I checked. Record No"
-    // and no path from an unread document to a critical red flag. `found` and
-    // `weak` are unaffected in every regime: the scanner really did see the word.
-    var absenceAllowed = !read.mixed_script;
+    // an absence claim can walk through, so the suppression rules COMPOSE here
+    // instead of being scattered across the families. A not_found is dropped WITHOUT
+    // A KEY: an item with no key gets no machine_signal, so the panel renders no chip
+    // on it, so there is no one-click "I checked. Record No" and no path from an
+    // unread document to a critical red flag. `found` and `weak` are unaffected in
+    // every regime: the scanner really did see the word.
+    //
+    // Two conditions, one rule. mixed_script says a substantial part of the text is
+    // in a SCRIPT the scan cannot read. unknown_language says the text is Latin but
+    // is not recognisably in a LANGUAGE the scan can read. Either one makes "I did
+    // not find a methods heading" a fact about the scanner and not about the report.
+    var absenceAllowed = !read.mixed_script && read.enfr_density >= ENFR_MIN_DENSITY;
     function emit(id, sig) {
       if (!sig) return;
       if (sig.signal === 'not_found' && !absenceAllowed) return;
@@ -612,6 +750,18 @@
         if (!missing.length && !proseOnly.length) {
           ssig = 'found';
           sev = 'All agreed section titles detected as headings.';
+        } else if (!absenceAllowed) {
+          // The one signal that can SURVIVE the emit gate while still carrying an
+          // absence claim in its EVIDENCE. A partial match is a 'weak', not a
+          // 'not_found', so emit passes it; but "Missing: Methodology;
+          // Recommendations." is an assertion about sections that may sit in the very
+          // half of the document this scan could not read, and the row it lands on
+          // offers a one-click "I checked. Record Partial". So when absences are not
+          // allowed the evidence states ONLY what was seen, and names nothing as
+          // missing. Same rule as emit, applied to the sentence instead of the key.
+          ssig = frac >= STRUCTURE_WEAK_FRAC ? 'weak' : 'not_found';
+          sev = 'Detected as headings: ' + (judged - missing.length - proseOnly.length) + ' of ' +
+            judged + ' agreed section titles. Absences are not reported: the scan could not read all of this text.';
         } else {
           ssig = frac >= STRUCTURE_WEAK_FRAC ? 'weak' : 'not_found';
           var parts = [];
@@ -619,7 +769,7 @@
           if (proseOnly.length) parts.push('In body text but not as a heading: ' + proseOnly.join('; ') + '.');
           sev = snippet(parts.join(' '));
         }
-        emit('structure:agreed', { signal: ssig, evidence: sev });
+        emit('structure:agreed', { signal: ssig, evidence: snippet(sev) });
       }
     }
 
@@ -640,7 +790,8 @@
 
     return { ok: true, signals: signals,
       meta: { chars: text.length, words: words, short: words < SHORT_WORDS,
-        unreadable: false, mixed_script: read.mixed_script } };
+        unreadable: false, mixed_script: read.mixed_script,
+        unknown_language: read.unknown_language, enfr_density: read.enfr_density } };
   }
 
   window.PraxisScreenCore = {

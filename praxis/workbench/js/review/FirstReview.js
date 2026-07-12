@@ -238,11 +238,14 @@
     // lines against run B's items). Shape: null | { run_id, by_item: { id: str } }.
     var evd = React.useState(null), evidence = evd[0], setEvidence = evd[1];
     var scn = React.useState(false), scanning = scn[0], setScanning = scn[1];
-    // Session-only note about the SCRIPT the last scan in THIS tab met. Shape:
-    // null | { run_id, kind: 'unreadable' | 'mixed' }. 'unreadable' = it found too
-    // little readable English or French to say anything at all; 'mixed' = it read
-    // part of the text and reported only what it FOUND, because an absence in a
-    // text it could not fully read is a fact about the scan. Not persisted:
+    // Session-only note about what the last scan in THIS tab could READ. Shape:
+    // null | { run_id, kind: 'unreadable' | 'mixed' | 'unknown_language' }.
+    // 'unreadable' = it found too little readable text to say anything at all;
+    // 'mixed' = part of the text is in a script it cannot read; 'unknown_language' =
+    // the text is Latin script and perfectly legible but is not recognisably English
+    // or French (a Spanish or Portuguese report), which is the same situation wearing
+    // different clothes. In the last two it reported only what it FOUND, because an
+    // absence in a text it could not read is a fact about the scan. Not persisted:
     // run.prescan carries counts only, and this is a fact about a scan, not about
     // the report.
     var unr = React.useState(null), scriptNote = unr[0], setScriptNote = unr[1];
@@ -329,9 +332,14 @@
         var byItem = {};
         Object.keys(res.signals).forEach(function(id) { byItem[id] = res.signals[id].evidence; });
         setEvidence({ run_id: run.id, by_item: byItem });
-        setScriptNote(res.meta.unreadable
-          ? { run_id: run.id, kind: 'unreadable' }
-          : (res.meta.mixed_script ? { run_id: run.id, kind: 'mixed' } : null));
+        // Checked in the order the copy is written in: a text can be both mixed-script
+        // and not English or French, and 'mixed' is the more specific thing to say
+        // about it. Both lead to the same place (detections yes, absences no).
+        var kindNote = null;
+        if (res.meta.unreadable) kindNote = 'unreadable';
+        else if (res.meta.mixed_script) kindNote = 'mixed';
+        else if (res.meta.unknown_language) kindNote = 'unknown_language';
+        setScriptNote(kindNote ? { run_id: run.id, kind: kindNote } : null);
 
         // On unreadable text res.signals is {}, so applySignals CLEARS every signal
         // a previous scan left behind. That is the correct reading of a re-scan
@@ -357,6 +365,13 @@
           kind = 'warning';
         } else if (res.meta.mixed_script) {
           msg = 'Scanned. Part of that text is in a script the scan cannot read, so it reports only what it found, and says nothing about what it did not find.';
+          kind = 'warning';
+        } else if (res.meta.unknown_language) {
+          // Readable, but not a language this scan knows. It may not arrive in the
+          // green of a clean save: a Spanish report that HAS a methodology section
+          // would otherwise get a success toast and a full set of red "not detected"
+          // chips, each with a one-click "I checked. Record No".
+          msg = 'Scanned, but that text does not read as English or French, and the scan reads those two only. It has reported what it found. It cannot report what is missing, so the absence checks were skipped.';
           kind = 'warning';
         } else if (res.meta.short) {
           msg = 'Scanned, but the text was under 500 words. Is that the whole report?';
@@ -513,6 +528,13 @@
         // no one-click No, and the reviewer is told why the row is bare.
         (scriptNote && scriptNote.run_id === run.id && scriptNote.kind === 'mixed') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
           'Part of that text is in a script the scan cannot read. It has reported what it did find in the English or French passages. It has reported nothing about what it did not find, and you will see no "not detected" chips, because an absence in a text it could only partly read is a fact about the scan and not about the report. Screen those items yourself.') : null,
+        // Regime (d): legible, but not a language the scan knows. Same rule as (b),
+        // and it must be said as plainly, because the text LOOKS scannable: a Spanish
+        // or Portuguese report is ordinary Latin script and nothing about the panel
+        // would otherwise tell the reviewer that every "not detected" chip on it was
+        // a statement about the scanner.
+        (scriptNote && scriptNote.run_id === run.id && scriptNote.kind === 'unknown_language') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
+          'That text does not read as English or French, and the scan reads English and French only. It has reported what it did find, because a word it matched really is there whatever the language. It has reported nothing about what it did NOT find: the absence checks were skipped, and you will see no "not detected" chips, because the scan cannot tell a section that is missing from a section it simply cannot read. Screen those items yourself.') : null,
         h('textarea', { ref: pasteRef, className: 'wb-input wb-fr-paste', disabled: scanning,
           'aria-label': 'Paste the report text to pre-scan', placeholder: 'paste the full report text here' }),
         h('div', { className: 'wb-cm-add' },
