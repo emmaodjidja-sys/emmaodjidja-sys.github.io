@@ -76,6 +76,24 @@
     }
 
     var kpis = CockpitHeader.deriveKpis(context);
+
+    // Across evaluations, not within one: the portfolio is the commissioner's
+    // memory. Rendered only when there is more than the current project to
+    // remember, so a first-time user never sees an empty mirror.
+    var pf = window.PraxisPortfolio ? PraxisPortfolio.readAll() : [];
+    var pfCard = null;
+    if (pf.length >= 2) {
+      var reached = pf.filter(function(e) { return e.reached_use; }).length;
+      pfCard = h(SectionCard, { title: 'Track record', badge: reached + ' of ' + pf.length + ' reached use' },
+        h('p', { className: 'wb-cm-panel-intro' }, 'Every evaluation this workbench has held, and whether its accepted recommendations moved.'),
+        h('ul', { className: 'wb-cm-portfolio' }, pf.map(function(e) {
+          return h('li', { key: e.id, className: 'wb-cm-portfolio-row' },
+            h('span', { className: 'wb-cm-portfolio-title' }, e.title + (e.organisation ? ' (' + e.organisation + ')' : '')),
+            h('span', { className: 'wb-badge ' + (e.reached_use ? 'wb-badge-green' : 'wb-badge-amber') },
+              e.reached_use ? 'Reached use' : 'Not yet used'));
+        })));
+    }
+
     return h('div', { className: 'wb-cm-overview' },
       h('header', { className: 'wb-cm-move-head' },
         h('div', null,
@@ -83,6 +101,7 @@
           h('h3', { className: 'wb-cm-move-title' }, 'Where this evaluation stands'),
           h('p', { className: 'wb-cm-move-desc' }, 'A live read of the commissioning: who it is for, whether the design is assured, what is on schedule, and what needs the commissioner now.'))),
       h('div', { className: 'wb-cm-otiles' }, kpis.map(function(k) { return tile(k, dispatch); })),
+      pfCard,
       h(SectionCard, { title: 'Alerts', badge: alerts.length ? CockpitAlerts.summarize(alerts).overdue + ' overdue' : 'Clear', variant: (alerts.length && alerts[0].severity === 0) ? 'warning' : null },
         CockpitHeader.alertList(alerts, dispatch)),
       h(SectionCard, { title: 'Stations' },

@@ -59,6 +59,11 @@
           role: ui.role,
           commissionerStation: ui.commissionerStation
         }));
+        // Best-effort cross-project register. The project save above has already
+        // succeeded by this point, so a failure here (quota, storage disabled, or
+        // any other error PraxisPortfolio's own guards missed) is caught locally
+        // and must never surface as a failure of the main save.
+        try { if (window.PraxisPortfolio) { PraxisPortfolio.record(ctx); } } catch (e) { /* portfolio write is best effort */ }
         dispatch({ type: AT.SET_PERSIST_STATUS, status: conflictRef.current ? 'conflict' : 'saved', at: new Date().toISOString() });
         return true;
       } catch (e) {

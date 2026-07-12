@@ -598,6 +598,14 @@ button.wb-cm-inception-chip:hover svg:last-child { opacity: 1; }
 .wb-cm-logrow-detail { color: var(--text); }
 @media (max-width: 640px) { .wb-cm-logrow { grid-template-columns: 1fr; gap: 2px; } }
 
+/* Portfolio track record (Overview flight deck): one row per evaluation this
+   workbench has ever held. Same bordered-list language as the accountability
+   log above, sized for a title on the left and a single badge on the right. */
+.wb-cm-portfolio { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden auto; max-height: 260px; }
+.wb-cm-portfolio-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: var(--text-xs); }
+.wb-cm-portfolio-row:last-child { border-bottom: none; }
+.wb-cm-portfolio-title { color: var(--text); font-weight: 600; }
+
 /* ---- C2 ethics status ----------------------------------------------------*/
 .wb-cm-eth-status { display: inline-flex; align-items: center; gap: 8px; }
 
