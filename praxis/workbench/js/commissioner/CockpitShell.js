@@ -42,7 +42,8 @@
     // avoid showing the same five metrics twice. The strip returns on every C-station.
     return h('div', { className: 'wb-cm' },
       h(window.CockpitHeader, { context: context, dispatch: dispatch, alerts: alerts, hideKpis: cs === 0 }),
-      h('div', { className: 'wb-cm-body', id: 'wb-cm-body' }, body));
+      h('div', { className: 'wb-cm-body', id: 'wb-cm-body' }, body),
+      h(window.CockpitNav, { cs: cs, dispatch: dispatch }));
   }
 
   window.CockpitShell = CockpitShell;

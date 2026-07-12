@@ -10,6 +10,7 @@ var FILES = [
   'js/utils.js',
   'js/schema.js',
   'js/export-utils.js',
+  'js/components/SequenceNavCore.js',
   'js/commissioner/CockpitData.js',
   'js/commissioner/CockpitAlerts.js',
   'js/review/ScreenCore.js',

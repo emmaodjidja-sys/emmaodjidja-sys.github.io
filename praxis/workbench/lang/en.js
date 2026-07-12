@@ -54,6 +54,21 @@
     "station.8.name": "Deck Generator",
     "station.8.desc": "Generate presentation materials",
 
+    "nav.continue": "Continue to {step}",
+    "nav.back_to": "Back to {step}",
+    "nav.start_at": "Start at {step}",
+    "nav.save_finish": "Save and finish",
+    "nav.position_station": "Station {n} of 9",
+    "nav.position_cockpit": "{step}, {n} of 6",
+
+    "cstation.0.name": "Overview",
+    "cstation.1.name": "Commission",
+    "cstation.2.name": "Contract",
+    "cstation.3.name": "Assure",
+    "cstation.4.name": "Deliver",
+    "cstation.5.name": "Use",
+    "cstation.6.name": "Follow-up",
+
     "staleness.warning": "Upstream data changed since this station was last saved.",
     "staleness.review": "Review changes",
     "staleness.dismiss": "Dismiss",

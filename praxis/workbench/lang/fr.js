@@ -53,6 +53,21 @@
     "station.8.name": "Générateur de présentation",
     "station.8.desc": "Générer les supports de présentation",
 
+    "nav.continue": "Continuer vers {step}",
+    "nav.back_to": "Retour à {step}",
+    "nav.start_at": "Commencer par {step}",
+    "nav.save_finish": "Enregistrer et terminer",
+    "nav.position_station": "Station {n} sur 9",
+    "nav.position_cockpit": "{step}, {n} sur 6",
+
+    "cstation.0.name": "Vue d'ensemble",
+    "cstation.1.name": "Commande",
+    "cstation.2.name": "Contrat",
+    "cstation.3.name": "Assurance",
+    "cstation.4.name": "Livraison",
+    "cstation.5.name": "Utilisation",
+    "cstation.6.name": "Suivi",
+
     "staleness.warning": "Les données en amont ont changé depuis la dernière sauvegarde de cette station.",
     "staleness.review": "Examiner les modifications",
     "staleness.dismiss": "Ignorer",
