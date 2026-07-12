@@ -415,17 +415,27 @@
     var value;
     if (fit.status === 'landed') {
       // Settled success: how many days ahead of the close the report landed.
-      value = fit.marginDays === 0 ? 'On the closing day' : fit.marginDays + 'd early';
+      value = fit.marginDays == null ? 'Landed' : (fit.marginDays === 0 ? 'On the closing day' : fit.marginDays + 'd early');
     } else if (fit.status === 'missed') {
-      // Settled failure, but two different shapes underneath. When a report date
-      // exists, marginDays is close-minus-report (negative = late), so the days
-      // late is the negation. When there is no report date at all, marginDays is
-      // daysUntilLocal(closes) instead (see decisionWindowFit), i.e. how many days
-      // ago the window closed with nothing accepted; do not call that "late".
-      if (fit.reportDate) {
+      // Settled failure, but two different shapes underneath, branched on whether
+      // a report was actually ACCEPTED, not on reportDate. reportDate is populated
+      // from a deliverable's due date even when nothing was ever accepted (see
+      // decisionWindowFit), so testing reportDate would print "Nd late", or even a
+      // negative count, for a report that does not exist.
+      if (fit.reportAccepted) {
+        // A report really did land, but after the close. marginDays is
+        // close-minus-report (negative = late), so the days late is the negation.
         value = (fit.marginDays == null ? 'Late' : (-fit.marginDays) + 'd late');
       } else {
-        value = (fit.marginDays == null ? 'No report' : Math.abs(fit.marginDays) + 'd, no report');
+        // Nothing was ever accepted. State the fact about the WINDOW, not about a
+        // report that does not exist. marginDays cannot be used here: in the
+        // due-date-fallback shape it is a due-date-vs-window figure that means
+        // nothing to the reader, so derive the count fresh from today vs the
+        // close. Reads identically whether or not a final-report deliverable
+        // happens to exist, because in both cases the fact is the same: the
+        // window closed and nothing was accepted.
+        var closedAgo = U.daysUntilLocal(fit.window.closes);
+        value = (closedAgo == null ? 'No report accepted' : Math.abs(closedAgo) + 'd since close, no report accepted');
       }
     } else {
       // on_course / at_risk / undated: the window is still live, so a forward

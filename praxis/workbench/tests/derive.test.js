@@ -71,15 +71,48 @@ var dl2 = D.decisionWindowDisplay({ window: { label: 'Board' }, marginDays: 0, s
 H.eq(dl2.value, 'On the closing day', 'display: landed with zero margin does not say 0d early');
 H.eq(dl2.sub, 'Board · Landed in window', 'display: landed zero-margin sub unchanged');
 
+// landed, marginDays null: must not read "nulld early".
+var dl3 = D.decisionWindowDisplay({ window: { label: 'Board' }, marginDays: null, status: 'landed', reportDate: '2026-01-01', reportAccepted: true });
+H.eq(dl3.value, 'Landed', 'display: landed with null margin does not say nulld early');
+H.eq(dl3.sub, 'Board · Landed in window', 'display: landed null-margin sub unchanged');
+
 // missed WITH a report date: late report, not a countdown against today.
 var dm1 = D.decisionWindowDisplay({ window: { label: 'Board' }, marginDays: -5, status: 'missed', reportDate: '2026-07-05', reportAccepted: true });
 H.eq(dm1.value, '5d late', 'display: missed with report date shows days late');
 H.eq(dm1.sub, 'Board · Window missed', 'display: missed sub carries label and phrase');
 
-// missed with NO report date: window closed with nothing accepted, distinct from "late".
-var dm2 = D.decisionWindowDisplay({ window: { label: 'Board' }, marginDays: -12, status: 'missed', reportDate: null, reportAccepted: false });
-H.eq(dm2.value, '12d, no report', 'display: missed without report date reports days since close, not lateness');
+// missed with NO report date at all (no final-report deliverable exists): window
+// closed with nothing accepted, distinct from "late". Built via the real
+// decisionWindowFit, not a hand-made fit literal, to prove the shape is reachable.
+var c11 = ctx();
+c11.commissioner.users = [{ id: 'p1', tier: 'primary', name: 'Board', window_closes: day(-10) }];
+var f11 = D.decisionWindowFit(c11);
+H.eq(f11.status, 'missed', 'display: no-deliverable fixture is missed');
+H.eq(f11.reportAccepted, false, 'display: no-deliverable fixture has no accepted report');
+H.eq(f11.reportDate, null, 'display: no-deliverable fixture has no report date at all');
+var dm2 = D.decisionWindowDisplay(f11);
+H.eq(dm2.value, '10d since close, no report accepted', 'display: missed without any report date states the window fact, not lateness');
+H.assert(dm2.value.indexOf('late') === -1, 'display: missed without any report date never says "late"');
 H.eq(dm2.sub, 'Board · Window missed', 'display: missed-no-report sub matches missed-with-report');
+
+// missed with a final-report deliverable that has a due_date, but NO accepted
+// report review: this is the due-date-fallback shape that produced the bug, since
+// decisionWindowFit populates reportDate from the due_date even though nothing
+// was ever accepted. The old code tested reportDate truthiness and printed a
+// fabricated "-70d late". Built via the real decisionWindowFit against a context
+// with a closed window, a final-report deliverable, and no accepted report.
+var c12 = ctx();
+c12.commissioner.users = [{ id: 'p1', tier: 'primary', name: 'Board', window_closes: day(-10) }];
+c12.planning.deliverables = [{ id: 'd1', type: 'Final report', title: 'Final', due_date: day(-80) }];
+var f12 = D.decisionWindowFit(c12);
+H.eq(f12.status, 'missed', 'display: due-date-fallback fixture is missed');
+H.eq(f12.reportAccepted, false, 'display: due-date-fallback fixture has no accepted report');
+H.assert(!!f12.reportDate, 'display: due-date-fallback fixture has a truthy reportDate (the due date, not an acceptance)');
+var dm3 = D.decisionWindowDisplay(f12);
+H.assert(dm3.value.indexOf('late') === -1, 'display: due-date-fallback shape never claims a report landed late');
+H.eq(dm3.value, '10d since close, no report accepted', 'display: due-date-fallback shape states the window fact, matching the no-deliverable shape exactly');
+H.eq(dm3.value, dm2.value, 'display: missed-not-accepted reads identically whether or not a final-report deliverable exists');
+H.eq(dm3.sub, 'Board · Window missed', 'display: due-date-fallback sub matches missed-with-report');
 
 // at_risk: still live, forward countdown against today.
 var c8 = ctx();
