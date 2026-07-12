@@ -706,23 +706,6 @@
       stationDetail
     );
 
-    /* ── Section 03: How it's built ───────────────────────────────── */
-    // An instrument nameplate: engraved specification rows, every claim
-    // verifiable against the shipped application.
-    var specRows = ['storage', 'format', 'runtime', 'languages', 'provenance'].map(function(key) {
-      return h('div', { key: key, className: 'wb-entry-plate-row' },
-        h('div', { className: 'wb-entry-plate-label' }, t('entry.spec_' + key + '_label')),
-        h('div', null,
-          h('div', { className: 'wb-entry-plate-head' }, t('entry.spec_' + key + '_head')),
-          h('div', { className: 'wb-entry-plate-body' }, t('entry.spec_' + key + '_body'))
-        )
-      );
-    });
-    var builtSection = h('section', { className: 'wb-entry-wrap wb-entry-sec-built', 'aria-label': t('entry.built_title') },
-      h(SectionHead, { num: '03', title: t('entry.built_title') }),
-      h('div', { className: 'wb-entry-plate' }, specRows)
-    );
-
     /* ── Footer ───────────────────────────────────────────────────── */
     var footLinkStyle = { background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' };
     var footer = h('footer', { className: 'wb-entry-foot wb-entry-dark' },
@@ -780,7 +763,7 @@
 
     return h('div', { className: 'wb-entry' },
       masthead,
-      h('main', null, beginSection, stationsSection, builtSection),
+      h('main', null, beginSection, stationsSection),
       footer,
       confirmModal,
       aboutModal

@@ -174,8 +174,7 @@
 
 /* ── Sections ─────────────────────────────────────────────────────── */
 .wb-entry-sec-begin { padding-top: 84px; padding-bottom: 40px; }
-.wb-entry-sec-stations { padding-top: 64px; padding-bottom: 48px; }
-.wb-entry-sec-built { padding-top: 56px; padding-bottom: 96px; }
+.wb-entry-sec-stations { padding-top: 64px; padding-bottom: 96px; }
 
 .wb-entry-sechead {
   display: flex;
@@ -384,26 +383,6 @@
   white-space: nowrap;
 }
 
-/* ── How it's built: the instrument nameplate ─────────────────────── */
-.wb-entry-plate { border-top: 1px solid rgba(25,29,27,0.4); }
-.wb-entry-plate-row {
-  display: grid;
-  grid-template-columns: 220px minmax(0,1fr);
-  gap: 28px;
-  padding: 22px 0;
-  border-bottom: 1px solid rgba(25,29,27,0.14);
-}
-.wb-entry-plate-label {
-  font-size: 11.5px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: rgba(25,29,27,0.5);
-  padding-top: 5px;
-}
-.wb-entry-plate-head { font-family: var(--e-serif); font-size: 20px; font-weight: 500; margin-bottom: 6px; }
-.wb-entry-plate-body { font-size: 14.5px; line-height: 1.6; color: rgba(25,29,27,0.62); max-width: 72ch; }
-
 /* ── Footer ───────────────────────────────────────────────────────── */
 .wb-entry-foot { background: var(--e-green); color: rgba(247,244,236,0.8); }
 .wb-entry-foot-inner {
@@ -450,11 +429,8 @@
   .wb-entry-station-detail { grid-template-columns: minmax(0,1fr); gap: 8px; }
   .wb-entry-station-phase { padding-top: 0; }
 
-  .wb-entry-plate-row { grid-template-columns: minmax(0,1fr); gap: 6px; padding: 18px 0; }
-  .wb-entry-plate-label { padding-top: 0; }
-
   .wb-entry-sec-begin { padding-top: 56px; }
-  .wb-entry-sec-built { padding-bottom: 64px; }
+  .wb-entry-sec-stations { padding-bottom: 64px; }
 }
 
 @media (max-width: 640px) {
