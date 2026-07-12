@@ -15,29 +15,7 @@ input, textarea, select { font-family: inherit; }
 
 .wb-app { display: flex; flex-direction: column; height: 100vh; }
 
-.wb-landing {
-  height: 100vh;
-  background: var(--navy);
-  display: flex;
-  color: white;
-}
-.wb-landing-left {
-  width: 55%;
-  padding: 60px 48px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.wb-landing-right {
-  width: 45%;
-  background: rgba(255,255,255,0.03);
-  border-left: 1px solid rgba(255,255,255,0.06);
-  padding: 48px 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-}
+/* The entry page (EntryLanding.js) is styled by landing.css. */
 
 .wb-topbar {
   min-height: var(--wb-topbar-height);
@@ -136,27 +114,6 @@ input, textarea, select { font-family: inherit; }
     border-top: 1px solid rgba(255,255,255,0.04);
   }
   .wb-drawer { display: none; }
-
-  /* Landing: stack the two panels into a single scrolling column so the
-     first-run screen is usable on phones (below 768px it was crushed). */
-  .wb-landing {
-    flex-direction: column;
-    overflow-y: auto;
-  }
-  .wb-landing-left {
-    width: 100%;
-    flex: 0 0 auto;
-    padding: 32px 24px 20px;
-    justify-content: flex-start;
-  }
-  .wb-landing-right {
-    width: 100%;
-    flex: 0 0 auto;
-    padding: 20px 24px 40px;
-    justify-content: flex-start;
-    border-left: none;
-    border-top: 1px solid rgba(255,255,255,0.06);
-  }
 }
 
 /* ── §7.3 Global styles ─────────────────────────────── */

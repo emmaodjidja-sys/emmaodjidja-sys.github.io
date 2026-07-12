@@ -5,53 +5,110 @@
   var AT = PraxisContext.ACTION_TYPES;
   var LABELS = PraxisSchema.STATION_LABELS;
 
-  // Reusable PRAXIS logo SVG
-  function Logo(props) {
-    var size = props && props.size || 24;
-    return h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none' },
-      h('circle', { cx: 12, cy: 12, r: 10, stroke: 'var(--teal)', strokeWidth: 2 }),
-      h('path', { d: 'M8 12l3 3 5-5', stroke: 'var(--teal)', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+  var CREAM = '#F7F4EC';
+  var INK = '#191D1B';
+
+  // Lifecycle phase for each of the nine stations (spine brackets + detail chip).
+  var PHASE_KEYS = [
+    'entry.phase_frame', 'entry.phase_frame', 'entry.phase_frame',
+    'entry.phase_design', 'entry.phase_design', 'entry.phase_design',
+    'entry.phase_analyse',
+    'entry.phase_report', 'entry.phase_report'
+  ];
+
+  // PRAXIS compass mark: a bezel ring with a north index and eight hour ticks.
+  function Mark(props) {
+    var size = (props && props.size) || 20;
+    return h('svg', { width: size, height: size, viewBox: '-110 -110 220 220', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', flexShrink: 0 } },
+      h('circle', { r: 100, fill: 'none', stroke: 'currentColor', strokeWidth: 7, opacity: 0.9 }),
+      h('path', { d: 'M0 -100 L0 -64', stroke: 'currentColor', strokeWidth: 16 }),
+      h('path', {
+        d: 'M64.3 -76.6 L55.3 -65.9 M98.5 -17.4 L84.7 -14.9 M86.6 50 L74.5 43 M34.2 94 L29.4 80.8 M-34.2 94 L-29.4 80.8 M-86.6 50 L-74.5 43 M-98.5 -17.4 L-84.7 -14.9 M-64.3 -76.6 L-55.3 -65.9',
+        stroke: 'currentColor', strokeWidth: 7, opacity: 0.75
+      })
     );
   }
 
-  // Shared card visuals so buttons and radio items look identical.
-  function cardBtnStyle(accent) {
-    return {
-      padding: '16px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
-      marginBottom: '10px', borderLeft: '3px solid ' + (accent || 'rgba(255,255,255,0.08)'),
-      transition: 'background 0.15s'
-    };
+  // Masthead dial: the nine-station compass, purely illustrative.
+  function Dial() {
+    var textStyle = { fontFamily: 'var(--font-sans)', fontSize: '9px', letterSpacing: '0.4em' };
+    return h('svg', { className: 'wb-entry-dial', width: 300, height: 300, viewBox: '-118 -118 236 236', 'aria-hidden': 'true', focusable: 'false' },
+      h('circle', { r: 106, fill: 'none', stroke: 'rgba(247,244,236,0.5)', strokeWidth: 1.2 }),
+      h('circle', { r: 99, fill: 'none', stroke: 'rgba(247,244,236,0.28)', strokeWidth: 0.7 }),
+      h('circle', { r: 64, fill: 'none', stroke: 'rgba(247,244,236,0.22)', strokeWidth: 0.7, strokeDasharray: '2 5' }),
+      h('path', { d: 'M0 -99 L0 -78', stroke: CREAM, strokeWidth: 3.5 }),
+      h('path', {
+        d: 'M63.6 -75.8 L50.1 -59.7 M97.5 -17.2 L76.8 -13.5 M85.7 49.5 L67.5 39 M33.9 93 L26.7 73.3 M-33.9 93 L-26.7 73.3 M-85.7 49.5 L-67.5 39 M-97.5 -17.2 L-76.8 -13.5 M-63.6 -75.8 L-50.1 -59.7',
+        stroke: 'rgba(247,244,236,0.65)', strokeWidth: 1.4
+      }),
+      h('circle', { r: 2.5, fill: CREAM }),
+      h('text', { y: 34, textAnchor: 'middle', fill: 'rgba(247,244,236,0.6)', style: textStyle }, t('entry.dial_1')),
+      h('text', { y: 48, textAnchor: 'middle', fill: 'rgba(247,244,236,0.38)', style: textStyle }, t('entry.dial_2'))
+    );
   }
 
-  function cardInner(title, desc, children) {
-    return [
-      h('div', { key: 'title', style: { fontSize: '13px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: 4 } }, title),
-      desc ? h('div', { key: 'desc', style: { fontSize: '11px', color: 'var(--chrome-text-dim)', lineHeight: '1.5' } }, desc) : null,
-      children || null
-    ];
+  // Section 02 spine: phase brackets over nine numbered stations on one line.
+  // Decorative; the tab row below carries the accessible semantics.
+  function Spine() {
+    var phaseStyle = { fontFamily: 'var(--font-sans)', fontSize: '10.5px', letterSpacing: '0.3em' };
+    var numStyle = { fontFamily: 'var(--e-serif)', fontSize: '14px' };
+    var xs = [66.7, 200, 333.3, 466.7, 600, 733.3, 866.7, 1000, 1133.3];
+    var nodes = [];
+    xs.forEach(function(x, i) {
+      nodes.push(h('circle', { key: 'c' + i, cx: x, cy: 80, r: 17, fill: CREAM, stroke: 'var(--e-ax)', strokeWidth: 1.5 }));
+      nodes.push(h('text', { key: 't' + i, x: x, y: 84.5, textAnchor: 'middle', fill: INK, style: numStyle }, String(i)));
+    });
+    return h('svg', { className: 'wb-entry-spine', viewBox: '0 0 1200 118', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false' },
+      h('path', { d: 'M66.7 42 v-10 h266.6 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
+      h('path', { d: 'M466.7 42 v-10 h266.6 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
+      h('path', { d: 'M836.7 42 v-10 h60 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
+      h('path', { d: 'M1000 42 v-10 h133.3 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
+      h('text', { x: 200, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_frame').toUpperCase()),
+      h('text', { x: 600, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_design').toUpperCase()),
+      h('text', { x: 866.7, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_analyse').toUpperCase()),
+      h('text', { x: 1066.7, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_report').toUpperCase()),
+      h('path', { className: 'wb-entry-spine-draw', d: 'M30 80 H1170', stroke: 'rgba(25,29,27,0.5)', strokeWidth: 1.2, fill: 'none', strokeDasharray: 1140 }),
+      h('path', { d: 'M1170 80 l-9 -4.5 v9 Z', fill: 'rgba(25,29,27,0.5)' }),
+      nodes
+    );
   }
 
-  // Action card: a real button that keeps the card appearance.
-  function ActionCard(props) {
+  function SectionHead(props) {
+    return h('div', { className: 'wb-entry-sechead' + (props.tight ? ' wb-entry-sechead--tight' : '') },
+      h('span', { className: 'wb-entry-secnum', 'aria-hidden': 'true' }, props.num),
+      h('h2', { className: 'wb-entry-sectitle', style: { margin: 0 } }, props.title),
+      h('span', { className: 'wb-entry-secrule', 'aria-hidden': 'true' }),
+      props.note ? h('span', { className: 'wb-entry-secnote' }, props.note) : null
+    );
+  }
+
+  // One docket row: index letterform, title over description, trailing chevron.
+  function DocketRow(props) {
     return h('button', {
       type: 'button',
-      className: 'wb-card-btn',
-      onClick: props.onClick,
-      style: cardBtnStyle(props.accent)
-    }, cardInner(props.title, props.desc, props.children));
+      className: 'wb-entry-reset wb-entry-row' + (props.compact ? ' wb-entry-row--compact' : ''),
+      onClick: props.onClick
+    },
+      h('span', {
+        className: 'wb-entry-row-letter' + (props.warn ? ' wb-entry-row-letter--warn' : ''),
+        style: props.plainIndex ? { fontStyle: 'normal' } : null,
+        'aria-hidden': 'true'
+      }, props.index),
+      h('span', { className: 'wb-entry-row-body' },
+        h('span', { className: 'wb-entry-row-title' }, props.title),
+        props.desc ? h('span', { className: 'wb-entry-row-desc' }, props.desc) : null,
+        props.meta ? h('span', { className: 'wb-entry-row-meta' }, props.meta) : null
+      ),
+      h('span', { className: 'wb-entry-row-arrow' }, PraxisIcons.chevronRight(20, { weight: 1.75 }))
+    );
   }
 
-  // Back button: a real button.
   function BackButton(props) {
     return h('button', {
       type: 'button',
-      className: 'wb-card-btn',
-      onClick: props.onClick,
-      style: {
-        width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '4px',
-        fontSize: '12px', color: 'var(--chrome-text-dim)', marginBottom: '14px', padding: '4px 6px'
-      }
-    }, PraxisIcons.chevronLeft(), t('common.back'));
+      className: 'wb-entry-reset wb-entry-back',
+      onClick: props.onClick
+    }, PraxisIcons.chevronLeft(14), t('common.back'));
   }
 
   function EntryLanding(props) {
@@ -72,11 +129,20 @@
     var aboutTabState = React.useState(null);
     var aboutTab = aboutTabState[0];
     var setAboutTab = aboutTabState[1];
+    // Station highlighted in the section 02 spine detail panel.
+    var siState = React.useState(0);
+    var si = siState[0];
+    var setSi = siState[1];
+    var beginRef = React.useRef(null);
 
     // Check for saved data without loading it into state
     var hasSaved = React.useMemo(function() {
       return PraxisContext.hasSavedProject();
     }, []);
+
+    var savedMeta = React.useMemo(function() {
+      return hasSaved ? PraxisContext.getSavedProjectMeta() : null;
+    }, [hasSaved]);
 
     // Backup slot (previous project) that differs from the current save
     var backupMeta = React.useMemo(function() {
@@ -147,55 +213,65 @@
       dispatch({ type: AT.LOAD_FILE, context: restored });
     }
 
-    // Station preview for left panel: uniform color, subtle opacity fade for
-    // depth-of-field. Floor is 0.85 so every station name still clears WCAG AA
-    // (>= 4.5:1) on --navy; the dimmest item lands at ~6.05:1.
-    var stationPreview = LABELS.map(function(name, i) {
-      var opacity = Math.max(0.85, 1 - i * 0.09);
-      return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', opacity: opacity } },
-        h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--teal)', minWidth: '16px' } }, i),
-        h('span', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)' } }, name)
-      );
-    });
+    // Hero CTA: open the tier picker and bring section 01 into view. The
+    // URL hash is never touched here; the router owns it for #station=N
+    // deep links.
+    function beginNew() {
+      setMode('tier');
+      requestAnimationFrame(function() {
+        if (!beginRef.current) return;
+        var reduce = false;
+        try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+        beginRef.current.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      });
+    }
 
-    // Left panel
-    var leftPanel = h('div', { className: 'wb-landing-left' },
-      h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' } },
-        h(Logo, null),
-        h('span', { style: { fontSize: '12px', fontWeight: 700, color: 'var(--teal)', letterSpacing: '0.12em' } }, 'PRAXIS')
-      ),
-      h('h1', { style: { fontSize: '24px', fontWeight: 700, color: 'var(--chrome-text)', margin: '0 0 8px 0' } }, t('landing.title')),
-      h('p', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)', lineHeight: '1.6', margin: '0 0 24px 0', maxWidth: '380px' } }, t('landing.subtitle')),
-      h('div', { style: { maxWidth: '260px' } }, stationPreview),
-      h('div', { style: { marginTop: '28px', fontSize: '11px', color: 'var(--chrome-text-dim)', display: 'flex', alignItems: 'center', gap: '8px' } },
-        h('span', null, 'PRAXIS Evaluation Workbench v' + PraxisSchema.PRAXIS_VERSION),
-        h('span', { 'aria-hidden': 'true' }, '·'),
-        h('button', {
-          type: 'button', onClick: function() { setAboutTab('about'); },
-          style: { background: 'none', border: 'none', padding: 0, color: 'inherit', font: 'inherit', textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer' }
-        }, 'About'),
-        h('span', { 'aria-hidden': 'true' }, '·'),
-        h('button', {
-          type: 'button', onClick: function() { setAboutTab('privacy'); },
-          style: { background: 'none', border: 'none', padding: 0, color: 'inherit', font: 'inherit', textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer' }
-        }, 'Privacy')
+    var version = 'v' + PraxisSchema.PRAXIS_VERSION;
+
+    /* ── Masthead ─────────────────────────────────────────────────── */
+    var masthead = h('header', { className: 'wb-entry-mast wb-entry-dark' },
+      h('div', { className: 'wb-entry-wrap' },
+        h('div', { className: 'wb-entry-mast-top' },
+          h('span', { className: 'wb-entry-brand' },
+            h(Mark, { size: 20 }),
+            h('span', { className: 'wb-entry-brand-name' }, 'Praxis')
+          ),
+          h('span', { className: 'wb-entry-mast-top-right' },
+            h('span', null, t('entry.app_name')),
+            h('span', { className: 'wb-entry-mast-version' }, version)
+          )
+        ),
+        h('div', { className: 'wb-entry-hero' },
+          h('div', { className: 'wb-entry-hero-copy' },
+            h('div', { className: 'wb-entry-kicker' }, t('entry.kicker')),
+            h('h1', { className: 'wb-entry-h1' }, t('entry.title')),
+            h('p', { className: 'wb-entry-lede' }, t('entry.lede')),
+            h('div', { className: 'wb-entry-cta-row' },
+              h('button', { type: 'button', className: 'wb-entry-btn-solid', onClick: beginNew },
+                t('entry.begin_cta')),
+              hasSaved ? h('button', { type: 'button', className: 'wb-entry-btn-ghost', onClick: openSavedProject },
+                t('entry.resume_cta')) : null
+            )
+          ),
+          h('div', { className: 'wb-entry-dial-slot' }, h(Dial, null))
+        )
       )
     );
 
-    // Right panel content depends on mode
-    var rightContent;
+    /* ── Section 01: Begin ────────────────────────────────────────── */
+    var beginContent;
 
     if (mode === 'tier') {
       // Tier selection: an accessible radiogroup. Highlighting a tier does
       // not create a project; activating one (Enter/Space/click) does.
       var tiers = [
-        { value: 'foundation', label: 'Foundation', accent: 'var(--green)', textKey: 'landing.tier_foundation' },
-        { value: 'practitioner', label: 'Practitioner', accent: 'var(--blue)', textKey: 'landing.tier_practitioner' },
-        { value: 'advanced', label: 'Advanced', accent: 'var(--purple)', textKey: 'landing.tier_advanced' }
+        { value: 'foundation', letter: 'a.', label: 'Foundation', textKey: 'landing.tier_foundation' },
+        { value: 'practitioner', letter: 'b.', label: 'Practitioner', textKey: 'landing.tier_practitioner' },
+        { value: 'advanced', letter: 'c.', label: 'Advanced', textKey: 'landing.tier_advanced' }
       ];
-      rightContent = h('div', null,
+      beginContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
-        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, t('landing.tier_title')),
+        h('div', { className: 'wb-entry-subtitle' }, t('landing.tier_title')),
         h(PraxisRadioGroup, {
           options: tiers,
           value: tierChoice,
@@ -206,145 +282,146 @@
               try { localStorage.removeItem('praxis-workbench'); localStorage.removeItem('praxis-workbench-ui'); } catch (e) {}
               // A brand-new project always starts at Station 0. A station
               // left over in the URL hash from a previously closed project
-              // must not leak into this one (see EntryLanding demo picker
-              // below and the hash-clearing effect in app.js).
+              // must not leak into this one (see the demo picker below and
+              // the hash-clearing effect in app.js).
               dispatch({ type: AT.INIT, tier: val });
             });
           },
-          itemClassName: function(opt, sel) { return 'wb-card-btn' + (sel ? ' wb-card-btn--selected' : ''); },
-          itemStyle: function(opt) { return cardBtnStyle(opt.accent); },
-          renderItem: function(opt) { return cardInner(opt.label, t(opt.textKey)); }
+          groupClassName: 'wb-entry-docket',
+          itemClassName: function(opt, sel) { return 'wb-entry-row' + (sel ? ' wb-entry-row--selected' : ''); },
+          renderItem: function(opt) {
+            return [
+              h('span', { key: 'i', className: 'wb-entry-row-letter', 'aria-hidden': 'true' }, opt.letter),
+              h('span', { key: 'b', className: 'wb-entry-row-body' },
+                h('span', { className: 'wb-entry-row-title' }, opt.label),
+                h('span', { className: 'wb-entry-row-desc' }, t(opt.textKey))
+              ),
+              h('span', { key: 'a', className: 'wb-entry-row-arrow' }, PraxisIcons.chevronRight(20, { weight: 1.75 }))
+            ];
+          }
         })
       );
 
     } else if (mode === 'open') {
-      // File drop zone
-      rightContent = h('div', null,
+      // File drop zone, remapped to the entry palette by .wb-entry-dropzone.
+      beginContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
-        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, t('landing.open')),
-        h(FileDropZone, {
-          label: 'Drop .praxis file here or click Browse files',
-          onFile: function(data) {
-            // Keep a backup of the current save before an import can
-            // replace or modify it on the next autosave.
-            var check = PraxisSchema.validateContext(data);
-            if (check.ok && (PraxisContext.hasSavedProject() || PraxisContext.getUnreadableSavedData())) {
-              PraxisContext.writeBackup('import');
+        h('div', { className: 'wb-entry-subtitle' }, t('entry.open_title')),
+        h('div', { className: 'wb-entry-dropzone' },
+          h(FileDropZone, {
+            label: 'Drop .praxis file here or click Browse files',
+            onFile: function(data) {
+              // Keep a backup of the current save before an import can
+              // replace or modify it on the next autosave.
+              var check = PraxisSchema.validateContext(data);
+              if (check.ok && (PraxisContext.hasSavedProject() || PraxisContext.getUnreadableSavedData())) {
+                PraxisContext.writeBackup('import');
+              }
+              var fileAction = { type: AT.LOAD_FILE, context: data };
+              // Partial imports in a fresh session merge into the saved
+              // project, not onto the empty in-memory context (which would
+              // then overwrite the saved project on the next autosave).
+              if (check.ok && check.partial && PraxisContext.hasSavedProject()) {
+                fileAction.base = PraxisContext.loadSavedProject();
+              }
+              dispatch(fileAction);
+            },
+            onError: function(err) {
+              showToast('Could not read file: ' + ((err && err.message) || 'unknown error') + '.', 'error');
             }
-            var fileAction = { type: AT.LOAD_FILE, context: data };
-            // Partial imports in a fresh session merge into the saved
-            // project, not onto the empty in-memory context (which would
-            // then overwrite the saved project on the next autosave).
-            if (check.ok && check.partial && PraxisContext.hasSavedProject()) {
-              fileAction.base = PraxisContext.loadSavedProject();
-            }
-            dispatch(fileAction);
-          },
-          onError: function(err) {
-            showToast('Could not read file: ' + ((err && err.message) || 'unknown error') + '.', 'error');
-          }
-        })
+          })
+        )
       );
 
     } else if (mode === 'quick') {
       // Station selector: the nine linear stations plus the optional Planning
-      // and contract station (index 9, reached in-app by the rail "P" button),
-      // folded in here so it is no longer a separate landing card.
-      var stationRowStyle = {
-        display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
-        border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
-        marginBottom: '6px', transition: 'background 0.15s'
-      };
+      // and contract station (index 9, reached in-app by the rail "P" button).
       function stationRow(key, badge, name, station) {
-        return h('button', {
-          key: key, type: 'button', className: 'wb-card-btn',
+        return h(DocketRow, {
+          key: key, index: badge, plainIndex: true, compact: true, title: name,
           onClick: function() {
             guardDestructive(function() {
               dispatch({ type: AT.INIT, station: station });
             });
-          },
-          style: stationRowStyle
-        },
-          h('span', { style: { fontSize: '12px', fontWeight: 700, color: 'var(--teal)', minWidth: '16px' } }, badge),
-          h('span', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)' } }, name)
-        );
+          }
+        });
       }
-      rightContent = h('div', null,
+      beginContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
-        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Go to a station'),
-        LABELS.map(function(name, i) { return stationRow(i, i, name, i); }),
-        stationRow('planning', 'P', 'Planning and contract', 9)
+        h('div', { className: 'wb-entry-subtitle' }, t('entry.quick_title')),
+        h('div', { className: 'wb-entry-docket' },
+          LABELS.map(function(name, i) { return stationRow(i, String(i), t('station.' + i + '.name'), i); }),
+          stationRow('planning', 'P', t('entry.planning_title'), 9)
+        )
       );
 
     } else if (mode === 'demo') {
-      // Demo picker: one card per pre-populated example evaluation
+      // Demo picker: one row per pre-populated example evaluation
       var demos = [
-        { key: 'gf', title: 'Global Fund Malaria SNT', accent: 'var(--blue)',
-          desc: 'Independent evaluation of sub-national tailoring of malaria interventions across 12 HBHI countries. 26 evaluation questions, contribution analysis, and a mixed-methods country-insights sample. Both the evaluation team and the commissioner cockpit are fully populated.',
-          ctx: window.PRAXIS_DEMO_GF },
-        { key: 'zd', title: 'Gavi Zero-Dose', accent: 'var(--teal)',
-          desc: 'Multi-country immunisation equity evaluation (8 countries). 8 evaluation questions, contribution analysis, and 126 key informant interviews. Both the evaluation team and the commissioner cockpit are fully populated.',
-          ctx: window.PRAXIS_DEMO_ZD }
+        { key: 'gf', letter: 'a.', title: t('entry.demo_gf_title'), desc: t('entry.demo_gf_desc'), ctx: window.PRAXIS_DEMO_GF },
+        { key: 'zd', letter: 'b.', title: t('entry.demo_zd_title'), desc: t('entry.demo_zd_desc'), ctx: window.PRAXIS_DEMO_ZD }
       ];
-      rightContent = h('div', null,
+      beginContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
-        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, 'Open a worked example'),
-        demos.map(function(d) {
-          return h(ActionCard, {
-            key: d.key, title: d.title, accent: d.accent, desc: d.desc,
-            onClick: function() {
-              if (!d.ctx) return;
-              guardDestructive(function() {
-                // A freshly opened worked example always starts at Station 0,
-                // regardless of any station left in the URL hash by a
-                // previously closed project.
-                dispatch({ type: AT.INIT, context: d.ctx, tier: 'practitioner', station: 0 });
-              });
-            }
-          });
-        })
+        h('div', { className: 'wb-entry-subtitle' }, t('entry.demo_title')),
+        h('div', { className: 'wb-entry-docket' },
+          demos.map(function(d) {
+            return h(DocketRow, {
+              key: d.key, index: d.letter, title: d.title, desc: d.desc,
+              onClick: function() {
+                if (!d.ctx) return;
+                guardDestructive(function() {
+                  // A freshly opened worked example always starts at Station 0,
+                  // regardless of any station left in the URL hash by a
+                  // previously closed project.
+                  dispatch({ type: AT.INIT, context: d.ctx, tier: 'practitioner', station: 0 });
+                });
+              }
+            });
+          })
+        )
       );
 
     } else {
-      // Default: action cards with accent colors mapped to design system tokens
-      var cards = [
-        h(ActionCard, { key: 'new', title: '+ ' + t('landing.new'), desc: t('landing.new_desc'), accent: 'var(--teal)', onClick: function() { setMode('tier'); } }),
-        h(ActionCard, { key: 'open', title: t('landing.open'), desc: t('landing.open_desc'), accent: 'var(--blue)', onClick: function() { setMode('open'); } }),
-        h(ActionCard, { key: 'quick', title: t('landing.quick'), desc: t('landing.quick_desc'), accent: 'var(--purple)', onClick: function() { setMode('quick'); } }),
-        h(ActionCard, { key: 'demo', title: 'Worked examples', desc: 'Two complete evaluations, filled from scoping through the commissioner cockpit. Global Fund Malaria SNT or Gavi Zero-Dose.', accent: 'var(--amber)',
-          onClick: function() { setMode('demo'); }
-        }),
-        h(ActionCard, { key: 'commissioner', title: 'Commissioner cockpit', desc: 'Commission for use: name the intended users and the decisions they must make, quality-assure the design before spend, hold delivery to schedule, and drive findings to implementation. Starts an empty cockpit for your own commission.', accent: 'var(--blue)',
+      // Default docket: the five ways in, lettered in order, with the
+      // in-progress banner above when a saved project exists.
+      var resumeBanner = null;
+      if (hasSaved) {
+        var metaLine = savedMeta
+          ? t('entry.station_at', { n: savedMeta.station, name: savedMeta.stationName }) +
+            (savedMeta.updatedAt ? ' · ' + PraxisUtils.formatDate(savedMeta.updatedAt) : '')
+          : '';
+        resumeBanner = h('button', { type: 'button', className: 'wb-entry-reset wb-entry-resume', onClick: openSavedProject },
+          h('span', { className: 'wb-entry-resume-chip' },
+            h('span', { className: 'wb-entry-resume-dot', 'aria-hidden': 'true' }),
+            t('entry.in_progress')),
+          h('span', { className: 'wb-entry-resume-body' },
+            h('span', { className: 'wb-entry-resume-title' }, (savedMeta && savedMeta.name) || t('landing.continue')),
+            metaLine ? h('span', { className: 'wb-entry-resume-sub' }, metaLine) : null
+          ),
+          h('span', { className: 'wb-entry-resume-go' }, t('entry.resume'), ' ', PraxisIcons.chevronRight(15, { weight: 2.25 }))
+        );
+      }
+
+      var rows = [
+        { title: t('entry.new_title'), desc: t('entry.new_desc'), onClick: function() { setMode('tier'); } },
+        { title: t('entry.open_title'), desc: t('entry.open_desc'), onClick: function() { setMode('open'); } },
+        { title: t('entry.single_title'), desc: t('entry.single_desc'), onClick: function() { setMode('quick'); } },
+        { title: t('entry.examples_title'), desc: t('entry.examples_desc'), onClick: function() { setMode('demo'); } },
+        { title: t('entry.cockpit_title'), desc: t('entry.cockpit_desc'),
           onClick: function() {
             guardDestructive(function() {
               dispatch({ type: AT.INIT, role: 'commissioner', tier: 'practitioner' });
             });
-          }
-        })
+          } }
       ];
 
-      // Continue card (only if saved project has actual data)
-      if (hasSaved) {
-        var meta = PraxisContext.getSavedProjectMeta();
-        var metaLine = meta
-          ? meta.name + ' · Station ' + meta.station + ' (' + meta.stationName + ')' + (meta.updatedAt ? ' · ' + PraxisUtils.formatDate(meta.updatedAt) : '')
-          : 'Resume saved project';
-        cards.push(h(ActionCard, {
-          key: 'continue', title: t('landing.continue'), accent: 'var(--green)',
-          onClick: openSavedProject
-        },
-          h('div', { key: 'meta', style: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' } },
-            h('span', { style: { width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block' } }),
-            h('span', { style: { fontSize: '11px', color: 'var(--chrome-text-dim)' } }, metaLine)
-          )
-        ));
-      }
-
-      // Recovery card: saved data exists but cannot be read as a project
+      // Recovery row: saved data exists but cannot be read as a project
       if (!hasSaved && unreadable) {
-        cards.push(h(ActionCard, {
-          key: 'recover', title: 'Recover unreadable saved data', accent: 'var(--amber)',
-          desc: 'Saved workbench data exists in this browser but could not be read as a project. Download a copy before it is overwritten by new work.',
+        rows.push({
+          warn: true,
+          title: t('entry.recover_title'),
+          desc: t('entry.recover_desc'),
           onClick: function() {
             try {
               var blob = new Blob([unreadable], { type: 'application/json' });
@@ -354,35 +431,140 @@
               showToast('Could not download the recovery file: ' + e.message, 'error');
             }
           }
-        }));
+        });
       }
 
-      // Subdued restore line for the rotating backup slot
+      var restoreLine = null;
       if (backupMeta) {
-        var backupLine = 'Restore previous project (' + backupMeta.name +
-          (backupMeta.backedUpAt ? ', backed up ' + PraxisUtils.formatDate(backupMeta.backedUpAt) : '') + ')';
-        cards.push(h('button', {
-          key: 'restore', type: 'button',
-          onClick: handleRestoreBackup,
-          style: {
-            background: 'transparent', border: 'none', color: 'var(--chrome-text-dim)',
-            fontSize: '11px', textAlign: 'left', padding: '2px 4px', cursor: 'pointer',
-            textDecoration: 'underline', textUnderlineOffset: '2px'
-          }
-        }, backupLine));
+        restoreLine = h('button', {
+          type: 'button', className: 'wb-entry-reset wb-entry-restore',
+          onClick: handleRestoreBackup
+        }, t('entry.restore_title') + ' (' + backupMeta.name +
+          (backupMeta.backedUpAt ? ', ' + t('entry.backed_up', { date: PraxisUtils.formatDate(backupMeta.backedUpAt) }) : '') + ')');
       }
 
-      rightContent = h('div', null, cards);
+      beginContent = h('div', null,
+        resumeBanner,
+        h('div', { className: 'wb-entry-docket' },
+          rows.map(function(row, idx) {
+            return h(DocketRow, {
+              key: idx,
+              index: String.fromCharCode(97 + idx) + '.',
+              warn: row.warn,
+              title: row.title,
+              desc: row.desc,
+              onClick: row.onClick
+            });
+          })
+        ),
+        restoreLine
+      );
     }
 
-    var rightPanel = h('div', { className: 'wb-landing-right' }, rightContent);
+    var beginSection = h('section', { ref: beginRef, className: 'wb-entry-wrap wb-entry-sec-begin', 'aria-label': t('entry.begin') },
+      h(SectionHead, { num: '01', title: t('entry.begin') }),
+      beginContent
+    );
 
+    /* ── Section 02: The nine stations ────────────────────────────── */
+    function onTabKey(e) {
+      var idx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
+      var next = null;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % 9;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx + 8) % 9;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = 8;
+      if (next === null) return;
+      e.preventDefault();
+      setSi(next);
+      var el = document.getElementById('wb-entry-tab-' + next);
+      if (el) el.focus();
+    }
+
+    var stationTabs = h('div', { className: 'wb-entry-stations', role: 'tablist', 'aria-label': t('entry.stations_title') },
+      LABELS.map(function(name, i) {
+        return h('button', {
+          key: i,
+          type: 'button',
+          role: 'tab',
+          id: 'wb-entry-tab-' + i,
+          'aria-selected': si === i ? 'true' : 'false',
+          'aria-controls': 'wb-entry-station-panel',
+          tabIndex: si === i ? 0 : -1,
+          'data-idx': i,
+          className: 'wb-entry-reset wb-entry-station-tab',
+          onMouseEnter: function() { if (si !== i) setSi(i); },
+          onFocus: function() { if (si !== i) setSi(i); },
+          onKeyDown: onTabKey
+        }, t('station.' + i + '.name'));
+      })
+    );
+
+    var stationDetail = h('div', {
+      className: 'wb-entry-station-detail',
+      role: 'tabpanel',
+      id: 'wb-entry-station-panel',
+      'aria-labelledby': 'wb-entry-tab-' + si
+    },
+      h('div', null,
+        h('div', { className: 'wb-entry-station-name' },
+          h('span', { className: 'wb-entry-station-name-num' }, t('entry.station_word') + ' ' + si),
+          ' · ' + t('station.' + si + '.name')),
+        h('div', { className: 'wb-entry-station-desc' }, t('entry.sdesc_' + si))
+      ),
+      h('div', { className: 'wb-entry-station-phase' }, t('entry.phase_word') + ' · ' + t(PHASE_KEYS[si]))
+    );
+
+    var stationsSection = h('section', { className: 'wb-entry-wrap wb-entry-sec-stations', 'aria-label': t('entry.stations_title') },
+      h(SectionHead, { num: '02', title: t('entry.stations_title'), note: t('entry.stations_note'), tight: true }),
+      h(Spine, null),
+      stationTabs,
+      stationDetail
+    );
+
+    /* ── Section 03: How it's built ───────────────────────────────── */
+    var principles = [1, 2, 3].map(function(n) {
+      return h('div', { key: n, className: 'wb-entry-principle' },
+        h('div', { className: 'wb-entry-principle-title' }, t('entry.built' + n + '_title')),
+        h('div', { className: 'wb-entry-principle-body' }, t('entry.built' + n + '_body'))
+      );
+    });
+    var builtSection = h('section', { className: 'wb-entry-wrap wb-entry-sec-built', 'aria-label': t('entry.built_title') },
+      h(SectionHead, { num: '03', title: t('entry.built_title') }),
+      h('div', { className: 'wb-entry-principles' }, principles)
+    );
+
+    /* ── Footer ───────────────────────────────────────────────────── */
+    var footLinkStyle = { background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' };
+    var footer = h('footer', { className: 'wb-entry-foot wb-entry-dark' },
+      h('div', { className: 'wb-entry-wrap wb-entry-foot-inner' },
+        h('span', { className: 'wb-entry-foot-brand' },
+          h(Mark, { size: 18 }),
+          'Praxis'),
+        h('span', { className: 'wb-entry-foot-links' },
+          h('button', {
+            type: 'button', className: 'wb-entry-foot-link',
+            style: footLinkStyle,
+            onClick: function() { setAboutTab('about'); }
+          }, t('entry.about')),
+          h('button', {
+            type: 'button', className: 'wb-entry-foot-link',
+            style: footLinkStyle,
+            onClick: function() { setAboutTab('privacy'); }
+          }, t('entry.privacy')),
+          h('span', { className: 'wb-entry-foot-version' },
+            t('entry.app_name').toUpperCase() + ' · ' + version + ' · ' + new Date().getFullYear())
+        )
+      )
+    );
+
+    /* ── Modals ───────────────────────────────────────────────────── */
     // Confirmation before a destructive action replaces the saved project
     var confirmModal = null;
     if (pending) {
-      var savedMeta = PraxisContext.getSavedProjectMeta();
-      var savedName = (savedMeta && savedMeta.name) || 'Untitled';
-      var savedWhen = savedMeta && savedMeta.updatedAt ? ', last updated ' + PraxisUtils.formatDate(savedMeta.updatedAt) : '';
+      var pendingMeta = PraxisContext.getSavedProjectMeta();
+      var savedName = (pendingMeta && pendingMeta.name) || 'Untitled';
+      var savedWhen = pendingMeta && pendingMeta.updatedAt ? ', last updated ' + PraxisUtils.formatDate(pendingMeta.updatedAt) : '';
       confirmModal = h(Modal, {
         isOpen: true,
         title: 'Replace your saved project?',
@@ -407,9 +589,13 @@
       onClose: function() { setAboutTab(null); }
     });
 
-    return h('div', { className: 'wb-landing on-chrome', style: {
-      fontFamily: "var(--font-sans)", zIndex: 100
-    }}, leftPanel, rightPanel, confirmModal, aboutModal);
+    return h('div', { className: 'wb-entry' },
+      masthead,
+      h('main', null, beginSection, stationsSection, builtSection),
+      footer,
+      confirmModal,
+      aboutModal
+    );
   }
 
   window.EntryLanding = EntryLanding;
