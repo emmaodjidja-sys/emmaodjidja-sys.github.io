@@ -16,13 +16,16 @@ var FILES = [
   'js/review/ScreenExport.js'
 ];
 
-function loadWorkbench() {
+/* extra: additional workbench-relative files to run in the SAME sandbox after the
+   core modules (the demo fixtures, say, which are IIFEs assigning onto window).
+   Defaults to none, so existing callers are unaffected. */
+function loadWorkbench(extra) {
   var sandbox = {};
   sandbox.window = sandbox;
   sandbox.self = sandbox;
   sandbox.console = console;
   vm.createContext(sandbox);
-  FILES.forEach(function(f) {
+  FILES.concat(extra || []).forEach(function(f) {
     var full = path.join(__dirname, '..', f);
     vm.runInContext(fs.readFileSync(full, 'utf8'), sandbox, { filename: f });
   });
