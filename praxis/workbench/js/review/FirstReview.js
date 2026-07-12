@@ -36,12 +36,29 @@
 
   // The deliverable a commissioner run defaults to: the most recent submitted
   // deliverable whose type or title reads as a report.
+  //
+  // FALLBACK, and it is not cosmetic. An UNATTACHED run has no report date, so
+  // buildScreenItems computes the timing item against TODAY: on a project whose
+  // final report was delivered on time, months ago, "the report is in time for
+  // the decision" is then answered No against a window that closed long after
+  // the report actually landed, and the run opens with a critical red flag that
+  // is an artifact of the run not being attached to anything. A schedule with no
+  // deliverable in 'submitted' status is the normal case, not an odd one (both
+  // worked examples are like this: their final report sits at 'accepted'), so
+  // the picker falls back to the deliverable a first review is FOR, which the
+  // codebase already identifies: the final report. Unattached stays the last
+  // resort, for a schedule that has no final report at all.
   function defaultDeliverableId(deliverables) {
     for (var i = deliverables.length - 1; i >= 0; i--) {
       var d = deliverables[i];
       if (d && d.status === 'submitted' && (/report/i.test(String(d.type || '')) || /report/i.test(String(d.title || '')))) return d.id;
     }
-    return '';
+    // CockpitData is loaded on both lenses, but this file must not assume it:
+    // Station 7 renders the same panel for the team, and a missing module should
+    // degrade to an unattached run, not throw.
+    var D = window.CockpitData;
+    var fr = (D && D.finalReportDeliverable) ? D.finalReportDeliverable(deliverables) : null;
+    return (fr && fr.id) ? fr.id : '';
   }
 
   // ---- small atoms ----------------------------------------------------------
@@ -445,6 +462,39 @@
       }
     }
 
+    // The worked examples ship their own draft report, so the screen can be shown
+    // end to end without the demonstrator pasting 2,600 words from somewhere. It is
+    // looked up ONLY by exact programme_name, which is the demo fixture's own key,
+    // so a real evaluation can never match one and the button below can never
+    // appear on real work. Null on every project that is not one of the two demos.
+    //
+    // hasOwnProperty and the string check are not ceremony. A bare
+    // `REPORTS[name] || null` reads INHERITED keys too: a project whose
+    // programme_name happens to be "constructor", "toString" or "valueOf" would
+    // pull a function off Object.prototype, the truthiness test would pass, the
+    // button would render on a REAL evaluation, and clicking it would paste
+    // "function Object() { [native code] }" into the reviewer's box. Own key,
+    // and a string, or nothing.
+    var demoReports = window.PRAXIS_DEMO_REPORTS || {};
+    var demoKey = (context.project_meta || {}).programme_name || '';
+    var demoReport = (demoKey && Object.prototype.hasOwnProperty.call(demoReports, demoKey)
+      && typeof demoReports[demoKey] === 'string' && demoReports[demoKey]) ? demoReports[demoKey] : null;
+
+    // Fills the paste box and stops. It deliberately does NOT scan: the demo has to
+    // show both steps, the paste and the scan, because the point of the screen is
+    // that a human puts the text in and a human reads what comes back. The text goes
+    // into the uncontrolled textarea and NOWHERE else, exactly as a human paste
+    // would, and runPrescan clears that node when it is done with it.
+    function loadDemoReport() {
+      var el = pasteRef.current;
+      if (!el || !demoReport) return;
+      el.value = demoReport;
+      el.focus();
+      dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST,
+        message: 'The worked example\'s own draft report is now in the box. Nothing has been scanned and nothing has been saved: press Run pre-scan.',
+        toastType: 'info' });
+    }
+
     function runPrescan() {
       if (scanning) return;
       var el = pasteRef.current;
@@ -598,6 +648,12 @@
         h('div', { className: 'wb-cm-add' },
           h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-outline', disabled: scanning, onClick: runPrescan },
             scanning ? 'Scanning' : 'Run pre-scan'),
+          // Renders nothing at all when there is no demo report: no button, no
+          // empty span, no gap.
+          demoReport ? h('button', { type: 'button', className: 'wb-btn wb-btn-sm wb-btn-ghost', disabled: scanning, onClick: loadDemoReport },
+            'Load the demo draft report') : null,
+          demoReport ? h('span', { className: 'wb-cm-muted' },
+            'This worked example ships the draft report it received, so the screen can be demonstrated end to end. It fills the box; you still press Run pre-scan.') : null,
           scanning ? h('span', { className: 'wb-cm-muted', role: 'status' },
             'Scanning in this browser. A long report can take a moment.') : null));
 

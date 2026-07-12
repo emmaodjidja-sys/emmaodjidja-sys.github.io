@@ -2050,7 +2050,7 @@
         ],
         "payment_percent": 30,
         "status": "in_progress",
-        "submitted_at": null,
+        "submitted_at": "2026-06-12T10:00:00.000Z",
         "accepted_at": null,
         "notes": "",
         "rating": null,
