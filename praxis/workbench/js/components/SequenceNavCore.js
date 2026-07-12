@@ -56,11 +56,19 @@
   }
 
   /* buildStationSteps(labelFn) -> the evaluator's stations.
-     The label source is INJECTED, never hardcoded here. Callers pass
-     id => PraxisI18n.t('station.' + id + '.name'), which is what keeps the nav
-     bar translated and stops a private English LABELS array from creeping back.
-     `code` is '' because the evaluator has no C0-style codes; the field exists
-     only so both lenses hand SequenceNav the same step shape. */
+     The label source is INJECTED, not hardcoded here: that injection is what
+     killed the private English LABELS array StationNav used to carry, a stale
+     copy of PraxisSchema.STATION_LABELS that drove an off-by-one back button.
+     The evaluator's caller injects PraxisSchema.STATION_LABELS[id], the same
+     source the rail, the station header, the summary bar and the landing
+     page all read.
+     Do NOT inject t('station.' + id + '.name') here. Those keys exist in
+     i18n.js but nothing else in the evaluator consumes them, so translating
+     only this bar would leave it disagreeing with the station heading above
+     it. Translating the evaluator's station names is a suite-wide change
+     across seven consumers, not a nav-bar change.
+     `code` is '' because the evaluator has no C0-style codes; the field
+     exists only so both lenses hand SequenceNav the same step shape. */
   function buildStationSteps(labelFn) {
     var count = stationCount();
     var steps = [];
