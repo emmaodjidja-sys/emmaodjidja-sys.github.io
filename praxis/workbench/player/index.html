@@ -622,7 +622,7 @@ function buildTimeline(){
   ph.setAttribute('opacity','.85');
   const flag=txt(phG,xW(0),PADT-10,'NOW',getVar('--teal-ink'),7,'middle',true);
   flag.setAttribute('letter-spacing','.18em');
-  flag.setAttribute('font-weight','600');
+  flag.setAttribute('font-weight','500');
   playheadEls={ph,flag};
 
   if(!reduce){
@@ -911,7 +911,7 @@ function buildFloor(){
   // commissioner
   const cm=FG.comm;
   const cl=txt(base,cm.x,12,'COMMISSIONER',getVar('--text-tertiary'),7.5,'middle',true);
-  cl.setAttribute('letter-spacing','.1em'); cl.setAttribute('font-weight','600');
+  cl.setAttribute('letter-spacing','.1em'); cl.setAttribute('font-weight','500');
   const cc=mk('circle',base); cc.setAttribute('cx',cm.x); cc.setAttribute('cy',cm.y);
   cc.setAttribute('r',cm.r); cc.setAttribute('fill',getVar('--surface-muted'));
   cc.setAttribute('stroke',getVar('--border-strong')); cc.setAttribute('stroke-width','1.1');
@@ -927,7 +927,7 @@ function buildFloor(){
   ur.setAttribute('rx','8'); ur.setAttribute('stroke',getVar('--border-strong'));
   ur.setAttribute('stroke-width','1.1');
   const ut=txt(base,un.x+un.w/2,un.y+18,'EVALUATION UNIT',getVar('--text'),8,'middle',true);
-  ut.setAttribute('letter-spacing','.08em'); ut.setAttribute('font-weight','600');
+  ut.setAttribute('letter-spacing','.08em'); ut.setAttribute('font-weight','500');
   F.prodTx=txt(base,un.x+un.w/2,un.y+33,'in production 00',getVar('--text-tertiary'),8,'middle',true);
 
   // desks U1..U9
@@ -938,7 +938,7 @@ function buildFloor(){
     dr.setAttribute('rx','7'); dr.setAttribute('stroke',getVar('--border-strong'));
     dr.setAttribute('stroke-width','1');
     const dl=txt(base,d.x+9,d.y+18,'U'+u,getVar('--text'),10,'start',true);
-    dl.setAttribute('font-weight','600');
+    dl.setAttribute('font-weight','500');
     F.dots[u]=[];
     for(let k=0;k<5;k++){
       const q=rect(base,d.x+d.w-11-k*9,d.y+7,5,5,getVar('--border-strong'));
@@ -955,7 +955,7 @@ function buildFloor(){
   gr.setAttribute('rx','8'); gr.setAttribute('stroke',getVar('--slate-light'));
   gr.setAttribute('stroke-width','1.1'); gr.setAttribute('stroke-dasharray','4 3');
   const gl=txt(base,gh.x+8,gh.y+16,'U?',getVar('--text-tertiary'),9,'start',true);
-  gl.setAttribute('font-weight','600');
+  gl.setAttribute('font-weight','500');
   F.ghostSub=txt(base,gh.x+8,gh.y+31,'no user engaged',getVar('--text-tertiary'),6.5,'start',true);
 
   F.dyn=mk('g',fs);
@@ -1056,7 +1056,7 @@ function updateFloor(wk,sc,inProd){
         dot.setAttribute('cy',tg.y+tg.h-8); dot.setAttribute('r','3.6');
         dot.setAttribute('fill',c); dot.setAttribute('opacity',a.toFixed(2));
         const lt=txt(dyn,tg.x,tg.y-4-n*9,id+' '+(SHORT[e.outcome]||''),c,7.5,'start',true);
-        lt.setAttribute('opacity',Math.min(1,a+.1)); lt.setAttribute('font-weight','600');
+        lt.setAttribute('opacity',Math.min(1,a+.1)); lt.setAttribute('font-weight','500');
         halo(lt);
       }
     }
