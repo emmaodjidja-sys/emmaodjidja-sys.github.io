@@ -35,7 +35,13 @@
   //          scrub is VERSION-INDEPENDENT (see scrubScreens and migrate): it runs
   //          on every path through migrate, not inside one version step, because
   //          the builds that persisted snippets already stamped their files 1.7.0.
-  var PRAXIS_VERSION = '1.7.0';
+  //   1.8.0  adds the reasons-for-non-use vocabulary at intended-user level
+  //          (users[].use_outcome, '' until recorded) and a stable top-level
+  //          project_id so the local portfolio track record can key one entry
+  //          per evaluation. Additive; use_outcome is backfilled explicitly
+  //          since deep-default skips arrays, project_id is minted on migrate
+  //          when absent.
+  var PRAXIS_VERSION = '1.8.0';
 
   // Navigation bounds (single source; consumed by router.js and context.js clamps).
   // MAX_STATION: highest evaluator-rail station index (0..9, includes Planning).
@@ -83,9 +89,14 @@
     10: ['commissioner']
   };
 
+  function newProjectId() {
+    return 'prj_' + Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
   function createEmptyContext() {
     return {
       version: PRAXIS_VERSION,
+      project_id: newProjectId(),
       schema: 'praxis-workbench',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -218,7 +229,9 @@
         // need it, and their influence/interest for engagement planning.
         users: [],          // [{ id, name, role, tier, intended_use, decision_window (label),
                             //    window_opens, window_closes, status: in_post|handing_over|left,
-                            //    successor, influence, interest, engagement, eq_refs:[] }]
+                            //    successor, use_outcome: ''|used|missed_window|attention_lost|
+                            //    wrong_questions|not_credible|contact_left,
+                            //    influence, interest, engagement, eq_refs:[] }]
         // Per-quadrant engagement checklist state: for each Mendelow strategy, the indices
         // of the completed engagement actions (action lists live in CockpitData.ENGAGEMENT).
         engagement_actions: { manage: [], satisfy: [], inform: [], monitor: [] },
@@ -498,6 +511,21 @@
       var next = deepDefault(createEmptyContext(), ctx);
       if (!Array.isArray(next.report_screens)) next.report_screens = [];
       next.version = '1.7.0';
+      return next;
+    },
+    // 1.7.0 -> 1.8.0: deep-default adds nothing structural here; the two new
+    // facts are minted or backfilled explicitly. use_outcome is per-user (arrays
+    // are replaced wholesale by deep-default) and project_id must survive with
+    // whatever the file already carries so the portfolio register stays keyed.
+    '1.7.0': function(ctx) {
+      var next = deepDefault(createEmptyContext(), ctx);
+      if (!next.project_id || typeof next.project_id !== 'string') next.project_id = newProjectId();
+      var cm = next.commissioner || (next.commissioner = {});
+      (Array.isArray(cm.users) ? cm.users : []).forEach(function(u) {
+        if (!u || typeof u !== 'object') return;
+        if (u.use_outcome == null) u.use_outcome = '';
+      });
+      next.version = '1.8.0';
       return next;
     }
   };
