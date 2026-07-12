@@ -1,11 +1,16 @@
 /**
  * demo-data-zd.js - Gavi Zero-Dose evaluation.
  * Regenerated at schema 1.6.0 (dated decision windows, gate lock, user status).
+ * Seeded 1.8.0 fields, kept stamped 1.6.0 so migration runs on load: a fixed
+ * project_id (prj_demo_zd) so the portfolio register upserts one row across
+ * reloads, and use_outcome on three Primary users (Board, Programme Team,
+ * Strategy Team) recording the cautionary, missed-window story of Zero-Dose.
  */
 (function() {
   'use strict';
   window.PRAXIS_DEMO_ZD = {
   "version": "1.6.0",
+  "project_id": "prj_demo_zd",
   "schema": "praxis-workbench",
   "created_at": "2024-01-15T09:00:00.000Z",
   "updated_at": "2024-03-28T14:30:00.000Z",
@@ -2146,6 +2151,7 @@
         "window_closes": "2025-12-10",
         "status": "in_post",
         "successor": "",
+        "use_outcome": "missed_window",
         "influence": "high",
         "interest": "medium",
         "eq_refs": [
@@ -2165,6 +2171,7 @@
         "window_closes": "2026-12-31",
         "status": "left",
         "successor": "Deputy Director, Country Programmes (incoming)",
+        "use_outcome": "contact_left",
         "influence": "high",
         "interest": "high",
         "eq_refs": [
@@ -2184,6 +2191,7 @@
         "window_closes": "2025-10-31",
         "status": "in_post",
         "successor": "",
+        "use_outcome": "wrong_questions",
         "influence": "high",
         "interest": "high",
         "eq_refs": [

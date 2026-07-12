@@ -1,11 +1,16 @@
 /**
  * demo-data-gf.js - Global Fund ELO Malaria Sub-National Tailoring evaluation.
  * Regenerated at schema 1.6.0 (dated decision windows, gate lock, user status).
+ * Seeded 1.8.0 fields, kept stamped 1.6.0 so migration runs on load: a fixed
+ * project_id (prj_demo_gf) so the portfolio register upserts one row across
+ * reloads, and use_outcome on two Primary users (Secretariat, Strategy
+ * Committee) recording that the Global Fund story is a use success.
  */
 (function() {
   'use strict';
   window.PRAXIS_DEMO_GF = {
   "version": "1.6.0",
+  "project_id": "prj_demo_gf",
   "schema": "praxis-workbench",
   "created_at": "2025-03-18T09:00:00.000Z",
   "updated_at": "2025-03-18T09:00:00.000Z",
@@ -2645,6 +2650,7 @@
         "window_closes": "2025-07-15",
         "status": "in_post",
         "successor": "",
+        "use_outcome": "used",
         "influence": "high",
         "interest": "high",
         "eq_refs": [
@@ -2665,6 +2671,7 @@
         "window_closes": "2025-08-29",
         "status": "in_post",
         "successor": "",
+        "use_outcome": "used",
         "influence": "high",
         "interest": "high",
         "eq_refs": [
