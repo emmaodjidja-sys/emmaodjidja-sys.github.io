@@ -63,6 +63,12 @@
       }));
   }
 
+  // What a keyword scan cannot see, said once, in the reviewer's own words. It rides
+  // on EVERY absence, on every item, in every language, because it is true of every
+  // absence: the scan matched none of its patterns, and that is a fact about the
+  // patterns.
+  var ABSENCE_NOTE = 'No keyword match. A keyword scan cannot see a synonym, a section under a different title, a point made without a heading, or a language it does not read, so this is not evidence that the report omits it. Read the section and answer this one yourself.';
+
   // Indicative signal from the paste-text prescan. A signal is a keyword or
   // heading match and nothing more: it is a DETECTION, never an approval. The
   // copy here has to carry that, because the failure mode is a reviewer reading
@@ -84,13 +90,36 @@
     // that brace.
     if (!item.machine_signal || item.auto) return null;
     var C = core();
+    // THE CENTRAL INVARIANT OF THIS FEATURE LIVES IN THIS TABLE, and `answer` is all
+    // of it. `answer` is what a one-click confirm would RECORD, and not_found has
+    // NONE, so there is no answer for the button to write and no code path below that
+    // can render it. That is a structural property, not a tuned one: it holds in every
+    // language, every script and every regime, and it needs the scanner to know
+    // nothing at all about what it just read.
+    //
+    // found and weak are DETECTIONS. The scanner genuinely SAW the word it reports,
+    // whatever language surrounds it, and the reviewer can check that in one glance,
+    // so the shortcut is honest and it stays.
+    //
+    // not_found is an ABSENCE CLAIM, and this scanner cannot earn one. It means "my
+    // regex did not match a heading", never "the report omits this". It is wrong on a
+    // perfectly good English report whose limitations section is called "Caveats and
+    // what we could not do"; it is wrong on every report in a language the patterns do
+    // not cover, and three separate attempts to detect that language from the text
+    // were each defeated by the next input class (see ScreenCore). One click from
+    // there used to write a critical red flag -> recommendVerdict returns 'return' ->
+    // the commissioner's one-click "Request revision on the deliverable", which flips
+    // the deliverable and writes the audit log. So there is no click from there any
+    // more, and the row says why in visible text. The reviewer can still answer No: on
+    // the ordinary answer buttons, having read the section, which is the point.
     var map = {
       found: { label: 'mentioned in the text', cls: 'wb-fr-chip--found', answer: 'yes' },
       weak: { label: 'weak signal only', cls: 'wb-fr-chip--weak', answer: 'partial' },
-      not_found: { label: 'not detected', cls: 'wb-fr-chip--miss', answer: 'no' }
+      not_found: { label: 'no keyword match', cls: 'wb-fr-chip--none', answer: null }
     };
     var m = map[item.machine_signal];
     if (!m) return null;
+    var absent = !m.answer;
     var label = 'Text scan: ' + m.label;
     var isEq = item.machine_total != null;
     if (isEq) label += ', matched ' + item.machine_hits + ' of ' + item.machine_total + ' question terms';
@@ -106,26 +135,39 @@
     // corroboration of a critical, GBV-adjacent safeguarding claim. The Confirm
     // button is only a shortcut for the Yes button already sitting in the same
     // row, so removing it costs one mouse-move and removes the "the machine said
-    // yes, I agreed" anchor exactly where a false green does the most harm. The
-    // harm is symmetric: a one-click "Record No" off a machine MISS (a report
-    // that writes "assent" or "data safeguarding protocol", neither of which the
-    // regex covers) would write a critical red flag straight into the
-    // commissioner's one-click request-revision.
+    // yes, I agreed" anchor exactly where a false green does the most harm.
     var isEthics = item.source === 'ethics';
-    var basis = evidence
-      ? 'Basis: ' + evidence
-      : 'Basis: the scanned text was discarded, so the matching line is no longer available. Re-scan to see it.';
+    // Three independent conditions, and the FIRST of them can never be satisfied by an
+    // absence, whatever the text, whatever the language: absences carry no answer to
+    // record. Ethics items never get the shortcut either, and neither does an item the
+    // reviewer has already answered.
+    var canConfirm = !!m.answer && !isEthics && !item.answer;
+    // An absence has no "Basis": there is no line to quote, and framing a non-match as
+    // a basis for anything is the misreading this whole change exists to stop. What it
+    // has instead is the derived sentence prescan wrote (which names no body text: it
+    // is a count, an n= note, or the agreed titles the keywords did not match) and then
+    // the plain statement of what a keyword scan cannot see.
+    var basis = absent
+      ? (evidence || 'No keyword match for this item.')
+      : (evidence
+        ? 'Basis: ' + evidence
+        : 'Basis: the scanned text was discarded, so the matching line is no longer available. Re-scan to see it.');
     return h('div', { className: 'wb-fr-sig' },
       h('span', { className: 'wb-fr-chip ' + m.cls,
-        title: 'A keyword or heading match in the text you pasted. It reports what the words do, not whether the requirement is met.' },
+        title: absent
+          ? 'The scan matched none of its keywords for this item. It reports what its patterns did, not whether the requirement is met.'
+          : 'A keyword or heading match in the text you pasted. It reports what the words do, not whether the requirement is met.' },
         label,
-        (!item.answer && !isEthics) ? h('button', { type: 'button', className: 'wb-fr-chip-confirm',
+        canConfirm ? h('button', { type: 'button', className: 'wb-fr-chip-confirm',
           'aria-label': 'Record ' + C.ANSWER_LABELS[m.answer] + ' as my answer for: ' + item.text,
           onClick: function() { onConfirm(item.id, m.answer); } }, 'I checked. Record ' + C.ANSWER_LABELS[m.answer]) : null),
       h('p', { className: 'wb-fr-ev' }, basis,
-        isEq ? h('span', { className: 'wb-fr-ev-note' }, ' The report mentions the topic. Whether it answers the question is yours to judge.') : null,
-        evidence ? h('span', { className: 'wb-fr-ev-note' }, ' Shown in this tab only; never saved.') : null),
-      // Visible text, not a tooltip: a caveat nobody can see is not a caveat.
+        (isEq && !absent) ? h('span', { className: 'wb-fr-ev-note' }, ' The report mentions the topic. Whether it answers the question is yours to judge.') : null,
+        (evidence && !absent) ? h('span', { className: 'wb-fr-ev-note' }, ' Shown in this tab only; never saved.') : null),
+      // Visible text, not a tooltip: a caveat nobody can see is not a caveat. And it is
+      // wb-fr-ev-note, not wb-fr-ev-caution: an absence is not a finding, and must not
+      // be dressed as one.
+      absent ? h('p', { className: 'wb-fr-ev wb-fr-ev-note' }, ABSENCE_NOTE) : null,
       isEthics ? h('p', { className: 'wb-fr-ev wb-fr-ev-caution' },
         'Safeguarding: the scan can only see the word. Read the section and answer this one yourself.') : null);
   }
@@ -238,17 +280,18 @@
     // lines against run B's items). Shape: null | { run_id, by_item: { id: str } }.
     var evd = React.useState(null), evidence = evd[0], setEvidence = evd[1];
     var scn = React.useState(false), scanning = scn[0], setScanning = scn[1];
-    // Session-only note about what the last scan in THIS tab could READ. Shape:
-    // null | { run_id, kind: 'unreadable' | 'mixed' | 'unknown_language' }.
-    // 'unreadable' = it found too little readable text to say anything at all;
-    // 'mixed' = part of the text is in a script it cannot read; 'unknown_language' =
-    // the text is Latin script and perfectly legible but is not recognisably English
-    // or French (a Spanish or Portuguese report), which is the same situation wearing
-    // different clothes. In the last two it reported only what it FOUND, because an
-    // absence in a text it could not read is a fact about the scan. Not persisted:
-    // run.prescan carries counts only, and this is a fact about a scan, not about
-    // the report.
-    var unr = React.useState(null), scriptNote = unr[0], setScriptNote = unr[1];
+    // Session-only note about what the last scan in THIS tab managed to do. Shape:
+    // null | { run_id, kind: 'unreadable' | 'no_match' }.
+    // 'unreadable' = too little Latin-script text for a keyword scan to work on, so it
+    // produced no signals at all. 'no_match' = it produced signals, but every one of
+    // them is an absence: it matched NOTHING anywhere. That is worth saying, because
+    // it is what a report in a language the patterns do not cover looks like, and it is
+    // also what a genuinely empty report looks like, and the scan cannot tell the two
+    // apart. Both are HONESTY notes about the wording, not safety gates: no signal is
+    // suppressed on the strength of either, because a not_found is inert by
+    // construction now (no one-click confirm, ever). Not persisted: run.prescan carries
+    // counts only, and this is a fact about a scan, not about the report.
+    var unr = React.useState(null), scanNote = unr[0], setScanNote = unr[1];
 
     // Runs of this role still open. The newest is where the panel lands when the
     // reviewer has selected nothing this session (the page-reload path).
@@ -332,14 +375,14 @@
         var byItem = {};
         Object.keys(res.signals).forEach(function(id) { byItem[id] = res.signals[id].evidence; });
         setEvidence({ run_id: run.id, by_item: byItem });
-        // Checked in the order the copy is written in: a text can be both mixed-script
-        // and not English or French, and 'mixed' is the more specific thing to say
-        // about it. Both lead to the same place (detections yes, absences no).
+        // Derived from the COUNTS the scan reports about itself, not from any guess
+        // about the language of the text. A scan that matched nothing anywhere has told
+        // the reviewer nothing, and should say so rather than let a column of empty
+        // notes read as a column of results.
         var kindNote = null;
         if (res.meta.unreadable) kindNote = 'unreadable';
-        else if (res.meta.mixed_script) kindNote = 'mixed';
-        else if (res.meta.unknown_language) kindNote = 'unknown_language';
-        setScriptNote(kindNote ? { run_id: run.id, kind: kindNote } : null);
+        else if (res.meta.detections === 0 && res.meta.absences > 0) kindNote = 'no_match';
+        setScanNote(kindNote ? { run_id: run.id, kind: kindNote } : null);
 
         // On unreadable text res.signals is {}, so applySignals CLEARS every signal
         // a previous scan left behind. That is the correct reading of a re-scan
@@ -352,26 +395,20 @@
         // local that falls out of scope with this call.
         var el = pasteRef.current;
         if (el) el.value = '';
-        // Neither the unreadable case nor a short paste is a clean save, so neither
-        // may arrive in the green of one. Only the ordinary scan is a success toast.
-        // The copy speaks about what the scan DID NOT FIND (enough readable English
-        // or French), not about what script the text is in. Both a report in
-        // another script and an English annex that is almost all figures land here,
-        // and telling the second one "it reads Latin-script English only" would be
-        // false: the text WAS English.
+        // Neither the unreadable case, nor a scan that matched nothing, nor a short
+        // paste is a clean save, so none of them may arrive in the green of one. Only
+        // the ordinary scan is a success toast.
+        //
+        // The copy speaks about what the SCAN did or did not do, and never asserts what
+        // the text IS. An English results framework that is nine tenths figures trips
+        // the readability gate exactly as an Arabic report does, and telling that
+        // reviewer "that text does not read as English" would be false for their input.
         var msg, kind;
         if (res.meta.unreadable) {
-          msg = 'The scan did not find enough readable English or French text in that paste, so it produced no signals at all. Screen the report yourself.';
+          msg = 'The scan did not find enough text it could read in that paste, so it produced no signals at all. Screen the report yourself.';
           kind = 'warning';
-        } else if (res.meta.mixed_script) {
-          msg = 'Scanned. Part of that text is in a script the scan cannot read, so it reports only what it found, and says nothing about what it did not find.';
-          kind = 'warning';
-        } else if (res.meta.unknown_language) {
-          // Readable, but not a language this scan knows. It may not arrive in the
-          // green of a clean save: a Spanish report that HAS a methodology section
-          // would otherwise get a success toast and a full set of red "not detected"
-          // chips, each with a one-click "I checked. Record No".
-          msg = 'Scanned, but that text does not read as English or French, and the scan reads those two only. It has reported what it found. It cannot report what is missing, so the absence checks were skipped.';
+        } else if (res.meta.detections === 0 && res.meta.absences > 0) {
+          msg = 'Scanned, but the scan matched none of its keywords anywhere in that text. That can mean the report is missing those sections, or that it is written in a language or with a vocabulary the scan does not read. It cannot tell those apart, so it has recorded no finding either way. Answer each item yourself.';
           kind = 'warning';
         } else if (res.meta.short) {
           msg = 'Scanned, but the text was under 500 words. Is that the whole report?';
@@ -511,30 +548,32 @@
       var prescanBlock = h('div', { className: 'wb-fr-group' },
         h('h4', { className: 'wb-fr-group-title' }, 'Optional text pre-scan'),
         h('p', { className: 'wb-cm-hint' },
-          'Paste the report text for an indicative first pass. The scan runs in this browser. The text is not uploaded, it is not saved, and it is cleared the moment the scan ends. What is saved is the signal per item (mentioned, weak, not detected), the matched-term counts for a question, and the word count. The quoted lines that explain a signal are held in this tab for this session only: they are never written to the project file, to storage, or to an export.'),
+          'Paste the report text for an indicative first pass. The scan runs in this browser. The text is not uploaded, it is not saved, and it is cleared the moment the scan ends. What is saved is the signal per item (mentioned, weak, no keyword match), the matched-term counts for a question, and the word count. The quoted lines that explain a signal are held in this tab for this session only: they are never written to the project file, to storage, or to an export.'),
         h('p', { className: 'wb-cm-hint' },
           'A signal is a keyword or heading match, not a judgment. It can see that the word "consent" is somewhere in the text; it cannot see whether consent was obtained. It answers nothing for you. Every answer stays your call.'),
+        // The standing statement about absences. It is permanent copy, not a warning
+        // that fires on some inputs and not others, because it is true of every "no
+        // keyword match" note the panel will ever show: the scan matched none of its
+        // patterns, and it reads English and French keywords only, so a synonym, a
+        // differently titled section, unheaded prose and another language all look
+        // identical to it. That is why an absence offers no one-click answer here.
+        h('p', { className: 'wb-cm-hint' },
+          'The scan matches English and French keywords. A "no keyword match" note is not a finding and never becomes one on its own: the scan cannot tell a section that is missing from one that is titled differently, written without a heading, or written in a language it does not read. So it will never offer to record an answer off an absence. It offers that shortcut only where it actually saw the word.'),
         run.prescan ? h('p', { className: 'wb-cm-hint' },
           'Last scanned ' + fdate(run.prescan.ran_at) + ' (' + run.prescan.words + ' words, ' + run.prescan.chars + ' characters). The text itself is gone.') : null,
-        // The truth, plainly, when the scan could not read the text. It does not say
-        // the report is missing a methods section, because it never looked at one:
-        // it looked at text it could not read. Saying "not detected" here would be
-        // an assertion the scan did not earn, and it would run in the harmful
-        // direction (a No on a critical item is a red flag).
-        (scriptNote && scriptNote.run_id === run.id && scriptNote.kind === 'unreadable') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
-          'The scan did not find enough readable English or French text in that paste. It matches English and French words, so a report written in another script gives it nothing to match, and neither does a paste that is almost all figures. It has produced no signals, because it read nothing to produce them from, and "not detected" would tell you about the scan and not about the report. Screen this report yourself.') : null,
-        // Regime (b): it read part of the text. It may report what it FOUND. It may
-        // not report what it did not find, so there are no "not detected" chips and
-        // no one-click No, and the reviewer is told why the row is bare.
-        (scriptNote && scriptNote.run_id === run.id && scriptNote.kind === 'mixed') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
-          'Part of that text is in a script the scan cannot read. It has reported what it did find in the English or French passages. It has reported nothing about what it did not find, and you will see no "not detected" chips, because an absence in a text it could only partly read is a fact about the scan and not about the report. Screen those items yourself.') : null,
-        // Regime (d): legible, but not a language the scan knows. Same rule as (b),
-        // and it must be said as plainly, because the text LOOKS scannable: a Spanish
-        // or Portuguese report is ordinary Latin script and nothing about the panel
-        // would otherwise tell the reviewer that every "not detected" chip on it was
-        // a statement about the scanner.
-        (scriptNote && scriptNote.run_id === run.id && scriptNote.kind === 'unknown_language') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
-          'That text does not read as English or French, and the scan reads English and French only. It has reported what it did find, because a word it matched really is there whatever the language. It has reported nothing about what it did NOT find: the absence checks were skipped, and you will see no "not detected" chips, because the scan cannot tell a section that is missing from a section it simply cannot read. Screen those items yourself.') : null,
+        // The truth, plainly, when there was too little for a keyword scan to work on.
+        // It speaks about the SCAN, not about the text: a report in another script and
+        // an English annex that is almost all figures both land here, and telling the
+        // second reviewer "your text is not English" would be false.
+        (scanNote && scanNote.run_id === run.id && scanNote.kind === 'unreadable') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
+          'The scan did not find enough text it could read in that paste. It matches keywords letter by letter, so a report written in another script gives it nothing to match, and neither does a paste that is almost all figures or tables. It has produced no signals at all, because it read nothing to produce them from. Screen this report yourself.') : null,
+        // It read the text, and matched nothing in it. Said out loud because a column of
+        // "no keyword match" notes must not be mistaken for a column of findings. The
+        // panel does not guess WHY, and does not claim to know: a report in Spanish,
+        // German or Tagalog looks exactly like a report with no sections at all to a
+        // scanner that reads neither.
+        (scanNote && scanNote.run_id === run.id && scanNote.kind === 'no_match') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
+          'The scan matched none of its keywords anywhere in that text. It reads English and French keywords only, so that can mean the report is missing those sections, or that it is written in another language, or simply that its sections are titled in words the scan does not carry. The scan cannot tell those apart, and it has not tried: nothing below is a finding, and no absence offers you an answer to record. Screen these items yourself.') : null,
         h('textarea', { ref: pasteRef, className: 'wb-input wb-fr-paste', disabled: scanning,
           'aria-label': 'Paste the report text to pre-scan', placeholder: 'paste the full report text here' }),
         h('div', { className: 'wb-cm-add' },

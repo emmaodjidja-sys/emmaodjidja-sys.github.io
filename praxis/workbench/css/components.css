@@ -685,11 +685,20 @@
    as "this requirement is met" (on ethics:consent it would have read that way
    off the bare word "consent" in a bibliography). It is deliberately neutral
    ink on a neutral tint now: the words carry the finding, the colour does not
-   pass a verdict the scan is not entitled to. Amber and red stay: they claim an
-   absence, which is a prompt to look, not a claim that anything is met. */
+   pass a verdict the scan is not entitled to. Amber stays on 'weak': the scan
+   did see the word, and a partial match is a prompt to look. */
 .wb-fr-chip--found { background: var(--surface-muted); color: var(--text-secondary); border: 1px solid var(--border-strong); }
 .wb-fr-chip--weak { background: var(--amber-light); color: var(--amber-text); }
-.wb-fr-chip--miss { background: var(--red-light); color: var(--red-strong); }
+/* An ABSENCE. It was .wb-fr-chip--miss, red on red, labelled "not detected", and a
+   red chip on a checklist row reads as a FINDING: as if the scan had established
+   that the report omits the thing. It had established nothing of the sort. A
+   not_found means only that a regex did not match a heading, which is wrong on an
+   English report whose limitations section is called "Caveats and what we could not
+   do", and meaningless on a report in a language the patterns do not cover. So it is
+   a NOTE now, not a result: tertiary ink, no fill, a dashed edge to say provisional,
+   and it carries no one-click answer at all (see machineChip). Nothing about an
+   absence may look like a verdict. */
+.wb-fr-chip--none { background: transparent; color: var(--text-tertiary); border: 1px dashed var(--border-strong); }
 /* Recording an answer off a machine signal is a consequential act, so the target
    is sized for one: WCAG 2.2 SC 2.5.8 asks for at least 24x24 CSS px, and at
    padding 0 6px with no min-height this button rendered about 15px tall. The chip
