@@ -106,4 +106,31 @@ H.eq(D.moneyAgainstUse(c6).verdict, 'used', 'money: used when action underway');
 var c7 = ctx();
 c7.planning.budget_lines = [{ id: 'b1', amount: 40000 }, { id: 'b2', amount: 10000 }];
 H.eq(D.moneyAgainstUse(c7).ceiling, 50000, 'money: budget lines fallback when no total_budget');
+
+// ---- use outcome vocabulary + rollup ---------------------------------------
+var UO = W.CockpitData.USE_OUTCOME;
+H.assert(!!UO, 'USE_OUTCOME exported');
+['', 'used', 'missed_window', 'attention_lost', 'wrong_questions', 'not_credible', 'contact_left']
+  .forEach(function(k) { H.assert(!!UO[k] && typeof UO[k].label === 'string', 'USE_OUTCOME has ' + (k || 'unset')); });
+
+var nu = W.CockpitData.newUser('primary');
+H.eq(nu.tier, 'primary', 'newUser sets tier');
+H.eq(nu.use_outcome, '', 'newUser defaults use_outcome');
+H.eq(nu.status, 'in_post', 'newUser defaults status');
+H.assert(nu.id.indexOf('usr_') === 0, 'newUser mints a usr_ id');
+H.assert(Array.isArray(nu.eq_refs), 'newUser has eq_refs array');
+
+var cRoll = W.PraxisSchema.createEmptyContext();
+cRoll.commissioner.users = [
+  { id: 'a', tier: 'primary', use_outcome: 'used' },
+  { id: 'b', tier: 'primary', use_outcome: 'missed_window' },
+  { id: 'c', tier: 'primary', use_outcome: '' },
+  { id: 'd', tier: 'secondary', use_outcome: 'used' }
+];
+var roll = W.CockpitData.useOutcomeRollup(cRoll);
+H.eq(roll.primaries, 3, 'rollup counts primary users only');
+H.eq(roll.recorded, 2, 'rollup counts recorded outcomes');
+H.eq(roll.used, 1, 'rollup counts used');
+H.eq(roll.counts.missed_window, 1, 'rollup tallies reasons');
+
 H.summary('derive.test');
