@@ -548,6 +548,10 @@
               : h('button', { className: 'wb-btn wb-btn-primary', onClick: function () { dispatch({ type: 'SET_ACTIVE_STATION', station: 2 }); } }, 'Go to Station 2')
           )
         ),
+        // Both scripts, or neither: FirstReview reads PraxisScreenCore on its first
+        // render, so mounting it without ScreenCore (a 404 or a truncated file)
+        // throws, and the app-level ErrorBoundary would replace the whole station.
+        (window.FirstReview && window.PraxisScreenCore) ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'team' }) : null,
         typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 7, dispatch: dispatch }) : null
       );
     }
@@ -600,6 +604,8 @@
         h('button', { className: 'wb-btn wb-btn-teal', onClick: handleSave }, 'Save Report Structure'),
         h('button', { className: 'wb-btn', onClick: handleExport }, 'Export as Word Outline')
       ),
+
+      (window.FirstReview && window.PraxisScreenCore) ? h(window.FirstReview, { context: context, dispatch: dispatch, role: 'team' }) : null,
 
       // Navigation
       typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 7, dispatch: dispatch, onSave: handleSave }) : null

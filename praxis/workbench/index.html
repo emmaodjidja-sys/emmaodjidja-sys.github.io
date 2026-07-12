@@ -190,6 +190,14 @@ window.loadSheetJS = (function() {
 <script defer src="js/commissioner/CockpitAtoms.js"></script>
 <script defer src="js/commissioner/CockpitAlerts.js"></script>
 <script defer src="js/commissioner/CockpitSave.js"></script>
+
+<!-- First Review: the rapid red-flag screen of an incoming report. Shared by the
+     commissioner cockpit (C3 Deliver) and Station 7 (team self-screen), so it loads
+     for both lenses. Pure logic first, then the export, then the panel. -->
+<script defer src="js/review/ScreenCore.js"></script>
+<script defer src="js/review/ScreenExport.js"></script>
+<script defer src="js/review/FirstReview.js"></script>
+
 <script defer src="js/commissioner/CockpitHeader.js"></script>
 <script defer src="js/commissioner/CockpitRail.js"></script>
 <script defer src="js/commissioner/CockpitOverview.js"></script>

@@ -1,0 +1,115 @@
+/**
+ * PraxisScreenExport: the shareable First Review note. buildHtml is pure
+ * (node-testable); download wraps it in the Word-compatible .doc Blob used by
+ * every other export site. window.PraxisScreenExport.
+ */
+(function() {
+  'use strict';
+  var C = window.PraxisScreenCore;
+
+  function buildHtml(run, context) {
+    var esc = window.PraxisExportUtils.escHtml;
+    var meta = (context && context.project_meta) || {};
+    var rec = C.recommendVerdict(run.items || []);
+    var verdict = run.verdict ? (C.VERDICTS[run.verdict] || { label: run.verdict }) : null;
+    var dels = ((context && context.planning) || {}).deliverables || [];
+    var del = null;
+    for (var i = 0; i < dels.length; i++) { if (dels[i] && dels[i].id === run.deliverable_id) { del = dels[i]; break; } }
+
+    function answerLabel(it) {
+      if (!it.answer) return 'Not answered';
+      return C.ANSWER_LABELS[it.answer] || it.answer;
+    }
+    // A run where the reviewer answered nothing, or three items of fifteen, used to
+    // export as "Verdict: Proceed to full review / Red flags (0) / None." with not a
+    // word to say the screen was never worked. Zero red flags out of zero answers is
+    // not a clean bill; it is an empty page. The in-app panel warns ("N item(s) still
+    // to answer") but the export is the surface that LEAVES the panel and reaches a
+    // commissioner, so the disclosure has to travel with it, next to the verdict and
+    // next to the red-flag count, not buried in the table at the bottom.
+    // Auto items (the computed timing check) are excluded from the denominator:
+    // recommendVerdict does not count them as unanswered, and nobody is expected to
+    // answer them by hand.
+    var toAnswer = (run.items || []).filter(function(it) { return it && !it.auto; }).length;
+    var unanswered = rec.unanswered.length;
+    var incompleteLine = unanswered
+      ? '<p class="flag">' + unanswered + ' of ' + toAnswer +
+        ' items were not answered. This is not a completed screen: an unanswered item is not a passed item.</p>'
+      : '';
+
+    function itemRows(items) {
+      return items.map(function(it) {
+        return '<tr><td>' + esc(it.severity === 'critical' ? 'Critical' : 'Major') + '</td>' +
+          '<td>' + esc(it.text) + (it.auto ? ' (computed)' : '') + '</td>' +
+          '<td>' + esc(answerLabel(it)) + '</td>' +
+          '<td>' + esc(it.note || '') + '</td></tr>';
+      }).join('\n');
+    }
+
+    var html = [
+      '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">',
+      '<head><meta charset="utf-8"><title>First review: ' + esc(meta.programme_name || 'Evaluation') + '</title>',
+      '<style>',
+      'body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.5; margin: 2.54cm; }',
+      'h1 { font-size: 18pt; color: #0B1A2E; } h2 { font-size: 13pt; color: #0B1A2E; margin-top: 20pt; }',
+      'table { border-collapse: collapse; width: 100%; font-size: 10pt; }',
+      'th, td { border: 1px solid #CBD5E1; padding: 5px 8px; text-align: left; vertical-align: top; }',
+      'th { background: #F1F5F9; }',
+      '.flag { color: #B42318; font-weight: bold; }',
+      '.meta { color: #64748B; font-size: 10pt; }',
+      '</style></head><body>',
+      '<h1>First review of the evaluation report</h1>',
+      '<p class="meta">Programme: ' + esc(meta.programme_name || '(untitled)') +
+        (del ? ' &middot; Deliverable: ' + esc(del.title || del.code || run.deliverable_id) : '') +
+        ' &middot; Reviewer: ' + esc(run.reviewer || 'unnamed') +
+        ' &middot; Role: ' + esc(run.role === 'commissioner' ? 'Commissioner' : 'Evaluation team') +
+        ' &middot; Date: ' + esc(String(run.completed_at || run.started_at || '').slice(0, 10)) + '</p>',
+      '<h2>Verdict</h2>',
+      '<p>' + (verdict ? '<strong>' + esc(verdict.label) + '</strong>' : 'Not yet recorded') +
+        (rec.verdict && (!run.verdict || rec.verdict !== run.verdict)
+          ? ' <span class="meta">(recommended: ' + esc(C.VERDICTS[rec.verdict].label) + ')</span>' : '') + '</p>',
+      incompleteLine,
+      run.note ? '<p>' + esc(run.note) + '</p>' : '',
+      '<h2>Red flags (' + rec.redFlags.length + ')</h2>',
+      incompleteLine
+    ];
+    if (rec.redFlags.length) {
+      html.push('<ul>');
+      rec.redFlags.forEach(function(it) {
+        html.push('<li class="flag">' + esc(C.flagLabel(it)) + (it.note ? ' &middot; ' + esc(it.note) : '') + '</li>');
+      });
+      html.push('</ul>');
+    } else {
+      html.push('<p>None.</p>');
+    }
+    html.push('<h2>All screening items</h2>');
+    html.push('<table><thead><tr><th>Severity</th><th>Item</th><th>Answer</th><th>Note</th></tr></thead><tbody>');
+    html.push(itemRows(run.items || []));
+    html.push('</tbody></table>');
+    // The Method paragraph is the one sentence about provenance that leaves the
+    // tool and reaches a commissioner, so it has to be literally true. It used to
+    // say the scan produced "indicative pre-fills" that the reviewer "confirmed".
+    // Nothing is pre-filled: by design a scan never writes an answer (see
+    // FirstReview.applySignals, which patches machine_signal and the matched-term
+    // counts and never `answer`). Before the pre-scan shipped nothing could set
+    // run.prescan, so that was dead copy; the moment it could render, it was a
+    // false claim in the artifact of record. The no-prescan branch was already
+    // true and is unchanged.
+    html.push('<h2>Method</h2>');
+    html.push('<p class="meta">' + (run.prescan
+      ? 'A pasted-text pre-scan showed indicative keyword matches. It answered nothing: every answer in this note was recorded by the reviewer. The pasted text was discarded after scanning.'
+      : 'No machine signals were used. Every answer is the reviewer\'s own judgment.') +
+      ' Generated by the PRAXIS Workbench First Review screen. The screening checklist was generated from this evaluation\'s own matrix, design, sample plan, agreed report structure and decision windows, plus a UNEG and OECD-DAC report-quality core and an ethics screen.</p>');
+    html.push('</body></html>');
+    return html.join('\n');
+  }
+
+  function download(run, context) {
+    var meta = (context && context.project_meta) || {};
+    var blob = new Blob([buildHtml(run, context)], { type: 'application/msword' });
+    window.PraxisUtils.downloadBlob(blob,
+      window.PraxisExportUtils.exportFilename(meta.programme_name, 'first-review', 'doc'));
+  }
+
+  window.PraxisScreenExport = { buildHtml: buildHtml, download: download };
+})();

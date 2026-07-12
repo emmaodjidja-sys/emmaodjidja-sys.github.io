@@ -627,3 +627,97 @@
   box-shadow: var(--focus-ring-chrome);
 }
 #wb-station-main:focus { outline: none; }
+
+/* ---- First Review (shared: C3 Deliver + Station 7) ------------------------
+   Tints use the existing --*-light tokens paired with the matching ink, the same
+   pairing as .wb-badge-* above and the alert panels in commissioner.css. No CSS
+   colour-blending function is used: this codebase resolves tints from tokens. */
+.wb-fr-group { margin: 14px 0; }
+.wb-fr-group-title, .wb-fr-ledger-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); margin: 12px 0 6px; }
+.wb-fr-item { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; background: var(--surface); }
+.wb-fr-item--auto { background: var(--surface-muted); }
+.wb-fr-item-head { display: flex; gap: 10px; align-items: flex-start; }
+/* The flex child that holds the item text. min-width:0 overrides the flex default
+   of min-width:auto, which refuses to shrink below the widest unbreakable token:
+   an evaluation question carrying a URL or a long identifier would otherwise push
+   the card wider than the panel. overflow-wrap breaks such a token rather than
+   letting it spill. */
+.wb-fr-item-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.wb-fr-item-title { font-weight: 600; color: var(--text); }
+.wb-fr-item-detail { margin: 2px 0 0; font-size: 0.85rem; color: var(--text-secondary); }
+.wb-fr-sev { flex: 0 0 auto; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 3px; margin-top: 2px; }
+.wb-fr-sev--critical { background: var(--red-light); color: var(--red-strong); }
+.wb-fr-sev--major { background: var(--amber-light); color: var(--amber-text); }
+.wb-fr-answ { margin-left: 8px; font-size: 0.72rem; color: var(--text-tertiary); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; }
+.wb-fr-item-body { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.wb-fr-ans { display: flex; gap: 4px; }
+.wb-fr-ans-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); border-radius: 4px; padding: 3px 10px; font-size: 0.8rem; cursor: pointer; }
+.wb-fr-ans-btn--on.wb-fr-ans-btn--yes { background: var(--green-strong); border-color: transparent; color: #fff; }
+.wb-fr-ans-btn--on.wb-fr-ans-btn--partial { background: var(--amber-dark); border-color: transparent; color: #fff; }
+.wb-fr-ans-btn--on.wb-fr-ans-btn--no, .wb-fr-ans-btn--on.wb-fr-ans-btn--cant_tell { background: var(--red-strong); border-color: transparent; color: #fff; }
+.wb-fr-note { flex: 1 1 220px; min-width: 180px; }
+.wb-fr-auto-ans { font-size: 0.8rem; font-weight: 600; }
+.wb-fr-auto-ans--yes { color: var(--green-strong); }
+.wb-fr-auto-ans--partial { color: var(--amber-dark); }
+.wb-fr-auto-ans--no { color: var(--red-strong); }
+.wb-fr-flags { border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.wb-fr-flags--hot { border-color: var(--red); background: var(--red-light); }
+/* On the hot panel the canvas is --red-light (#FEE2E2), not --surface. The small
+   text inside it (.wb-fr-ledger-title at 12.8px, .wb-cm-hint at 12px) defaults to
+   --text-tertiary, which measures only 3.90:1 there and fails WCAG AA. Re-ink it
+   to --red-strong (5.30:1), the same tint/ink pairing used by .wb-cm-over, the
+   .wb-badge-* set and .wb-fr-sev--critical. The non-hot panel is untouched:
+   --text-tertiary on --surface stays at 4.76:1. */
+.wb-fr-flags--hot .wb-fr-ledger-title,
+.wb-fr-flags--hot .wb-cm-hint { color: var(--red-strong); }
+.wb-fr-flag-list { margin: 6px 0; padding-left: 18px; color: var(--red-strong); font-weight: 600; }
+.wb-fr-reco { font-size: 0.85rem; color: var(--text-secondary); margin: 6px 0 0; }
+.wb-fr-mark { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; color: #fff; font-size: 0.72rem; font-weight: 700; align-items: center; justify-content: center; }
+.wb-fr-verdict { margin-top: 14px; }
+.wb-fr-verdict-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.wb-fr-verdict-done { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.wb-fr-past-row { display: flex; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.wb-fr-start-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
+.wb-fr-sig { margin-top: 4px; }
+.wb-fr-chip { display: inline-flex; gap: 6px; align-items: center; font-size: 0.72rem; border-radius: 3px; padding: 2px 7px; }
+/* A 'found' signal means a keyword or a heading matched: a detection, never an
+   approval. It was tinted teal, which on a checklist row reads as a tick, i.e.
+   as "this requirement is met" (on ethics:consent it would have read that way
+   off the bare word "consent" in a bibliography). It is deliberately neutral
+   ink on a neutral tint now: the words carry the finding, the colour does not
+   pass a verdict the scan is not entitled to. Amber stays on 'weak': the scan
+   did see the word, and a partial match is a prompt to look. */
+.wb-fr-chip--found { background: var(--surface-muted); color: var(--text-secondary); border: 1px solid var(--border-strong); }
+.wb-fr-chip--weak { background: var(--amber-light); color: var(--amber-text); }
+/* An ABSENCE. It was .wb-fr-chip--miss, red on red, labelled "not detected", and a
+   red chip on a checklist row reads as a FINDING: as if the scan had established
+   that the report omits the thing. It had established nothing of the sort. A
+   not_found means only that a regex did not match a heading, which is wrong on an
+   English report whose limitations section is called "Caveats and what we could not
+   do", and meaningless on a report in a language the patterns do not cover. So it is
+   a NOTE now, not a result: tertiary ink, no fill, a dashed edge to say provisional,
+   and it carries no one-click answer at all (see machineChip). Nothing about an
+   absence may look like a verdict. */
+.wb-fr-chip--none { background: transparent; color: var(--text-tertiary); border: 1px dashed var(--border-strong); }
+/* .wb-fr-chip--miss is a DIFFERENT chip from the three above: this one is not the
+   machine's absence claim (that is .wb-fr-chip--none, and it stays neutral by
+   construction). It is CockpitDeliver's echo, at the Endorse gate, of what the
+   HUMAN reviewer answered on the first-review checklist for one evaluation
+   question: found (yes), weak (partial), or this class for "no" or "cannot
+   tell", which is a genuine, reviewer-recorded red flag sitting directly above
+   the Endorse checkbox. Red on red, same pairing as .wb-badge-red and
+   .wb-cm-over (5.30:1 on --red-strong / --red-light, passes WCAG AA). */
+.wb-fr-chip--miss { background: var(--red-light); color: var(--red-strong); }
+/* Recording an answer off a machine signal is a consequential act, so the target
+   is sized for one: WCAG 2.2 SC 2.5.8 asks for at least 24x24 CSS px, and at
+   padding 0 6px with no min-height this button rendered about 15px tall. The chip
+   is an inline-flex row with align-items: center, so a taller child grows the chip
+   rather than breaking its layout. */
+.wb-fr-chip-confirm { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; min-width: 24px; border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 3px; font-size: 0.7rem; padding: 0 6px; cursor: pointer; }
+.wb-fr-ev { margin: 3px 0 0; font-size: 0.78rem; color: var(--text-secondary); }
+.wb-fr-ev-note { color: var(--text-tertiary); }
+/* The safeguarding caveat on the three ethics rows, which carry a chip but no
+   one-click confirm. It has to be VISIBLE text, not a tooltip: a caveat nobody
+   sees is not a caveat. Amber, not red: it is a prompt to read, not a finding. */
+.wb-fr-ev-caution { color: var(--amber-text); font-weight: 600; }
+.wb-fr-paste { width: 100%; min-height: 140px; font-family: inherit; font-size: 0.85rem; }
