@@ -50,8 +50,10 @@
   cursor: pointer;
 }
 
-@keyframes wb-entry-spine { from { stroke-dashoffset: 1140; } to { stroke-dashoffset: 0; } }
+@keyframes wb-entry-spine { from { stroke-dashoffset: 1124; } to { stroke-dashoffset: 0; } }
 @keyframes wb-entry-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes wb-entry-fadein { from { opacity: 0; } to { opacity: 1; } }
+@keyframes wb-entry-node-pop { from { opacity: 0; transform: scale(0.55); } to { opacity: 1; transform: scale(1); } }
 
 /* ── Shared width ─────────────────────────────────────────────────── */
 .wb-entry-wrap { max-width: 1240px; margin: 0 auto; padding: 0 40px; }
@@ -147,6 +149,28 @@
 .wb-entry-btn-ghost:hover { border-color: rgba(247,244,236,0.9); color: var(--e-cream); }
 
 .wb-entry-dial { display: block; animation: wb-entry-rise 0.9s cubic-bezier(0.2,0.6,0.2,1) 0.15s both; }
+.wb-entry-dial-hit { cursor: pointer; }
+.wb-entry-dial-num { transition: fill var(--dur-fast) ease; }
+.wb-entry-dial-index {
+  transform-box: view-box;
+  transform-origin: center;
+  transition: transform 0.55s cubic-bezier(0.25,0.7,0.2,1);
+}
+
+/* Masthead language control. */
+.wb-entry-lang { display: inline-flex; align-items: center; gap: 10px; }
+.wb-entry-lang-btn {
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(247,244,236,0.45);
+  padding: 2px;
+  transition: color var(--dur-fast) ease;
+}
+.wb-entry-lang-btn:hover { color: rgba(247,244,236,0.85); }
+.wb-entry-lang-btn--on { color: var(--e-cream); }
+.wb-entry-lang-sep { width: 1px; height: 12px; background: rgba(247,244,236,0.25); }
 
 /* ── Sections ─────────────────────────────────────────────────────── */
 .wb-entry-sec-begin { padding-top: 84px; padding-bottom: 40px; }
@@ -301,8 +325,23 @@
 .wb-entry-dropzone .wb-card { border-radius: 2px; }
 
 /* ── The nine stations ────────────────────────────────────────────── */
+/* The spine holds its start state (line undrawn, nodes and brackets
+   hidden) until the IntersectionObserver in EntryLanding adds --go the
+   first time it scrolls into view. Node pop delays are staggered inline so
+   each station surfaces as the line reaches it. Reduced motion collapses
+   every duration via the global rule in tokens.css. */
 .wb-entry-spine { display: block; margin-top: 18px; width: 100%; }
-.wb-entry-spine-draw { animation: wb-entry-spine 1.5s cubic-bezier(0.4,0,0.2,1) 0.2s both; }
+.wb-entry-spine-draw { stroke-dashoffset: 1124; }
+.wb-entry-spine--go .wb-entry-spine-draw { animation: wb-entry-spine 1.25s cubic-bezier(0.4,0,0.2,1) both; }
+.wb-entry-spine-fade { opacity: 0; }
+.wb-entry-spine--go .wb-entry-spine-fade { animation: wb-entry-fadein 0.5s ease both; }
+.wb-entry-spine-node { opacity: 0; transform-box: fill-box; transform-origin: center; cursor: pointer; }
+.wb-entry-spine--go .wb-entry-spine-node { animation: wb-entry-node-pop 0.35s cubic-bezier(0.2,0.6,0.2,1) both; }
+.wb-entry-spine-node circle { fill: var(--e-cream); stroke: var(--e-ax); transition: fill var(--dur-fast) ease; }
+.wb-entry-spine-node text { fill: var(--e-ink); transition: fill var(--dur-fast) ease; }
+.wb-entry-spine-node:hover circle { fill: rgba(47,93,80,0.12); }
+.wb-entry-spine-node--on circle { fill: var(--e-ax); }
+.wb-entry-spine-node--on text { fill: var(--e-cream); }
 
 .wb-entry-stations { display: grid; grid-template-columns: repeat(9, 1fr); gap: 0; }
 .wb-entry-station-tab {
@@ -313,8 +352,8 @@
   text-transform: uppercase;
   line-height: 1.45;
   color: rgba(25,29,27,0.72);
-  cursor: default;
-  border-top: 2px solid transparent;
+  cursor: pointer;
+  border-top: 2px solid rgba(47,93,80,0.22);
   transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
 .wb-entry-station-tab:hover,
@@ -345,15 +384,25 @@
   white-space: nowrap;
 }
 
-/* ── How it's built ───────────────────────────────────────────────── */
-.wb-entry-principles {
+/* ── How it's built: the instrument nameplate ─────────────────────── */
+.wb-entry-plate { border-top: 1px solid rgba(25,29,27,0.4); }
+.wb-entry-plate-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 48px;
+  grid-template-columns: 220px minmax(0,1fr);
+  gap: 28px;
+  padding: 22px 0;
+  border-bottom: 1px solid rgba(25,29,27,0.14);
 }
-.wb-entry-principle { border-top: 1px solid rgba(25,29,27,0.4); padding-top: 18px; }
-.wb-entry-principle-title { font-family: var(--e-serif); font-size: 21px; font-weight: 500; margin-bottom: 9px; }
-.wb-entry-principle-body { font-size: 15px; line-height: 1.6; color: rgba(25,29,27,0.65); }
+.wb-entry-plate-label {
+  font-size: 11.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(25,29,27,0.5);
+  padding-top: 5px;
+}
+.wb-entry-plate-head { font-family: var(--e-serif); font-size: 20px; font-weight: 500; margin-bottom: 6px; }
+.wb-entry-plate-body { font-size: 14.5px; line-height: 1.6; color: rgba(25,29,27,0.62); max-width: 72ch; }
 
 /* ── Footer ───────────────────────────────────────────────────────── */
 .wb-entry-foot { background: var(--e-green); color: rgba(247,244,236,0.8); }
@@ -400,6 +449,9 @@
   .wb-entry-stations { grid-template-columns: repeat(3, 1fr); }
   .wb-entry-station-detail { grid-template-columns: minmax(0,1fr); gap: 8px; }
   .wb-entry-station-phase { padding-top: 0; }
+
+  .wb-entry-plate-row { grid-template-columns: minmax(0,1fr); gap: 6px; padding: 18px 0; }
+  .wb-entry-plate-label { padding-top: 0; }
 
   .wb-entry-sec-begin { padding-top: 56px; }
   .wb-entry-sec-built { padding-bottom: 64px; }

@@ -29,46 +29,181 @@
     );
   }
 
-  // Masthead dial: the nine-station compass, purely illustrative.
+  // Station angle on the dial: 0 at north, one station every 40 degrees,
+  // clockwise. polar() maps that convention onto SVG coordinates.
+  function polar(deg, r) {
+    var rad = deg * Math.PI / 180;
+    return [r * Math.sin(rad), -r * Math.cos(rad)];
+  }
+  function arcPath(a0, a1, r, sweep) {
+    var p = polar(a0, r), q = polar(a1, r);
+    return 'M' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) +
+      ' A' + r + ' ' + r + ' 0 0 ' + sweep + ' ' + q[0].toFixed(1) + ' ' + q[1].toFixed(1);
+  }
+  // Split a station name near its middle space so it fits the dial hub.
+  function splitName(s) {
+    if (s.length <= 14) return [s];
+    var mid = s.length / 2, best = -1, bestD = Infinity;
+    for (var j = 0; j < s.length; j++) {
+      if (s.charAt(j) === ' ') {
+        var d = Math.abs(j - mid);
+        if (d < bestD) { bestD = d; best = j; }
+      }
+    }
+    if (best < 0) return [s];
+    return [s.slice(0, best), s.slice(best + 1)];
+  }
+
+  // The four lifecycle phases as bezel arcs. from/to bracket the member
+  // stations; la/lb are the label arc endpoints. Label arcs below the dial's
+  // equator run counterclockwise (rev) so their glyphs stay upright.
+  var DIAL_PHASES = [
+    { key: 'entry.phase_frame',   from: -12, to: 92,  la: 5,   lb: 75,  rev: false },
+    { key: 'entry.phase_design',  from: 108, to: 212, la: 195, lb: 125, rev: true },
+    { key: 'entry.phase_analyse', from: 228, to: 252, la: 275, lb: 205, rev: true },
+    { key: 'entry.phase_report',  from: 268, to: 332, la: 265, lb: 335, rev: false }
+  ];
+
+  // Masthead dial: the nine stations engraved on a bezel, the four phases
+  // bracketed around them. The same object as the section 02 spine, bent
+  // into a circle. Hovering a numeral swings the index to that station and
+  // names it in the hub; this is a pointer-only duplicate of the section 02
+  // tablist, which carries the accessible semantics, so the dial stays
+  // aria-hidden.
   function Dial() {
-    var textStyle = { fontFamily: 'var(--font-sans)', fontSize: '9px', letterSpacing: '0.4em' };
-    return h('svg', { className: 'wb-entry-dial', width: 300, height: 300, viewBox: '-118 -118 236 236', 'aria-hidden': 'true', focusable: 'false' },
-      h('circle', { r: 106, fill: 'none', stroke: 'rgba(247,244,236,0.5)', strokeWidth: 1.2 }),
-      h('circle', { r: 99, fill: 'none', stroke: 'rgba(247,244,236,0.28)', strokeWidth: 0.7 }),
-      h('circle', { r: 64, fill: 'none', stroke: 'rgba(247,244,236,0.22)', strokeWidth: 0.7, strokeDasharray: '2 5' }),
-      h('path', { d: 'M0 -99 L0 -78', stroke: CREAM, strokeWidth: 3.5 }),
-      h('path', {
-        d: 'M63.6 -75.8 L50.1 -59.7 M97.5 -17.2 L76.8 -13.5 M85.7 49.5 L67.5 39 M33.9 93 L26.7 73.3 M-33.9 93 L-26.7 73.3 M-85.7 49.5 L-67.5 39 M-97.5 -17.2 L-76.8 -13.5 M-63.6 -75.8 L-50.1 -59.7',
-        stroke: 'rgba(247,244,236,0.65)', strokeWidth: 1.4
-      }),
+    var hoverState = React.useState(null);
+    var hover = hoverState[0];
+    var setHover = hoverState[1];
+    var active = hover === null ? 0 : hover;
+    var hubMicro = { fontFamily: 'var(--font-sans)', fontSize: '9px', letterSpacing: '0.4em' };
+
+    var labelPaths = [], bezel = [], stations = [], hits = [];
+
+    DIAL_PHASES.forEach(function(p, pi) {
+      labelPaths.push(h('path', {
+        key: pi, id: 'wb-dial-lp' + pi, fill: 'none',
+        d: arcPath(p.la, p.lb, p.rev ? 136 : 127, p.rev ? 0 : 1)
+      }));
+      bezel.push(h('path', {
+        key: 'a' + pi, d: arcPath(p.from, p.to, 114, 1),
+        stroke: 'rgba(247,244,236,0.38)', strokeWidth: 1, fill: 'none'
+      }));
+      [p.from, p.to].forEach(function(ang, ti) {
+        var o = polar(ang, 114), q = polar(ang, 107);
+        bezel.push(h('path', {
+          key: 'k' + pi + '-' + ti,
+          d: 'M' + o[0].toFixed(1) + ' ' + o[1].toFixed(1) + ' L' + q[0].toFixed(1) + ' ' + q[1].toFixed(1),
+          stroke: 'rgba(247,244,236,0.38)', strokeWidth: 1
+        }));
+      });
+      bezel.push(h('text', {
+        key: 'l' + pi, textAnchor: 'middle', fill: 'rgba(247,244,236,0.55)',
+        style: { fontFamily: 'var(--font-sans)', fontSize: '9px', letterSpacing: '0.32em' }
+      }, h('textPath', { href: '#wb-dial-lp' + pi, startOffset: '50%' }, t(p.key).toUpperCase())));
+    });
+
+    LABELS.forEach(function(_, i) {
+      var ang = i * 40;
+      var o = polar(ang, 99), q = polar(ang, i === 0 ? 84 : 90), n = polar(ang, 76);
+      stations.push(h('path', {
+        key: 'tk' + i,
+        d: 'M' + o[0].toFixed(1) + ' ' + o[1].toFixed(1) + ' L' + q[0].toFixed(1) + ' ' + q[1].toFixed(1),
+        stroke: CREAM, strokeWidth: i === 0 ? 3 : 1.3, opacity: i === 0 ? 0.95 : 0.6
+      }));
+      stations.push(h('text', {
+        key: 'nm' + i, x: n[0].toFixed(1), y: (n[1] + 4.5).toFixed(1), textAnchor: 'middle',
+        className: 'wb-entry-dial-num',
+        fill: 'rgba(247,244,236,' + (active === i ? '1' : '0.72') + ')',
+        style: { fontFamily: 'var(--e-serif)', fontSize: '13.5px' }
+      }, String(i)));
+      hits.push(h('circle', {
+        key: 'h' + i, cx: n[0].toFixed(1), cy: n[1].toFixed(1), r: 17, fill: 'transparent',
+        className: 'wb-entry-dial-hit',
+        onMouseEnter: function() { setHover(i); }
+      }));
+    });
+
+    // Hub type stays narrow enough to clear the numerals at 120 and 240
+    // degrees (the mid-height band) in both languages.
+    var hub;
+    var hubSmall = { fontFamily: 'var(--font-sans)', fontSize: '8.5px', letterSpacing: '0.24em' };
+    if (hover === null) {
+      hub = [
+        h('text', { key: 'd1', y: 42, textAnchor: 'middle', fill: 'rgba(247,244,236,0.6)', style: hubSmall }, t('entry.dial_1')),
+        h('text', { key: 'd2', y: 55, textAnchor: 'middle', fill: 'rgba(247,244,236,0.38)', style: hubSmall }, t('entry.dial_2'))
+      ];
+    } else {
+      hub = [h('text', { key: 's', y: 34, textAnchor: 'middle', fill: 'rgba(247,244,236,0.55)', style: hubMicro },
+        (t('entry.station_word') + ' ' + hover).toUpperCase())];
+      splitName(t('station.' + hover + '.name').toUpperCase()).forEach(function(line, li) {
+        hub.push(h('text', {
+          key: 'n' + li, y: 49 + li * 13, textAnchor: 'middle', fill: 'rgba(247,244,236,0.9)',
+          style: { fontFamily: 'var(--font-sans)', fontSize: '9.5px', letterSpacing: '0.18em' }
+        }, line));
+      });
+    }
+
+    return h('svg', {
+      className: 'wb-entry-dial', width: 330, height: 330, viewBox: '-142 -142 284 284',
+      'aria-hidden': 'true', focusable: 'false',
+      onMouseLeave: function() { setHover(null); }
+    },
+      h('defs', null, labelPaths),
+      h('circle', { r: 99, fill: 'none', stroke: 'rgba(247,244,236,0.5)', strokeWidth: 1.2 }),
+      h('circle', { r: 93, fill: 'none', stroke: 'rgba(247,244,236,0.25)', strokeWidth: 0.7 }),
+      h('circle', { r: 58, fill: 'none', stroke: 'rgba(247,244,236,0.22)', strokeWidth: 0.7, strokeDasharray: '2 5' }),
+      bezel,
+      stations,
+      h('g', { className: 'wb-entry-dial-index', style: { transform: 'rotate(' + (active * 40) + 'deg)' } },
+        h('path', { d: 'M0 -66 L-4.2 -55.5 L4.2 -55.5 Z', fill: CREAM, opacity: 0.95 })),
       h('circle', { r: 2.5, fill: CREAM }),
-      h('text', { y: 34, textAnchor: 'middle', fill: 'rgba(247,244,236,0.6)', style: textStyle }, t('entry.dial_1')),
-      h('text', { y: 48, textAnchor: 'middle', fill: 'rgba(247,244,236,0.38)', style: textStyle }, t('entry.dial_2'))
+      hub,
+      hits
     );
   }
 
-  // Section 02 spine: phase brackets over nine numbered stations on one line.
-  // Decorative; the tab row below carries the accessible semantics.
-  function Spine() {
+  // Section 02 spine: the dial unrolled. It begins at the same compass mark,
+  // draws itself when scrolled into view (nodes surfacing as the line passes
+  // them), and mirrors the station highlighted in the tab row below. Nodes
+  // are mouse-clickable duplicates; the tab row carries the accessible
+  // semantics, so the svg stays aria-hidden.
+  function Spine(props) {
     var phaseStyle = { fontFamily: 'var(--font-sans)', fontSize: '10.5px', letterSpacing: '0.3em' };
     var numStyle = { fontFamily: 'var(--e-serif)', fontSize: '14px' };
     var xs = [66.7, 200, 333.3, 466.7, 600, 733.3, 866.7, 1000, 1133.3];
-    var nodes = [];
-    xs.forEach(function(x, i) {
-      nodes.push(h('circle', { key: 'c' + i, cx: x, cy: 80, r: 17, fill: CREAM, stroke: 'var(--e-ax)', strokeWidth: 1.5 }));
-      nodes.push(h('text', { key: 't' + i, x: x, y: 84.5, textAnchor: 'middle', fill: INK, style: numStyle }, String(i)));
+    var nodes = xs.map(function(x, i) {
+      return h('g', {
+        key: i,
+        className: 'wb-entry-spine-node' + (props.si === i ? ' wb-entry-spine-node--on' : ''),
+        style: { animationDelay: (0.12 + i * 0.13) + 's' },
+        onClick: function() { props.onPick(i); }
+      },
+        h('circle', { cx: x, cy: 80, r: 17, strokeWidth: 1.5 }),
+        h('text', { x: x, y: 84.5, textAnchor: 'middle', style: numStyle }, String(i))
+      );
     });
-    return h('svg', { className: 'wb-entry-spine', viewBox: '0 0 1200 118', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false' },
-      h('path', { d: 'M66.7 42 v-10 h266.6 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
-      h('path', { d: 'M466.7 42 v-10 h266.6 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
-      h('path', { d: 'M836.7 42 v-10 h60 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
-      h('path', { d: 'M1000 42 v-10 h133.3 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
-      h('text', { x: 200, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_frame').toUpperCase()),
-      h('text', { x: 600, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_design').toUpperCase()),
-      h('text', { x: 866.7, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_analyse').toUpperCase()),
-      h('text', { x: 1066.7, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_report').toUpperCase()),
-      h('path', { className: 'wb-entry-spine-draw', d: 'M30 80 H1170', stroke: 'rgba(25,29,27,0.5)', strokeWidth: 1.2, fill: 'none', strokeDasharray: 1140 }),
-      h('path', { d: 'M1170 80 l-9 -4.5 v9 Z', fill: 'rgba(25,29,27,0.5)' }),
+    return h('svg', {
+      className: 'wb-entry-spine' + (props.go ? ' wb-entry-spine--go' : ''),
+      viewBox: '0 0 1200 118', preserveAspectRatio: 'xMidYMid meet',
+      'aria-hidden': 'true', focusable: 'false'
+    },
+      h('g', { className: 'wb-entry-spine-fade', stroke: 'var(--e-ax)' },
+        h('circle', { cx: 30, cy: 80, r: 11, fill: 'none', strokeWidth: 1.4 }),
+        h('path', { d: 'M30 69.5 L30 74.5', strokeWidth: 2 }),
+        h('circle', { cx: 30, cy: 80, r: 1.6, fill: 'var(--e-ax)', stroke: 'none' })
+      ),
+      h('g', { className: 'wb-entry-spine-fade', style: { animationDelay: '1.05s' } },
+        h('path', { d: 'M66.7 42 v-10 h266.6 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
+        h('path', { d: 'M466.7 42 v-10 h266.6 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
+        h('path', { d: 'M836.7 42 v-10 h60 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
+        h('path', { d: 'M1000 42 v-10 h133.3 v10', stroke: 'rgba(25,29,27,0.4)', strokeWidth: 1, fill: 'none' }),
+        h('text', { x: 200, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_frame').toUpperCase()),
+        h('text', { x: 600, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_design').toUpperCase()),
+        h('text', { x: 866.7, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_analyse').toUpperCase()),
+        h('text', { x: 1066.7, y: 18, textAnchor: 'middle', fill: 'rgba(25,29,27,0.6)', style: phaseStyle }, t('entry.phase_report').toUpperCase())
+      ),
+      h('path', { className: 'wb-entry-spine-draw', d: 'M46 80 H1170', stroke: 'rgba(25,29,27,0.5)', strokeWidth: 1.2, fill: 'none', strokeDasharray: 1124 }),
+      h('path', { className: 'wb-entry-spine-fade', style: { animationDelay: '1.2s' }, d: 'M1170 80 l-9 -4.5 v9 Z', fill: 'rgba(25,29,27,0.5)' }),
       nodes
     );
   }
@@ -134,6 +269,31 @@
     var si = siState[0];
     var setSi = siState[1];
     var beginRef = React.useRef(null);
+    // The section 02 spine draws itself the first time it scrolls into view.
+    var spineWrapRef = React.useRef(null);
+    var spineGoState = React.useState(false);
+    var spineGo = spineGoState[0];
+    var setSpineGo = spineGoState[1];
+
+    React.useEffect(function() {
+      if (spineGo) return undefined;
+      var el = spineWrapRef.current;
+      if (!el || typeof IntersectionObserver !== 'function') {
+        setSpineGo(true);
+        return undefined;
+      }
+      var obs = new IntersectionObserver(function(entries) {
+        for (var k = 0; k < entries.length; k++) {
+          if (entries[k].isIntersecting) {
+            setSpineGo(true);
+            obs.disconnect();
+            return;
+          }
+        }
+      }, { threshold: 0.35 });
+      obs.observe(el);
+      return function() { obs.disconnect(); };
+    }, [spineGo]);
 
     // Check for saved data without loading it into state
     var hasSaved = React.useMemo(function() {
@@ -229,6 +389,29 @@
     var version = 'v' + PraxisSchema.PRAXIS_VERSION;
 
     /* ── Masthead ─────────────────────────────────────────────────── */
+    // Interface language. Same mechanism as the app shell TopBar: the i18n
+    // module persists the choice, the SET_LOCALE dispatch re-renders.
+    var activeLocale = PraxisI18n.getLocale();
+    function chooseLocale(loc) {
+      if (PraxisI18n.getLocale() === loc) return;
+      PraxisI18n.setLocale(loc);
+      dispatch({ type: AT.SET_LOCALE, locale: loc });
+    }
+    function langBtn(loc, label, srLabel) {
+      return h('button', {
+        type: 'button',
+        className: 'wb-entry-reset wb-entry-lang-btn' + (activeLocale === loc ? ' wb-entry-lang-btn--on' : ''),
+        'aria-pressed': activeLocale === loc ? 'true' : 'false',
+        'aria-label': srLabel,
+        onClick: function() { chooseLocale(loc); }
+      }, label);
+    }
+    var langSwitch = h('span', { className: 'wb-entry-lang', role: 'group', 'aria-label': t('entry.lang_label') },
+      langBtn('en', 'EN', 'English'),
+      h('span', { className: 'wb-entry-lang-sep', 'aria-hidden': 'true' }),
+      langBtn('fr', 'FR', 'Français')
+    );
+
     var masthead = h('header', { className: 'wb-entry-mast wb-entry-dark' },
       h('div', { className: 'wb-entry-wrap' },
         h('div', { className: 'wb-entry-mast-top' },
@@ -238,7 +421,8 @@
           ),
           h('span', { className: 'wb-entry-mast-top-right' },
             h('span', null, t('entry.app_name')),
-            h('span', { className: 'wb-entry-mast-version' }, version)
+            h('span', { className: 'wb-entry-mast-version' }, version),
+            langSwitch
           )
         ),
         h('div', { className: 'wb-entry-hero' },
@@ -517,21 +701,26 @@
 
     var stationsSection = h('section', { className: 'wb-entry-wrap wb-entry-sec-stations', 'aria-label': t('entry.stations_title') },
       h(SectionHead, { num: '02', title: t('entry.stations_title'), note: t('entry.stations_note'), tight: true }),
-      h(Spine, null),
+      h('div', { ref: spineWrapRef }, h(Spine, { si: si, go: spineGo, onPick: setSi })),
       stationTabs,
       stationDetail
     );
 
     /* ── Section 03: How it's built ───────────────────────────────── */
-    var principles = [1, 2, 3].map(function(n) {
-      return h('div', { key: n, className: 'wb-entry-principle' },
-        h('div', { className: 'wb-entry-principle-title' }, t('entry.built' + n + '_title')),
-        h('div', { className: 'wb-entry-principle-body' }, t('entry.built' + n + '_body'))
+    // An instrument nameplate: engraved specification rows, every claim
+    // verifiable against the shipped application.
+    var specRows = ['storage', 'format', 'runtime', 'languages', 'provenance'].map(function(key) {
+      return h('div', { key: key, className: 'wb-entry-plate-row' },
+        h('div', { className: 'wb-entry-plate-label' }, t('entry.spec_' + key + '_label')),
+        h('div', null,
+          h('div', { className: 'wb-entry-plate-head' }, t('entry.spec_' + key + '_head')),
+          h('div', { className: 'wb-entry-plate-body' }, t('entry.spec_' + key + '_body'))
+        )
       );
     });
     var builtSection = h('section', { className: 'wb-entry-wrap wb-entry-sec-built', 'aria-label': t('entry.built_title') },
       h(SectionHead, { num: '03', title: t('entry.built_title') }),
-      h('div', { className: 'wb-entry-principles' }, principles)
+      h('div', { className: 'wb-entry-plate' }, specRows)
     );
 
     /* ── Footer ───────────────────────────────────────────────────── */
