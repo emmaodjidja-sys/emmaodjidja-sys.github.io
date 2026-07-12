@@ -21,11 +21,12 @@
 
     var buttons = D.STATIONS.map(function(s) {
       var isActive = cs === s.idx;
+      var label = PraxisI18n.t('cstation.' + s.idx + '.name');
       var cls = 'wb-rail-btn wb-rail-btn--commissioner' + (isActive ? ' wb-rail-btn--active' : '');
       return h('button', { key: s.idx, type: 'button', className: cls,
         'aria-current': isActive ? 'true' : null,
-        title: (s.code ? s.code + ' ' : '') + s.label,
-        'aria-label': (s.code ? s.code + ', ' : '') + s.label,
+        title: (s.code ? s.code + ' ' : '') + label,
+        'aria-label': (s.code ? s.code + ', ' : '') + label,
         onClick: function() { dispatch({ type: AT.SET_COMMISSIONER_STATION, station: s.idx }); } },
         h('span', { className: 'wb-rail-btn-num', 'aria-hidden': 'true' }, s.idx === 0 ? 'Ov' : s.code));
     });
