@@ -327,7 +327,6 @@
   // whole result without persisting the report.
   var MAX_PRESCAN_CHARS = 1500000;   // refuse pastes above this; guards the O(n) scans
   var SHORT_WORDS = 500;             // below this a "report" is probably a fragment
-  var LATIN_MIN_SHARE = 0.05;        // Latin letters as a share of non-space characters
   var EVIDENCE_MAX_CHARS = 150;      // hard cap on any snippet of body text we keep
   var HEADING_MAX_CHARS = 90;        // a line longer than this reads as prose, not a heading
   var EQ_TOKEN_CAP = 10;             // distinctive terms taken from one evaluation question
@@ -404,29 +403,102 @@
     return c;
   }
 
-  // Can this scanner read this text at all? Every pattern in this file is a Latin
-  // word and every token is [a-z0-9], so the scan reads English and French and
-  // nothing else. On an Arabic, Amharic, Cyrillic or Chinese report it matches
-  // nothing, which is NOT the same fact as the report lacking a methods section:
-  // it is the fact that the scanner is illiterate in that script. Emitting the
-  // usual full set of not_found signals there would put a red "not detected" chip,
-  // with a one-click "I checked. Record No", on uneg:methods and uneg:limitations,
-  // both CRITICAL. Answering No there writes critical red flags, which drive the
-  // recommended verdict to `return`, which surfaces the one-click request for
-  // revision on the deliverable. An unearned machine assertion, running in the
-  // harmful direction, on text the machine could not read. So: no signals at all,
-  // and meta.unreadable so the panel can say why.
+  // ---- script regimes: what the scanner is allowed to ASSERT -------------------
+  // Every pattern in this file is a Latin word and every token is [a-z0-9], so the
+  // scan reads English and French and nothing else. That makes the DIRECTION of a
+  // signal decisive, and it is the direction, not a single global flag, that these
+  // rules gate.
   //
-  // Two ways to be unreadable: no [a-z0-9] token at all, or a text whose non-space
-  // characters are essentially not Latin letters. The second test is what catches
-  // a Chinese or Arabic report that still carries Latin page numbers and a stray
-  // acronym. Digits alone never make a text readable.
+  // `found` and `weak` report what the scanner SAW. They are earned on any text
+  // that carries the word, whatever script surrounds it: the word was there.
+  // `not_found` reports what the scanner DID NOT SEE, and an absence is only
+  // evidence about the REPORT if the scanner could read the report. On a document
+  // whose body is in Arabic, Amharic, Cyrillic or Chinese, "no methods heading
+  // detected" is a fact about the SCANNER. Emitted anyway it puts a red "not
+  // detected" chip, with a one-click "I checked. Record No", on uneg:methods and
+  // uneg:limitations, both CRITICAL. Answering No there writes critical red flags,
+  // which drive the recommended verdict to `return`, which surfaces the one-click
+  // request for revision on the deliverable. An unearned machine assertion, running
+  // in the harmful direction, on text the machine could not read. So the affirmative
+  // signals are gated on nothing, and every absence claim is gated on script. This
+  // is the same rule the scan already applies to the five items no regex can judge
+  // (uneg:conclusions, ethics:identifiable, ethics:harm, design:fidelity,
+  // timing:window): where the tool cannot know, it emits NO KEY, rather than
+  // inventing a signal.
+  //
+  // THE THREE REGIMES. Checked in this order; (a) returns early, so they compose
+  // without contradiction. (a) is strictly stronger than (b), and any text that is
+  // neither is (c).
+  //
+  //   (a) essentially no readable Latin text: no [a-z0-9] token at all, or no
+  //       [a-z] letter at all, or a Latin share under LATIN_MIN_SHARE.
+  //         -> meta.unreadable = true, and ZERO signals of any kind.
+  //   (b) real Latin content, but a substantial part of the text is in a script
+  //       this scanner cannot read (other-script share at or above
+  //       OTHER_SCRIPT_MAX_SHARE).
+  //         -> meta.mixed_script = true. `found` and `weak` emitted as usual;
+  //            EVERY not_found SUPPRESSED, with no key on the item, so no chip and
+  //            no one-click "Record No" can be offered for it.
+  //   (c) ordinary Latin-script English or French.
+  //         -> unchanged: all three signal values are allowed.
+  //
+  // WHERE THE TWO BOUNDARIES SIT, AND WHY THEY ARE MEASURED DIFFERENTLY.
+  //
+  // (a) is a share of the NON-SPACE CHARACTERS that are Latin letters. Measured on
+  // real pastes: English prose 0.98, French with diacritics 0.98, an English
+  // section heavy with tables 0.64, a numeric-heavy English annex 0.40. On the
+  // other side: a pure Arabic body 0.00, Arabic with an English cover page 0.03,
+  // the same plus a list of acronyms (WHO, UNICEF, MoH) 0.07, the same plus an
+  // English reference list 0.11. Nothing real lives between 0.10 and 0.40, so the
+  // boundary belongs inside that empty band and near its top: 0.35 admits the whole
+  // readable range (0.40 and up) and rejects the whole mixed range (0.11 and down),
+  // with margin on both sides. The old value, 0.05, sat BELOW the mixed range: it
+  // caught a pure monoscript report and MISSED the realistic one, which is a
+  // non-Latin body with an English cover page and an acronym list, and which
+  // therefore collected the full set of not_found chips.
+  //
+  // (b) is deliberately NOT a second threshold on that same ratio. Digits, tables
+  // and punctuation drag the Latin share of a perfectly readable English annex down
+  // to 0.40, so a second threshold on that ratio would have to sit below 0.40 to
+  // leave the annex alone, which puts it back inside the empty band and makes
+  // regime (b) unreachable by any real document. What an absence claim actually
+  // turns on is not how much of the text IS Latin but how much of it is in a script
+  // the scanner CANNOT read: an English report with three columns of figures has
+  // none of that, and a bilingual Arabic/English report has a great deal of it at
+  // any Latin share. So (b) counts characters that belong to no Latin block as a
+  // share of the non-space characters. An EN/FR report scores essentially 0.00
+  // there (a Greek letter in a formula, a place name); a document with a body in
+  // another script scores far above any threshold in the range. The line goes at
+  // 0.10: one character in ten from a script the scan is blind to is already more
+  // than enough to make "I did not find a methods heading" an unearned claim, and
+  // it leaves a transliterated name or a mathematical symbol in an EN/FR report an
+  // order of magnitude clear of the line.
+  var LATIN_MIN_SHARE = 0.35;         // Latin letters / non-space chars: below this, unreadable
+  var OTHER_SCRIPT_MAX_SHARE = 0.10;  // other-script chars / non-space chars: at or above this, no absence claims
+
+  // A character this scanner has no pattern for: anything outside Basic Latin,
+  // Latin-1 Supplement and Latin Extended-A/B, other than whitespace and General
+  // Punctuation (U+2000..U+206F: curly quotes, ellipses, bullets, dashes), which an
+  // ordinary English or French report is full of and which says nothing about
+  // script. Written as escapes: this file is ASCII-only by rule.
+  var RE_OTHER_SCRIPT = /[^\u0000-\u024f\u2000-\u206f\s]/g;
+
+  // Takes the NORMALISED text (lowercased, combining marks stripped), so an
+  // accented French report counts as Latin and an Arabic one does not.
   function readability(norm) {
     var words = (norm.match(/[a-z0-9]+/g) || []).length;
     var letters = (norm.match(/[a-z]/g) || []).length;
+    var other = (norm.match(RE_OTHER_SCRIPT) || []).length;
     var solid = norm.replace(/\s+/g, '').length;
     var share = solid ? letters / solid : 0;
-    return { words: words, unreadable: words === 0 || letters === 0 || share < LATIN_MIN_SHARE };
+    var otherShare = solid ? other / solid : 0;
+    // Digits alone never make a text readable, and an empty paste is not readable
+    // either. Both fall into (a) with the wrong-script case.
+    var unreadable = words === 0 || letters === 0 || share < LATIN_MIN_SHARE;
+    return {
+      words: words, share: share, other_share: otherShare, unreadable: unreadable,
+      mixed_script: !unreadable && otherShare >= OTHER_SCRIPT_MAX_SHARE
+    };
   }
 
   function prescan(rawText, context) {
@@ -439,10 +511,26 @@
     var words = read.words;
     var signals = {};
 
-    // Illegible to this scanner: say so, and say NOTHING about the report.
+    // Regime (a). Illegible to this scanner: say so, and say NOTHING about the
+    // report.
     if (read.unreadable) {
       return { ok: true, signals: {},
-        meta: { chars: text.length, words: words, short: words < SHORT_WORDS, unreadable: true } };
+        meta: { chars: text.length, words: words, short: words < SHORT_WORDS,
+          unreadable: true, mixed_script: false } };
+    }
+
+    // Regime (b) vs (c), enforced in ONE place. Every signal in this function,
+    // whatever family it comes from, goes through emit, and emit is the only door
+    // an absence claim can walk through. On mixed-script text a not_found is
+    // dropped WITHOUT A KEY: an item with no key gets no machine_signal, so the
+    // panel renders no chip on it, so there is no one-click "I checked. Record No"
+    // and no path from an unread document to a critical red flag. `found` and
+    // `weak` are unaffected in every regime: the scanner really did see the word.
+    var absenceAllowed = !read.mixed_script;
+    function emit(id, sig) {
+      if (!sig) return;
+      if (sig.signal === 'not_found' && !absenceAllowed) return;
+      signals[id] = sig;
     }
 
     // Section families -> heading found / body mention weak / absent.
@@ -454,11 +542,11 @@
         if (re.test(stripped) && isHeadingLine(lines[i])) { headingIdx = i; break; }
       }
       if (headingIdx >= 0) {
-        signals[itemId] = { signal: 'found', evidence: snippet(lines[headingIdx]) };
+        emit(itemId, { signal: 'found', evidence: snippet(lines[headingIdx]) });
       } else if (re.test(norm)) {
-        signals[itemId] = { signal: 'weak', evidence: 'Mentioned in body text but no section heading detected.' };
+        emit(itemId, { signal: 'weak', evidence: 'Mentioned in body text but no section heading detected.' });
       } else {
-        signals[itemId] = { signal: 'not_found', evidence: 'No matching heading or mention detected.' };
+        emit(itemId, { signal: 'not_found', evidence: 'No matching heading or mention detected.' });
       }
     });
 
@@ -489,7 +577,7 @@
           if (hitsInLine(normLines[i], toks) >= EQ_EVIDENCE_MIN_HITS) { ev = snippet(lines[i]); break; }
         }
       }
-      signals['eq:' + r.eq_id] = { signal: sig, evidence: ev, hits: hits, total: toks.length };
+      emit('eq:' + r.eq_id, { signal: sig, evidence: ev, hits: hits, total: toks.length });
     });
 
     // Agreed structure: each agreed title matched against one line. A title with
@@ -531,7 +619,7 @@
           if (proseOnly.length) parts.push('In body text but not as a heading: ' + proseOnly.join('; ') + '.');
           sev = snippet(parts.join(' '));
         }
-        signals['structure:agreed'] = { signal: ssig, evidence: sev };
+        emit('structure:agreed', { signal: ssig, evidence: sev });
       }
     }
 
@@ -542,16 +630,17 @@
       var reN = /\bn\s*=\s*([0-9][0-9,]{0,9})/gi;
       while ((m = reN.exec(text)) !== null) found.push(parseInt(m[1].replace(/,/g, ''), 10));
       var close = found.filter(function(n) { return Math.abs(n - plannedN) / plannedN <= SAMPLE_TOLERANCE; });
-      signals['sample:achieved'] = {
+      emit('sample:achieved', {
         signal: close.length ? 'found' : (found.length ? 'weak' : 'not_found'),
         evidence: snippet(found.length
           ? 'Sample figures found: ' + found.slice(0, 5).join(', ') + '. Planned: ' + plannedN + '.'
           : 'No n= style sample figure detected. Planned: ' + plannedN + '.')
-      };
+      });
     }
 
     return { ok: true, signals: signals,
-      meta: { chars: text.length, words: words, short: words < SHORT_WORDS, unreadable: false } };
+      meta: { chars: text.length, words: words, short: words < SHORT_WORDS,
+        unreadable: false, mixed_script: read.mixed_script } };
   }
 
   window.PraxisScreenCore = {

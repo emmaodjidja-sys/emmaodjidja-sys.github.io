@@ -238,10 +238,14 @@
     // lines against run B's items). Shape: null | { run_id, by_item: { id: str } }.
     var evd = React.useState(null), evidence = evd[0], setEvidence = evd[1];
     var scn = React.useState(false), scanning = scn[0], setScanning = scn[1];
-    // Session-only note that the last scan in THIS tab could not read the text.
-    // Shape: null | { run_id }. Not persisted: run.prescan carries counts only,
-    // and this is a fact about a scan, not about the report.
-    var unr = React.useState(null), unreadable = unr[0], setUnreadable = unr[1];
+    // Session-only note about the SCRIPT the last scan in THIS tab met. Shape:
+    // null | { run_id, kind: 'unreadable' | 'mixed' }. 'unreadable' = it found too
+    // little readable English or French to say anything at all; 'mixed' = it read
+    // part of the text and reported only what it FOUND, because an absence in a
+    // text it could not fully read is a fact about the scan. Not persisted:
+    // run.prescan carries counts only, and this is a fact about a scan, not about
+    // the report.
+    var unr = React.useState(null), scriptNote = unr[0], setScriptNote = unr[1];
 
     // Runs of this role still open. The newest is where the panel lands when the
     // reviewer has selected nothing this session (the page-reload path).
@@ -325,7 +329,9 @@
         var byItem = {};
         Object.keys(res.signals).forEach(function(id) { byItem[id] = res.signals[id].evidence; });
         setEvidence({ run_id: run.id, by_item: byItem });
-        setUnreadable(res.meta.unreadable ? { run_id: run.id } : null);
+        setScriptNote(res.meta.unreadable
+          ? { run_id: run.id, kind: 'unreadable' }
+          : (res.meta.mixed_script ? { run_id: run.id, kind: 'mixed' } : null));
 
         // On unreadable text res.signals is {}, so applySignals CLEARS every signal
         // a previous scan left behind. That is the correct reading of a re-scan
@@ -340,9 +346,17 @@
         if (el) el.value = '';
         // Neither the unreadable case nor a short paste is a clean save, so neither
         // may arrive in the green of one. Only the ordinary scan is a success toast.
+        // The copy speaks about what the scan DID NOT FIND (enough readable English
+        // or French), not about what script the text is in. Both a report in
+        // another script and an English annex that is almost all figures land here,
+        // and telling the second one "it reads Latin-script English only" would be
+        // false: the text WAS English.
         var msg, kind;
         if (res.meta.unreadable) {
-          msg = 'The scan could not read that text. It reads Latin-script English and French only, so it produced no signals at all. Screen the report yourself.';
+          msg = 'The scan did not find enough readable English or French text in that paste, so it produced no signals at all. Screen the report yourself.';
+          kind = 'warning';
+        } else if (res.meta.mixed_script) {
+          msg = 'Scanned. Part of that text is in a script the scan cannot read, so it reports only what it found, and says nothing about what it did not find.';
           kind = 'warning';
         } else if (res.meta.short) {
           msg = 'Scanned, but the text was under 500 words. Is that the whole report?';
@@ -487,13 +501,18 @@
           'A signal is a keyword or heading match, not a judgment. It can see that the word "consent" is somewhere in the text; it cannot see whether consent was obtained. It answers nothing for you. Every answer stays your call.'),
         run.prescan ? h('p', { className: 'wb-cm-hint' },
           'Last scanned ' + fdate(run.prescan.ran_at) + ' (' + run.prescan.words + ' words, ' + run.prescan.chars + ' characters). The text itself is gone.') : null,
-        // The truth, plainly, when the scanner could not read the text. It does not
-        // say the report is missing a methods section, because it did not look at a
-        // methods section: it looked at a script it cannot read. Saying "not
-        // detected" here would be an assertion the scan did not earn, and it would
-        // run in the harmful direction (a No on a critical item is a red flag).
-        (unreadable && unreadable.run_id === run.id) ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
-          'The scan could not read that text. It reads Latin-script English and French only: it has no patterns for Arabic, Amharic, Cyrillic, Chinese or any other script. It has produced no signals, because it saw nothing, and "nothing detected" would tell you about the scanner and not about the report. Screen this report yourself.') : null,
+        // The truth, plainly, when the scan could not read the text. It does not say
+        // the report is missing a methods section, because it never looked at one:
+        // it looked at text it could not read. Saying "not detected" here would be
+        // an assertion the scan did not earn, and it would run in the harmful
+        // direction (a No on a critical item is a red flag).
+        (scriptNote && scriptNote.run_id === run.id && scriptNote.kind === 'unreadable') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
+          'The scan did not find enough readable English or French text in that paste. It matches English and French words, so a report written in another script gives it nothing to match, and neither does a paste that is almost all figures. It has produced no signals, because it read nothing to produce them from, and "not detected" would tell you about the scan and not about the report. Screen this report yourself.') : null,
+        // Regime (b): it read part of the text. It may report what it FOUND. It may
+        // not report what it did not find, so there are no "not detected" chips and
+        // no one-click No, and the reviewer is told why the row is bare.
+        (scriptNote && scriptNote.run_id === run.id && scriptNote.kind === 'mixed') ? h('p', { className: 'wb-cm-hint wb-fr-ev-caution' },
+          'Part of that text is in a script the scan cannot read. It has reported what it did find in the English or French passages. It has reported nothing about what it did not find, and you will see no "not detected" chips, because an absence in a text it could only partly read is a fact about the scan and not about the report. Screen those items yourself.') : null,
         h('textarea', { ref: pasteRef, className: 'wb-input wb-fr-paste', disabled: scanning,
           'aria-label': 'Paste the report text to pre-scan', placeholder: 'paste the full report text here' }),
         h('div', { className: 'wb-cm-add' },

@@ -47,7 +47,7 @@ H.eq(res.signals['uneg:methods'].signal, 'found', 'EN methodology heading detect
 H.eq(res.signals['uneg:limitations'].signal, 'found', 'EN limitations heading detected');
 H.eq(res.signals['uneg:recommendations'].signal, 'found', 'EN recommendations heading detected');
 H.eq(res.signals['eq:q1'].signal, 'found', 'EQ1 tokens found in the text');
-H.assert(res.signals['eq:q2'].signal === 'weak' || res.signals['eq:q2'].signal === 'not_found', 'EQ2 barely covered');
+H.assert(sigOf(res, 'eq:q2') === 'weak' || sigOf(res, 'eq:q2') === 'not_found', 'EQ2 barely covered');
 H.eq(res.signals['structure:agreed'].signal, 'found', 'agreed structure matched');
 H.assert(res.signals['sample:achieved'].signal === 'found', 'n=236 within 10 percent of planned 240');
 H.assert(res.signals['uneg:conclusions'] === undefined, 'conclusions-follow-findings never machine-signalled');
@@ -65,7 +65,7 @@ H.assert(res.meta.short === true, 'under 500 words flagged short');
 // can always show how thin the basis for it is.
 H.eq(res.signals['eq:q1'].hits, 8, 'EQ1 reports how many question terms hit');
 H.eq(res.signals['eq:q1'].total, 8, 'EQ1 reports how many question terms there were');
-H.assert(typeof res.signals['eq:q2'].hits === 'number' && typeof res.signals['eq:q2'].total === 'number',
+H.assert(!!res.signals['eq:q2'] && typeof res.signals['eq:q2'].hits === 'number' && typeof res.signals['eq:q2'].total === 'number',
   'a not-found EQ still carries hits and total');
 
 // ---- English methods vocabulary (not only the French "methode(s)") -------------
@@ -193,8 +193,8 @@ H.eq(bres.signals['eq:b1'].signal, 'found', 'EQ at 4/6 is found');
 H.eq(bres.signals['eq:b2'].hits, 3, 'EQ b2 matched 3 terms');
 H.eq(bres.signals['eq:b2'].total, 8, 'EQ b2 asked 8 terms');
 H.eq(bres.signals['eq:b2'].signal, 'weak', 'EQ at 3/8 lands in the weak band');
-H.eq(bres.signals['eq:b3'].hits, 0, 'EQ b3 matched nothing');
-H.eq(bres.signals['eq:b3'].signal, 'not_found', 'EQ with zero hits is not_found, never weak');
+H.eq(bres.signals['eq:b3'] && bres.signals['eq:b3'].hits, 0, 'EQ b3 matched nothing');
+H.eq(sigOf(bres, 'eq:b3'), 'not_found', 'EQ with zero hits is not_found, never weak');
 H.eq(bres.signals['eq:b4'].hits, 1, 'EQ b4 matched its one generic word');
 H.eq(bres.signals['eq:b4'].total, 2, 'EQ b4 tokenises to only 2 terms');
 H.assert(bres.signals['eq:b4'].signal !== 'found', 'one generic word on a 2-term question is never found');
@@ -223,7 +223,7 @@ H.eq(farOut.signals['sample:achieved'].signal, 'weak', 'n=90 against a planned 2
 var justOut = C.prescan('The survey achieved n=265 completed interviews.', samCtx);
 H.eq(justOut.signals['sample:achieved'].signal, 'weak', 'n=265 against a planned 240 is just outside the 10 percent tolerance');
 var noFigure = C.prescan('The survey reached most of the households we set out to reach.', samCtx);
-H.eq(noFigure.signals['sample:achieved'].signal, 'not_found', 'no n= figure at all is not_found');
+H.eq(sigOf(noFigure, 'sample:achieved'), 'not_found', 'no n= figure at all is not_found');
 
 // ---- heading detection: the two rules, one fixture each -------------------------
 // (a) terminal punctuation: a SHORT line that ends in a full stop is a sentence.
@@ -295,12 +295,238 @@ var mostlyNonLatin = C.prescan('تقرير التقييم النهائي 2026\n\
 H.eq(mostlyNonLatin.meta.unreadable, true, 'a non-Latin report with a few Latin figures is still unreadable');
 H.eq(Object.keys(mostlyNonLatin.signals).length, 0, 'and it still produces no signals, not even a sample signal off its n= figure');
 
+// ---- THE MIXED-SCRIPT REPORT: what documents in this domain actually look like --
+// The fixtures above are the easy case, a report in ONE script the scanner cannot
+// read. The realistic case is a report whose BODY is in another script and which
+// carries, in Latin, exactly the furniture that every institutional report carries:
+// an English cover page, a list of acronyms (WHO, UNICEF, MoH, EPI), and often an
+// English reference list. That paste is 7 to 19 percent Latin letters. A gate at a
+// GLOBAL Latin share of 0.05, which is what this scanner used to have, waves it
+// through, and the scan then emits its full set of signals, of which the ones that
+// matter are not_found on uneg:methods and uneg:limitations: both CRITICAL, both
+// non-ethics, so both render the one-click "I checked. Record No". That is the
+// harmful chain in one hop: Record No -> critical red flags -> recommendVerdict
+// returns 'return' -> the one-click "Request revision on the deliverable", which
+// flips the deliverable and writes the audit log. The scanner would be asserting an
+// ABSENCE in a document it could not read. These fixtures are the ones that catch it.
+function latinShare(s) {
+  var n = String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  var letters = (n.match(/[a-z]/g) || []).length;
+  var solid = n.replace(/\s+/g, '').length;
+  return solid ? letters / solid : 0;
+}
+function notFoundKeys(r) {
+  return Object.keys(r.signals).filter(function(k) { return r.signals[k].signal === 'not_found'; });
+}
+// Null-safe, because half of what these tests check is that a key is ABSENT: a
+// bare r.signals[id].signal would throw on exactly the outcome under test, and a
+// thrown TypeError names no assertion. null means "no key", which is a value the
+// assertions can compare.
+function sigOf(r, id) { return r.signals[id] ? r.signals[id].signal : null; }
+
+// A full-length Arabic evaluation report body. No Latin word anywhere in it: every
+// Latin character in the fixtures below comes from the English furniture.
+var AR_BODY = [
+  'تقرير التقييم النهائي للبرنامج الوطني للتحصين',
+  '',
+  'الملخص التنفيذي',
+  'حسنت الحملة تغطية التطعيم بين الأطفال دون سن الخامسة في المناطق الشمالية بنسبة ثمانية عشر نقطة مئوية خلال فترة التقييم الممتدة من مطلع العام الماضي حتى نهاية الربع الأخير. وقد شملت الأنشطة حملات التوعية المجتمعية وتدريب العاملين الصحيين وتوفير سلسلة التبريد في المرافق الصحية النائية.',
+  'ويخلص التقييم إلى أن البرنامج حقق معظم أهدافه المعلنة على مستوى المخرجات، غير أن التقدم على مستوى النتائج البعيدة ظل متفاوتا بين المقاطعات، ويعود ذلك في المقام الأول إلى ضعف نظام الإحالة وإلى النقص المزمن في الكوادر الصحية المدربة في المرافق الطرفية.',
+  '',
+  'مقدمة وخلفية البرنامج',
+  'أطلقت وزارة الصحة البرنامج الوطني للتحصين بدعم من الشركاء الدوليين بهدف رفع معدلات التغطية بين الأطفال في المناطق التي يصعب الوصول إليها. ويغطي البرنامج ست مقاطعات يقطنها ما يقارب مليونا ونصف المليون نسمة، منهم نحو مئتي ألف طفل دون سن الخامسة.',
+  'وقد جاء البرنامج استجابة لتراجع معدلات التغطية خلال سنوات النزاع، حيث توقفت الخدمات الأساسية في عدد من المرافق وفقدت سلسلة التبريد قدرتها التشغيلية في المناطق الريفية البعيدة عن مراكز المقاطعات.',
+  '',
+  'أهداف التقييم ونطاقه',
+  'يهدف هذا التقييم إلى تقدير مدى ملاءمة البرنامج وفعاليته وكفاءته واستدامته، وإلى استخلاص الدروس التي يمكن أن تفيد المرحلة المقبلة. ويغطي التقييم الفترة الممتدة على مدى ثلاث سنوات كاملة في المقاطعات الست المستهدفة.',
+  'ولا يتناول هذا التقييم أنشطة التغذية المدرسية التي ينفذها شريك آخر، ولا يغطي المقاطعتين اللتين تعذر الوصول إليهما لأسباب أمنية على النحو المبين في قسم القيود.',
+  '',
+  'المنهجية',
+  'اعتمد الفريق تصميما مختلطا يجمع بين البيانات الكمية والنوعية. وأجري مسح للأسر المعيشية شمل عينة عشوائية طبقية في ست مقاطعات، إلى جانب مقابلات مع مخبرين رئيسيين على مستوى الوزارة والمقاطعة والمرفق الصحي.',
+  'ونظمت مجموعات النقاش المركزة مع مقدمي الرعاية في المجتمعات المستهدفة، وجرى تثليث البيانات المستقاة من سجلات المرافق مع نتائج المسح ومع المادة النوعية بغية التحقق من اتساق النتائج قبل استخلاص أي استنتاج.',
+  'واستعرض الفريق كذلك الوثائق البرنامجية والتقارير المرحلية وبيانات نظام المعلومات الصحية على مستوى المقاطعة، مع مراعاة المبادئ الأخلاقية المعمول بها في جمع البيانات من الأسر ومن العاملين الصحيين.',
+  '',
+  'القيود',
+  'حالت القيود الأمنية دون الوصول إلى مقاطعتين في الشمال الشرقي، ولذلك لا تسري النتائج على تلك المناطق. كما كانت سجلات المرافق ناقصة في بعض الحالات، مما يحد من قابلية تعميم النتائج الكمية على مستوى المقاطعة الواحدة.',
+  '',
+  'النتائج الرئيسية',
+  'ارتفعت التغطية بشكل ملحوظ في المناطق التي شملتها الحملات المتنقلة، وتحسن انتظام سلسلة التبريد في المرافق التي تلقت مولدات جديدة ووحدات تبريد تعمل بالطاقة الشمسية خلال السنة الثانية من التنفيذ.',
+  'وأفاد مقدمو الرعاية بأن زيارات الفرق المتنقلة أصبحت منتظمة ويمكن التنبؤ بمواعيدها، وأن العاملين الصحيين باتوا معروفين لدى الأسر، وهو ما عزز الثقة في الخدمة بعد سنوات من الانقطاع.',
+  'غير أن معدلات إتمام الجرعات ظلت متدنية في المقاطعتين الجنوبيتين، حيث لم يكتمل تعيين الكوادر ولم تفعل آلية الإحالة بين المرافق الطرفية ومستشفى المقاطعة على النحو المتوخى في وثيقة البرنامج.',
+  'وتبين كذلك أن نظام المعلومات الصحية لا يلتقط بيانات الأطفال الذين لم يتلقوا أي جرعة، وهو ما يحول دون تتبع الفئة الأشد حرمانا وتوجيه الموارد إليها بدقة.',
+  '',
+  'الاستنتاجات',
+  'يخلص التقييم إلى أن البرنامج كان ملائما لاحتياجات السكان وفعالا في رفع التغطية، لكن استدامته تظل مرهونة بتوظيف الكوادر وبإدماج تكاليف التشغيل في الميزانية الوطنية بدلا من الاعتماد المستمر على التمويل الخارجي.',
+  '',
+  'التوصيات',
+  'توسيع نموذج التوعية المجتمعية ليشمل المقاطعات المتبقية، مع تخصيص ميزانية تشغيلية قارة للفرق المتنقلة ضمن الخطة السنوية للوزارة.',
+  'تعزيز نظام المعلومات الصحية بحيث يلتقط بيانات الأطفال الذين لم يتلقوا أي جرعة، وربطه بآلية الإحالة على مستوى المقاطعة.',
+  'إدماج تكاليف سلسلة التبريد في الميزانية الوطنية خلال السنتين المقبلتين لضمان استمرار الخدمة بعد انتهاء الدعم الخارجي.',
+  '',
+  'الدروس المستفادة',
+  'أظهرت التجربة أن الاستثمار في الكوادر المحلية وفي صيانة سلسلة التبريد يسبق في الأهمية أي توسع جغرافي جديد، وأن الحملات المتنقلة وحدها لا تعوض غياب الخدمة الثابتة في المرفق الصحي.'
+].join('\n');
+
+// The English furniture. Note what is NOT in it: no "method", no "limitation", no
+// "recommendation", no "consent". Those sections exist, in Arabic, in the body
+// above. A scanner that says "not detected" about them is describing itself.
+var EN_COVER = [
+  'REPUBLIC OF EXAMPLE',
+  'Ministry of Health',
+  'FINAL EVALUATION REPORT',
+  'Independent Evaluation of the National Immunisation Programme',
+  'Submitted to the Ministry of Health by the Evaluation Team',
+  'March 2026'
+].join('\n');
+var EN_ACRONYMS = [
+  'LIST OF ACRONYMS',
+  'WHO      World Health Organization',
+  'UNICEF   United Nations Children Fund',
+  'MoH      Ministry of Health',
+  'EPI      Expanded Programme on Immunisation',
+  'HMIS     Health Management Information System',
+  'KII      Key Informant Interview',
+  'FGD      Focus Group Discussion',
+  'NGO      Non Governmental Organisation',
+  'GAVI     Global Alliance for Vaccines and Immunisation',
+  'DHIS     District Health Information Software'
+].join('\n');
+var EN_REFS = [
+  'REFERENCES',
+  'Abebe T. and Musa K. (2024). Cold chain performance in rural districts. Journal of Global Health, 14, 41 to 58.',
+  'Ahmed S. (2023). Community outreach and childhood immunisation uptake. Vaccine Policy Review, 9, 112 to 130.',
+  'Diallo M. and Traore B. (2025). Zero dose children in fragile settings. Lancet Public Health, 10, 220 to 234.',
+  'Okonkwo A. (2022). Health information systems and data quality. BMJ Open, 12, e0551.'
+].join('\n');
+
+// Row 3 of the review table: body + cover + acronyms. Row 4: and a reference list.
+var MIXED_COVER = EN_COVER + '\n\n' + EN_ACRONYMS + '\n\n' + AR_BODY;
+var MIXED_COVER_REFS = EN_COVER + '\n\n' + EN_ACRONYMS + '\n\n' + AR_BODY + '\n\n' + EN_REFS;
+
+[
+  ['non-Latin body + English cover + acronym list', MIXED_COVER],
+  ['the same, plus an English reference list', MIXED_COVER_REFS]
+].forEach(function(pair) {
+  var name = pair[0], paste = pair[1];
+  var r = C.prescan(paste, nlCtx);
+  // The fixture is only a regression witness if it really is the paste the old
+  // gate let through: above the OLD 0.05 line, below the NEW one.
+  H.assert(latinShare(paste) > 0.05, name + ': the fixture clears the old 0.05 Latin gate, which is why that gate missed it');
+  H.assert(latinShare(paste) < 0.35, name + ': and it sits below the 0.35 gate, inside the band where no real EN/FR text lives');
+  H.assert(r.ok, name + ': scans without error');
+  H.eq(r.meta.unreadable, true, name + ': too little readable English or French to say anything');
+  H.eq(Object.keys(r.signals).length, 0, name + ': ZERO signals');
+  H.eq(notFoundKeys(r).length, 0, name + ': NO not_found signal is emitted for ANY item');
+  H.assert(r.signals['uneg:methods'] === undefined, name + ': uneg:methods carries NO KEY, so no chip and no one-click Record No on a CRITICAL item');
+  H.assert(r.signals['uneg:limitations'] === undefined, name + ': uneg:limitations carries NO KEY, so no chip and no one-click Record No on a CRITICAL item');
+  H.assert(r.signals['ethics:consent'] === undefined, name + ': no fabricated absence on the consent item either');
+  H.assert(r.signals['eq:n1'] === undefined, name + ': no fabricated absence on an evaluation question');
+  H.assert(r.signals['sample:achieved'] === undefined, name + ': no fabricated absence on the sample item');
+  H.assert(r.signals['structure:agreed'] === undefined, name + ': no fabricated absence on the agreed structure');
+});
+
+// ---- regime (b): it may report what it FOUND, never what it did not find --------
+// A bilingual report: an English half the scanner reads perfectly, and an Arabic
+// half it cannot read at all. The Latin share is high enough that the text is not
+// "unreadable", so this is the regime the DIRECTION rule exists for. Affirmative
+// signals are earned (the scanner really did see the word "Methods" on a heading
+// line) and are emitted. Absence claims are not earned, because a third of the
+// document is invisible to it, and are suppressed with no key.
+var AR_ANNEX = [
+  'ملحق: ملاحظات الفريق الميداني',
+  'حسنت الحملة تغطية التطعيم بين الأطفال في المناطق الشمالية خلال فترة التقييم. وقد شملت الأنشطة حملات التوعية المجتمعية وتدريب العاملين الصحيين وتوفير سلسلة التبريد في المرافق الصحية النائية.',
+  'واعتمد الفريق على مسح للأسر المعيشية ومقابلات مع مخبرين رئيسيين ومجموعات النقاش المركزة في ست مقاطعات. وجرى تثليث البيانات الكمية مع البيانات النوعية على مستوى المرفق الصحي.',
+  'وارتفعت التغطية في المناطق التي شملتها الحملة وتحسن انتظام سلسلة التبريد في المرافق الصحية النائية خلال فترة التقييم الممتدة على مدى ثلاث سنوات كاملة.'
+].join('\n');
+// English, and deliberately WITHOUT a limitations section, a recommendations
+// section, a consent passage or an n= figure: on its own, all four are not_found.
+var EN_HALF = [
+  'FINAL EVALUATION REPORT',
+  '',
+  'Executive Summary',
+  'The programme raised immunisation coverage among children in the northern districts over the period under review. Outreach teams reached settlements that the fixed facilities had never served, and the cold chain held at the district stores throughout the campaign.',
+  '',
+  'Methods',
+  'The team ran a household survey in six districts, together with key informant interviews at the district health offices and focus group discussions with caregivers. Quantitative data from the facility registers was triangulated against the qualitative material.',
+  '',
+  'Findings',
+  'Coverage improved across the districts that the campaign reached. Caregivers reported that the outreach visits were predictable and that the health workers were known to them. The district stores kept temperature logs for the whole period.'
+].join('\n');
+var BILINGUAL = EN_HALF + '\n\n' + AR_ANNEX;
+
+var bmix = C.prescan(BILINGUAL, nlCtx);
+H.assert(latinShare(BILINGUAL) > 0.35, 'the bilingual fixture has real Latin content: it is above the readability gate');
+H.eq(bmix.meta.unreadable, false, 'regime (b): the bilingual report is readable, so the scan is allowed to speak');
+H.eq(bmix.meta.mixed_script, true, 'regime (b): a substantial part of it is in a script the scan cannot read');
+// The point of the whole fix: the DETECTIONS survive.
+H.eq(sigOf(bmix, 'uneg:methods'), 'found', 'regime (b) STILL DETECTS: the English Methods heading is reported found');
+H.eq(sigOf(bmix, 'uneg:exec'), 'found', 'regime (b) still detects the English executive summary heading');
+H.eq(sigOf(bmix, 'eq:n1'), 'found', 'regime (b) still reports EQ topic coverage seen in the English passages');
+H.assert(Object.keys(bmix.signals).length >= 3, 'regime (b) is not a silent regime: it emits its affirmative signals');
+// And the absence claims do not.
+H.eq(notFoundKeys(bmix).length, 0, 'regime (b) emits NO not_found signal for any item');
+
+// The paired proof that the suppression is what removed them. The SAME English
+// text, scanned ALONE, is regime (c) and reports all four absences. Put the Arabic
+// annex back and those four keys disappear: the fix suppresses the absence claims,
+// it does not disable the checks.
+var enHalf = C.prescan(EN_HALF, nlCtx);
+H.eq(enHalf.meta.unreadable, false, 'the English half alone is readable');
+H.eq(enHalf.meta.mixed_script, false, 'the English half alone is not mixed-script: regime (c)');
+H.eq(sigOf(enHalf, 'uneg:limitations'), 'not_found', 'regime (c) on the English half: limitations genuinely absent, reported not_found');
+H.eq(sigOf(enHalf, 'uneg:recommendations'), 'not_found', 'regime (c) on the English half: recommendations genuinely absent, reported not_found');
+H.eq(sigOf(enHalf, 'ethics:consent'), 'not_found', 'regime (c) on the English half: nothing on consent, reported not_found');
+H.eq(sigOf(enHalf, 'sample:achieved'), 'not_found', 'regime (c) on the English half: no n= figure, reported not_found');
+['uneg:limitations', 'uneg:recommendations', 'ethics:consent', 'sample:achieved'].forEach(function(id) {
+  H.assert(bmix.signals[id] === undefined,
+    'regime (b): ' + id + ' carries NO KEY (it is not_found on the same English text alone), so no chip and no one-click Record No');
+});
+
+// ---- a mostly-numeric English annex: fails safe, and the copy must not lie -------
+// The gate is a share of LATIN LETTERS, so a table of figures trips it even though
+// the text is English. Zero signals is the right outcome (there is nothing to read),
+// but it is NOT a wrong-script case: mixed_script is false, and the panel copy must
+// therefore speak about not finding enough readable English or French text, not
+// about the script the text is in.
+var NUMERIC_ANNEX = [
+  'ANNEX 3',
+  'District  2023  2024  2025  2026',
+  '01  1204  1330  1402  1511',
+  '02  982   1041  1120  1198',
+  '03  2310  2402  2555  2610',
+  '04  455   470   512   533',
+  '05  1877  1902  2011  2140',
+  '06  3021  3155  3288  3390',
+  '07  744   790   822   861',
+  '08  1650  1702  1798  1855',
+  '09  2288  2350  2477  2540',
+  '10  512   540   577   601',
+  '11  1933  2010  2122  2201',
+  '12  866   901   955   988'
+].join('\n');
+var numeric = C.prescan(NUMERIC_ANNEX, nlCtx);
+H.eq(numeric.meta.unreadable, true, 'a mostly-numeric English annex trips the readability gate');
+H.eq(Object.keys(numeric.signals).length, 0, 'and it fails safe: zero signals, no fabricated absence');
+H.eq(numeric.meta.mixed_script, false, 'but it is NOT a wrong-script case: the text was English, and the copy must not say otherwise');
+
 // The gate must not swallow real reports: the English and French fixtures above
 // are readable, and they still emit signals.
 H.eq(res.meta.unreadable, false, 'the English report is readable');
 H.eq(fres.meta.unreadable, false, 'the French report, diacritics and all, is readable');
 H.assert(Object.keys(res.signals).length > 4, 'the readable English report still emits its signals');
 H.assert(Object.keys(fres.signals).length > 4, 'the readable French report still emits its signals');
+
+// ---- and a normal EN/FR report is COMPLETELY UNAFFECTED --------------------------
+// This is the assertion that stops the fix from quietly disabling the scanner's one
+// useful negative: on ordinary Latin-script text it must still be able to say that a
+// section really is missing. If a future change widens the suppression, these fail.
+H.eq(res.meta.mixed_script, false, 'the English report is regime (c): not mixed-script');
+H.eq(fres.meta.mixed_script, false, 'the French report is regime (c): diacritics are Latin, not another script');
+H.eq(sigOf(res, 'ethics:consent'), 'not_found', 'the English report STILL reports a genuine absence: it says nothing about consent');
+H.eq(sigOf(res, 'eq:q2'), 'not_found', 'the English report still reports a genuinely uncovered evaluation question');
+H.eq(sigOf(fres, 'ethics:consent'), 'not_found', 'the French report still reports a genuine absence: it says nothing about consent');
+H.assert(notFoundKeys(res).length > 0, 'not_found is alive and well on a normal English report');
+H.assert(notFoundKeys(fres).length > 0, 'not_found is alive and well on a normal French report');
 
 // prescan never answers an item: it returns signals only.
 H.assert(JSON.stringify(res).indexOf('"answer"') === -1, 'prescan never sets an answer');
