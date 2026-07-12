@@ -81,12 +81,29 @@
     var overall = progs.length ? Math.round(PS.sum(progs, function(x) { return x; }) / progs.length) : 0;
     var upcoming = dels.filter(function(d) { return d.status !== 'accepted' && d.due_date; }).sort(function(a, b) { return a.due_date < b.due_date ? -1 : 1; })[0];
 
+    // The one clock the plan actually answers to. Same derivation the commissioner cockpit
+    // uses (CockpitData.decisionWindowFit), so the team lens and the cockpit cannot disagree
+    // about it. Absent entirely (fresh project, no dated window) rather than shown empty.
+    var CD = window.CockpitData;
+    var fit = (CD && CD.decisionWindowFit) ? CD.decisionWindowFit(context) : null;
+    var fitTile = null;
+    if (fit) {
+      var daysLeft = PraxisUtils.daysUntilLocal(fit.window.closes);
+      var fitValue = daysLeft == null ? 'Undated'
+        : (daysLeft < 0 ? Math.abs(daysLeft) + 'd past' : daysLeft + 'd left');
+      var FIT_SUB = { missed: 'Window missed', at_risk: 'At risk', on_course: 'On course',
+        landed: 'Landed in window', undated: 'Report undated' };
+      fitTile = PS.statTile('Decision window', fitValue,
+        fit.window.label + (FIT_SUB[fit.status] ? ' · ' + FIT_SUB[fit.status] : ''));
+    }
+
     var summary = h('div', { className: 'wb-plan-stats' },
       PS.statTile('Overall completion', overall + '%', null),
       PS.statTile('Deliverables accepted', accepted + ' / ' + dels.length, null),
       PS.statTile('Contract value', PS.money(budgetTotal, cur), null),
       PS.statTile('Paid to date', PS.money(paid, cur), Math.round(budgetTotal ? 100 * paid / budgetTotal : 0) + '% of value'),
-      PS.statTile('Next deadline', upcoming ? PS.fdate(upcoming.due_date) : 'None', upcoming ? upcoming.code : null));
+      PS.statTile('Next deadline', upcoming ? PS.fdate(upcoming.due_date) : 'None', upcoming ? upcoming.code : null),
+      fitTile);
 
     var contractStrip = h('div', { className: 'wb-plan-contract' },
       PS.contractField('Commissioner', contract.commissioner),
