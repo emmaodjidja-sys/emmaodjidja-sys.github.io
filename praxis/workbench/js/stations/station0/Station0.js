@@ -67,6 +67,21 @@
     var torConstraints = torState[0];
     var setTorConstraints = torState[1];
 
+    // The decision this evaluation serves lives on the commissioner governance block:
+    // one shared truth, two lenses. Drafted here like the rest of Phase 2 and written on
+    // Save as its own commissioner partial (disjoint subtree: governance only, never
+    // users, so this draft's save can never clobber a users list edited elsewhere).
+    var decisionState = React.useState(function() {
+      var gov = ((state.context.commissioner || {}).governance) || {};
+      return {
+        decision_clock: gov.decision_clock || '',
+        decision_window_opens: gov.decision_window_opens || '',
+        decision_window_closes: gov.decision_window_closes || ''
+      };
+    });
+    var decisionDraft = decisionState[0];
+    var setDecisionDraft = decisionState[1];
+
     var overridesState = React.useState({});
     var overrides = overridesState[0];
     var setOverrides = overridesState[1];
@@ -81,6 +96,14 @@
 
     function handleTorChange(field, value) {
       setTorConstraints(function(prev) {
+        var next = Object.assign({}, prev);
+        next[field] = value;
+        return next;
+      });
+    }
+
+    function handleDecisionChange(field, value) {
+      setDecisionDraft(function(prev) {
         var next = Object.assign({}, prev);
         next[field] = value;
         return next;
@@ -155,6 +178,18 @@
           }
         }
       });
+      // Disjoint subtree from the station-0 payload above (project_meta / tor_constraints /
+      // evaluability, never commissioner) and from the users list (governance only), so
+      // neither this dispatch nor an in-progress primary-user quick-add can clobber the other.
+      dispatch({
+        type: PraxisContext.ACTION_TYPES.SAVE_STATION,
+        stationId: 10,
+        payload: { commissioner: { governance: {
+          decision_clock: decisionDraft.decision_clock,
+          decision_window_opens: decisionDraft.decision_window_opens,
+          decision_window_closes: decisionDraft.decision_window_closes
+        } } }
+      });
       dispatch({ type: PraxisContext.ACTION_TYPES.SET_ACTIVE_STATION, station: 1 });
     }
 
@@ -209,6 +244,10 @@
       content = h(Phase2ToR, {
         data: torConstraints,
         onChange: handleTorChange,
+        decision: decisionDraft,
+        onDecisionChange: handleDecisionChange,
+        primaryUsers: ((state.context.commissioner || {}).users || []).filter(function(u) { return u && u.tier === 'primary'; }),
+        usersApi: (typeof CockpitSave !== 'undefined') ? CockpitSave.make(state.context, dispatch).listSetter('users') : null,
         onContinue: function() { setShowReview(true); },
         onBack: function() { setCurrentPhase(1); setShowReview(false); },
         tier: state.ui.experienceTier

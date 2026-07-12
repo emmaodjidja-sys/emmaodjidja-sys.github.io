@@ -26,6 +26,13 @@
     var onChange = props.onChange;
     var purposes = data.evaluation_purpose || [];
     var questions = data.evaluation_questions_raw || [];
+    // The decision this evaluation serves and its primary users: drafted/quick-added here,
+    // but written straight to the SAME commissioner.governance / commissioner.users fields
+    // the commissioner cockpit's C0 Commission station reads. One shared document, two lenses.
+    var decision = props.decision || {};
+    var onDecisionChange = props.onDecisionChange || function() {};
+    var primaryUsers = props.primaryUsers || [];
+    var usersApi = props.usersApi || null;
 
     function togglePurpose(p) {
       var next = purposes.indexOf(p) >= 0
@@ -148,7 +155,54 @@
             );
           }),
           h('button', { className: 'wb-btn wb-btn-outline', style: { fontSize: '12px', marginTop: 4 }, onClick: addQuestion }, '+ Add question')
-        )
+        ),
+
+        // The decision this evaluation serves. Same schema fields the commissioner
+        // cockpit's C0 Commission station reads (context.commissioner.governance),
+        // so scoping this here and governing it there can never disagree.
+        h('div', { style: { gridColumn: '1 / -1' } },
+          h('div', { className: 'wb-guidance' },
+            h('span', { className: 'wb-guidance-text' }, 'Shared with the commissioner cockpit (C0 Commission). An evaluation without a dated decision and a named user is a report in search of a reader.')
+          )
+        ),
+        h(PraxisField, {
+          fieldKey: 'decision_clock', label: 'Decision this evaluation serves',
+          helper: 'What will be decided on the strength of this evaluation',
+          style: { gridColumn: '1 / -1' }
+        },
+          h('input', { className: 'wb-input', type: 'text', value: decision.decision_clock || '',
+            placeholder: 'e.g. FY28 subnational allocation',
+            onChange: function(e) { onDecisionChange('decision_clock', e.target.value); } })
+        ),
+        h(PraxisField, { fieldKey: 'decision_window_opens', label: 'Decision window opens' },
+          h('input', { className: 'wb-input', type: 'date', value: decision.decision_window_opens || '',
+            onChange: function(e) { onDecisionChange('decision_window_opens', e.target.value); } })
+        ),
+        h(PraxisField, { fieldKey: 'decision_window_closes', label: 'Decision window closes' },
+          h('input', { className: 'wb-input', type: 'date', value: decision.decision_window_closes || '',
+            onChange: function(e) { onDecisionChange('decision_window_closes', e.target.value); } })
+        ),
+
+        // Primary intended users (quick-add). Writes immediately through usersApi
+        // (context.commissioner.users), the same list the C0 register manages in full.
+        usersApi ? h('div', { style: { gridColumn: '1 / -1' } },
+          h('label', { className: 'wb-field-label' }, 'Primary intended users'),
+          primaryUsers.length
+            ? primaryUsers.map(function(u) {
+                return h('div', { key: u.id, style: { display: 'flex', gap: '6px', marginBottom: 6 } },
+                  h('input', { className: 'wb-input', type: 'text', style: { flex: 1 }, 'aria-label': 'User name', placeholder: 'user or body',
+                    defaultValue: u.name || '',
+                    onBlur: function(e) { usersApi.set(u.id, { name: e.target.value }); } }),
+                  h('input', { className: 'wb-input', type: 'text', style: { flex: 1 }, 'aria-label': 'User role', placeholder: 'role',
+                    defaultValue: u.role || '',
+                    onBlur: function(e) { usersApi.set(u.id, { role: e.target.value }); } }),
+                  h('button', { className: 'wb-btn wb-btn-outline', style: { padding: '4px 10px', fontSize: '12px' }, 'aria-label': 'Remove primary user', onClick: function() { usersApi.remove(u.id, 'Intended user removed'); } }, PraxisIcons.close(16))
+                );
+              })
+            : h('p', { style: { fontSize: '12px', color: 'var(--slate)' } }, 'No primary users named yet.'),
+          h('button', { className: 'wb-btn wb-btn-outline', style: { fontSize: '12px', marginTop: 4 }, onClick: function() { usersApi.add(CockpitData.newUser('primary'), 'Intended user added'); } }, '+ Add primary user'),
+          h('p', { style: { fontSize: '11px', color: '#64748B', marginTop: 6 } }, 'Decision windows, influence and use outcomes are managed in the commissioner cockpit.')
+        ) : null
       ),
 
       // Bottom bar
