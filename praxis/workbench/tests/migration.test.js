@@ -74,18 +74,33 @@ H.eq(kept17.report_screens[0].reviewer, 'Jane', 'screen run fields preserved');
 // those lines at rest. migrate scrubs the field, which makes the invariant true
 // of the DATA and not only of the write path.
 //
-// THE VERSION THAT MATTERS IS 1.7.0, NOT 1.6.0. The scrub first lived inside
-// MIGRATIONS['1.6.0'], where it was INERT for every file it was written to
-// protect: the version bump to 1.7.0 landed in the first commit of the feature,
-// before the pre-scan existed, so the builds that persisted snippets stamped
-// their files 1.7.0, and migrate() is a no-op on a 1.7.0 context (no
-// MIGRATIONS['1.7.0'], and the reset-to-1.0 guard is skipped because the version
-// IS the current one). Worse, a 1.6.0 context carrying report_screens is a
-// combination that cannot exist in the wild, because 1.6.0 builds had no such
-// field: the old fixture tested an impossible input and passed. So the fixture
-// below is stamped 1.7.0, the version that can actually occur, and the 1.6.0 and
-// newer-than-current cases are kept alongside it. SECRET is the worst case, and
-// is the same line the privacy test uses.
+// HISTORY: the scrub first lived inside MIGRATIONS['1.6.0'], where it was INERT
+// for every file it was written to protect. The version bump to 1.7.0 landed in
+// the first commit of the feature, before the pre-scan existed, so the builds
+// that persisted snippets stamped their files 1.7.0, never 1.6.0. Back then that
+// made 1.7.0 the no-op case: migrate() took no migration step on a 1.7.0 context
+// (there was no MIGRATIONS['1.7.0'], and the reset-to-1.0 guard was skipped
+// because 1.7.0 WAS the current version), so a version-independent scrub was the
+// only thing that could reach those files.
+//
+// THAT STOPPED BEING TRUE AT 1.8.0. Schema 1.8.0 added MIGRATIONS['1.7.0'] (to
+// backfill use_outcome and mint project_id), so a 1.7.0-stamped context now
+// takes a real migration step on its way to 1.8.0 instead of passing through
+// untouched. The no-op, scrub-only case this suite has to cover is whichever
+// version is PRAXIS_VERSION right now, not a version number frozen into the
+// test. Fixture (a) below is stamped at S.PRAXIS_VERSION for that reason:
+// whoever adds the next migration step should not have to remember to move this
+// fixture too. The 1.7.0-to-1.8.0 step itself is still exercised, both by
+// fixture (b), which chains through it from 1.6.0, and by the dedicated
+// use_outcome/project_id block further down, so it is not retested a third time
+// here.
+//
+// Separately, a 1.6.0 context carrying report_screens is a combination that
+// cannot exist in the wild, because 1.6.0 builds had no such field: an old
+// fixture once tested that impossible input and passed anyway. Fixture (b) is
+// kept regardless, alongside the current-version case and the newer-than-current
+// case, for defensive coverage. SECRET is the worst case, and is the same line
+// the privacy test uses.
 var SECRET = 'Consent was refused by Mary Akol, age 14, of Kotido village.';
 var SNIPPET2 = 'Mixed methods with a household survey (n=236).';
 
@@ -134,13 +149,15 @@ function assertScrubbed(clean, label) {
 
 // (a) THE CASE THAT ACTUALLY OCCURS: a context already stamped at the current
 // version. migrate runs no migration step on it at all, so only a
-// version-independent scrub can clean it.
-var dirty17 = S.createEmptyContext();
-dirty17.version = '1.7.0';
-dirty17.report_screens = dirtyScreens();
-var clean17 = S.migrate(dirty17);
-H.eq(clean17.version, '1.8.0', 'a 1.7.0 context migrates to 1.8.0');
-assertScrubbed(clean17, '1.7.0 (the version intermediate builds actually stamped)');
+// version-independent scrub can clean it. Stamped at S.PRAXIS_VERSION rather
+// than a literal so this keeps testing the no-op path even after the next
+// migration step moves the goalposts again.
+var dirtyCurrent = S.createEmptyContext();
+dirtyCurrent.version = S.PRAXIS_VERSION;
+dirtyCurrent.report_screens = dirtyScreens();
+var cleanCurrent = S.migrate(dirtyCurrent);
+H.eq(cleanCurrent.version, S.PRAXIS_VERSION, 'a context already at the current version keeps its version');
+assertScrubbed(cleanCurrent, 'current version (no migration step runs, scrub only)');
 
 // (b) the 1.6.0 case kept alongside it: a context that does take a migration step.
 var dirty16 = S.createEmptyContext();
@@ -162,7 +179,7 @@ H.eq(cleanNew.version, '9.9.9', 'a newer context is not migrated backwards or fo
 assertScrubbed(cleanNew, 'newer than current (the isKnownNewer early return)');
 
 // The scrub is idempotent: a second pass changes nothing and throws nothing.
-var twice = S.migrate(S.migrate(dirty17));
+var twice = S.migrate(S.migrate(dirtyCurrent));
 H.assert(JSON.stringify(twice).indexOf(SECRET) === -1, 'the scrub is idempotent');
 H.eq(twice.report_screens[0].items[0].machine_signal, 'found', 'a second pass still leaves the signal alone');
 
@@ -213,13 +230,13 @@ H.eq(up18.commissioner.users[0].use_outcome, '', 'user backfilled use_outcome');
 H.assert(typeof up18.project_id === 'string' && up18.project_id.indexOf('prj_') === 0,
   '1.7.0 file gains a project_id');
 
-var keep = S.createEmptyContext();
-keep.version = '1.7.0';
-keep.project_id = 'prj_fixed';
-keep.commissioner.users = [{ id: 'u2', name: 'Sec', tier: 'primary', use_outcome: 'used', eq_refs: [] }];
-var kept = S.migrate(keep);
-H.eq(kept.project_id, 'prj_fixed', 'existing project_id preserved');
-H.eq(kept.commissioner.users[0].use_outcome, 'used', 'existing use_outcome not clobbered');
+var keep18 = S.createEmptyContext();
+keep18.version = '1.7.0';
+keep18.project_id = 'prj_fixed';
+keep18.commissioner.users = [{ id: 'u2', name: 'Sec', tier: 'primary', use_outcome: 'used', eq_refs: [] }];
+var kept18 = S.migrate(keep18);
+H.eq(kept18.project_id, 'prj_fixed', 'existing project_id preserved');
+H.eq(kept18.commissioner.users[0].use_outcome, 'used', 'existing use_outcome not clobbered');
 
 // project_id is top-level infrastructure: it must not be importable via a
 // partial station import, same invariant as report_screens.
