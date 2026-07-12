@@ -177,4 +177,21 @@ badScreens.version = '9.9.9';
 badScreens.report_screens = 'not an array';
 H.eq(S.migrate(badScreens).report_screens, 'not an array', 'a non-array report_screens is left alone rather than throwing');
 
+// ---- report_screens must appear in NO STATION_FIELDS list -------------------
+// report_screens is deliberately NOT listed under any STATION_FIELDS key (see the
+// comment on STATION_FIELDS in schema.js). context.js's LOAD_FILE partial-merge
+// branch copies ONLY STATION_FIELDS keys out of an imported _partial .praxis file
+// into a live project, and that partial-merge branch is the one path into a live
+// project that migrate() (and its machine_evidence scrub) never reaches. Leaving
+// report_screens out of every STATION_FIELDS list is therefore the ONLY thing
+// stopping a partial file from injecting report_screens, and any machine_evidence
+// snippet of confidential report text an intermediate build might have left on it,
+// into somebody else's live project. Before this test, that exclusion was defended
+// by a comment alone: a reviewer added report_screens to STATION_FIELDS[10] and the
+// rest of the suite still passed.
+Object.keys(S.STATION_FIELDS).forEach(function(id) {
+  H.assert(S.STATION_FIELDS[id].indexOf('report_screens') === -1,
+    'STATION_FIELDS[' + id + '] does not list report_screens');
+});
+
 H.summary('migration.test');

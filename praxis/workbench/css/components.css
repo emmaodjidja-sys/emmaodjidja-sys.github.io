@@ -699,6 +699,15 @@
    and it carries no one-click answer at all (see machineChip). Nothing about an
    absence may look like a verdict. */
 .wb-fr-chip--none { background: transparent; color: var(--text-tertiary); border: 1px dashed var(--border-strong); }
+/* .wb-fr-chip--miss is a DIFFERENT chip from the three above: this one is not the
+   machine's absence claim (that is .wb-fr-chip--none, and it stays neutral by
+   construction). It is CockpitDeliver's echo, at the Endorse gate, of what the
+   HUMAN reviewer answered on the first-review checklist for one evaluation
+   question: found (yes), weak (partial), or this class for "no" or "cannot
+   tell", which is a genuine, reviewer-recorded red flag sitting directly above
+   the Endorse checkbox. Red on red, same pairing as .wb-badge-red and
+   .wb-cm-over (5.30:1 on --red-strong / --red-light, passes WCAG AA). */
+.wb-fr-chip--miss { background: var(--red-light); color: var(--red-strong); }
 /* Recording an answer off a machine signal is a consequential act, so the target
    is sized for one: WCAG 2.2 SC 2.5.8 asks for at least 24x24 CSS px, and at
    padding 0 6px with no min-height this button rendered about 15px tall. The chip

@@ -159,30 +159,61 @@ H.assert(typeof item('eq:q1').machine_hits === 'number', 'an EQ signal persists 
 var timing = item('timing:window');
 H.assert(!timing || !timing.machine_signal, 'the computed timing item never receives a signal');
 
-// ---- no one-click confirm on the three ethics items --------------------------
+// ---- no one-click confirm on the ethics items or the uneg (report-quality) items ----
 // A 'found' on ethics:consent means only that a keyword appeared. The line the
 // scan quotes as "Basis:" can be a table-of-contents entry ("3. Ethics and
 // consent ..... 21") or an annex title ("Annex 4: Consent forms"): it passes
 // isHeadingLine, and it LOOKS to a hurried reviewer like corroboration of a
-// critical, GBV-adjacent safeguarding claim. The chip and the basis line stay
-// (no information is withheld), but the shortcut that turns a keyword into a
-// recorded answer with one click does not, and the row says why. The gate is on
-// SOURCE, not severity: EQ items are critical too, and they keep their confirm
-// because their chip prints a denominator and its own caveat.
+// critical, GBV-adjacent safeguarding claim. uneg:* fails for the identical
+// reason: a Spanish evaluation report with the donor's English Terms of
+// Reference bound in as an annex (the ordinary shape of a real report) hands
+// the scanner English headings, and 'found' on uneg:methods or
+// uneg:limitations (both critical) means only that a regex matched ONE
+// heading somewhere in that annex, never that the scanner read the report's
+// own methodology or limitations section. The chip and the basis line stay for
+// both (no information is withheld), but the shortcut that turns a keyword
+// into a recorded answer with one click does not, and the row says why. The
+// gate is on whether the chip PRINTS A COUNT, not on severity: EQ items are
+// critical too, and they keep their confirm because their chip prints a
+// denominator ("matched N of M question terms") and its own caveat; so do
+// sample:achieved (figures found against the planned n) and structure:agreed
+// (N of M agreed titles detected as headings).
 var ETHICS_TEXT = { 'ethics:consent': 1, 'ethics:identifiable': 1, 'ethics:harm': 1 };
 var ethicsTexts = C.buildScreenItems(ctx, {}).filter(function(it) { return ETHICS_TEXT[it.id]; })
   .map(function(it) { return it.text; });
 H.eq(ethicsTexts.length, 3, 'the checklist has the three ethics items');
+var unegTexts = C.buildScreenItems(ctx, {}).filter(function(it) { return it.source === 'uneg'; })
+  .map(function(it) { return it.text; });
+H.assert(unegTexts.length >= 5, 'the checklist has the uneg report-quality items');
+var denomTexts = C.buildScreenItems(ctx, {}).filter(function(it) {
+  return it.source === 'eq' || it.id === 'sample:achieved' || it.id === 'structure:agreed';
+}).map(function(it) { return it.text; });
 
 hookIdx = 0;
 var scanned = sandbox.FirstReview({ context: ctx, dispatch: dispatch, role: 'team' });
 var confirms = findAll(scanned, function(el) {
   return el.type === 'button' && String(el.props.className || '').indexOf('wb-fr-chip-confirm') !== -1;
 });
-H.assert(confirms.length > 0, 'non-ethics items with a signal still offer a one-click confirm');
+H.assert(confirms.length > 0, 'items whose chip prints a denominator still offer a one-click confirm when they carry a detection');
 H.assert(confirms.every(function(b) {
   return ethicsTexts.every(function(t) { return String(b.props['aria-label'] || '').indexOf(t) === -1; });
 }), 'no ethics item offers a one-click confirm');
+H.assert(confirms.every(function(b) {
+  return unegTexts.every(function(t) { return String(b.props['aria-label'] || '').indexOf(t) === -1; });
+}), 'no uneg (report-quality) item offers a one-click confirm, even with a found signal');
+
+// The positive half: eq:*, sample:achieved and structure:agreed genuinely fire in
+// this fixture (eq:q1/eq:q3 from the question-term match, sample:achieved from the
+// n=236 figure against the planned 240, structure:agreed from the three agreed
+// section titles it detected as headings), and each keeps its confirm.
+var signalledDenom = pr.items.filter(function(it) {
+  return (it.source === 'eq' || it.id === 'sample:achieved' || it.id === 'structure:agreed')
+    && it.machine_signal && it.machine_signal !== 'not_found';
+});
+H.assert(signalledDenom.length >= 3, 'eq, sample:achieved and structure:agreed all carry a detection in this fixture');
+H.assert(confirms.some(function(b) {
+  return denomTexts.some(function(t) { return String(b.props['aria-label'] || '').indexOf(t) !== -1; });
+}), 'at least one eq / sample:achieved / structure:agreed detection offers its one-click confirm');
 
 // The chip and its basis line must survive: withholding the shortcut may not cost
 // the reviewer information.
@@ -204,6 +235,18 @@ var caveats = findAll(scanned, function(el) {
 var signalledEthics = pr.items.filter(function(it) { return it.source === 'ethics' && it.machine_signal; });
 H.assert(signalledEthics.length > 0, 'at least one ethics row carries a signal, so the caveat has something to guard');
 H.eq(caveats.length, signalledEthics.length, 'every ethics row with a signal carries the safeguarding caveat as visible text');
+
+// The same visible-caveat treatment, worded for a report-quality item, on the uneg
+// rows a scan actually spoke about (uneg:exec, uneg:methods, uneg:limitations,
+// uneg:recommendations all have a SECTION_FAMILIES pattern; uneg:conclusions does
+// not, so it gets neither a chip nor a caveat).
+var REPORT_CAVEAT = 'Report quality: a keyword match is not a judgment. Read the section and answer this one yourself.';
+var reportCaveats = findAll(scanned, function(el) {
+  return el.type === 'p' && (el.children || []).indexOf(REPORT_CAVEAT) !== -1;
+});
+var signalledUneg = pr.items.filter(function(it) { return it.source === 'uneg' && it.machine_signal; });
+H.assert(signalledUneg.length > 0, 'at least one uneg row carries a signal, so the report-quality caveat has something to guard');
+H.eq(reportCaveats.length, signalledUneg.length, 'every uneg row with a signal carries the report-quality caveat as visible text');
 
 // ---- a completed run cannot be re-scanned ------------------------------------
 // A scan rewrites every item's machine_signal AND sets run.prescan. On a run

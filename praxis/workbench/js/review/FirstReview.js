@@ -123,25 +123,39 @@
     var label = 'Text scan: ' + m.label;
     var isEq = item.machine_total != null;
     if (isEq) label += ', matched ' + item.machine_hits + ' of ' + item.machine_total + ' question terms';
-    // The three ethics items get the chip and the basis line (the reviewer loses
-    // no information) but NO one-click confirm, and they say why on the row.
-    // The gate is on the SOURCE, not on the severity: an EQ item is critical too,
-    // but its chip prints its denominator ("matched 3 of 8 question terms") and
-    // its own caveat, so the reviewer can see how thin the basis is. An ethics
-    // signal has no denominator to print. 'found' on ethics:consent means the
-    // regex saw the word, and the line it quotes as "Basis:" can be a
-    // table-of-contents entry ("3. Ethics and consent .......... 21") or an annex
-    // title ("Annex 4: Consent forms"), which passes isHeadingLine and LOOKS like
-    // corroboration of a critical, GBV-adjacent safeguarding claim. The Confirm
-    // button is only a shortcut for the Yes button already sitting in the same
-    // row, so removing it costs one mouse-move and removes the "the machine said
-    // yes, I agreed" anchor exactly where a false green does the most harm.
-    var isEthics = item.source === 'ethics';
-    // Three independent conditions, and the FIRST of them can never be satisfied by an
+    // The gate is on whether the chip PRINTS A COUNT, not on the item's source
+    // label or severity as such, and never on the language or script of the
+    // pasted text. eq:* prints its own denominator right here in the chip label
+    // ("matched 3 of 8 question terms"); sample:achieved prints the sample
+    // figures it found against the planned n; structure:agreed prints how many
+    // of the agreed section titles it detected as headings. All three show the
+    // reviewer, in the same breath as the shortcut, exactly how thin the basis
+    // is, so the shortcut stays.
+    //
+    // uneg:* has no denominator to print, and it fails for the identical reason
+    // ethics does: 'found' on uneg:methods or uneg:limitations means a regex
+    // matched ONE heading, full stop, and the line it quotes as "Basis:" can be
+    // a table-of-contents entry ("2. Limitations .......... 14") or an annex
+    // title lifted from the donor's bound-in Terms of Reference, in whatever
+    // language the report is written in: a Spanish evaluation report with an
+    // English ToR annex hands the scanner English headings for uneg:exec,
+    // uneg:methods (critical), uneg:limitations (critical) and
+    // uneg:recommendations, and a hurried reviewer can clear both critical
+    // report-quality items with two clicks on a report the scanner never
+    // actually read. ethics:* has no denominator either, for the reason noted
+    // above (a bibliography entry or an annex title LOOKS like corroboration of
+    // a critical, GBV-adjacent safeguarding claim). Both lose the shortcut. The
+    // chip and the basis line stay for both (the reviewer loses no information,
+    // only the shortcut), and both carry the same kind of visible caveat, worded
+    // for what each family actually is.
+    var hasDenominator = item.source === 'eq' || item.id === 'sample:achieved' || item.id === 'structure:agreed';
+    var withheld = item.source === 'ethics' || item.source === 'uneg';
+    // Two independent conditions, and the FIRST of them can never be satisfied by an
     // absence, whatever the text, whatever the language: absences carry no answer to
-    // record. Ethics items never get the shortcut either, and neither does an item the
-    // reviewer has already answered.
-    var canConfirm = !!m.answer && !isEthics && !item.answer;
+    // record. Withheld sources never get the shortcut either, whatever count their
+    // chip happens to print, and neither does an item the reviewer has already
+    // answered.
+    var canConfirm = !!m.answer && hasDenominator && !withheld && !item.answer;
     // An absence has no "Basis": there is no line to quote, and framing a non-match as
     // a basis for anything is the misreading this whole change exists to stop. What it
     // has instead is the derived sentence prescan wrote (which names no body text: it
@@ -168,8 +182,13 @@
       // wb-fr-ev-note, not wb-fr-ev-caution: an absence is not a finding, and must not
       // be dressed as one.
       absent ? h('p', { className: 'wb-fr-ev wb-fr-ev-note' }, ABSENCE_NOTE) : null,
-      isEthics ? h('p', { className: 'wb-fr-ev wb-fr-ev-caution' },
-        'Safeguarding: the scan can only see the word. Read the section and answer this one yourself.') : null);
+      // The withheld caveat has to be VISIBLE text, not a tooltip, same as the
+      // ethics row it is modelled on, worded for what each family actually is:
+      // a safeguarding claim on the ethics rows, a report-quality claim here.
+      (withheld && item.source === 'ethics') ? h('p', { className: 'wb-fr-ev wb-fr-ev-caution' },
+        'Safeguarding: the scan can only see the word. Read the section and answer this one yourself.') : null,
+      (withheld && item.source === 'uneg') ? h('p', { className: 'wb-fr-ev wb-fr-ev-caution' },
+        'Report quality: a keyword match is not a judgment. Read the section and answer this one yourself.') : null);
   }
 
   function itemRow(item, onAnswer, onNote, evidence) {
