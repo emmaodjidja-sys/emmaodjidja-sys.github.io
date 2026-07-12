@@ -101,6 +101,10 @@
       about: h('div', { role: 'tabpanel', id: 'wb-about-panel-about', 'aria-labelledby': 'wb-about-tab-about' },
         p('The PRAXIS Evaluation Workbench is authored by Emmanuel Nene Odjidja.'),
         p('Its methodology is grounded in the OECD-DAC 2019 evaluation criteria, UNEG norms and standards, and USAID ADS 201 alignment. The nine stations follow the standard evaluation lifecycle, from scoping through to reporting and presentation.'),
+        h('p', { style: { fontSize: '13px', color: 'var(--text)', lineHeight: 1.6, margin: '0 0 12px 0' } },
+          'The commissioner cockpit is built against a failure model of how evaluations go unused: decision windows missed, audiences moving on, questions nobody asked, credibility lost in the room, contacts leaving post. ',
+          h('a', { href: 'player/', target: '_blank', rel: 'noopener', style: { color: 'var(--teal-ink)', fontWeight: 600 } }, 'Evaluation departures: an agent trace'),
+          ' replays that failure model as an interactive, agent-based simulation.'),
         h('p', { style: { fontSize: '12px', color: 'var(--slate)', lineHeight: 1.6, margin: '16px 0 0 0', paddingTop: '12px', borderTop: '1px solid var(--border)' } },
           'Odjidja, E. N. (2026). PRAXIS Evaluation Workbench (version ' + version + ') [Software]. Contact: ' + CONTACT_EMAIL + '.')
       ),
