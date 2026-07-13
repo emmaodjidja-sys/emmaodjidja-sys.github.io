@@ -99,9 +99,7 @@
     var usersApi = api.listSetter('users');
 
     function addUser(tier) {
-      usersApi.add({ id: U.uid('usr_'), name: '', role: '', tier: tier, intended_use: '',
-        decision_window: '', window_opens: '', window_closes: '', status: 'in_post', successor: '',
-        influence: 'medium', interest: 'medium', eq_refs: [] }, 'Intended user added');
+      usersApi.add(D.newUser(tier), 'Intended user added');
     }
 
     // One dated bound of a user's decision window (opens / closes), captioned so the

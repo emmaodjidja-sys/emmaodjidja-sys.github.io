@@ -14,7 +14,8 @@ var FILES = [
   'js/commissioner/CockpitData.js',
   'js/commissioner/CockpitAlerts.js',
   'js/review/ScreenCore.js',
-  'js/review/ScreenExport.js'
+  'js/review/ScreenExport.js',
+  'js/portfolio.js'
 ];
 
 /* extra: additional workbench-relative files to run in the SAME sandbox after the

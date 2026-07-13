@@ -100,6 +100,50 @@
 
     var mr = api.listSetter('management_response');
     var dis = api.listSetter('dissemination');
+    var usersApi = api.listSetter('users');
+
+    // Item-level truth about use: the funnel says what happened to
+    // recommendations, this card says what happened to each named decision
+    // maker. A recorded reason for non-use is the register's teeth: it turns
+    // "the evaluation was fine" into "the board decided before we reported".
+    function userOutcomes() {
+      var users = (cm.users || []).filter(function(u) { return u && u.tier === 'primary'; });
+      var roll = D.useOutcomeRollup(context);
+      var head = roll.recorded
+        ? (roll.used + ' of ' + roll.recorded + ' recorded outcomes reached use')
+        : 'No outcomes recorded yet';
+      var body = users.length ? h('div', { className: 'wb-table-container' },
+        h('table', { className: 'wb-table wb-cm-table' },
+          h('thead', null, h('tr', null,
+            h('th', null, 'Primary user'), h('th', null, 'Intended use'),
+            h('th', { style: { minWidth: 132 } }, 'Window'), h('th', { style: { minWidth: 168 } }, 'Outcome'))),
+          h('tbody', null, users.map(function(u) {
+            var uname = (u.name || '').trim() || 'Unnamed user';
+            // Once an outcome is recorded the window is no longer live, so the aging
+            // chip stops reading as an open countdown (same isOpen convention C3
+            // Deliver uses for a deliverable that has already been accepted).
+            var isOpen = !u.use_outcome;
+            return h('tr', { key: u.id },
+              h('td', null,
+                h('div', { className: 'wb-cm-inp--strong', style: { color: 'var(--text)' } }, uname),
+                (u.status && u.status !== 'in_post') ? statusBadge(D.USER_STATUS, u.status) : null),
+              h('td', null, u.intended_use || h('span', { className: 'wb-cm-muted' }, '-')),
+              h('td', null,
+                u.decision_window ? h('div', { className: 'wb-cm-muted' }, u.decision_window) : null,
+                u.window_closes ? h('span', { className: 'wb-cm-date', style: { display: 'inline-block' } }, D.fdate(u.window_closes)) : null,
+                u.window_closes ? A.agingChip(u.window_closes, isOpen, 30) : null,
+                (!u.decision_window && !u.window_closes) ? h('span', { className: 'wb-cm-muted' }, '-') : null),
+              h('td', null, h('select', { className: 'wb-input wb-cm-select', value: u.use_outcome || '',
+                  'aria-label': 'Use outcome for ' + uname,
+                  onChange: function(e) { usersApi.set(u.id, { use_outcome: e.target.value }); } },
+                Object.keys(D.USE_OUTCOME).map(function(k) {
+                  return h('option', { key: k || 'unset', value: k }, D.USE_OUTCOME[k].label);
+                }))));
+          })))
+      ) : h('div', { className: 'wb-station-empty' },
+          h('div', { className: 'wb-station-empty-desc' }, 'No primary intended users named yet. Name them in C0 Commission; use is recorded per person, not per report.'));
+      return h(SectionCard, { title: 'Use by intended user', badge: users.length ? head : 'Empty' }, body);
+    }
 
     function today() { return new Date().toISOString().slice(0, 10); }
     function addRecommendation() {
@@ -200,6 +244,7 @@
       moveHead('C4', 'Use', 'Drive findings to use', 'A recommendation is not done when it is accepted; it is done when it is implemented. Record the management response, and make sure each audience gets the product it needs to act.'),
       register.length ? funnel(register) : null,
       moneyLine(),
+      userOutcomes(),
       h(SectionCard, { title: 'Management response', badge: register.length ? register.length + ' tracked' : 'Empty' },
         h('p', { className: 'wb-cm-panel-intro' }, 'Record the commissioner response to each recommendation and name who owns it' + (dual ? ', across the Alliance and national programmes.' : '.') + ' Implementation is then tracked six-monthly in C5 Follow-up.'),
         mrBody,

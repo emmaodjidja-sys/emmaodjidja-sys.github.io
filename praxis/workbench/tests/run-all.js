@@ -2,7 +2,7 @@
 var cp = require('child_process');
 var fs = require('fs');
 var path = require('path');
-var files = ['utils.test.js', 'migration.test.js', 'derive.test.js', 'alerts.test.js', 'track.test.js', 'screen.test.js', 'prescan.test.js', 'firstreview.privacy.test.js', 'demo-screens.test.js', 'seqnav.test.js'];
+var files = ['utils.test.js', 'migration.test.js', 'derive.test.js', 'alerts.test.js', 'track.test.js', 'screen.test.js', 'prescan.test.js', 'firstreview.privacy.test.js', 'demo-screens.test.js', 'seqnav.test.js', 'portfolio.test.js'];
 var failed = false;
 files.forEach(function(f) {
   var full = path.join(__dirname, f);

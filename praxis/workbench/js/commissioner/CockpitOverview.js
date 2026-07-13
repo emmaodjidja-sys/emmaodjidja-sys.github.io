@@ -53,6 +53,23 @@
 
   function go(dispatch, cstation) { dispatch({ type: AT.SET_COMMISSIONER_STATION, station: cstation }); }
 
+  // Track-record badge for one portfolio row. Honest about what was actually
+  // measured: "Reached use" only when a named intended user's recorded
+  // outcome says so (see PraxisPortfolio.snapshot). When no user outcome has
+  // ever been recorded, the row falls back to the recommendation-movement
+  // proxy, and the badge must not borrow the word "use" for that, since the
+  // whole point of this register is that the two are not the same fact.
+  function trackBadge(e) {
+    if (e.use_basis === 'users') {
+      return e.reached_use
+        ? { cls: 'wb-badge-green', text: 'Reached use' }
+        : { cls: 'wb-badge-amber', text: 'Not yet used' };
+    }
+    return (e.moving || 0) > 0
+      ? { cls: 'wb-badge-amber', text: 'Recommendations moving' }
+      : { cls: 'wb-badge-red', text: 'No recommendations moving' };
+  }
+
   function tile(k, dispatch) {
     return h('button', { key: k.key, type: 'button', className: 'wb-cm-otile' + (k.tone ? ' wb-cm-otile--' + k.tone : ''), onClick: function() { go(dispatch, k.cstation); }, 'aria-label': k.label + ': ' + k.value + ', ' + k.sub },
       typeof k.frac === 'number' ? h('div', { className: 'wb-cm-otile-ring' }, A.ring(k.frac, k.tone)) : h('div', { className: 'wb-cm-otile-v' }, k.value),
@@ -76,6 +93,29 @@
     }
 
     var kpis = CockpitHeader.deriveKpis(context);
+
+    // Across evaluations, not within one: the portfolio is the commissioner's
+    // memory. Rendered only when there is more than the current project to
+    // remember, so a first-time user never sees an empty mirror.
+    var pf = window.PraxisPortfolio ? PraxisPortfolio.readAll() : [];
+    var pfCard = null;
+    if (pf.length >= 2) {
+      // Only evaluations with a recorded user outcome can honestly be counted
+      // as having "reached use". Rows resting on the recommendation-movement
+      // proxy are shown below (with their own honest badge) but do not add to
+      // this tally, or the summary would repeat the same overstatement per
+      // evaluation instead of per row.
+      var reached = pf.filter(function(e) { return e.use_basis === 'users' && e.reached_use; }).length;
+      pfCard = h(SectionCard, { title: 'Track record', badge: reached + ' of ' + pf.length + ' reached use' },
+        h('p', { className: 'wb-cm-panel-intro' }, 'Every evaluation this workbench has held: whether a named intended user recorded actually using it, or, failing that, whether its accepted recommendations moved.'),
+        h('ul', { className: 'wb-cm-portfolio' }, pf.map(function(e) {
+          var badge = trackBadge(e);
+          return h('li', { key: e.id, className: 'wb-cm-portfolio-row' },
+            h('span', { className: 'wb-cm-portfolio-title' }, e.title + (e.organisation ? ' (' + e.organisation + ')' : '')),
+            h('span', { className: 'wb-badge ' + badge.cls }, badge.text));
+        })));
+    }
+
     return h('div', { className: 'wb-cm-overview' },
       h('header', { className: 'wb-cm-move-head' },
         h('div', null,
@@ -83,6 +123,7 @@
           h('h3', { className: 'wb-cm-move-title' }, 'Where this evaluation stands'),
           h('p', { className: 'wb-cm-move-desc' }, 'A live read of the commissioning: who it is for, whether the design is assured, what is on schedule, and what needs the commissioner now.'))),
       h('div', { className: 'wb-cm-otiles' }, kpis.map(function(k) { return tile(k, dispatch); })),
+      pfCard,
       h(SectionCard, { title: 'Alerts', badge: alerts.length ? CockpitAlerts.summarize(alerts).overdue + ' overdue' : 'Clear', variant: (alerts.length && alerts[0].severity === 0) ? 'warning' : null },
         CockpitHeader.alertList(alerts, dispatch)),
       h(SectionCard, { title: 'Stations' },
