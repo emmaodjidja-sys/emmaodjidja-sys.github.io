@@ -14,19 +14,3 @@
   font-display: swap;
   src: url('../vendor/fonts/jetbrains-mono-var.woff2') format('woff2');
 }
-/* Newsreader (SIL OFL 1.1): the entry page's serif voice. Variable across
-   weight and optical size; the italic file carries the docket letterforms. */
-@font-face {
-  font-family: 'Newsreader';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('../vendor/fonts/newsreader-var.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Newsreader';
-  font-style: italic;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('../vendor/fonts/newsreader-italic-var.woff2') format('woff2');
-}
