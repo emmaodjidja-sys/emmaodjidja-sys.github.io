@@ -38,7 +38,7 @@
     "entry.kicker": "An instrument for evaluators",
     "entry.title": "The Evaluation Workbench",
     "entry.lede": "Design a complete evaluation, from first scoping to the final report, through nine integrated stations. It runs entirely in your browser; your work never leaves this device.",
-    "entry.begin_cta": "Begin a new evaluation",
+    "entry.begin_cta": "Begin",
     "entry.resume_cta": "Resume your last session",
     "entry.dial_1": "ONE LIFECYCLE",
     "entry.dial_2": "IN ORDER",

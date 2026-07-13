@@ -37,7 +37,7 @@
     "entry.kicker": "Un instrument pour les évaluateurs",
     "entry.title": "L'Atelier d'évaluation",
     "entry.lede": "Concevez une évaluation complète, du premier cadrage au rapport final, en neuf stations intégrées. Tout fonctionne dans votre navigateur. Votre travail ne quitte jamais cet appareil.",
-    "entry.begin_cta": "Commencer une nouvelle évaluation",
+    "entry.begin_cta": "Commencer",
     "entry.resume_cta": "Reprendre votre dernière session",
     "entry.dial_1": "UN CYCLE DE VIE",
     "entry.dial_2": "DANS L'ORDRE",

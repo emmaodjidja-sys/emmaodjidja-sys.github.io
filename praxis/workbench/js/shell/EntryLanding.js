@@ -373,11 +373,13 @@
       dispatch({ type: AT.LOAD_FILE, context: restored });
     }
 
-    // Hero CTA: open the tier picker and bring section 01 into view. The
+    // Hero CTA: bring section 01 into view on its docket, the five ways in.
+    // The reset to the docket matters when a branch (tier, open, quick, demo)
+    // is already showing and the reader has scrolled back up to the hero. The
     // URL hash is never touched here; the router owns it for #station=N
     // deep links.
-    function beginNew() {
-      setMode('tier');
+    function openDocket() {
+      setMode(null);
       requestAnimationFrame(function() {
         if (!beginRef.current) return;
         var reduce = false;
@@ -431,7 +433,7 @@
             h('h1', { className: 'wb-entry-h1' }, t('entry.title')),
             h('p', { className: 'wb-entry-lede' }, t('entry.lede')),
             h('div', { className: 'wb-entry-cta-row' },
-              h('button', { type: 'button', className: 'wb-entry-btn-solid', onClick: beginNew },
+              h('button', { type: 'button', className: 'wb-entry-btn-solid', onClick: openDocket },
                 t('entry.begin_cta')),
               hasSaved ? h('button', { type: 'button', className: 'wb-entry-btn-ghost', onClick: openSavedProject },
                 t('entry.resume_cta')) : null
