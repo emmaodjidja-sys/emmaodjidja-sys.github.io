@@ -34,7 +34,20 @@
     if (fit) {
       var wk = fit.marginDays == null ? null : Math.round(Math.abs(fit.marginDays) / 7);
       var winSub = fit.window.label + ' closes ' + D.fdate(fit.window.closes);
-      if (fit.status === 'missed' && wk != null) winSub = 'by about ' + wk + ' wk (' + fit.window.label + ')';
+      if (fit.status === 'missed') {
+        // A settled miss has two different truths. When a report really was
+        // accepted late, marginDays (close minus report date) is a genuine miss
+        // magnitude, so the week-rounded phrasing holds. When nothing was ever
+        // accepted, marginDays can be populated from a deliverable's DUE date
+        // (see decisionWindowFit) and can even be positive, so Math.abs() of it
+        // is not a miss magnitude at all, it is a due date. Route that case
+        // through decisionWindowDisplay, which already carries this branch
+        // correctly, instead of re-deriving a number that does not mean what it
+        // looks like it means.
+        winSub = (fit.reportAccepted && wk != null)
+          ? 'by about ' + wk + ' wk (' + fit.window.label + ')'
+          : D.decisionWindowDisplay(fit).value + ' (' + fit.window.label + ')';
+      }
       if (fit.status === 'at_risk' && wk != null) winSub = 'projected miss by about ' + wk + ' wk';
       if (fit.status === 'on_course' && wk != null) winSub = wk + ' wk of margin (' + fit.window.label + ')';
       if (fit.status === 'landed') winSub = fit.window.label + ', in time';

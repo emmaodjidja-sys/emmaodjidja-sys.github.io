@@ -31,7 +31,61 @@ H.eq(snap.title, 'Malaria SNT', 'snapshot carries the title');
 H.eq(snap.recommendations, 3, 'snapshot counts recommendations');
 H.eq(snap.accepted, 2, 'snapshot counts accepted');
 H.eq(snap.implemented, 1, 'snapshot counts implemented');
-H.eq(snap.reached_use, true, 'movement counts as reaching use');
+H.eq(snap.reached_use, true, 'movement counts as reaching use when no outcome is recorded');
+H.eq(snap.use_basis, 'recommendations', 'no recorded user outcome falls back to the recommendation proxy');
+
+// ---- verdict semantics: recorded user outcomes outrank the recommendation
+// proxy. This is the fix for the Zero-Dose contradiction: a recommendation
+// moving must not be reported as "reached use" once a named user's outcome
+// is on record and says otherwise.
+
+// Case 1: at least one recorded outcome IS 'used' -> verdict used, basis users.
+var cUsed = S.createEmptyContext();
+cUsed.commissioner.management_response = [{ id: 'r1', disposition: 'agree', implementation_status: 'not_started' }];
+cUsed.commissioner.users = [
+  { id: 'u1', tier: 'primary', use_outcome: 'used' },
+  { id: 'u2', tier: 'primary', use_outcome: 'missed_window' },
+  { id: 'u3', tier: 'secondary', use_outcome: '' }
+];
+var snapUsed = P.snapshot(cUsed);
+H.eq(snapUsed.use_basis, 'users', 'a recorded outcome bases the verdict on users');
+H.eq(snapUsed.users_recorded, 2, 'only primary users with a recorded outcome count');
+H.eq(snapUsed.users_used, 1, 'only "used" outcomes count as used');
+H.eq(snapUsed.reached_use, true, 'one used primary user reaches use');
+
+// Case 2 (the Zero-Dose case): recorded outcomes exist, NONE is 'used', but a
+// recommendation IS moving. The proxy must NOT override the recorded truth.
+var cZeroDose = S.createEmptyContext();
+cZeroDose.commissioner.management_response = [{ id: 'r1', disposition: 'agree', implementation_status: 'implemented' }];
+cZeroDose.commissioner.users = [
+  { id: 'u1', tier: 'primary', use_outcome: 'missed_window' },
+  { id: 'u2', tier: 'primary', use_outcome: 'contact_left' },
+  { id: 'u3', tier: 'primary', use_outcome: 'wrong_questions' }
+];
+var snapZeroDose = P.snapshot(cZeroDose);
+H.eq(snapZeroDose.moving, 1, 'zero-dose fixture has a moving recommendation');
+H.eq(snapZeroDose.use_basis, 'users', 'recorded outcomes base the verdict on users even though a recommendation moved');
+H.eq(snapZeroDose.users_recorded, 3, 'all three primary outcomes are recorded');
+H.eq(snapZeroDose.users_used, 0, 'none of the recorded outcomes is used');
+H.eq(snapZeroDose.reached_use, false, 'recorded non-use outranks the recommendation-movement proxy: this evaluation did NOT reach use');
+
+// Case 3: no outcome recorded at all, but a recommendation IS moving -> the
+// proxy fires, basis recommendations.
+var cProxy = S.createEmptyContext();
+cProxy.commissioner.management_response = [{ id: 'r1', disposition: 'agree', implementation_status: 'in_progress' }];
+cProxy.commissioner.users = [{ id: 'u1', tier: 'primary', use_outcome: '' }];
+var snapProxy = P.snapshot(cProxy);
+H.eq(snapProxy.users_recorded, 0, 'unset use_outcome does not count as recorded');
+H.eq(snapProxy.use_basis, 'recommendations', 'no recorded outcome falls back to the proxy');
+H.eq(snapProxy.reached_use, true, 'a moving recommendation reaches use under the proxy');
+
+// Case 4: neither a recorded outcome nor a moving recommendation.
+var cNeither = S.createEmptyContext();
+cNeither.commissioner.management_response = [{ id: 'r1', disposition: 'reject', implementation_status: 'not_started' }];
+var snapNeither = P.snapshot(cNeither);
+H.eq(snapNeither.users_recorded, 0, 'neither fixture has no recorded outcomes');
+H.eq(snapNeither.use_basis, 'recommendations', 'neither fixture falls back to the proxy');
+H.eq(snapNeither.reached_use, false, 'neither recorded use nor movement: did not reach use');
 
 // record: upsert by id, no duplicates
 var st = fakeStorage();

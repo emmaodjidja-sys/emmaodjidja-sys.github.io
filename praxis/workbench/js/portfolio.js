@@ -31,7 +31,15 @@
   }
 
   // A row is only worth keeping once there are recommendations whose fate can
-  // be tracked. reached_use means at least one accepted action moved.
+  // be tracked. reached_use is the verdict shown on the track record: it
+  // prefers the recorded ground truth from named intended users (use_outcome
+  // on commissioner.users, see CockpitData.USE_OUTCOME) over the recommendation-
+  // movement proxy, because a recommendation moving is not the same fact as a
+  // decision maker actually using the evaluation. use_basis records which one
+  // the verdict rests on so the card can render an honest badge instead of
+  // reusing the word "use" for the proxy. This module loads right after
+  // utils.js, before CockpitData, so the counts below are derived inline
+  // rather than through CockpitData.useOutcomeRollup.
   function snapshot(context) {
     if (!context || typeof context.project_id !== 'string' || !context.project_id) return null;
     var cm = context.commissioner || {};
@@ -44,6 +52,17 @@
       if (r.implementation_status === 'in_progress' || r.implementation_status === 'implemented') moving++;
       if (r.implementation_status === 'implemented') implemented++;
     });
+    var users = Array.isArray(cm.users) ? cm.users : [];
+    var usersRecorded = 0, usersUsed = 0;
+    users.forEach(function(u) {
+      if (!u || u.tier !== 'primary') return;
+      var outcome = u.use_outcome || '';
+      if (!outcome) return;
+      usersRecorded++;
+      if (outcome === 'used') usersUsed++;
+    });
+    var basis = usersRecorded > 0 ? 'users' : 'recommendations';
+    var reachedUse = usersRecorded > 0 ? (usersUsed > 0) : (moving > 0);
     return {
       id: context.project_id,
       title: ((context.project_meta || {}).title || '').trim() || 'Untitled evaluation',
@@ -52,7 +71,11 @@
       recommendations: register.length,
       accepted: accepted,
       implemented: implemented,
-      reached_use: moving > 0
+      moving: moving,
+      users_recorded: usersRecorded,
+      users_used: usersUsed,
+      use_basis: basis,
+      reached_use: reachedUse
     };
   }
 
