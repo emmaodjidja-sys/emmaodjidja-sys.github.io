@@ -48,13 +48,13 @@
   "tor_constraints": {
     "raw_text": "Gavi commissioned Ipsos to provide robust, credible evidence of how its funding and non-funding instruments contribute to reaching zero-dose children and missed communities between September 2022 and October 2025. The evaluation is theory-based and utilisation-focused, with both summative (accountability) and formative (learning) aims, and looks back to Gavi 4.0 and forward to Gavi 6.0. Year 1 establishes a baseline in eight case-study countries.",
     "evaluation_purpose": [
-      "accountability",
-      "learning",
-      "programme_improvement"
+      "outcome",
+      "process",
+      "learning"
     ],
     "causal_inference_level": "contribution",
     "comparison_feasibility": "none",
-    "data_available": "routine_monitoring",
+    "data_available": "routine_only",
     "unit_of_intervention": "system",
     "programme_complexity": "complex",
     "geographic_scope": "Multi-country: 8 case studies across High-Impact (Ethiopia, India, Pakistan), Core (Cambodia, Cote d'Ivoire, Djibouti) and Fragile/Conflict-Affected (Afghanistan, South Sudan) segments.",
@@ -580,10 +580,10 @@
   },
   "design_recommendation": {
     "answers": {
-      "purpose": "accountability",
+      "purpose": "outcome",
       "causal": "contribution",
       "comparison": "none",
-      "data": "routine_monitoring",
+      "data": "routine_only",
       "context": "fragile",
       "budget": "high",
       "timeline": "long",
@@ -595,25 +595,396 @@
       {
         "id": "contributionAnalysis",
         "name": "Contribution Analysis",
+        "short": "Contribution Analysis",
         "family": "Theory-Based",
-        "score": 90
+        "strength": "Builds credible contribution story through structured reasoning.",
+        "when": "Complex programmes; no comparison group; need to explain how/why change occurred.",
+        "notWhen": "Strong attribution needed; donor requires experimental evidence.",
+        "threats": [
+          "Confirmation bias",
+          "Weak rival explanation testing",
+          "Subjective weighting"
+        ],
+        "requirements": "Well-articulated ToC, multiple evidence sources, stakeholder engagement.",
+        "cost": 2,
+        "rigour": 3,
+        "complexity": 3,
+        "timeNeeded": 3,
+        "score": 100,
+        "reasons": [
+          "Designed for contribution claims",
+          "Works without comparison group",
+          "Adaptable to FCV settings",
+          "Handles programme complexity"
+        ]
+      },
+      {
+        "id": "realist",
+        "name": "Realist Evaluation",
+        "short": "Realist Eval.",
+        "family": "Theory-Based",
+        "strength": "Explains what works, for whom, in what circumstances, and why.",
+        "when": "Complex programmes with heterogeneous effects; need to understand mechanisms.",
+        "notWhen": "Simple interventions where average effect is the main question.",
+        "threats": [
+          "Retroductive reasoning subjectivity",
+          "Ad hoc CMO configs",
+          "Resource-intensive"
+        ],
+        "requirements": "Initial programme theory, diverse implementation contexts, mixed-methods.",
+        "cost": 3,
+        "rigour": 3,
+        "complexity": 4,
+        "timeNeeded": 4,
+        "score": 100,
+        "reasons": [
+          "Designed for contribution claims",
+          "Works without comparison group",
+          "Adaptable to FCV settings",
+          "Handles programme complexity"
+        ]
       },
       {
         "id": "processTracing",
         "name": "Process Tracing",
+        "short": "Process Tracing",
         "family": "Theory-Based",
-        "score": 84
+        "strength": "Within-case causal inference through detailed mechanism evidence.",
+        "when": "Causal chain within a specific case; complex policy/governance interventions.",
+        "notWhen": "Multiple-case comparison is priority; quantitative outcome measurement needed.",
+        "threats": [
+          "Evidence availability",
+          "Researcher degrees of freedom"
+        ],
+        "requirements": "Detailed case knowledge, access to decision-makers and documents.",
+        "cost": 2,
+        "rigour": 3,
+        "complexity": 4,
+        "timeNeeded": 3,
+        "score": 98,
+        "reasons": [
+          "Designed for contribution claims",
+          "Handles programme complexity"
+        ]
+      },
+      {
+        "id": "its",
+        "name": "Interrupted Time Series",
+        "short": "ITS",
+        "family": "Quasi-Experimental",
+        "strength": "Works with routine monitoring data. No comparison group needed if series is long.",
+        "when": "Routine data over time (HMIS, DHIS2); clear intervention start; no comparison group.",
+        "notWhen": "Few pre-intervention points (<8); concurrent policy changes.",
+        "threats": [
+          "Concurrent events",
+          "Seasonality",
+          "Autocorrelation",
+          "Data quality shifts"
+        ],
+        "requirements": "8+ pre-intervention data points, clear intervention date.",
+        "cost": 1,
+        "rigour": 3,
+        "complexity": 3,
+        "timeNeeded": 2,
+        "score": 90,
+        "reasons": [
+          "Works without comparison group",
+          "Leverages routine data"
+        ]
+      },
+      {
+        "id": "outcomeHarvesting",
+        "name": "Outcome Harvesting",
+        "short": "Outcome Harvesting",
+        "family": "Complexity-Responsive",
+        "strength": "Works backward from observed changes. Captures emergent outcomes.",
+        "when": "Advocacy, network, systems-change; emergent outcomes; retrospective evaluation.",
+        "notWhen": "Well-defined measurable outcomes; donor requires quantitative impact evidence.",
+        "threats": [
+          "Social desirability",
+          "Weak attribution claims",
+          "Resource-intensive verification"
+        ],
+        "requirements": "Access to change agents, documentation review, substantiation process.",
+        "cost": 2,
+        "rigour": 2,
+        "complexity": 3,
+        "timeNeeded": 3,
+        "score": 87,
+        "reasons": [
+          "Works without comparison group",
+          "Adaptable to FCV settings",
+          "Handles programme complexity"
+        ]
+      },
+      {
+        "id": "developmental",
+        "name": "Developmental Evaluation",
+        "short": "Developmental Eval.",
+        "family": "Complexity-Responsive",
+        "strength": "Real-time evaluative feedback for adaptive programmes.",
+        "when": "Social innovation; pilot phases; complex adaptive systems; high uncertainty.",
+        "notWhen": "Mature stable programmes; summative accountability; evaluator independence required.",
+        "threats": [
+          "Independence compromised",
+          "Scope creep",
+          "Hard to demonstrate rigour externally"
+        ],
+        "requirements": "Embedded evaluator, openness to feedback, learning culture.",
+        "cost": 3,
+        "rigour": 2,
+        "complexity": 3,
+        "timeNeeded": 5,
+        "score": 82,
+        "reasons": [
+          "Adaptable to FCV settings",
+          "Handles programme complexity"
+        ]
+      },
+      {
+        "id": "msc",
+        "name": "Most Significant Change",
+        "short": "MSC",
+        "family": "Participatory",
+        "strength": "Captures stories of change through participatory selection.",
+        "when": "Community-level programmes; participatory sense-making; diverse perspectives.",
+        "notWhen": "Quantitative coverage data needed; statistical evidence required.",
+        "threats": [
+          "Selection bias in stories",
+          "Panel subjectivity",
+          "Representativeness"
+        ],
+        "requirements": "Community access, trained collectors, selection panels.",
+        "cost": 1,
+        "rigour": 2,
+        "complexity": 2,
+        "timeNeeded": 2,
+        "score": 72,
+        "reasons": [
+          "Works without comparison group",
+          "Adaptable to FCV settings"
+        ]
+      },
+      {
+        "id": "prePost",
+        "name": "Pre-Post Comparison",
+        "short": "Pre-Post",
+        "family": "Non-Experimental",
+        "strength": "Simple, low-cost. Documents change. Widely understood.",
+        "when": "No comparison group possible; descriptive evidence sufficient; baseline available.",
+        "notWhen": "Causal attribution needed; strong secular trends.",
+        "threats": [
+          "History",
+          "Maturation",
+          "Regression to mean",
+          "No counterfactual"
+        ],
+        "requirements": "Baseline data, consistent endline measurement.",
+        "cost": 1,
+        "rigour": 1,
+        "complexity": 1,
+        "timeNeeded": 2,
+        "score": 72,
+        "reasons": [
+          "Standard for outcome evaluation",
+          "Works without comparison group"
+        ]
       },
       {
         "id": "caseStudy",
-        "name": "Comparative Case Study",
-        "family": "Case-Based",
-        "score": 80
+        "name": "Qualitative Case Study",
+        "short": "Case Study",
+        "family": "Non-Experimental",
+        "strength": "Rich contextual understanding. Multiple data sources. Flexible.",
+        "when": "Process evaluation; understanding implementation; small number of sites.",
+        "notWhen": "Generalisable quantitative findings needed; large-scale measurement.",
+        "threats": [
+          "Researcher bias",
+          "Limited generalisability",
+          "Selective evidence"
+        ],
+        "requirements": "Clear case boundaries, multiple data sources, analytical framework.",
+        "cost": 2,
+        "rigour": 2,
+        "complexity": 2,
+        "timeNeeded": 3,
+        "score": 72,
+        "reasons": [
+          "Works without comparison group",
+          "Adaptable to FCV settings"
+        ]
+      },
+      {
+        "id": "rapidEval",
+        "name": "Rapid Evaluation",
+        "short": "Rapid Eval.",
+        "family": "Non-Experimental",
+        "strength": "Quick, systematic assessment. Prioritises timeliness.",
+        "when": "Humanitarian/emergency; real-time decisions; very limited time and budget.",
+        "notWhen": "Accountability requiring rigorous evidence; long-term impact.",
+        "threats": [
+          "Shallow analysis",
+          "Convenience sampling",
+          "Time pressure"
+        ],
+        "requirements": "Focused evaluation questions, rapid data collection capacity.",
+        "cost": 1,
+        "rigour": 1,
+        "complexity": 1,
+        "timeNeeded": 1,
+        "score": 62,
+        "reasons": [
+          "Adaptable to FCV settings"
+        ]
+      },
+      {
+        "id": "did",
+        "name": "Difference-in-Differences",
+        "short": "DiD",
+        "family": "Quasi-Experimental",
+        "strength": "Controls for time-invariant differences. Works with routine data.",
+        "when": "Non-random placement but credible comparison group; pre/post data for both groups.",
+        "notWhen": "Parallel trends clearly violated; no credible comparison area.",
+        "threats": [
+          "Parallel trends violation",
+          "Compositional changes",
+          "Anticipation effects"
+        ],
+        "requirements": "Pre and post data for both groups, testable parallel trends.",
+        "cost": 2,
+        "rigour": 4,
+        "complexity": 3,
+        "timeNeeded": 3,
+        "score": 53,
+        "reasons": [
+          "Budget supports rigorous design"
+        ]
+      },
+      {
+        "id": "rdd",
+        "name": "Regression Discontinuity",
+        "short": "RDD",
+        "family": "Quasi-Experimental",
+        "strength": "Strong internal validity near threshold. Exploits existing eligibility rules.",
+        "when": "Eligibility determined by threshold on continuous variable.",
+        "notWhen": "No clear threshold; threshold easily manipulated; sparse data near cutoff.",
+        "threats": [
+          "Running variable manipulation",
+          "Narrow local effect",
+          "Insufficient density"
+        ],
+        "requirements": "Clear forcing variable, no manipulation, adequate observations near cutoff.",
+        "cost": 2,
+        "rigour": 4,
+        "complexity": 4,
+        "timeNeeded": 2,
+        "score": 53,
+        "reasons": [
+          "Budget supports rigorous design"
+        ]
+      },
+      {
+        "id": "psm",
+        "name": "Propensity Score Matching",
+        "short": "PSM",
+        "family": "Quasi-Experimental",
+        "strength": "Reduces selection bias on observables. Can be applied post-hoc.",
+        "when": "Rich pre-treatment covariates; selection based on observable characteristics.",
+        "notWhen": "Selection driven by unobservables; poor covariate data.",
+        "threats": [
+          "Selection on unobservables",
+          "Common support violations",
+          "Model dependence"
+        ],
+        "requirements": "Rich baseline covariates, sufficient propensity score overlap.",
+        "cost": 2,
+        "rigour": 3,
+        "complexity": 3,
+        "timeNeeded": 2,
+        "score": 45,
+        "reasons": []
+      },
+      {
+        "id": "rct",
+        "name": "Randomised Controlled Trial",
+        "short": "RCT",
+        "family": "Experimental",
+        "strength": "Gold standard for causal attribution. Eliminates selection bias through randomisation.",
+        "when": "Phased rollout planned; more eligible than capacity; strong accountability demand.",
+        "notWhen": "Universal programmes; ethical objections; very small populations; post-hoc; volatile contexts.",
+        "threats": [
+          "Contamination/spillover",
+          "Attrition bias",
+          "Hawthorne effects",
+          "Non-compliance"
+        ],
+        "requirements": "Sufficient sample size, ethical clearance, randomisation feasibility, baseline data.",
+        "cost": 3,
+        "rigour": 5,
+        "complexity": 4,
+        "timeNeeded": 4,
+        "score": 15,
+        "reasons": [
+          "Very difficult in FCV settings",
+          "Budget supports rigorous design",
+          "Scale supports experimental design"
+        ]
+      },
+      {
+        "id": "clusterRCT",
+        "name": "Cluster Randomised Trial",
+        "short": "Cluster RCT",
+        "family": "Experimental",
+        "strength": "Causal attribution when individual randomisation is impractical.",
+        "when": "Community or facility-level interventions; phased rollout across units.",
+        "notWhen": "Few clusters available (<15 per arm); prohibitive ICC.",
+        "threats": [
+          "Low cluster count",
+          "ICC inflation",
+          "Between-cluster contamination"
+        ],
+        "requirements": "15+ clusters per arm, ICC estimate, cluster-level baseline.",
+        "cost": 4,
+        "rigour": 5,
+        "complexity": 5,
+        "timeNeeded": 4,
+        "score": 15,
+        "reasons": [
+          "Very difficult in FCV settings",
+          "Budget supports rigorous design",
+          "Scale supports experimental design"
+        ]
+      },
+      {
+        "id": "steppedWedge",
+        "name": "Stepped-Wedge Design",
+        "short": "Stepped-Wedge",
+        "family": "Experimental",
+        "strength": "All units eventually receive intervention. Ethical when withholding is problematic.",
+        "when": "Phased rollout needed; ethical concerns about withholding; universal coverage goal.",
+        "notWhen": "Very short timeline; strong secular trends confounding time effects.",
+        "threats": [
+          "Time trends",
+          "Maturation confounding",
+          "Incomplete crossover"
+        ],
+        "requirements": "Multiple measurement points, clear step timing.",
+        "cost": 4,
+        "rigour": 4,
+        "complexity": 5,
+        "timeNeeded": 5,
+        "score": 15,
+        "reasons": [
+          "Very difficult in FCV settings",
+          "Budget supports rigorous design",
+          "Scale supports experimental design"
+        ]
       }
     ],
     "selected_design": "contributionAnalysis",
-    "justification": "The intervention is highly complex and system-level with no counterfactual, so a theory-based contribution analysis is the appropriate design: it interrogates the causal logic of the ToC over time, tests assumptions, and triangulates qualitative and secondary quantitative evidence. Process tracing and comparative case study across the eight countries support causal inference where formal counterfactual methods are infeasible.",
-    "completed_at": "2024-02-10T10:00:00.000Z"
+    "justification": "The intervention is highly complex and system-level with no counterfactual, so a theory-based contribution analysis is the spine: it interrogates the causal logic of the ToC over time, tests the Inception Phase assumptions register, and triangulates qualitative and secondary quantitative evidence. Realist evaluation scores level with it and is used alongside it, not instead of it: the eight case-study countries span High-Impact, Core, and Fragile/Conflict-Affected segments, so what works for reaching zero-dose children differs by context in ways a single contribution story would flatten. Process tracing follows the chain from Gavi funding and non-funding instruments through country implementation to zero-dose coverage. Comparative case study across the eight countries supports causal inference where formal counterfactual methods are infeasible. Interrupted time series scores 90 on routine data availability alone and is not adopted: WUENIC and eJRF give annual coverage points, far short of the pre-intervention series the design needs, and MPM data are incomplete.",
+    "answers_fingerprint": "purpose=outcome|causal=contribution|comparison=none|data=routine_only|context=fragile|budget=high|timeline=long|maturity=scaling|complexity=complex|unit=system",
+    "completed_at": "2026-02-10T09:00:00.000Z"
   },
   "sample_parameters": {
     "design_id": "contributionAnalysis",
