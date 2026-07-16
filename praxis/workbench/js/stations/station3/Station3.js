@@ -184,15 +184,32 @@
         }, '#' + rank),
         h('span', {
           className: 'wb-design-result-name'
-        }, design.name || design.label || 'Design ' + rank)
+        }, design.name || design.label || 'Design ' + rank),
+        // A tie is the difference between "this is second best" and "the sort put
+        // this second". Contribution Analysis and Realist Evaluation score
+        // identically under almost every answer set, so the distinction is not
+        // hypothetical and the user should not have to infer it from the numbers.
+        props.tied && h('span', { className: 'wb-design-tie-badge' }, 'Tied')
       ),
       design.score != null && h('div', {
         className: 'wb-design-result-score'
       }, 'Score: ' + design.score),
+      props.tied && h('div', { className: 'wb-design-result-rationale' },
+        'Scores level with ' + props.tied + '. The order between them is not a ranking. Choose on methodological grounds.'),
       design.rationale && h('div', {
         className: 'wb-design-result-rationale'
       }, design.rationale)
     );
+  }
+
+  /* Names of the other designs sharing each design's score, by index. */
+  function tiePartners(designs) {
+    return designs.map(function(d, i) {
+      if (d.score == null) return null;
+      var peers = designs.filter(function(o, j) { return j !== i && o.score === d.score; })
+        .map(function(o) { return o.name || o.label; });
+      return peers.length ? peers.join(' and ') : null;
+    });
   }
 
   // ── Canvas Mode (iframe overlay) ──────────────────────────────────
@@ -295,12 +312,14 @@
 
     // Derive pre-filled answers from Station 0 context
     var context = (state && state.context) || {};
-    var basePrefill = React.useMemo(function() {
-      return window.torToDesignAnswers(
+    var V = window.PraxisDesignVocab;
+    var bridged = React.useMemo(function() {
+      return V.torToDesignAnswers(
         context.tor_constraints || {},
         context.project_meta || {}
       );
     }, [context.tor_constraints, context.project_meta]);
+    var basePrefill = bridged.answers;
 
     // Local overrides for edited answers
     var overrideState = React.useState({});
@@ -311,14 +330,30 @@
     // an advisor save or by handleChangeAnswer below); they survive navigation.
     var savedAnswers = (context.design_recommendation && context.design_recommendation.answers) || {};
 
-    // Merge base prefill with persisted answers, then any session overrides
-    var prefillAnswers = React.useMemo(function() {
+    // Merge base prefill with persisted answers, then any session overrides, and
+    // normalize the result. Saved answers arrive from a .praxis file that may
+    // predate this vocabulary or have been hand-edited, so they are untrusted
+    // input like any other: a value the engine cannot score must surface as a
+    // question the user still owes, not vanish into a zero-weighted rule.
+    var resolved = React.useMemo(function() {
       var merged = {};
       Object.keys(basePrefill).forEach(function(k) { merged[k] = basePrefill[k]; });
       Object.keys(savedAnswers).forEach(function(k) { if (savedAnswers[k] != null) merged[k] = savedAnswers[k]; });
       Object.keys(overrides).forEach(function(k) { merged[k] = overrides[k]; });
-      return merged;
+      return V.normalizeAnswers(merged);
     }, [basePrefill, savedAnswers, overrides]);
+    var prefillAnswers = resolved.answers;
+
+    // Everything the user is owed an explanation for: values we could not score,
+    // plus parameters the ToR left genuinely ambiguous. A note only stands while
+    // its parameter is still unanswered. A multi-purpose ToR raises one, but if
+    // the file already carries a chosen purpose then the ambiguity is settled and
+    // saying otherwise would be nagging about a decision already made.
+    var openIssues = resolved.rejected.concat(
+      bridged.notes
+        .filter(function(n) { return prefillAnswers[n.key] == null; })
+        .map(function(n) { return { key: n.key, raw: null, reason: n.text }; })
+    );
 
     function handleChangeAnswer(questionId, newValue) {
       setOverrides(function(prev) {
@@ -349,7 +384,15 @@
       // Station 9 consume), but only when the export carries ranked designs;
       // an early save with no results must not mark the station complete.
       var hasDesigns = payload && payload.ranked_designs && payload.ranked_designs.length;
-      var record = Object.assign({}, payload, { completed_at: hasDesigns ? new Date().toISOString() : null });
+      var record = Object.assign({}, payload, {
+        completed_at: hasDesigns ? new Date().toISOString() : null,
+        // Bind the ranking to the answers it came from, so a later render can tell
+        // whether it is still the ranking the engine would produce. Without this a
+        // stored list is unfalsifiable, which is how a hand-written one survived in
+        // the shipped demos and re-scored differently the moment anyone re-opened
+        // the advisor.
+        answers_fingerprint: V.fingerprintAnswers((payload && payload.answers) || {})
+      });
       dispatch({ type: 'SAVE_STATION', stationId: 3, data: { design_recommendation: record } });
       setMode('landing');
     }
@@ -366,12 +409,43 @@
     // ── Landing mode ──
     var rankedDesigns = (designRec && designRec.ranked_designs) ? designRec.ranked_designs.slice(0, 3) : [];
 
+    // Is the stored ranking still the one the engine would produce from the
+    // answers now on screen? A ranking saved before fingerprints existed cannot
+    // vouch for itself either, so it is treated as unverified rather than assumed
+    // good. That assumption is exactly what shipped a wrong ranking in the demos.
+    var storedFp = designRec && designRec.answers_fingerprint;
+    var currentFp = V.fingerprintAnswers(prefillAnswers);
+    var rankingState = 'current';
+    if (rankedDesigns.length) {
+      if (!storedFp) rankingState = 'unverified';
+      else if (storedFp !== currentFp) rankingState = 'stale';
+    }
+    var ties = tiePartners(rankedDesigns);
+
+    var STALE_COPY = {
+      stale: 'These recommendations were scored from different design parameters than the ones above. They are shown for reference only. Re-score to bring them in line.',
+      unverified: 'These recommendations were not recorded with the parameters they were scored from, so the Workbench cannot confirm they match the answers above. Re-score to confirm them.'
+    };
+
     return h('div', { className: 'wb-station wb-station-3' },
       // Header
       h('div', { className: 'wb-station-header' },
         h('h2', { className: 'wb-station-title' }, 'Evaluation Design'),
         h('p', { className: 'wb-station-desc' },
           filledCount + ' of 10 questions pre-filled from your evaluability assessment'
+        )
+      ),
+
+      // Parameters we could not carry over, and why. Silence here is what let an
+      // unscoreable value look identical to an answered question.
+      openIssues.length > 0 && h(SectionCard, { title: 'Needs your input' },
+        h('div', { className: 'wb-design-issues', role: 'status' },
+          openIssues.map(function(issue, i) {
+            return h('div', { key: i, className: 'wb-design-issue' },
+              h('span', { className: 'wb-design-issue-key' }, QUESTION_LABELS[issue.key] || issue.key),
+              h('span', { className: 'wb-design-issue-reason' }, issue.reason)
+            );
+          })
         )
       ),
 
@@ -391,9 +465,14 @@
 
       // Existing design results summary
       rankedDesigns.length > 0 && h(SectionCard, { title: 'Recommended Designs' },
-        h('div', { className: 'wb-design-results' },
+        rankingState !== 'current' && h('div', {
+          className: 'wb-design-stale-notice', role: 'status'
+        }, STALE_COPY[rankingState]),
+        h('div', {
+          className: 'wb-design-results' + (rankingState !== 'current' ? ' wb-design-results--stale' : '')
+        },
           rankedDesigns.map(function(design, i) {
-            return h(DesignSummaryCard, { key: i, design: design, rank: i + 1 });
+            return h(DesignSummaryCard, { key: i, design: design, rank: i + 1, tied: ties[i] });
           })
         )
       ),
@@ -402,7 +481,8 @@
       h('button', {
         className: 'wb-btn wb-btn-primary',
         onClick: function() { setMode('canvas'); }
-      }, rankedDesigns.length > 0 ? 'Revise Design Scoring' : 'Review & Score Designs'),
+      }, rankedDesigns.length === 0 ? 'Review & Score Designs'
+         : rankingState === 'current' ? 'Revise Design Scoring' : 'Re-score Designs'),
 
       typeof StationNav !== 'undefined' ? h(StationNav, { stationId: 3, dispatch: dispatch }) : null
     );

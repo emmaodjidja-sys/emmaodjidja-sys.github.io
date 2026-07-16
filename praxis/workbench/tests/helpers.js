@@ -8,6 +8,7 @@ var vm = require('vm');
 
 var FILES = [
   'js/utils.js',
+  'js/design-vocab.js',
   'js/schema.js',
   'js/export-utils.js',
   'js/components/SequenceNavCore.js',

@@ -118,6 +118,16 @@
 .wb-chip.wb-chip--selected {
   background: var(--navy); color: white; border-color: var(--navy); font-weight: 600;
 }
+/* A value carried in from an older file with no equivalent in the current
+   vocabulary. Migration keeps it rather than guessing, so it needs a resting
+   state that reads as "unresolved" and not as a selection. */
+.wb-chip.wb-chip--unrecognised {
+  background: var(--amber-light); color: var(--amber-text);
+  border-color: var(--amber); border-style: dashed; font-family: var(--font-mono);
+}
+.wb-chip.wb-chip--unrecognised:hover {
+  background: var(--amber); color: #fff; border-style: solid;
+}
 
 /* ── Custom checkbox ── */
 .wb-checkbox {

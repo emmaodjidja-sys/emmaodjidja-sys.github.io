@@ -707,6 +707,40 @@
   font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px;
 }
 
+/* Equal scores are common here (Contribution Analysis and Realist Evaluation
+   react to nearly the same rules), so a tie gets said out loud rather than left
+   to be read as a ranking the engine did not make. */
+.wb-design-tie-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 4px;
+  background: var(--surface-muted); color: var(--text-tertiary);
+  border: 1px solid var(--border);
+}
+
+/* A stored ranking the Workbench cannot reconcile with the answers beside it is
+   shown, but visibly demoted. It is reference material, not a recommendation. */
+.wb-design-stale-notice {
+  padding: 10px 12px; margin-bottom: 12px;
+  border-left: 3px solid var(--amber);
+  background: var(--amber-light); color: var(--amber-text);
+  font-size: 13px; line-height: 1.5; border-radius: 0 6px 6px 0;
+}
+.wb-design-results--stale { opacity: 0.62; }
+
+/* Parameters that could not be carried over, and why. */
+.wb-design-issues { display: flex; flex-direction: column; gap: 8px; }
+.wb-design-issue {
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 8px 12px; border-radius: 6px;
+  background: var(--amber-light); border-left: 3px solid var(--amber);
+}
+.wb-design-issue-key {
+  flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--amber-text);
+}
+.wb-design-issue-reason {
+  font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;
+}
+
 /* ── Canvas overlay (Station 3) ────────────────────────── */
 .wb-canvas-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -1494,4 +1528,18 @@
   .wb-summary-stats { flex-wrap: wrap; }
   .wb-analysis-card-body { grid-template-columns: 1fr; }
   .wb-field-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* ── Unrecognised ToR values (Station 0) ───────────────── */
+.wb-tor-unrecognised {
+  margin-top: 10px; padding: 10px 12px;
+  border-left: 3px solid var(--amber); background: var(--amber-light);
+  border-radius: 0 6px 6px 0;
+}
+.wb-tor-unrecognised-title {
+  font-size: 12px; font-weight: 600; color: var(--amber-text); margin-bottom: 8px;
+}
+.wb-tor-unrecognised-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.wb-tor-unrecognised-hint {
+  font-size: 11.5px; color: var(--text-secondary); margin-top: 8px;
 }

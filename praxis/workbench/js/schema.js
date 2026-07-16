@@ -41,7 +41,18 @@
   //          per evaluation. Additive; use_outcome is backfilled explicitly
   //          since deep-default skips arrays, project_id is minted on migrate
   //          when absent.
-  var PRAXIS_VERSION = '1.8.0';
+  //   1.9.0  reconciles the ten design parameters onto one vocabulary
+  //          (js/design-vocab.js) shared by Station 0's ToR form, the Station 3
+  //          bridge and the advisor's scoring rules, which previously each
+  //          defined their own and agreed by luck. Rewrites exact legacy synonyms
+  //          in tor_constraints and design_recommendation.answers
+  //          ('routine_monitoring' -> 'routine_only', 'facility' -> 'cluster',
+  //          'Outcome' -> 'outcome'); leaves values with no honest counterpart
+  //          alone for the user to resolve. Adds
+  //          design_recommendation.answers_fingerprint, which stays null on
+  //          migrated files: the answers an existing ranking was scored from are
+  //          not recoverable, so it is marked unverified rather than blessed.
+  var PRAXIS_VERSION = '1.9.0';
 
   // Navigation bounds (single source; consumed by router.js and context.js clamps).
   // MAX_STATION: highest evaluator-rail station index (0..9, includes Planning).
@@ -91,6 +102,44 @@
 
   function newProjectId() {
     return 'prj_' + Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  // ── File header ──────────────────────────────────────────────────────────
+  // A .praxis file is JSON, so a colleague who is emailed one and opens it sees
+  // ninety-odd kilobytes of braces with nothing saying what wrote it or where to
+  // open it. The Windows file association gives it the Workbench icon on a machine
+  // that has been registered; this block is the part that travels WITH the file to
+  // machines that have not.
+  //
+  // It is documentation, not state. Nothing reads it back: validateContext keys off
+  // `schema`, as it always has. It is re-stamped from scratch on every export
+  // rather than carried through the context, so it can never describe a file it is
+  // no longer the head of.
+  var FILE_HEADER_KEY = '_praxis';
+  var PRAXIS_HOME = 'https://www.emmanuelneneodjidja.org/praxis';
+
+  function fileHeader() {
+    return {
+      app: 'PRAXIS Evaluation Workbench',
+      file_type: 'PRAXIS Workbench evaluation project (.praxis)',
+      open_at: PRAXIS_HOME + '/workbench/',
+      how_to_open: 'Open the link above, choose "Open .praxis File", and select this file. ' +
+                   'Everything below is project data written by the Workbench.',
+      logo: PRAXIS_HOME + '/logo.svg',
+      schema: 'praxis-workbench',
+      schema_version: PRAXIS_VERSION
+    };
+  }
+
+  // Returns a copy of context with a freshly minted header first in key order, so
+  // it is the first thing in the file a text editor shows.
+  function withFileHeader(context) {
+    var out = {};
+    out[FILE_HEADER_KEY] = fileHeader();
+    Object.keys(context || {}).forEach(function(k) {
+      if (k !== FILE_HEADER_KEY) out[k] = context[k];
+    });
+    return out;
   }
 
   function createEmptyContext() {
@@ -175,6 +224,10 @@
         ranked_designs: [],
         selected_design: null,
         justification: '',
+        // Fingerprint of the answers ranked_designs was actually scored from, so
+        // Station 3 can tell a current ranking from one that merely looks current.
+        // Null means unverifiable, not valid.
+        answers_fingerprint: null,
         completed_at: null
       },
 
@@ -527,6 +580,47 @@
       });
       next.version = '1.8.0';
       return next;
+    },
+    // 1.8.0 -> 1.9.0: reconcile the design vocabulary. Station 0's ToR form, the
+    // Station 3 bridge and the advisor's scoring rules each defined these values
+    // independently and nothing checked them against each other, so files carry
+    // slugs the engine never matched ('routine_monitoring', 'facility') and
+    // purposes in a different case ('Outcome') than the tables that read them.
+    // The engine scores an unmatched value as zero rather than failing, so those
+    // files hold rankings that quietly disagree with their own answers.
+    //
+    // Two rules here. Rename only exact synonyms: PraxisDesignVocab.ALIASES is
+    // the whole of what may be rewritten, and a legacy value meaning something
+    // else ('accountability' is a use of an evaluation, not a scope of one) is
+    // LEFT IN PLACE for the user to resolve, never guessed into an enum. And do
+    // not mint answers_fingerprint for an existing ranking: we cannot know what
+    // it was scored from, which is the point, so it stays null and Station 3
+    // reports it as unverified rather than vouching for it.
+    '1.8.0': function(ctx) {
+      var next = deepDefault(createEmptyContext(), ctx);
+      var V = window.PraxisDesignVocab;
+      if (V) {
+        var tor = next.tor_constraints || (next.tor_constraints = {});
+        Object.keys(V.TOR_FIELD_TO_ANSWER).forEach(function(field) {
+          var r = V.normalizeValue(V.TOR_FIELD_TO_ANSWER[field], tor[field]);
+          if (r.ok && r.value != null) tor[field] = r.value;
+        });
+        if (Array.isArray(tor.evaluation_purpose)) {
+          tor.evaluation_purpose = tor.evaluation_purpose.map(function(p) {
+            var r = V.normalizeValue('purpose', p);
+            return (r.ok && r.value != null) ? r.value : p;
+          });
+        }
+        var dr = next.design_recommendation;
+        if (dr && dr.answers && typeof dr.answers === 'object') {
+          Object.keys(dr.answers).forEach(function(k) {
+            var r = V.normalizeValue(k, dr.answers[k]);
+            if (r.ok && r.value != null) dr.answers[k] = r.value;
+          });
+        }
+      }
+      next.version = '1.9.0';
+      return next;
     }
   };
 
@@ -603,6 +697,7 @@
     STATION_FIELDS: STATION_FIELDS,
     createEmptyContext: createEmptyContext,
     validateContext: validateContext,
-    migrate: migrate
+    migrate: migrate,
+    withFileHeader: withFileHeader
   };
 })();

@@ -108,6 +108,38 @@ const QUESTIONS = [
   { id: "unit", label: "Intervention level?", hint: "Cluster-level needs cluster-randomised designs.", options: [{ value: "individual", label: "Individual / household", desc: "Direct service to people" }, { value: "cluster", label: "Facility / community", desc: "Targets groups/institutions" }, { value: "system", label: "System / policy", desc: "National reform, governance" }] }
 ];
 
+// ── Answer validation ───────────────────────────────────────────────
+// scoreDesigns is a chain of `if (answers.x === "literal")` with no else branch
+// and no validation, so a value it does not recognise contributes zero and moves
+// the ranking instead of failing. That is how a saved recommendation could come
+// back different on a re-score without a single answer changing: two of the ten
+// stored values were slugs no rule matched.
+//
+// QUESTIONS is this page's own source of truth for what a value may be (the
+// Workbench mirrors it in js/design-vocab.js and tests the two against each
+// other). Anything arriving from outside (the Workbench bridge, or a hand-edited
+// .praxis file) is checked against it, and what fails is dropped and shown
+// rather than handed to the engine.
+const ANSWER_OPTIONS = QUESTIONS.reduce((acc, q) => {
+  acc[q.id] = q.options.map((o) => o.value);
+  return acc;
+}, {});
+
+function sanitizeAnswers(raw) {
+  const answers = {}, rejected = [];
+  Object.keys(raw || {}).forEach((key) => {
+    const allowed = ANSWER_OPTIONS[key];
+    if (!allowed) {
+      rejected.push({ key, value: raw[key], reason: "not one of the ten design parameters" });
+    } else if (allowed.indexOf(raw[key]) < 0) {
+      rejected.push({ key, value: raw[key], reason: "expected one of: " + allowed.join(", ") });
+    } else {
+      answers[key] = raw[key];
+    }
+  });
+  return { answers, rejected };
+}
+
 // ── Word export ─────────────────────────────────────────────────────
 function exportAdvisorToWord(answers, results) {
   const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
@@ -186,7 +218,7 @@ function ScoreBar({ score }) {
   </div>);
 }
 
-function DesignResult({ design, rank }) {
+function DesignResult({ design, rank, tiedWith }) {
   const fc = familyColors[design.family] || familyColors["Non-Experimental"];
   const isTop = rank <= 3;
   return (
@@ -196,11 +228,22 @@ function DesignResult({ design, rank }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             {rank <= 3 && <span style={{ fontSize: 10, fontWeight: 800, color: rank === 1 ? C.teal : C.slate, background: rank === 1 ? C.tealGlow : C.off, padding: "2px 7px", borderRadius: 4, fontFamily: "monospace" }}>{"#" + rank}</span>}
             <h4 style={{ fontSize: 15, fontWeight: 700, color: C.navy, margin: 0 }}>{design.name}</h4>
+            {tiedWith && <span style={{ fontSize: 10, fontWeight: 700, color: C.slate, background: C.off, padding: "2px 7px", borderRadius: 4, letterSpacing: "0.04em" }}>TIED</span>}
           </div>
           <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 4, background: fc.bg, color: fc.text, border: "1px solid " + fc.border }}>{design.family}</span>
         </div>
       </div>
       <ScoreBar score={design.score} />
+      {/* An equal score is not a ranking. Several designs here react to identical
+          rules (Contribution Analysis and Realist Evaluation differ on only three
+          of the thirty), so ties are common and the order within one is just the
+          order they are declared in. Saying so beats letting a user read a #2 as
+          a judgement the engine did not make. */}
+      {tiedWith && (
+        <div style={{ fontSize: 11.5, color: C.slate, lineHeight: 1.5, marginTop: 6 }}>
+          {"Scores level with " + tiedWith + ". The order between them is not a ranking. Choose on methodological grounds."}
+        </div>
+      )}
       {design.reasons.length > 0 && <div style={{ marginTop: 8, marginBottom: 8 }}>{design.reasons.slice(0, 4).map((r, i) => <div key={i} style={{ fontSize: 11.5, color: C.tealD, lineHeight: 1.5 }}>{"+ " + r}</div>)}</div>}
       {isTop && (
         <div style={{ fontSize: 12, color: C.navyM, lineHeight: 1.6, marginTop: 8 }}>
@@ -219,7 +262,10 @@ function DesignResult({ design, rank }) {
 function App() {
   // When embedded in the PRAXIS Workbench, seed the answers from the design
   // recommendation the bridge stashed on window._praxisPrefillAnswers.
-  const [answers, setAnswers] = useState(() => (window._praxisPrefillAnswers && typeof window._praxisPrefillAnswers === "object") ? window._praxisPrefillAnswers : {});
+  const [answers, setAnswers] = useState(() => sanitizeAnswers(
+    (window._praxisPrefillAnswers && typeof window._praxisPrefillAnswers === "object") ? window._praxisPrefillAnswers : {}
+  ).answers);
+  const [rejectedAnswers, setRejectedAnswers] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const handleAnswer = useCallback((qId, value) => { setAnswers((prev) => ({ ...prev, [qId]: value })); setShowResults(false); }, []);
   const answeredCount = Object.keys(answers).length;
@@ -232,9 +278,28 @@ function App() {
   // stashes it synchronously, but also re-dispatches via the praxis-prefill event).
   useEffect(() => {
     function onPrefill(e) {
-      if (e && e.detail && typeof e.detail === "object") { setAnswers(e.detail); setShowResults(true); }
+      if (e && e.detail && typeof e.detail === "object") {
+        const { answers: clean, rejected } = sanitizeAnswers(e.detail);
+        setAnswers(clean);
+        setRejectedAnswers(rejected);
+        // A parameter that was dropped is a question still open, so do not jump
+        // straight to a ranking that quietly excludes it.
+        setShowResults(rejected.length === 0);
+      }
     }
     window.addEventListener("praxis-prefill", onPrefill);
+
+    // Anything the bridge stashed before this listener existed. Harmless if the
+    // handshake below is doing its job; kept because losing a user's ten answers
+    // to a message-ordering accident is not a failure worth being elegant about.
+    if (window._praxisPrefillAnswers && typeof window._praxisPrefillAnswers === "object") {
+      onPrefill({ detail: window._praxisPrefillAnswers });
+    }
+
+    // Only NOW can this page actually receive answers, so only now do we say we
+    // are ready. The Workbench replies with PRAXIS_INIT, and the listener is up.
+    if (typeof window._praxisSignalReady === "function") window._praxisSignalReady();
+
     return () => window.removeEventListener("praxis-prefill", onPrefill);
   }, []);
 
@@ -291,7 +356,22 @@ function App() {
 
             {!allAnswered && <div style={{ padding: "8px 12px", background: C.amberBg, borderRadius: 8, fontSize: 11.5, color: C.amber, marginBottom: 12, borderLeft: "3px solid " + C.amber }}>Partial assessment ({answeredCount}/{QUESTIONS.length}). Answer more for refined recommendations.</div>}
 
-            {topResults.map((d, i) => <DesignResult key={d.id} design={d} rank={i + 1} />)}
+            {rejectedAnswers.length > 0 && (
+              <div role="alert" style={{ padding: "10px 12px", background: C.amberBg, borderRadius: 8, fontSize: 11.5, color: C.amber, marginBottom: 12, borderLeft: "3px solid " + C.amber }}>
+                <strong>{rejectedAnswers.length === 1 ? "One parameter was not carried over." : rejectedAnswers.length + " parameters were not carried over."}</strong>
+                {" They are not values this advisor scores, so they were left out of the ranking rather than counted as nothing. Answer them below."}
+                <div style={{ marginTop: 6 }}>
+                  {rejectedAnswers.map((r) => (
+                    <div key={r.key} style={{ fontFamily: "monospace", fontSize: 10.5 }}>{r.key + ': "' + String(r.value) + '", ' + r.reason}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {topResults.map((d, i) => (
+              <DesignResult key={d.id} design={d} rank={i + 1}
+                tiedWith={results.filter((o) => o.id !== d.id && o.score === d.score).map((o) => o.name).join(" and ") || null} />
+            ))}
 
             <div style={{ padding: "12px 16px", background: "linear-gradient(135deg, " + C.navy + ", " + C.navyM + ")", borderRadius: 10, marginTop: 12, fontSize: 11, color: C.slateL, lineHeight: 1.6 }}>
               <div style={{ fontSize: 9.5, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>Methodology note</div>
@@ -312,7 +392,19 @@ function App() {
 (function() {
   if (window.self === window.top) return;
 
-  window.parent.postMessage({ type: 'DESIGN_READY' }, window.location.origin);
+  // DESIGN_READY is NOT posted here, though it used to be. Posted at parse time it
+  // was a lie: the Workbench answers it immediately with PRAXIS_INIT, and React had
+  // not mounted App yet, so the answers could land in the gap after App's state
+  // initialiser had already read an empty stash and before its listener existed.
+  // The message was then dropped and nothing re-read the stash, and the user was
+  // silently handed a blank ten-question form instead of their pre-filled one.
+  //
+  // The fix is not to widen the window or re-read on a timer, it is to stop
+  // claiming to be ready before we are. App calls _praxisSignalReady from its mount
+  // effect, once the listener is genuinely attached. See the praxis-prefill effect.
+  window._praxisSignalReady = function() {
+    window.parent.postMessage({ type: 'DESIGN_READY' }, window.location.origin);
+  };
 
   window.addEventListener('message', function(e) {
     if (e.origin !== window.location.origin) return;

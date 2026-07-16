@@ -3,7 +3,7 @@ var H = require('./helpers');
 var W = H.loadWorkbench();
 var S = W.PraxisSchema;
 
-H.eq(S.PRAXIS_VERSION, '1.8.0', 'PRAXIS_VERSION bumped');
+H.eq(S.PRAXIS_VERSION, '1.9.0', 'PRAXIS_VERSION bumped');
 
 var empty = S.createEmptyContext();
 H.eq(empty.commissioner.governance.decision_window_opens, '', 'empty ctx has governance.decision_window_opens');
@@ -22,7 +22,7 @@ delete old.commissioner.gate.eq_snapshot;
 delete old.commissioner.gate.snapped_at;
 
 var up = S.migrate(old);
-H.eq(up.version, '1.8.0', '1.5.0 migrates to 1.8.0');
+H.eq(up.version, '1.9.0', '1.5.0 migrates to 1.9.0');
 var u = up.commissioner.users[0];
 H.eq(u.window_opens, '', 'user backfilled window_opens');
 H.eq(u.window_closes, '', 'user backfilled window_closes');
@@ -41,10 +41,10 @@ var kept = S.migrate(keep).commissioner.users[0];
 H.eq(kept.status, 'left', 'existing status preserved');
 H.eq(kept.window_closes, '2026-06-30', 'existing window_closes preserved');
 
-// Chain from 1.4.0 still lands on 1.8.0.
+// Chain from 1.4.0 still lands on head.
 var chain = S.createEmptyContext();
 chain.version = '1.4.0';
-H.eq(S.migrate(chain).version, '1.8.0', '1.4.0 chains to 1.8.0');
+H.eq(S.migrate(chain).version, '1.9.0', '1.4.0 chains to 1.9.0');
 
 // ---- 1.7.0: report_screens ------------------------------------------------
 H.assert(Array.isArray(S.createEmptyContext().report_screens), 'empty ctx has report_screens array');
@@ -53,7 +53,7 @@ var v16 = S.createEmptyContext();
 v16.version = '1.6.0';
 delete v16.report_screens;
 var up17 = S.migrate(v16);
-H.eq(up17.version, '1.8.0', '1.6.0 migrates to 1.8.0');
+H.eq(up17.version, '1.9.0', '1.6.0 migrates to 1.9.0');
 H.assert(Array.isArray(up17.report_screens) && up17.report_screens.length === 0, 'report_screens defaulted empty');
 
 // Existing runs survive a migration untouched.
@@ -164,7 +164,7 @@ var dirty16 = S.createEmptyContext();
 dirty16.version = '1.6.0';
 dirty16.report_screens = dirtyScreens();
 var clean16 = S.migrate(dirty16);
-H.eq(clean16.version, '1.8.0', 'a 1.6.0 context migrates to 1.8.0');
+H.eq(clean16.version, '1.9.0', 'a 1.6.0 context migrates to 1.9.0');
 assertScrubbed(clean16, '1.6.0');
 
 // (c) a context NEWER than PRAXIS_VERSION: migrate returns it unchanged in SHAPE
@@ -225,7 +225,7 @@ old17.commissioner.users = [{ id: 'u1', name: 'Board', role: '', tier: 'primary'
   intended_use: 'decide', decision_window: 'Q4 board', window_opens: '', window_closes: '',
   status: 'in_post', successor: '', influence: 'high', interest: 'high', eq_refs: [] }];
 var up18 = S.migrate(old17);
-H.eq(up18.version, '1.8.0', '1.7.0 migrates to 1.8.0');
+H.eq(up18.version, '1.9.0', '1.7.0 migrates through to 1.9.0');
 H.eq(up18.commissioner.users[0].use_outcome, '', 'user backfilled use_outcome');
 H.assert(typeof up18.project_id === 'string' && up18.project_id.indexOf('prj_') === 0,
   '1.7.0 file gains a project_id');

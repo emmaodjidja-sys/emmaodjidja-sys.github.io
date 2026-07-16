@@ -25,6 +25,9 @@
     var data = props.data || {};
     var onChange = props.onChange;
     var purposes = data.evaluation_purpose || [];
+    var unrecognisedPurposes = purposes.filter(function(p) {
+      return !PraxisDesignVocab.normalizeValue('purpose', p).ok;
+    });
     var questions = data.evaluation_questions_raw || [];
     // The decision this evaluation serves and its primary users: drafted/quick-added here,
     // but written straight to the SAME commissioner.governance / commissioner.users fields
@@ -66,20 +69,48 @@
           h('textarea', { className: 'wb-input', rows: 5, value: data.raw_text || '', placeholder: 'Paste ToR text here...', onChange: function(e) { onChange('raw_text', e.target.value); } })
         ),
 
-        // Evaluation purpose (multi-select chips)
+        // Evaluation purpose (multi-select chips). Values and labels both come from
+        // PraxisDesignVocab: these chips used to store their own display strings
+        // ('Impact'), while the Station 3 bridge looked them up in a lowercase-keyed
+        // table, so evaluation purpose silently never reached the design advisor.
         h('div', { style: { gridColumn: '1 / -1' } },
           h('label', { className: 'wb-field-label', id: 'wb-purpose-label' }, 'Evaluation Purpose'),
           h('div', { role: 'group', 'aria-labelledby': 'wb-purpose-label', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
-            ['Impact', 'Outcome', 'Process', 'Learning'].map(function(p) {
-              var selected = purposes.indexOf(p) >= 0;
+            PraxisDesignVocab.ANSWER_ENUMS.purpose.map(function(value) {
+              var label = PraxisDesignVocab.labelFor('purpose', value);
+              var selected = purposes.indexOf(value) >= 0;
               return h('button', {
-                key: p,
+                key: value,
                 type: 'button',
                 className: 'wb-chip' + (selected ? ' wb-chip--selected' : ''),
                 'aria-pressed': selected ? 'true' : 'false',
-                onClick: function() { togglePurpose(p); }
-              }, selected ? PraxisIcons.check(12) : null, selected ? ' ' + p : p);
+                onClick: function() { togglePurpose(value); }
+              }, selected ? PraxisIcons.check(12) : null, selected ? ' ' + label : label);
             })
+          ),
+          // Purposes carried in from an older file that this vocabulary has no
+          // honest equivalent for. Migration preserves them rather than guessing,
+          // and the design advisor refuses to score them, so they are shown here to
+          // be resolved instead of sitting in the file invisible and inert.
+          unrecognisedPurposes.length > 0 && h('div', { className: 'wb-tor-unrecognised' },
+            h('div', { className: 'wb-tor-unrecognised-title' },
+              unrecognisedPurposes.length === 1
+                ? 'One purpose in this file is not a purpose the design advisor scores:'
+                : unrecognisedPurposes.length + ' purposes in this file are not ones the design advisor scores:'),
+            h('div', { className: 'wb-tor-unrecognised-list' },
+              unrecognisedPurposes.map(function(p) {
+                return h('button', {
+                  key: p,
+                  type: 'button',
+                  className: 'wb-chip wb-chip--unrecognised',
+                  title: 'Remove "' + p + '"',
+                  'aria-label': 'Remove unrecognised purpose ' + p,
+                  onClick: function() { togglePurpose(p); }
+                }, p, ' ×');
+              })
+            ),
+            h('div', { className: 'wb-tor-unrecognised-hint' },
+              'Select the equivalent above, then remove these.')
           )
         ),
 
@@ -118,9 +149,12 @@
         // Unit of intervention
         h('div', null,
           h('label', { className: 'wb-field-label' }, 'Unit of Intervention'),
+          // 'cluster', not 'facility': the design advisor and EvaluabilityScorer
+          // both test for 'cluster', so the old value matched neither and the
+          // scorer's cluster branch was unreachable.
           OptionCards({ ariaLabel: 'Unit of Intervention', value: data.unit_of_intervention, onChange: function(v) { onChange('unit_of_intervention', v); }, options: [
             { value: 'individual', label: 'Individual / Household' },
-            { value: 'facility', label: 'Facility / Community' },
+            { value: 'cluster', label: 'Facility / Community' },
             { value: 'system', label: 'System / Policy' }
           ] })
         ),
