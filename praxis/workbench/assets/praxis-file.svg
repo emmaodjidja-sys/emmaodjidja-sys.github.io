@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- .praxis document icon. A sheet silhouette with a folded corner carrying the
+       PRAXIS mark, so it reads as "a Workbench file" rather than the app itself.
+       Palette is the Workbench's own: navy #0B1A2E, teal #2EC4B6. -->
+
+  <!-- Sheet, folded corner cut away at top right -->
+  <path d="M 44 12 L 164 12 L 214 62 L 214 236 A 10 10 0 0 1 204 246
+           L 54 246 A 10 10 0 0 1 44 236 L 44 22 A 10 10 0 0 1 54 12 Z"
+        fill="#0B1A2E"/>
+
+  <!-- The fold itself, lifted in teal so the silhouette reads as paper -->
+  <path d="M 164 12 L 214 62 L 174 62 A 10 10 0 0 1 164 52 Z" fill="#2EC4B6" opacity="0.45"/>
+
+  <!-- PRAXIS P, from logo.svg. The mark's ink bbox is x 148..446, y 86..420 in the
+       logo's own 512 grid (the bowl's round stroke cap reaches 26 past the path),
+       so its centre is (297, 253). scale 0.31 then translate lands that centre on
+       (129, 132), a shade below the sheet's middle so the mark sits clear of the
+       fold rather than crowding it. -->
+  <g transform="translate(37, 53.5) scale(0.31)">
+    <rect x="148" y="112" width="52" height="288" rx="4" fill="#2EC4B6"/>
+    <path d="M 200 112 L 300 112 C 370 112 420 162 420 232 C 420 302 370 352 300 352 L 200 352"
+          fill="none" stroke="#2EC4B6" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="380" cy="400" r="20" fill="#2EC4B6" opacity="0.5"/>
+  </g>
+</svg>

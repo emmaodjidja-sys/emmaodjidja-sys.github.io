@@ -27,7 +27,7 @@
 
     function handleSave() {
       var fname = PraxisUtils.sanitizeFilename(meta.title || 'evaluation', 'evaluation') + '.praxis';
-      PraxisUtils.downloadJSON(context, fname);
+      PraxisUtils.downloadJSON(PraxisSchema.withFileHeader(context), fname);
       dispatch({ type: PraxisContext.ACTION_TYPES.SHOW_TOAST, message: 'Project file downloaded as ' + fname + '.', toastType: 'success' });
     }
 

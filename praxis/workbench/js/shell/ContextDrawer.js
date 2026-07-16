@@ -16,7 +16,7 @@
 
     function handleExport() {
       var fname = (meta.title || 'evaluation') + '.praxis';
-      PraxisUtils.downloadJSON(context, fname);
+      PraxisUtils.downloadJSON(PraxisSchema.withFileHeader(context), fname);
     }
 
     if (!isOpen) {
