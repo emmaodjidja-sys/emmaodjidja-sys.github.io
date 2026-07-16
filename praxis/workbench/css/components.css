@@ -616,6 +616,83 @@
 .wb-card-btn--selected { background: rgba(255,255,255,0.06); }
 .wb-card-btn--selected:hover { background: rgba(255,255,255,0.08); }
 
+/* ── File drop zone ──────────────────────────────────── */
+/* Lives on the dark landing chrome, not on the light canvas: a receiving
+   alcove cut into the panel rather than a card sitting on top of it. Dashed
+   while idle (a target), solid teal once armed (a target that has something
+   to take). */
+.wb-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-6);
+  border: 1px dashed rgba(255,255,255,0.22);
+  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: background var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.wb-dropzone:hover {
+  border-color: rgba(255,255,255,0.32);
+  background: rgba(255,255,255,0.04);
+}
+.wb-dropzone--armed,
+.wb-dropzone--armed:hover {
+  border-style: solid;
+  border-color: var(--teal);
+  background: rgba(46,196,182,0.10);
+  box-shadow: 0 0 0 4px rgba(46,196,182,0.10);
+}
+.wb-dropzone-cue {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--chrome-text);
+  text-align: center;
+}
+.wb-dropzone--armed .wb-dropzone-cue { color: var(--teal); }
+
+/* The shared primary is teal-ink on white, tuned for the light station canvas;
+   against the navy landing it reads as a muddy dark green with little
+   separation. Scoped here (not to .on-chrome, which would also catch the
+   confirm modal's primary button sitting on a white surface) the fill becomes
+   full brand teal with navy ink: 8.06:1 for the label, and the one lit element
+   in the alcove. */
+.wb-dropzone .wb-btn-primary {
+  background: var(--teal);
+  color: var(--navy);
+}
+.wb-dropzone .wb-btn-primary:hover {
+  background: color-mix(in srgb, var(--teal) 84%, #fff);
+}
+.wb-dropzone .wb-btn-primary:active {
+  background: var(--teal-dark);
+}
+/* The cue swaps text on arm; children of the zone must not intercept the
+   pointer or the drag events resolve against them instead of the zone. */
+.wb-dropzone > *:not(button) { pointer-events: none; }
+
+.wb-dropzone-meta {
+  margin: var(--space-3) 0 0 0;
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--chrome-text-dim);
+}
+.wb-dropzone-meta--local {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.wb-dropzone-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
 /* ── Skip-to-content link ────────────────────────────── */
 .wb-skip-link {
   position: absolute;

@@ -29,6 +29,12 @@
     "landing.continue": "Continuer",
     "landing.last_edited": "Dernière modification {time} · Station {station}",
 
+    "dropzone.cue": "Déposez votre fichier ici",
+    "dropzone.release": "Relâchez pour ouvrir",
+    "dropzone.browse": "Parcourir les fichiers",
+    "dropzone.accepts": "Accepte .praxis ou .json, jusqu'à {mb} Mo.",
+    "dropzone.local": "Le fichier s'ouvre dans ce navigateur. Rien n'est téléversé.",
+
     "landing.tier_title": "Choisissez votre niveau d'expérience",
     "landing.tier_foundation": "Langage courant, expérience guidée. Recommandé pour une première conception d'évaluation ou si vous souhaitez les explications les plus claires.",
     "landing.tier_practitioner": "Terminologie S&E standard. Pour les évaluateurs familiers des critères du CAD, des cadres de théorie du changement et des méthodes mixtes.",

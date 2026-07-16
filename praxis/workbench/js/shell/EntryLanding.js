@@ -221,9 +221,9 @@
       // File drop zone
       rightContent = h('div', null,
         h(BackButton, { onClick: function() { setMode(null); } }),
-        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '14px' } }, t('landing.open')),
+        h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '4px' } }, t('landing.open')),
+        h('p', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)', lineHeight: '1.6', margin: '0 0 16px 0' } }, t('landing.open_desc')),
         h(FileDropZone, {
-          label: 'Drop .praxis file here or click Browse files',
           onFile: function(data) {
             // Keep a backup of the current save before an import can
             // replace or modify it on the next autosave.

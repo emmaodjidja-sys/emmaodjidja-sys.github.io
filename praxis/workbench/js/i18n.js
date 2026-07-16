@@ -47,6 +47,12 @@
     "landing.continue": "Continue",
     "landing.last_edited": "Last edited {time} · Station {station}",
 
+    "dropzone.cue": "Drop your file here",
+    "dropzone.release": "Release to open",
+    "dropzone.browse": "Browse files",
+    "dropzone.accepts": "Accepts .praxis or .json, up to {mb} MB.",
+    "dropzone.local": "The file opens in this browser. Nothing is uploaded.",
+
     "landing.tier_title": "Choose your experience level",
     "landing.tier_foundation": "Plain language, guided experience. Recommended if this is your first evaluation design or you want the clearest explanations.",
     "landing.tier_practitioner": "Standard M&E terminology. For evaluators familiar with DAC criteria, ToC frameworks, and mixed methods.",
