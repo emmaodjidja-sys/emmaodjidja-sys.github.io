@@ -40,6 +40,7 @@
   --red:#B91C1C;
   --red-bg:#FEE2E2;
   --font-sans:'DM Sans',system-ui,-apple-system,sans-serif;
+  --font-slide:'Poppins','DM Sans',system-ui,-apple-system,sans-serif;
   --font-mono:'JetBrains Mono',ui-monospace,monospace;
   --font-display:'Fraunces',Georgia,serif;
   --shadow-md:0 2px 8px rgba(11,26,46,.08);
@@ -141,7 +142,7 @@ a:hover{color:var(--teal-deep)}
 .slide-scale-inner{transform-origin:top left}
 
 /* ================= Slide canvas: the monograph ================= */
-.slide-canvas{width:1280px;height:720px;background:var(--paper);color:var(--text);display:flex;flex-direction:column;position:relative;overflow:hidden;font-family:var(--font-sans);border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.slide-canvas{width:1280px;height:720px;background:var(--paper);color:var(--text);display:flex;flex-direction:column;position:relative;overflow:hidden;--font-sans:var(--font-slide);font-family:var(--font-slide);border:1px solid var(--border);box-shadow:var(--shadow-md)}
 .slide-canvas .s-head{display:flex;align-items:baseline;justify-content:space-between;padding:30px 56px 0}
 .slide-canvas .s-eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--teal-ink);font-variant-numeric:tabular-nums}
 .slide-canvas .s-mark{font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.18em;color:var(--paper-line-strong);text-transform:uppercase}
@@ -1456,7 +1457,7 @@ function ToCTreeSVG({
   }, React.createElement("div", {
     xmlns: "http://www.w3.org/1999/xhtml",
     style: {
-      font: "500 11px 'DM Sans',sans-serif",
+      font: "500 11px 'Poppins','DM Sans',sans-serif",
       color: g.level.key === "impact" ? "#E7EDF5" : "#101827",
       display: "flex",
       alignItems: "center",

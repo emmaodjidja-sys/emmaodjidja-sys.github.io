@@ -219,7 +219,7 @@ function ToCTreeSVG({ nodes }) {
       ...g.boxes.map(b => <g key={b.node.id}>
         <rect className={`node-box ${g.level.key}`} x={b.x} y={b.y} width={boxW} height={boxH} rx={2} />
         <foreignObject x={b.x + 8} y={b.y + 4} width={boxW - 16} height={boxH - 8}>
-          <div xmlns="http://www.w3.org/1999/xhtml" style={{ font: "500 11px 'DM Sans',sans-serif", color: g.level.key === "impact" ? "#E7EDF5" : "#101827", display: "flex", alignItems: "center", height: "100%", lineHeight: 1.25, overflow: "hidden" }}>
+          <div xmlns="http://www.w3.org/1999/xhtml" style={{ font: "500 11px 'Poppins','DM Sans',sans-serif", color: g.level.key === "impact" ? "#E7EDF5" : "#101827", display: "flex", alignItems: "center", height: "100%", lineHeight: 1.25, overflow: "hidden" }}>
             {b.node.title}
           </div>
         </foreignObject>
