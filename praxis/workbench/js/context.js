@@ -266,32 +266,58 @@
     return false;
   }
 
+  // Describe an already-parsed project object: what it is, how far it got, and
+  // what opening it would involve. Used both for the saved project on the
+  // landing and for a file the user has dropped but not yet committed to, so
+  // the two can never describe the same project differently.
+  //
+  // Every field is read from the project itself. A .praxis file carries no
+  // experience tier (that lives in the separate UI state), so there is nothing
+  // here to report one, and callers must not invent it.
+  function describeContext(parsed) {
+    if (!parsed || parsed.schema !== 'praxis-workbench') return null;
+    var meta = parsed.project_meta || {};
+
+    // Last active station: highest completed, or the one after it. Scans from
+    // the optional Planning station (9) down, which is why 9 keeps its own
+    // index rather than advancing (there is no station 10 to advance to).
+    var lastStation = 0;
+    for (var i = 9; i >= 0; i--) {
+      var fields = PraxisSchema.STATION_FIELDS[i];
+      if (!fields) continue;
+      for (var j = 0; j < fields.length; j++) {
+        if (parsed[fields[j]] && parsed[fields[j]].completed_at) {
+          lastStation = (i === 9) ? 9 : Math.min(i + 1, 8);
+          break;
+        }
+      }
+      if (lastStation > 0) break;
+    }
+
+    var rows = (parsed.evaluation_matrix && parsed.evaluation_matrix.rows) || [];
+    return {
+      name: meta.programme_name || meta.title || 'Untitled',
+      organisation: meta.organisation || '',
+      station: lastStation,
+      // STATION_LABELS covers 0..8. Station 9 is Planning, which the rail
+      // shows as "P" rather than a number, so it is named, not numbered.
+      stationName: PraxisSchema.STATION_LABELS[lastStation] || 'Planning',
+      updatedAt: parsed.updated_at,
+      questionCount: rows.length,
+      // The version the file was written by. migrate() brings it up to
+      // PRAXIS_VERSION on open, so this is what the project is arriving as,
+      // not what it will be once opened.
+      version: parsed.version || ''
+    };
+  }
+
   function getSavedProjectMeta() {
     try {
       var saved = localStorage.getItem('praxis-workbench');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (parsed && parsed.schema === 'praxis-workbench' && parsed.project_meta && parsed.project_meta.programme_name) {
-          // Find last active station (highest completed or first incomplete).
-          // Includes the optional Planning station (9) defensively.
-          var lastStation = 0;
-          for (var i = 9; i >= 0; i--) {
-            var fields = PraxisSchema.STATION_FIELDS[i];
-            if (!fields) continue;
-            for (var j = 0; j < fields.length; j++) {
-              if (parsed[fields[j]] && parsed[fields[j]].completed_at) {
-                lastStation = (i === 9) ? 9 : Math.min(i + 1, 8);
-                break;
-              }
-            }
-            if (lastStation > 0) break;
-          }
-          return {
-            name: parsed.project_meta.programme_name || parsed.project_meta.title || 'Untitled',
-            station: lastStation,
-            stationName: PraxisSchema.STATION_LABELS[lastStation] || 'Planning',
-            updatedAt: parsed.updated_at
-          };
+          return describeContext(parsed);
         }
       }
     } catch (e) {}
@@ -426,6 +452,7 @@
     getInitialState: getInitialState,
     hasSavedProject: hasSavedProject,
     getSavedProjectMeta: getSavedProjectMeta,
+    describeContext: describeContext,
     loadSavedProject: loadSavedProject,
     getSavedUIState: getSavedUIState,
     writeBackup: writeBackup,

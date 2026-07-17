@@ -169,7 +169,7 @@
       }, t('dropzone.browse'))
     );
 
-    return h('div', null,
+    return h('div', { className: 'wb-dropzone-wrap' },
       zone,
       h('p', { className: 'wb-dropzone-meta' }, t('dropzone.accepts', { mb: maxMb })),
       h('p', { className: 'wb-dropzone-meta wb-dropzone-meta--local' },

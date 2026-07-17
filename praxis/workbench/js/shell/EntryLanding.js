@@ -54,6 +54,117 @@
     }, PraxisIcons.chevronLeft(), t('common.back'));
   }
 
+  // What the dropped package is, read off the package itself. Anything the
+  // file does not carry is omitted rather than guessed: a .praxis file holds
+  // no experience tier, so this never claims one.
+  // Which stations a partial (single station export) file carries, named the
+  // way the rest of the app names them. Gives the record a real title instead
+  // of falling back to the section heading.
+  function partialStationNames(data) {
+    var names = [];
+    Object.keys(PraxisSchema.STATION_FIELDS).forEach(function(id) {
+      var carries = PraxisSchema.STATION_FIELDS[id].some(function(field) {
+        var val = data[field];
+        return val && typeof val === 'object' && !Array.isArray(val);
+      });
+      if (!carries) return;
+      var label = PraxisSchema.STATION_LABELS[id];
+      if (!label && id === '9') label = t('manifest.station_planning');
+      if (label && names.indexOf(label) === -1) names.push(label);
+    });
+    return names;
+  }
+
+  function ImportManifest(props) {
+    var entry = props.pending;
+    var meta = entry.meta;
+    var partial = !!(entry.check && entry.check.partial);
+    var hasSaved = PraxisContext.hasSavedProject();
+    var carries = partial ? partialStationNames(entry.data) : [];
+
+    // A partial file is titled by the stations it carries, so it needs no
+    // fact restating them.
+    var facts = [];
+    if (!partial && meta) {
+      // Station 9 is Planning, which the rail shows as "P" rather than a
+      // number, so it is named instead of counted against the nine.
+      var stationText;
+      if (meta.station === 9) stationText = t('manifest.station_planning');
+      else if (meta.station === 0) stationText = t('manifest.station_start');
+      else stationText = t('manifest.station_value', { n: meta.station, name: meta.stationName });
+      facts.push({ key: 'station', label: t('manifest.station'), value: stationText });
+
+      if (meta.questionCount > 0) {
+        facts.push({
+          key: 'questions', label: t('manifest.questions'),
+          value: t('manifest.questions_value', { n: meta.questionCount })
+        });
+      }
+      if (meta.updatedAt) {
+        facts.push({ key: 'saved', label: t('manifest.saved'), value: PraxisUtils.formatDate(meta.updatedAt) });
+      }
+    }
+
+    // What opening this file will actually do. A partial merges into the saved
+    // project rather than replacing it, and only when there is one to merge
+    // into, so these cases are exclusive: saying "merges into your saved
+    // project" and "replaces your saved project" together would be a
+    // contradiction, and only one of them is ever true.
+    var notes = [];
+    if (partial) {
+      notes.push({ key: 'partial', text: hasSaved ? t('manifest.partial_merge') : t('manifest.partial_fresh') });
+    } else {
+      // Only worth saying when the file is actually behind the running build.
+      if (meta && meta.version && meta.version !== PraxisSchema.PRAXIS_VERSION) {
+        notes.push({ key: 'migrate', text: t('manifest.migrate', { from: meta.version, to: PraxisSchema.PRAXIS_VERSION }) });
+      }
+      if (hasSaved) notes.push({ key: 'replaces', text: t('manifest.replaces') });
+    }
+
+    return h('div', { className: 'wb-manifest' },
+      h('div', null,
+        h('p', { className: 'wb-manifest-eyebrow' },
+          PraxisIcons.check(12),
+          partial && hasSaved ? t('manifest.eyebrow_merge') : t('manifest.eyebrow')
+        ),
+        // A partial file has no project_meta to name it, so it is titled by
+        // the station it carries rather than by the section heading.
+        h('h2', { className: 'wb-manifest-name' },
+          partial
+            ? (carries.length ? carries.join(', ') : t('manifest.partial_generic'))
+            : (meta ? meta.name : t('manifest.partial_generic'))
+        ),
+        meta && meta.organisation
+          ? h('p', { className: 'wb-manifest-org' }, meta.organisation)
+          : null
+      ),
+      facts.length
+        ? h('dl', { className: 'wb-manifest-facts' },
+            facts.map(function(f) {
+              return h('div', { key: f.key, className: 'wb-manifest-fact' },
+                h('dt', null, f.label),
+                h('dd', null, f.value)
+              );
+            })
+          )
+        : null,
+      notes.length
+        ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+            notes.map(function(n) {
+              return h('p', { key: n.key, className: 'wb-manifest-note' },
+                h('span', { className: 'wb-manifest-note-dot', 'aria-hidden': 'true' }),
+                h('span', null, n.text)
+              );
+            })
+          )
+        : null,
+      h('div', { className: 'wb-manifest-actions' },
+        h('button', { type: 'button', className: 'wb-btn wb-btn-primary', onClick: props.onOpen }, t('manifest.open')),
+        h('button', { type: 'button', className: 'wb-btn wb-btn-ghost on-chrome', onClick: props.onCancel }, t('manifest.choose_another'))
+      )
+    );
+  }
+
   function EntryLanding(props) {
     var dispatch = props.dispatch;
     var modeState = React.useState(null);
@@ -63,6 +174,12 @@
     var pendingState = React.useState(null);
     var pending = pendingState[0];
     var setPending = pendingState[1];
+    // A file that has been read and described but not yet opened:
+    // { data, check, meta } or null. Distinct from `pending` above, which
+    // gates the replace-your-saved-project modal.
+    var pendingImportState = React.useState(null);
+    var pendingImport = pendingImportState[0];
+    var setPendingImport = pendingImportState[1];
     // Highlighted tier in the tier radiogroup (does not create a project on
     // its own; only activation via Enter/Space/click does).
     var tierChoiceState = React.useState(null);
@@ -106,6 +223,27 @@
       var routeStation = PraxisRouter.getGuardedStation();
       var station = routeStation !== null ? routeStation : uiSaved.activeStation;
       dispatch({ type: AT.LOAD_FILE, context: saved, station: station, tier: uiSaved.experienceTier });
+    }
+
+    // Open a file the user has now seen described and confirmed. The manifest
+    // states that a backup is kept and that a partial file merges, so this
+    // must keep doing both.
+    function commitImport(entry) {
+      var check = entry.check;
+      // Keep a backup of the current save before an import can replace or
+      // modify it on the next autosave.
+      if (PraxisContext.hasSavedProject() || PraxisContext.getUnreadableSavedData()) {
+        PraxisContext.writeBackup('import');
+      }
+      var fileAction = { type: AT.LOAD_FILE, context: entry.data };
+      // Partial imports in a fresh session merge into the saved project, not
+      // onto the empty in-memory context (which would then overwrite the
+      // saved project on the next autosave).
+      if (check.partial && PraxisContext.hasSavedProject()) {
+        fileAction.base = PraxisContext.loadSavedProject();
+      }
+      setPendingImport(null);
+      dispatch(fileAction);
     }
 
     // Gate destructive actions behind a confirmation when a real saved
@@ -218,32 +356,33 @@
       );
 
     } else if (mode === 'open') {
-      // File drop zone
-      rightContent = h('div', null,
+      // Reading a file describes it; it does not open it. A .praxis package is
+      // somebody's whole evaluation, and opening one replaces the project in
+      // this browser, so the user sees what they picked up (and what opening
+      // it will do to what they already have) before committing to it.
+      rightContent = h('div', { className: 'wb-open' + (pendingImport ? ' wb-open--manifest' : '') },
         h(BackButton, { onClick: function() { setMode(null); } }),
         h('div', { style: { fontSize: '14px', fontWeight: 600, color: 'var(--chrome-text)', marginBottom: '4px' } }, t('landing.open')),
         h('p', { style: { fontSize: '12px', color: 'var(--chrome-text-dim)', lineHeight: '1.6', margin: '0 0 16px 0' } }, t('landing.open_desc')),
-        h(FileDropZone, {
-          onFile: function(data) {
-            // Keep a backup of the current save before an import can
-            // replace or modify it on the next autosave.
-            var check = PraxisSchema.validateContext(data);
-            if (check.ok && (PraxisContext.hasSavedProject() || PraxisContext.getUnreadableSavedData())) {
-              PraxisContext.writeBackup('import');
-            }
-            var fileAction = { type: AT.LOAD_FILE, context: data };
-            // Partial imports in a fresh session merge into the saved
-            // project, not onto the empty in-memory context (which would
-            // then overwrite the saved project on the next autosave).
-            if (check.ok && check.partial && PraxisContext.hasSavedProject()) {
-              fileAction.base = PraxisContext.loadSavedProject();
-            }
-            dispatch(fileAction);
-          },
-          onError: function(err) {
-            showToast('Could not read file: ' + ((err && err.message) || 'unknown error') + '.', 'error');
-          }
-        })
+        pendingImport
+          ? h(ImportManifest, {
+              pending: pendingImport,
+              onOpen: function() { commitImport(pendingImport); },
+              onCancel: function() { setPendingImport(null); }
+            })
+          : h(FileDropZone, {
+              onFile: function(data) {
+                var check = PraxisSchema.validateContext(data);
+                if (!check.ok) {
+                  showToast((check.errors && check.errors[0]) || 'That file is not a workbench project.', 'error');
+                  return;
+                }
+                setPendingImport({ data: data, check: check, meta: PraxisContext.describeContext(data) });
+              },
+              onError: function(err) {
+                showToast('Could not read file: ' + ((err && err.message) || 'unknown error') + '.', 'error');
+              }
+            })
       );
 
     } else if (mode === 'quick') {
