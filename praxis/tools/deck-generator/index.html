@@ -39,10 +39,12 @@
   --amber-bg:#FFF7ED;
   --red:#B91C1C;
   --red-bg:#FEE2E2;
-  --font-sans:'DM Sans',system-ui,-apple-system,sans-serif;
+  /* One family across chrome and slide. Roles are kept as tokens (mono = tracked micro-label,
+     display = headline) because the tracking and weight per role still differ. */
+  --font-sans:'Poppins','DM Sans',system-ui,-apple-system,sans-serif;
   --font-slide:'Poppins','DM Sans',system-ui,-apple-system,sans-serif;
-  --font-mono:'JetBrains Mono',ui-monospace,monospace;
-  --font-display:'Fraunces',Georgia,serif;
+  --font-mono:'Poppins','DM Sans',system-ui,-apple-system,sans-serif;
+  --font-display:'Poppins','DM Sans',system-ui,-apple-system,sans-serif;
   --shadow-md:0 2px 8px rgba(11,26,46,.08);
   --shadow-lg:0 8px 28px rgba(11,26,46,.14);
   /* Slide paper (the deck artifact, slightly warm against the cool app canvas) */
